@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://balanse.local/schemas/asset-manifest/v1",
+  "title": "Balanse asset provenance manifest",
+  "description": "Versioned inventory for FE-SHR-004. Consume as-is; do not transform field names.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "updated", "assets"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "assets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/asset" }
+    }
+  },
+  "$defs": {
+    "approvalStatus": {
+      "type": "string",
+      "enum": ["draft", "client-review", "approved", "rejected"]
+    },
+    "sourceAssetId": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intake_item_id"],
+      "properties": {
+        "intake_item_id": {
+          "type": "string",
+          "description": "Stable id from docs/assets/source-catalog.yaml (Balanse image assets item)."
+        },
+        "higgsfield_media_id": {
+          "type": ["string", "null"],
+          "description": "Higgsfield media UUID after register-as-media handoff."
+        }
+      }
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "page",
+        "slot",
+        "slot_letter",
+        "aspect_ratio",
+        "source_prompt_key",
+        "identity_bound",
+        "source_free",
+        "source_asset_id",
+        "generation_policy",
+        "model",
+        "model_parameters",
+        "generation_date",
+        "approval_status",
+        "approver",
+        "alt_text",
+        "post_processing",
+        "storage_key"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "page": {
+          "type": "string",
+          "enum": ["landing", "about", "contact", "faqs", "coaches"]
+        },
+        "slot": { "type": "string" },
+        "slot_letter": {
+          "type": ["string", "null"],
+          "description": "A–D from the screen spec, or null for per-coach / placeholder rows."
+        },
+        "aspect_ratio": { "type": "string" },
+        "source_prompt_key": { "type": ["string", "null"] },
+        "identity_bound": { "type": "boolean" },
+        "source_free": {
+          "type": "boolean",
+          "description": "true = missing source_asset_id is intentional (non-identity or designed placeholder)."
+        },
+        "source_asset_id": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/sourceAssetId" },
+            {
+              "type": "array",
+              "items": { "$ref": "#/$defs/sourceAssetId" },
+              "description": "Group hero: one id per depicted coach."
+            }
+          ]
+        },
+        "generation_policy": {
+          "type": "string",
+          "enum": ["generate", "placeholder", "do_not_generate", "per_coach"]
+        },
+        "do_not_generate_reason": { "type": ["string", "null"] },
+        "model": { "type": ["string", "null"] },
+        "model_parameters": {
+          "type": ["object", "null"],
+          "properties": {
+            "resolution": { "type": "string" },
+            "aspect_ratio": { "type": "string" }
+          },
+          "additionalProperties": true
+        },
+        "generation_date": { "type": ["string", "null"] },
+        "approval_status": { "$ref": "#/$defs/approvalStatus" },
+        "approver": { "type": ["string", "null"] },
+        "alt_text": {
+          "type": "string",
+          "description": "Required non-empty before approval_status can be approved (enforced by validator)."
+        },
+        "post_processing": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["op"],
+            "properties": {
+              "op": { "type": "string" },
+              "from": { "type": "string" },
+              "to": { "type": "string" },
+              "notes": { "type": "string" }
+            }
+          }
+        },
+        "storage_key": {
+          "type": ["string", "null"],
+          "description": "Final INF-004 / ASSET-030 object key. Null until buckets exist."
+        },
+        "coach_slug": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

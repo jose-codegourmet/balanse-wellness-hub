@@ -1,0 +1,162 @@
+# ASSET-010 — living coverage matrix
+# Re-check before ASSET-012 and before ASSET-030.
+# Roster: docs/facebook-findings/findings.md §4b (11 names only).
+# Sella is NOT on this roster (Facebook timetable only) — do not add a row.
+# consent_recorded is not yet written for anyone; ASSET-012 stays blocked on consent
+# even when decision is generate (photo exists).
+# last_reviewed: 2026-09-19
+
+coaches:
+  - slug: rex-francis-regis
+    display_name: Rex Francis Regis
+    classes: Calisthenics / Mat Pilates / Caliyoga
+    source_photo_received: yes
+    intake_item_id: src-coach-rex-01
+    drive_folder: "Coaches Photos and Docs / Coach Rex"
+    repo_preview: docs/coaches/rex/
+    upload_date: 2026-09-19
+    quality: pass
+    consent_recorded: no
+    decision: generate
+    outstanding_request: null
+    notes: Web derivatives committed (ARWs not in repo). Higgsfield media_id pending generate tickets.
+
+  - slug: ephraim-bacaltos
+    display_name: Ephraim Bacaltos
+    classes: Circuit Training / Groundworks / Calisthenics
+    source_photo_received: yes
+    intake_item_id: src-coach-ephraim-01
+    drive_folder: "Coaches Photos and Docs / Coach Ephraim"
+    repo_preview: docs/coaches/ephraim/
+    upload_date: 2026-09-19
+    quality: pass
+    consent_recorded: no
+    decision: generate
+    outstanding_request: null
+    notes: Three web-ready frames. Primary catalog id is shot 01.
+
+  - slug: rachelle-tobiano
+    display_name: Rachelle Tobiano
+    classes: Kickboxing / Brazilian Jiu-Jitsu
+    source_photo_received: yes
+    intake_item_id: src-coach-rachelle-01
+    drive_folder: "Coaches Photos and Docs / Coach Rachelle"
+    repo_preview: docs/coaches/rachelle/
+    upload_date: 2026-09-19
+    quality: pass
+    consent_recorded: no
+    decision: generate
+    outstanding_request: null
+    notes: ""
+
+  - slug: alec-james-co
+    display_name: Alec James Co
+    classes: Calisthenics / Circuit Training
+    source_photo_received: no
+    intake_item_id: null
+    drive_folder: "Coaches Photos and Docs / Coach Alec (intro doc only)"
+    repo_preview: docs/coaches/alec/
+    upload_date: null
+    quality: n/a
+    consent_recorded: no
+    decision: placeholder
+    outstanding_request: "2026-09-19 — request ARW source photos via Drive"
+    notes: Intro PDF only. Route to ASSET-014. Do not invent a face.
+
+  - slug: jodi-tio
+    display_name: Jodi Tio
+    classes: Mat Pilates
+    source_photo_received: yes
+    intake_item_id: src-coach-jodi-01
+    drive_folder: "Coaches Photos and Docs / Coach Jodi"
+    repo_preview: docs/coaches/jodi/
+    upload_date: 2026-09-19
+    quality: pass
+    consent_recorded: no
+    decision: generate
+    outstanding_request: null
+    notes: Four web-ready frames.
+
+  - slug: wolf
+    display_name: Wolf
+    classes: Yoga
+    source_photo_received: yes
+    intake_item_id: src-coach-wolf-01
+    drive_folder: "Coaches Photos and Docs / Coach Wolf"
+    repo_preview: docs/coaches/wolf/
+    upload_date: 2026-09-19
+    quality: pass
+    consent_recorded: no
+    decision: generate
+    outstanding_request: null
+    notes: Intro docx + three frames.
+
+  - slug: kate-go
+    display_name: Kate Go
+    classes: Yoga
+    source_photo_received: no
+    intake_item_id: null
+    drive_folder: null
+    repo_preview: null
+    upload_date: null
+    quality: n/a
+    consent_recorded: no
+    decision: placeholder
+    outstanding_request: "2026-09-19 — no Drive folder yet; request photos via Coaches Photos and Docs"
+    notes: Confirmed 11th roster name. No docs/coaches/kate/. ASSET-014 until ARWs land.
+
+  - slug: sofia-ocampo
+    display_name: Sofia Ocampo
+    classes: Mat Pilates
+    source_photo_received: no
+    intake_item_id: null
+    drive_folder: "Coaches Photos and Docs / Coach Sofia (intro doc only)"
+    repo_preview: docs/coaches/sofia/
+    upload_date: null
+    quality: n/a
+    consent_recorded: no
+    decision: placeholder
+    outstanding_request: "2026-09-19 — request ARW source photos via Drive"
+    notes: Intro docx only. Route to ASSET-014.
+
+  - slug: mikaela-danielle
+    display_name: Mikaela Danielle
+    classes: Dance Fitness
+    source_photo_received: yes
+    intake_item_id: src-coach-mikaela-01
+    drive_folder: "Coaches Photos and Docs / Coach Mikaela"
+    repo_preview: docs/coaches/mikaela/
+    upload_date: 2026-09-19
+    quality: pass
+    consent_recorded: no
+    decision: generate
+    outstanding_request: null
+    notes: Facebook timetable used “Mikala”; roster name is Mikaela Danielle.
+
+  - slug: maris-cabrera
+    display_name: Maris Cabrera
+    classes: Dance Fitness
+    source_photo_received: yes
+    intake_item_id: src-coach-maris-01
+    drive_folder: "Coaches Photos and Docs / Coach Maris"
+    repo_preview: docs/coaches/maris/
+    upload_date: 2026-09-19
+    quality: pass
+    consent_recorded: no
+    decision: generate
+    outstanding_request: null
+    notes: ""
+
+  - slug: francis-acido
+    display_name: Francis Acido
+    classes: Dance Fitness
+    source_photo_received: yes
+    intake_item_id: src-coach-francis-01
+    drive_folder: "Coaches Photos and Docs / Coach Francis"
+    repo_preview: docs/coaches/francis/
+    upload_date: 2026-09-19
+    quality: pass
+    consent_recorded: no
+    decision: generate
+    outstanding_request: null
+    notes: Distinct from Rex Francis Regis.
