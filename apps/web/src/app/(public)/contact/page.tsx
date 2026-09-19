@@ -1,24 +1,11 @@
-import { publicPageSlotIds } from "@balanse/domain";
-import { MarketingImage } from "@balanse/ui";
 import type { Metadata } from "next";
+import { ContactPage } from "@/modules/public/ContactPage";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description: "Contact Balansé Wellness Hub in Cebu.",
+  description: "Contact Balansé Wellness Hub in Cebu. Reservations stay on the studio calendar.",
 };
 
 export default function Page() {
-  return (
-    <section className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="font-display text-3xl">Contact</h1>
-      <p className="mt-3 max-w-2xl text-muted-foreground">
-        Page shell only. FE-PUB-003 owns the form. Image slots come from the asset manifest.
-      </p>
-      <div className="mt-8 grid gap-4 md:grid-cols-2">
-        {publicPageSlotIds("contact").map((id) => (
-          <MarketingImage key={id} assetId={id} />
-        ))}
-      </div>
-    </section>
-  );
+  return <ContactPage />;
 }

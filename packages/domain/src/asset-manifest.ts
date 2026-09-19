@@ -56,6 +56,12 @@ export function bundledAssetSrc(asset: AssetManifestRecord): string | undefined 
   ) {
     return localCoachPhotoPath(asset.coach_slug, asset.aspect_ratio === "1:1" ? "1:1" : "4:5");
   }
+  if (
+    asset.approval_status === "approved" &&
+    asset.working_path?.startsWith("docs/assets/marketing/")
+  ) {
+    return `/${asset.working_path.replace(/^docs\//, "")}`;
+  }
   return undefined;
 }
 

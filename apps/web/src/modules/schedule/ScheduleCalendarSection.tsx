@@ -3,7 +3,7 @@
 import type { PublicClass, PublicSession } from "@balanse/domain";
 import { getMockAdapter, getMockRuntime, MOCK_NOW_ISO } from "@balanse/mock";
 import { ScheduleCalendar } from "@balanse/ui";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
@@ -19,7 +19,11 @@ export function ScheduleCalendarSection({
   initialLoadError?: boolean;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { principal } = useMockPrincipal();
+  const coachId = searchParams.get("coachId") ?? "all";
+  const classId = searchParams.get("classId") ?? "all";
   const [sessions, setSessions] = useState(initialSessions);
   const [classes, setClasses] = useState(initialClasses);
   const [bookingSessionIds, setBookingSessionIds] = useState<string[]>([]);
@@ -70,6 +74,13 @@ export function ScheduleCalendarSection({
       sessionBecameFullId={fullId}
       viewerBookingSessionIds={bookingSessionIds}
       onRetry={() => void load()}
+      initialClassFilter={classId}
+      initialCoachFilter={coachId}
+      onClearFilter={() => {
+        if (pathname === "/") {
+          router.replace("/#schedule");
+        }
+      }}
       onReserve={(session) => {
         const bookingPath = `/portal/bookings/new?sessionId=${session.id}`;
         if (audience === "guest" || principal.role === "guest") {

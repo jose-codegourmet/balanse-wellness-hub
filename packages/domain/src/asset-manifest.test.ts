@@ -32,6 +32,14 @@ describe("FE-SHR-004 asset manifest", () => {
     expect(bundledAssetSrc(rex)).not.toMatch(/^https?:/);
   });
 
+  it("resolves approved marketing working files to bundled public paths", () => {
+    const hero = ASSET_MANIFEST.assets.find((asset) => asset.id === "landing-a");
+    expect(hero?.approval_status).toBe("approved");
+    expect(bundledAssetSrc(hero as NonNullable<typeof hero>)).toBe(
+      "/assets/marketing/landing/hero-accent-16x9.webp",
+    );
+  });
+
   it("covers every public-page lettered slot", () => {
     expect(publicPageSlotIds("landing")).toEqual([
       "landing-a",
@@ -42,6 +50,13 @@ describe("FE-SHR-004 asset manifest", () => {
     expect(publicPageSlotIds("about")).toEqual(["about-a", "about-b", "about-c"]);
     expect(publicPageSlotIds("contact")).toEqual(["contact-a", "contact-b"]);
     expect(publicPageSlotIds("faqs")).toEqual(["faqs-a"]);
-    expect(publicPageSlotIds("coaches")).toEqual(["coaches-a", "coaches-b", "coaches-c"]);
+    expect(publicPageSlotIds("coaches")).toEqual([
+      "coaches-a",
+      "coaches-b",
+      "coaches-c",
+      "coaches-c-yoga",
+      "coaches-c-boxing",
+      "coaches-c-capoeira",
+    ]);
   });
 });

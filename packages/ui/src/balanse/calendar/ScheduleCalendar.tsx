@@ -4,6 +4,7 @@ import { BALANSE_BREAKPOINTS } from "@balanse/config";
 import {
   addManilaDays,
   daysInManilaMonth,
+  filterPublicSessions,
   formatPeso,
   formatSessionDate,
   formatSessionTime,
@@ -36,6 +37,7 @@ export type ScheduleCalendarProps = {
   onReserve?: (session: PublicSession) => void;
   onClearFilter?: () => void;
   initialClassFilter?: string;
+  initialCoachFilter?: string;
 };
 
 const AVAILABILITY_COPY: Record<PublicSession["availability"], string> = {
@@ -74,15 +76,25 @@ export function ScheduleCalendar({
   onReserve,
   onClearFilter,
   initialClassFilter = "all",
+  initialCoachFilter = "all",
 }: ScheduleCalendarProps) {
   const [width, setWidth] = useState<number>(BALANSE_BREAKPOINTS.desktop);
   const [classFilter, setClassFilter] = useState<string>(initialClassFilter);
+  const [coachFilter, setCoachFilter] = useState<string>(initialCoachFilter);
   const [selectedDay, setSelectedDay] = useState(() => manilaYmd(nowIso));
   const [selectedId, setSelectedId] = useState<string | null>(selectedSessionId);
 
   useEffect(() => {
     if (selectedSessionId) setSelectedId(selectedSessionId);
   }, [selectedSessionId]);
+
+  useEffect(() => {
+    setClassFilter(initialClassFilter);
+  }, [initialClassFilter]);
+
+  useEffect(() => {
+    setCoachFilter(initialCoachFilter);
+  }, [initialCoachFilter]);
 
   useEffect(() => {
     if (view !== "auto") return;
@@ -95,10 +107,14 @@ export function ScheduleCalendar({
   const resolvedView: CalendarView = view === "auto" ? detectView(width) : view;
   const today = manilaYmd(nowIso);
 
-  const filtered = useMemo(() => {
-    if (classFilter === "all") return sessions;
-    return sessions.filter((session) => session.classId === classFilter);
-  }, [classFilter, sessions]);
+  const filtered = useMemo(
+    () => filterPublicSessions(sessions, { classId: classFilter, coachId: coachFilter }),
+    [classFilter, coachFilter, sessions],
+  );
+  const coachName =
+    coachFilter !== "all"
+      ? (sessions.find((session) => session.coachId === coachFilter)?.coachName ?? null)
+      : null;
 
   const days = useMemo(() => {
     const cells: Array<{ key: string; ymd: string | null }> = [];
@@ -141,7 +157,7 @@ export function ScheduleCalendar({
   const selected = preferred;
   const becameFull = selected && sessionBecameFullId === selected.id;
 
-  const filterEmpty = classFilter !== "all" && filtered.length === 0;
+  const filterEmpty = (classFilter !== "all" || coachFilter !== "all") && filtered.length === 0;
   const dayEmpty = !filterEmpty && !loadError && daySessions.length === 0;
 
   function moveDay(delta: number) {
@@ -171,6 +187,19 @@ export function ScheduleCalendar({
         >
           All
         </Button>
+        {coachName ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={() => {
+              setCoachFilter("all");
+              onClearFilter?.();
+            }}
+          >
+            Coach: {coachName}
+          </Button>
+        ) : null}
         {classes.map((item) => (
           <Button
             key={item.id}
@@ -206,6 +235,7 @@ export function ScheduleCalendar({
           id="calendar.filter-empty"
           onAction={() => {
             setClassFilter("all");
+            setCoachFilter("all");
             onClearFilter?.();
           }}
         />
@@ -310,6 +340,7 @@ export function ScheduleCalendar({
             <aside
               className="rounded-xl border border-border bg-card p-4"
               aria-label="Selected session"
+              data-section="session-panel"
             >
               {becameFull ? (
                 <FeedbackState

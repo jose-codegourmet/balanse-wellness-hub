@@ -68,6 +68,10 @@ export const FilterEmpty: Story = {
   args: { view: "week", initialClassFilter: "class-bjj" },
 };
 
+export const CoachFilter: Story = {
+  args: { view: "week", initialCoachFilter: "coach-rex" },
+};
+
 export const LoadFailed: Story = {
   args: { loadError: true },
 };

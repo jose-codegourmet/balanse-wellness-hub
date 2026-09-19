@@ -67,7 +67,7 @@ export function PublicNav({
   }, []);
 
   return (
-    <header className="relative border-b border-border bg-card">
+    <header data-section="header" className="relative border-b border-border bg-card">
       <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-4 px-4">
         <Link href={brandHref} className="rounded-md focus-visible:ring-2 focus-visible:ring-ring">
           <span className="sr-only">Balansé Wellness Hub home</span>

@@ -11,7 +11,7 @@ import type {
   PublicContent,
   PublicSession,
 } from "@balanse/domain";
-import { BOOKING_STATUSES, coachPhotoKey } from "@balanse/domain";
+import { BOOKING_STATUSES, coachPhotoKey, flattenFaqs, teachesBio } from "@balanse/domain";
 
 /** Frozen "now" so Storybook and screenshots stay deterministic. Wed 10:50 Asia/Manila. */
 export const MOCK_NOW_ISO = "2026-09-16T02:50:00.000Z";
@@ -98,7 +98,7 @@ const coachRows: AdminCoach[] = [
     id: "coach-rex",
     name: "Rex Francis Regis",
     specialties: ["Calisthenics", "Mat Pilates", "Caliyoga"],
-    shortBio: "Studio founder. Placeholder bio.",
+    shortBio: teachesBio(["Calisthenics", "Mat Pilates", "Caliyoga"]),
     photoKey: coachPhotoKey("rex-francis-regis"),
     active: true,
     defaultRatePhp: 800,
@@ -108,7 +108,7 @@ const coachRows: AdminCoach[] = [
     id: "coach-ephraim",
     name: "Ephraim Bacaltos",
     specialties: ["Circuit Training", "Groundworks", "Calisthenics"],
-    shortBio: "Placeholder bio.",
+    shortBio: teachesBio(["Circuit Training", "Groundworks", "Calisthenics"]),
     photoKey: coachPhotoKey("ephraim-bacaltos"),
     active: true,
     defaultRatePhp: 700,
@@ -118,7 +118,7 @@ const coachRows: AdminCoach[] = [
     id: "coach-rachelle",
     name: "Rachelle Tobiano",
     specialties: ["Kickboxing", "Brazilian Jiu-Jitsu"],
-    shortBio: "Placeholder bio.",
+    shortBio: teachesBio(["Kickboxing", "Brazilian Jiu-Jitsu"]),
     photoKey: coachPhotoKey("rachelle-tobiano"),
     active: true,
     defaultRatePhp: 750,
@@ -128,7 +128,7 @@ const coachRows: AdminCoach[] = [
     id: "coach-alec",
     name: "Alec James Co",
     specialties: ["Calisthenics", "Circuit Training"],
-    shortBio: "Placeholder bio.",
+    shortBio: teachesBio(["Calisthenics", "Circuit Training"]),
     photoKey: null,
     active: true,
     defaultRatePhp: 700,
@@ -138,7 +138,7 @@ const coachRows: AdminCoach[] = [
     id: "coach-jodi",
     name: "Jodi Tio",
     specialties: ["Mat Pilates"],
-    shortBio: "Placeholder bio.",
+    shortBio: teachesBio(["Mat Pilates"]),
     photoKey: coachPhotoKey("jodi-tio"),
     active: true,
     defaultRatePhp: 700,
@@ -148,7 +148,7 @@ const coachRows: AdminCoach[] = [
     id: "coach-wolf",
     name: "Wolf",
     specialties: ["Yoga"],
-    shortBio: "Placeholder bio.",
+    shortBio: teachesBio(["Yoga"]),
     photoKey: coachPhotoKey("wolf"),
     active: true,
     defaultRatePhp: 650,
@@ -158,7 +158,7 @@ const coachRows: AdminCoach[] = [
     id: "coach-kate",
     name: "Kate Go",
     specialties: ["Yoga"],
-    shortBio: "Placeholder bio.",
+    shortBio: teachesBio(["Yoga"]),
     photoKey: null,
     active: true,
     defaultRatePhp: 650,
@@ -168,7 +168,7 @@ const coachRows: AdminCoach[] = [
     id: "coach-sofia",
     name: "Sofia Ocampo",
     specialties: ["Mat Pilates"],
-    shortBio: "Placeholder bio.",
+    shortBio: teachesBio(["Mat Pilates"]),
     photoKey: null,
     active: true,
     defaultRatePhp: 650,
@@ -178,7 +178,7 @@ const coachRows: AdminCoach[] = [
     id: "coach-mikaela",
     name: "Mikaela Danielle",
     specialties: ["Dance Fitness"],
-    shortBio: "Placeholder bio.",
+    shortBio: teachesBio(["Dance Fitness"]),
     photoKey: coachPhotoKey("mikaela-danielle"),
     active: true,
     defaultRatePhp: 650,
@@ -188,7 +188,7 @@ const coachRows: AdminCoach[] = [
     id: "coach-maris",
     name: "Maris Cabrera",
     specialties: ["Dance Fitness"],
-    shortBio: "Placeholder bio.",
+    shortBio: teachesBio(["Dance Fitness"]),
     photoKey: coachPhotoKey("maris-cabrera"),
     active: true,
     defaultRatePhp: 650,
@@ -198,7 +198,7 @@ const coachRows: AdminCoach[] = [
     id: "coach-francis",
     name: "Francis Acido",
     specialties: ["Dance Fitness"],
-    shortBio: "Placeholder bio.",
+    shortBio: teachesBio(["Dance Fitness"]),
     photoKey: coachPhotoKey("francis-acido"),
     active: true,
     defaultRatePhp: 650,
@@ -421,16 +421,9 @@ export const publicContent: PublicContent = {
   contact: {
     phone: "+63 968 220 9198",
     email: "balanse.wellnesshub@gmail.com",
-    address: "Unit 2A, Capitol Centrum Building, North Escario Street, Cebu City, 6000",
+    address: "Unit 2A, Capitol Centrum Building, N Escario, Cebu City, 6000",
   },
-  faqs: [
-    {
-      id: "faq-1",
-      question: "How do I reserve a class?",
-      answer:
-        "Browse the landing calendar, choose a session, then sign in to reserve. Content is mocked this phase.",
-    },
-  ],
+  faqs: flattenFaqs(),
 };
 
 export const staff: AdminStaff[] = [

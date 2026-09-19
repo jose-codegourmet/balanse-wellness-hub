@@ -1,4 +1,4 @@
-import { BOOKING_STATUSES } from "@balanse/domain";
+import { BOOKING_STATUSES, CONFIRMED_COACH_ROSTER, publicCoachCardFields } from "@balanse/domain";
 import { describe, expect, it } from "vitest";
 import { adminCoaches, bookings, publicCoaches, toPublicCoach } from "./fixtures";
 
@@ -31,6 +31,18 @@ describe("public/customer fixture privacy", () => {
     expect(without.map((coach) => coach.name).sort()).toEqual(
       ["Alec James Co", "Kate Go", "Sofia Ocampo"].sort(),
     );
+  });
+
+  it("matches findings.md §4b roster on public coaches without rate props", () => {
+    expect(
+      publicCoaches.map((coach) => ({ name: coach.name, specialties: coach.specialties })),
+    ).toEqual(
+      CONFIRMED_COACH_ROSTER.map((row) => ({ name: row.name, specialties: [...row.specialties] })),
+    );
+    for (const coach of publicCoaches) {
+      const serialized = JSON.stringify(publicCoachCardFields(coach));
+      expect(serialized).not.toMatch(/rate|cost|defaultRate/i);
+    }
   });
 
   it("covers every booking status from the shared language table", () => {
