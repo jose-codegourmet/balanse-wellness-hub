@@ -4,12 +4,14 @@
 
 ## Layout
 
-Two Vercel projects, same GitHub repo `jose-codegourmet/balanse-wellness-hub`:
+Two Vercel projects on team `josecodegourmets-projects`, same GitHub repo `jose-codegourmet/balanse-wellness-hub`:
 
-| Project name | Root directory | Local port | Indexing |
-| --- | --- | --- | --- |
-| `balanse-web` | `apps/web` | 9000 | Preview: `noindex` (safe default) |
-| `balanse-admin` | `apps/admin` | 9001 | Always `noindex` + Deployment Protection |
+| Project name | Vercel id | Root directory | Local port | Indexing |
+| --- | --- | --- | --- | --- |
+| `balanse-web` | `prj_hxMvGbjeVZODSnVB623ul8S7sl28` | `apps/web` | 9000 | Preview: `noindex` (safe default) |
+| `balanse-admin` | `prj_TJEAFVM72E3rT3KIL7kMK69EkOdZ` | `apps/admin` | 9001 | Always `noindex` + Deployment Protection |
+
+Git linking from the API returned 404 after create — connect the GitHub repo in each project's **Settings → Git** if previews do not appear on PRs.
 
 Each PR should produce two preview URLs (Vercel Git integration).
 
