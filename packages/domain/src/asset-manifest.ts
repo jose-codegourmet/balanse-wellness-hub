@@ -12,6 +12,13 @@ export type AssetManifestRecord = {
   approval_status: string;
   storage_key: string | null;
   working_path?: string | null;
+  /** ASSET-030 Storage URL. Recorded for WIRE-012; never fetched this phase. */
+  public_url?: string | null;
+  storage_objects?: readonly {
+    working_path: string;
+    storage_key: string;
+    public_url: string;
+  }[];
   generation_policy: string;
   coach_slug?: string | null;
 };
