@@ -13,3 +13,16 @@ date,asset_id,prompt_key,model,resolution,aspect_ratio,credits,job_id,outcome,no
 2026-09-19,landing-b,landing-B,nano_banana_2_shots,1k,3:2,0,,rejected,Same 422 text-only.
 2026-09-19,landing-c,landing-C,nano_banana_2_shots,1k,1:1,0,,rejected,Same 422 text-only.
 2026-09-19,landing-d,landing-D,nano_banana_2_shots,1k,21:9,0,,rejected,Same 422 text-only.
+2026-09-19,landing-a,landing-A,nano_banana_2_shots,1k,16:9,~4,,approved,ASSET-020. Mood plate 0dad9831-2091-4538-b892-f9f96e6d7352 (source_free / non-identity). Jose auto-approve. Working docs/assets/marketing/landing/hero-accent-16x9.webp
+2026-09-19,landing-b,landing-B,nano_banana_2_shots,1k,3:2,~4,,approved,ASSET-020. Same mood plate. Sheet 2400x2400; slot token 3x2.
+2026-09-19,landing-c,landing-C,nano_banana_2_shots,1k,1:1,~4,,approved,ASSET-020. Same mood plate.
+2026-09-19,landing-d,landing-D,nano_banana_2_shots,1k,21:9,~4,,approved,ASSET-020. Same mood plate. Sheet 2400x1340; slot token 21x9.
+2026-09-19,about-a,about-A,nano_banana_2_shots,1k,16:9,~4,,approved,ASSET-021. Same mood plate. Jose auto-approve.
+2026-09-19,about-b,about-B,nano_banana_2_shots,1k,4:3,~4,,approved,ASSET-021. Same mood plate. Sheet 2400x2400; slot token 4x3.
+2026-09-19,about-c,about-C,nano_banana_2_shots,1k,3:1,~4,,approved,ASSET-021. Same mood plate. Delivered pre-cropped 2400x800 (21:9 generate then 3:1 crop).
+2026-09-19,contact-a,contact-A,nano_banana_2_shots,1k,16:9,~4,,approved,ASSET-022. Same mood plate. No invented storefront. Real location photo would replace this slot.
+2026-09-19,contact-b,contact-B,nano_banana_2_shots,1k,1:1,~4,,approved,ASSET-022. Same mood plate. Non-scannable QR / no app UI.
+2026-09-19,faqs-a,faqs-A,nano_banana_2_shots,1k,3:2,~4,,approved,ASSET-023. Same mood plate. Only FAQ image; no further FAQ gens.
+2026-09-19,coaches-c-yoga,coaches-C,nano_banana_2_shots,1k,1:1,~4,,approved,ASSET-015 specialty yoga. Same mood plate. Source-free; no full face.
+2026-09-19,coaches-c-boxing,coaches-C,nano_banana_2_shots,1k,1:1,~4,,approved,ASSET-015 specialty boxing. Same mood plate.
+2026-09-19,coaches-c-capoeira,coaches-C,nano_banana_2_shots,1k,1:1,~4,,approved,ASSET-015 specialty capoeira. Same mood plate. Group hero still skipped.
