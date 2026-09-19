@@ -1,0 +1,71 @@
+/* Public marketing: the brand palette and typography stay shared. These
+   compositions use a quiet 4px photo / 12px panel / pill control radius scale. */
+.marketing-container {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+.marketing-section { margin-top: clamp(4rem, 7vw, 7rem); }
+.marketing-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3.2vw, 2.8rem);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.marketing-copy { margin-top: 1rem; color: var(--muted-foreground); font-size: 0.9375rem; line-height: 1.85; }
+.marketing-eyebrow { color: var(--muted-foreground); font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.18em; }
+.marketing-text-link { display: inline-flex; align-items: center; gap: 0.75rem; min-height: 2.75rem; font-size: 0.8125rem; font-weight: 600; text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 0.45rem; transition: text-decoration-color 180ms; }
+.marketing-text-link:hover { text-decoration-color: var(--foreground); }
+.marketing-text-link:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
+.home-intro { display: grid; padding-block: 2rem; align-items: center; gap: 2rem; }
+.home-intro-image { display: none; }
+.booking-hero { padding: 1.25rem; border: 1px solid var(--border); border-radius: 0.75rem; background: var(--card); box-shadow: 0 12px 32px -24px color-mix(in oklab, var(--balanse-muted-brown) 35%, transparent); }
+@media (min-width: 768px) {
+  .marketing-container { padding-inline: 2rem; }
+  .home-intro { grid-template-columns: 1fr 15rem; padding-block: 2.5rem; }
+  .home-intro-image { display: block; border-radius: 0.25rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marketing-home *, .marketing-footer * { transition: none; }
+}
+.booking-hero { padding: 0; overflow: hidden; }
+.booking-hero-heading { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+.booking-hero-note { padding: 1rem 1.5rem; border-top: 1px solid var(--border); }
+.balanse-mobile-booking-bar { display: none; }
+@media (max-width: 767px) {
+  .booking-hero-heading { padding: 1rem; }
+  .booking-hero-note { padding: 1rem; }
+  .balanse-mobile-booking-bar { position: fixed; right: 0; bottom: 0; left: 0; z-index: 40; display: flex; justify-content: center; padding: .75rem 1rem calc(.75rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); background: color-mix(in oklab, var(--balanse-cream) 88%, transparent); backdrop-filter: blur(14px); }
+  .balanse-mobile-booking-button { width: min(100%, 24rem); min-height: 3rem; justify-content: space-between; border-radius: .35rem; padding-inline: 1rem; }
+  .balanse-mobile-booking-bar ~ main { padding-bottom: 4.5rem; }
+}
+
+/* Full-screen navigation sits in Jabkit's modal portal, outside the sticky header. */
+.balanse-full-menu[data-slot="dialog-content"] {
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: none;
+  height: 100dvh;
+  max-height: 100dvh;
+  gap: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+  border-radius: 0;
+  background: var(--background);
+  color: var(--foreground);
+  transform: none;
+  translate: none;
+  box-shadow: none;
+  animation: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .balanse-full-menu[data-open] { animation: menu-reveal 180ms ease-out; }
+  @keyframes menu-reveal { from { opacity: 0; } to { opacity: 1; } }
+}

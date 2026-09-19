@@ -10,6 +10,7 @@ Contact number
 ACCOUNT
 Auth method
 Change password (when applicable)
+[Log out] → confirm, then return to login
 
 POLICY / WAIVER HISTORY
 Accepted versions summary

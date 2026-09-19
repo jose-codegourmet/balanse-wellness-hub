@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { PortalGuard } from "@/modules/layout/PortalGuard";
 import { PortalNav } from "@/modules/layout/PortalNav";
-import { PublicFooter, PublicHeader } from "@/modules/layout/PublicChrome";
+import "@/components/balanse/portal/portal.css";
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const store = await cookies();
@@ -13,12 +13,17 @@ export default async function PortalLayout({ children }: { children: React.React
   }
   return (
     <PortalGuard>
-      <PublicHeader />
-      <PortalNav />
-      <main id="main-content" className="min-h-0 flex-1">
-        {children}
-      </main>
-      <PublicFooter />
+      <div className="portal-shell">
+        <PortalNav />
+        <div className="portal-workspace">
+          <main id="main-content" className="min-w-0 flex-1">
+            {children}
+          </main>
+          <footer className="portal-footer">
+            Balansé Wellness Hub <span>A little time for you.</span>
+          </footer>
+        </div>
+      </div>
     </PortalGuard>
   );
 }

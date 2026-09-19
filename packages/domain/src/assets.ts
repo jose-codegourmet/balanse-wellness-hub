@@ -69,7 +69,7 @@ export function localCoachPhotoPath(slug: string, ratio: "1:1" | "4:5"): string 
 }
 
 export function localCoachMasterPath(slug: string, ext: "webp" | "jpg" = "jpg"): string {
-  return publicHeadshot(slug, `headshot-4x5.${ext}`);
+  return publicHeadshot(slug, `headshot-upscaled-4k.${ext}`);
 }
 
 export function resolveCoachPhotoSources(
@@ -134,12 +134,15 @@ export function resolveCoachPhotoSources(
     srcSetWebp: [
       `${publicHeadshot(slug, "headshot-card-4x5-w400.webp")} 400w`,
       `${publicHeadshot(slug, "headshot-card-4x5.webp")} 800w`,
+      `${publicHeadshot(slug, "headshot-card-4x5-w1600.webp")} 1600w`,
     ].join(", "),
     srcSetJpeg: [
       `${publicHeadshot(slug, "headshot-card-4x5-w400.jpg")} 400w`,
       `${publicHeadshot(slug, "headshot-card-4x5.jpg")} 800w`,
+      `${publicHeadshot(slug, "headshot-card-4x5-w1600.jpg")} 1600w`,
     ].join(", "),
-    sizes: "(max-width: 640px) 160px, 320px",
+    sizes:
+      "(max-width: 639px) calc(100vw - 40px), (max-width: 1023px) calc((100vw - 80px) / 2), 400px",
     masterWebp: localCoachMasterPath(slug, "webp"),
     masterJpeg: localCoachMasterPath(slug, "jpg"),
     isPlaceholder: false,

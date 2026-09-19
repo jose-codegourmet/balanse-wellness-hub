@@ -1,4 +1,5 @@
 import "../src/app/globals.css";
+import "../src/app/(public)/marketing.css";
 import type { Preview } from "@storybook/nextjs-vite";
 import { Providers } from "../src/modules/providers/Providers";
 

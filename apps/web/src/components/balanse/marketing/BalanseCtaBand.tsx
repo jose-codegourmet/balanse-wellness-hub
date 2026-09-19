@@ -5,13 +5,8 @@ import type { Hero33FeatureIcon } from "@/components/jabkit/hero-33/Hero33.types
 import { BalanseHero } from "./BalanseHero";
 
 /**
- * Full-bleed 21:9 CTA band for the pass-2 wide slots (`landing-e`, `about-d`).
- *
- * Shares the Jabkit `hero-33` chrome with {@link BalanseHero} — that block is
- * the right shape for a cinematic band carrying a headline and two actions —
- * but takes CTA semantics and copy from the domain CTA catalog. The block's
- * supporting line rides in the kit's own feature slot rather than a bolted-on
- * paragraph.
+ * Secondary marketing invitation using the same brand composition and Jabkit
+ * controls as the public-page hero. Uses an h2 to preserve page hierarchy.
  */
 export function BalanseCtaBand({
   blockId,
@@ -34,6 +29,7 @@ export function BalanseCtaBand({
   return (
     <div data-section={sectionName} data-cta-id={block.id} className={className}>
       <BalanseHero
+        headingLevel={2}
         assetId={block.assetId}
         eyebrow={block.eyebrow}
         titleLines={[block.title]}

@@ -13,19 +13,16 @@ export function CoachPreviewCard({
   const card = publicCoachCardFields(coach);
   return (
     <article
-      className="rounded-xl border border-border bg-card p-4"
+      className="group"
       data-coach-id={coach.id}
       data-has-photo={card.photoKey ? "true" : "false"}
     >
-      <CoachPhoto photoKey={card.photoKey} name={card.name} ratio="4:5" />
-      <h3 className="mt-3 font-display text-xl">{card.name}</h3>
+      <CoachPhoto photoKey={card.photoKey} name={card.name} ratio="4:5" className="!rounded-sm" />
+      <h3 className="mt-5 font-display text-2xl font-normal">{card.name}</h3>
       <p className="text-sm text-muted-foreground">{card.specialties.join(" · ")}</p>
-      <p className="mt-2 text-sm">{card.shortBio}</p>
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{card.shortBio}</p>
       {showViewClasses ? (
-        <Link
-          href={coachViewClassesHref(coach.id)}
-          className="mt-4 inline-flex h-8 items-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/80"
-        >
+        <Link href={coachViewClassesHref(coach.id)} className="marketing-text-link mt-4">
           View Classes
         </Link>
       ) : null}

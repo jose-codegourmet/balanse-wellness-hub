@@ -101,8 +101,7 @@ describe("FE-SHR-004 asset manifest", () => {
     );
     // Pass-2 inventory: landing A–E, about A–D, contact A–B, faqs A, six accents.
     expect(slots.length).toBe(18);
-    // `about-c` and `contact-b` were left unchanged and ship no thumb.
-    const withoutThumbs = new Set(["about-c", "contact-b"]);
+    // Every marketing slot now ships responsive thumbnails.
 
     for (const id of slots) {
       const asset = ASSET_MANIFEST.assets.find((item) => item.id === id);
@@ -113,13 +112,12 @@ describe("FE-SHR-004 asset manifest", () => {
       expect(sources?.webp, id).toMatch(/^\/assets\/marketing\/.+\.webp$/);
       expect(sources?.jpeg, id).toMatch(/^\/assets\/marketing\/.+\.jpg$/);
 
-      const expectThumbs = !withoutThumbs.has(id);
-      expect(Boolean(sources?.thumbWebp), id).toBe(expectThumbs);
+      expect(Boolean(sources?.thumbWebp), id).toBe(true);
 
       const files = [sources?.webp, sources?.jpeg, sources?.thumbWebp, sources?.thumbJpeg].filter(
         (src): src is string => typeof src === "string",
       );
-      expect(files.length, id).toBe(expectThumbs ? 4 : 2);
+      expect(files.length, id).toBe(4);
       for (const src of files) {
         expect(existsSync(resolve(publicDir, src.replace(/^\//, ""))), src).toBe(true);
       }

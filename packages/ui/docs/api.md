@@ -99,3 +99,9 @@ Exported from `src/index.ts`:
 ## When to use which component
 
 For usage guidance, see `docs/component-guide.md`. It contains a per-component decision tree and "when to use / when not to use" notes.
+
+### PublicNav booking visibility
+
+`mobileCtaVisible?: boolean` (default `true`) controls the booking link below the desktop breakpoint. `mobileCtaOnly?: boolean` (default `false`) hides that link on desktop. The web app observes its booking section and supplies these presentation props; observation and route logic remain app-owned. Public navigation collapses below 1024px so the complete desktop menu fits without overflow.
+
+`ScheduleCalendar` exposes `data-calendar-controls`, `data-calendar-grid="day|week|month"`, and `data-calendar-sessions` for scoped app presentation. The web marketing page uses these hooks to position session details beside the month calendar without changing portal layout or booking rules.

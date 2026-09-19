@@ -188,6 +188,7 @@ export function ScheduleCalendar({
           type="button"
           size="sm"
           variant={classFilter === "all" ? "default" : "outline"}
+          aria-pressed={classFilter === "all"}
           onClick={() => setClassFilter("all")}
         >
           All
@@ -211,6 +212,7 @@ export function ScheduleCalendar({
             type="button"
             size="sm"
             variant={classFilter === item.id ? "default" : "outline"}
+            aria-pressed={classFilter === item.id}
             onClick={() => setClassFilter(item.id)}
           >
             {item.name}
@@ -218,10 +220,21 @@ export function ScheduleCalendar({
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-muted-foreground" aria-live="polite">
-          {announceDay(selectedDay)} {resolvedView} view.
-        </p>
+      <div data-calendar-controls className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <p className="font-display text-xl">
+            {resolvedView === "month"
+              ? new Intl.DateTimeFormat("en-US", {
+                  month: "long",
+                  year: "numeric",
+                  timeZone: "Asia/Manila",
+                }).format(new Date(`${selectedDay}T04:00:00.000Z`))
+              : formatSessionDate(`${selectedDay}T04:00:00.000Z`)}
+          </p>
+          <p className="sr-only" aria-live="polite">
+            {announceDay(selectedDay)} {resolvedView} view.
+          </p>
+        </div>
         <div className="flex gap-2">
           <Button type="button" variant="outline" size="sm" onClick={() => moveDay(-1)}>
             Previous day
@@ -246,6 +259,7 @@ export function ScheduleCalendar({
         />
       ) : (
         <div
+          data-calendar-grid={resolvedView}
           className={cn(
             "grid gap-2",
             resolvedView === "week" && "grid-cols-7",
@@ -274,7 +288,7 @@ export function ScheduleCalendar({
                 key={ymd}
                 type="button"
                 aria-current={ymd === selectedDay ? "date" : undefined}
-                aria-label={`${formatSessionDate(`${ymd}T04:00:00.000Z`)}${booked ? ", includes your booking" : ""}`}
+                aria-label={`${ymd.slice(8)}, ${count} ${count === 1 ? "session" : "sessions"}${booked ? " · yours" : ""}. ${formatSessionDate(`${ymd}T04:00:00.000Z`)}`}
                 className={cn(
                   "min-h-16 rounded-md border px-2 py-2 text-left text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   ymd === selectedDay
@@ -311,7 +325,7 @@ export function ScheduleCalendar({
       {dayEmpty ? <FeedbackState id="calendar.no-sessions" /> : null}
 
       {!filterEmpty ? (
-        <div className="grid gap-4 md:grid-cols-[1fr_20rem]">
+        <div data-calendar-sessions className="grid gap-4 md:grid-cols-[1fr_20rem]">
           {daySessions.length > 0 ? (
             <ul className="space-y-2" aria-label="Sessions on selected day">
               {daySessions.map((session) => {

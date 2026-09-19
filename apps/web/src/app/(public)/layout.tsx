@@ -1,3 +1,4 @@
+import "./marketing.css";
 import { BalanseFooter } from "@/components/balanse/marketing/BalanseFooter";
 import { PublicHeader } from "@/modules/layout/PublicChrome";
 

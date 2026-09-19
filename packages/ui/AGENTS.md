@@ -84,3 +84,7 @@ Update this file and `packages/ui/docs/` when:
 - A component API changes.
 - A new consumer appears.
 - The build or validation commands change.
+
+## Marketing presentation hooks
+
+`PublicNav` accepts optional `mobileCtaVisible` and `mobileCtaOnly` presentation props; booking-area observation stays in the consuming app. `ScheduleCalendar` exposes calendar controls/grid/sessions data attributes for scoped marketing styles. See `docs/api.md` for defaults and usage.

@@ -2,9 +2,9 @@
 
 import type { PublicClass, PublicCoach, PublicSession } from "@balanse/domain";
 import { getMockAdapter, getMockRuntime, MOCK_NOW_ISO } from "@balanse/mock";
-import { ScheduleCalendar } from "@balanse/ui";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { BalanseBookingCalendar } from "@/components/balanse/calendar/BalanseBookingCalendar";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export function ScheduleCalendarSection({
@@ -30,7 +30,9 @@ export function ScheduleCalendarSection({
   const [sessions, setSessions] = useState(initialSessions);
   const [classes, setClasses] = useState(initialClasses);
   const [bookingSessionIds, setBookingSessionIds] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+  // Customer schedules depend on the current mock principal's bookings. Start in
+  // a loading state so the public timetable never flashes before that scope loads.
+  const [loading, setLoading] = useState(audience === "customer");
   const [loadError, setLoadError] = useState(initialLoadError);
   const [fullId, setFullId] = useState<string | null>(null);
 
@@ -66,10 +68,29 @@ export function ScheduleCalendarSection({
     }
   }, [audience, load]);
 
+  const scopedSessions = useMemo(
+    () =>
+      audience === "customer"
+        ? sessions.filter((session) => bookingSessionIds.includes(session.id))
+        : sessions,
+    [audience, bookingSessionIds, sessions],
+  );
+  const scopedClasses = useMemo(
+    () =>
+      audience === "customer"
+        ? classes.filter((item) => scopedSessions.some((session) => session.classId === item.id))
+        : classes,
+    [audience, classes, scopedSessions],
+  );
+
+  // The portal reuses the marketing calendar's responsive layout, with customer
+  // sessions scoped to the authenticated customer's booking records.
+  const Calendar = BalanseBookingCalendar;
+
   return (
-    <ScheduleCalendar
-      sessions={sessions}
-      classes={classes}
+    <Calendar
+      sessions={scopedSessions}
+      classes={scopedClasses}
       coaches={initialCoaches}
       nowIso={MOCK_NOW_ISO}
       audience={audience}
@@ -82,7 +103,7 @@ export function ScheduleCalendarSection({
       initialCoachFilter={initialCoachFilter}
       onClearFilter={() => {
         if (pathname === "/") {
-          router.replace("/#schedule");
+          router.replace(audience === "customer" ? "/portal/schedule" : "/#schedule");
         }
       }}
       onReserve={(session) => {

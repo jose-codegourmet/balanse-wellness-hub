@@ -1,0 +1,85 @@
+{
+  "date": "2026-09-19",
+  "provider": "Higgsfield MCP",
+  "note": "Six standalone illustrative marketing photographs. Coach portraits were preserved. Requested model and provider-reported model differ; both retained without assuming they are equivalent.",
+  "generations": [
+    {
+      "index": 1,
+      "scene": "studio",
+      "requested_model": "nano_banana_pro",
+      "reported_model": "nano_banana_2",
+      "job_id": "0570b4f4-eaea-4e2e-83ca-2e9bb0e0529d",
+      "resolution": "2k",
+      "width": 2752,
+      "height": 1536,
+      "aspect_ratio": "16:9",
+      "prompt": "16:9. Create one standalone premium wellness editorial photograph, full frame, no collage. An intimate empty movement studio in Cebu, pale limewashed walls, honey oak floor, tall off-frame window casting soft leaf shadows, sheer ivory linen, one small tropical branch at the far edge, a rolled natural mat. Architectural Digest editorial, believable modest boutique scale, no resort or palatial architecture. Frame the room with quiet negative space, daylight, nuanced shadows, no blown highlights. Art direction: warm quiet luxury, ivory and earthy neutrals with subtle navy accents, cinematic but natural photographic realism, restrained colour grade, fine realistic texture, professional 50mm photography. No text, logos, watermarks, signage, UI, calendars, borders or montage. This is illustrative brand photography, not a documentary of an existing studio.",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260919_134049_0570b4f4-eaea-4e2e-83ca-2e9bb0e0529d.png"
+    },
+    {
+      "index": 2,
+      "scene": "movement",
+      "requested_model": "nano_banana_pro",
+      "reported_model": "nano_banana_2",
+      "job_id": "990e0a80-a820-4aa2-82ae-9082bb715f9c",
+      "resolution": "2k",
+      "width": 2528,
+      "height": 1696,
+      "aspect_ratio": "3:2",
+      "prompt": "3:2. Create one standalone premium wellness editorial photograph, full frame, no collage. Three adult Filipino women and one Filipino man in a small-group floor mobility and yoga class. Candid grounded low lunge stretches, anatomically plausible easy poses, comfortable understated taupe and deep navy activewear, natural varied bodies and real skin. Eye-level editorial photograph from the side of an intimate limewashed room with warm oak floor and soft window daylight. No one looking at camera, faces small in the composition, breathing room between people. Art direction: warm quiet luxury, ivory and earthy neutrals with subtle navy accents, cinematic but natural photographic realism, restrained colour grade, fine realistic texture, professional 50mm photography. No text, logos, watermarks, signage, UI, calendars, borders or montage. This is illustrative brand photography, not a documentary of an existing studio.",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260919_134049_990e0a80-a820-4aa2-82ae-9082bb715f9c.png"
+    },
+    {
+      "index": 3,
+      "scene": "ritual",
+      "requested_model": "nano_banana_pro",
+      "reported_model": "nano_banana_2",
+      "job_id": "1e088f5a-0258-47e3-9a4a-ae48373ce75e",
+      "resolution": "2k",
+      "width": 2048,
+      "height": 2048,
+      "aspect_ratio": "1:1",
+      "prompt": "1:1. Create one standalone premium wellness editorial photograph, full frame, no collage. Tactile still life on a natural oak studio bench: neatly folded ivory cotton towel, matte charcoal reusable water bottle without labels, loosely coiled boxing wraps and a yoga strap. Directional soft daylight and elegant shadows, off-centre composition, close editorial product photography with realistic textile detail and generous negative space. Art direction: warm quiet luxury, ivory and earthy neutrals with subtle navy accents, cinematic but natural photographic realism, restrained colour grade, fine realistic texture, professional 50mm photography. No text, logos, watermarks, signage, UI, calendars, borders or montage. This is illustrative brand photography, not a documentary of an existing studio.",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260919_134049_1e088f5a-0258-47e3-9a4a-ae48373ce75e.png"
+    },
+    {
+      "index": 4,
+      "scene": "evening",
+      "requested_model": "nano_banana_pro",
+      "reported_model": "nano_banana_2",
+      "job_id": "c37f5b76-62b1-48b1-82e1-587b8dd39af7",
+      "resolution": "2k",
+      "width": 3168,
+      "height": 1344,
+      "aspect_ratio": "21:9",
+      "prompt": "21:9. Create one standalone premium wellness editorial photograph, full frame, no collage. Wide editorial photograph of a peaceful boutique movement room after class. Warm oak flooring and ivory limewash, diffused late afternoon daylight. Two adult Filipino women in relaxed dark neutral activewear chatting naturally near the far right window, tiny in frame. Left two thirds clean architectural negative space, understated and authentic, contemplative atmosphere. Art direction: warm quiet luxury, ivory and earthy neutrals with subtle navy accents, cinematic but natural photographic realism, restrained colour grade, fine realistic texture, professional 50mm photography. No text, logos, watermarks, signage, UI, calendars, borders or montage. This is illustrative brand photography, not a documentary of an existing studio.",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260919_134049_c37f5b76-62b1-48b1-82e1-587b8dd39af7.png"
+    },
+    {
+      "index": 5,
+      "scene": "community",
+      "requested_model": "nano_banana_pro",
+      "reported_model": "nano_banana_2",
+      "job_id": "fb3b1056-ac97-4a46-bf05-e9a063bbd272",
+      "resolution": "2k",
+      "width": 2528,
+      "height": 1696,
+      "aspect_ratio": "3:2",
+      "prompt": "3:2. Create one standalone premium wellness editorial photograph, full frame, no collage. Candid editorial photograph of four adult Filipino friends, diverse natural bodies, taking a water break on a low oak bench after a movement class. Taupe, charcoal and navy unbranded activewear, relaxed subtle smiles and natural gestures, not posed advertising. Intimate contemporary Cebu wellness studio, cream limewashed walls, oak, linen, soft tropical daylight, no luxury resort. Medium-wide composition with space around subjects. Art direction: warm quiet luxury, ivory and earthy neutrals with subtle navy accents, cinematic but natural photographic realism, restrained colour grade, fine realistic texture, professional 50mm photography. No text, logos, watermarks, signage, UI, calendars, borders or montage. This is illustrative brand photography, not a documentary of an existing studio.",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260919_134049_fb3b1056-ac97-4a46-bf05-e9a063bbd272.png"
+    },
+    {
+      "index": 6,
+      "scene": "welcome",
+      "requested_model": "nano_banana_pro",
+      "reported_model": "nano_banana_2",
+      "job_id": "a8b950ac-2b70-4c9c-bc60-be2b3a54f629",
+      "resolution": "2k",
+      "width": 2400,
+      "height": 1792,
+      "aspect_ratio": "4:3",
+      "prompt": "4:3. Create one standalone premium wellness editorial photograph, full frame, no collage. Editorial detail photograph of a welcoming boutique wellness studio entry: warm oak bench, cream linen curtain, ivory textured plaster, one elegant leafy branch in a simple ceramic vase. A linen tote and clean rolled yoga mat on the bench. Side-lit soft natural daylight with gentle shadows. Calm tactile materials, restrained minimal styling, approachable Cebu neighbourhood studio atmosphere. No reception signage, no doors opening outdoors. Art direction: warm quiet luxury, ivory and earthy neutrals with subtle navy accents, cinematic but natural photographic realism, restrained colour grade, fine realistic texture, professional 50mm photography. No text, logos, watermarks, signage, UI, calendars, borders or montage. This is illustrative brand photography, not a documentary of an existing studio.",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260919_134049_a8b950ac-2b70-4c9c-bc60-be2b3a54f629.png"
+    }
+  ]
+}

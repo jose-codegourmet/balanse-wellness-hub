@@ -15,6 +15,8 @@ describe("coach photo resolution", () => {
     expect(card.webp).toBe("/assets/headshots/ephraim-bacaltos/headshot-card-4x5.webp");
     expect(card.jpeg).toBe("/assets/headshots/ephraim-bacaltos/headshot-card-4x5.jpg");
     expect(card.srcSetWebp).toContain("headshot-card-4x5-w400.webp");
+    expect(card.srcSetWebp).toContain("headshot-card-4x5-w1600.webp 1600w");
+    expect(card.srcSetJpeg).toContain("headshot-card-4x5-w1600.jpg 1600w");
     expect(card.masterJpeg).toBe(localCoachMasterPath("ephraim-bacaltos", "jpg"));
 
     const avatar = resolveCoachPhotoSources(coachPhotoKey("wolf"), "avatar");
@@ -28,8 +30,8 @@ describe("coach photo resolution", () => {
 
   it("keeps masters available on the source map", () => {
     const master = resolveCoachPhotoSources(coachPhotoKey("jodi-tio"), "master");
-    expect(master.webp).toBe("/assets/headshots/jodi-tio/headshot-4x5.webp");
-    expect(master.jpeg).toBe("/assets/headshots/jodi-tio/headshot-4x5.jpg");
+    expect(master.webp).toBe("/assets/headshots/jodi-tio/headshot-upscaled-4k.webp");
+    expect(master.jpeg).toBe("/assets/headshots/jodi-tio/headshot-upscaled-4k.jpg");
   });
 
   it("keeps Alec, Sofia, and Kate on the ASSET-014 placeholder", () => {

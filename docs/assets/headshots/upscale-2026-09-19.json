@@ -1,0 +1,91 @@
+{
+  "date": "2026-09-19",
+  "model": "bytedance_image_upscale",
+  "resolution": "4k",
+  "width": 3311,
+  "height": 4096,
+  "authorization": "User explicitly requested upscaling existing professional coach headshots.",
+  "review": "All eight compared with existing approved portraits for visual consistency. Source crops and original contact-sheet masters preserved.",
+  "jobs": [
+    {
+      "index": 1,
+      "job_id": "78249c30-1d97-46bf-81b2-5c646afb14ff",
+      "status": "completed",
+      "type": "image",
+      "model": "bytedance_image_upscale",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260919_135139_78249c30-1d97-46bf-81b2-5c646afb14ff.png",
+      "slug": "rex-francis-regis",
+      "source_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rex-francis-regis/headshot-4x5.webp"
+    },
+    {
+      "index": 2,
+      "job_id": "126c6100-5458-4846-aa24-12b9ca9be6fb",
+      "status": "completed",
+      "type": "image",
+      "model": "bytedance_image_upscale",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260919_135139_126c6100-5458-4846-aa24-12b9ca9be6fb.png",
+      "slug": "ephraim-bacaltos",
+      "source_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/ephraim-bacaltos/headshot-4x5.webp"
+    },
+    {
+      "index": 3,
+      "job_id": "2b3220ea-a6a6-4436-9871-f4c713dd3957",
+      "status": "completed",
+      "type": "image",
+      "model": "bytedance_image_upscale",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260919_135139_2b3220ea-a6a6-4436-9871-f4c713dd3957.png",
+      "slug": "rachelle-tobiano",
+      "source_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rachelle-tobiano/headshot-4x5.webp"
+    },
+    {
+      "index": 4,
+      "job_id": "03cdc361-7901-4372-aa87-aba3c92ae964",
+      "status": "completed",
+      "type": "image",
+      "model": "bytedance_image_upscale",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260919_135139_03cdc361-7901-4372-aa87-aba3c92ae964.png",
+      "slug": "jodi-tio",
+      "source_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/jodi-tio/headshot-4x5.webp"
+    },
+    {
+      "index": 5,
+      "job_id": "172b0f08-fe92-47e8-b183-33a2d420f5f6",
+      "status": "completed",
+      "type": "image",
+      "model": "bytedance_image_upscale",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260919_135140_172b0f08-fe92-47e8-b183-33a2d420f5f6.png",
+      "slug": "wolf",
+      "source_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/wolf/headshot-4x5.webp"
+    },
+    {
+      "index": 6,
+      "job_id": "fceff033-2aa4-4f87-b1a9-0dd7b5979ba3",
+      "status": "completed",
+      "type": "image",
+      "model": "bytedance_image_upscale",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260919_135139_fceff033-2aa4-4f87-b1a9-0dd7b5979ba3.png",
+      "slug": "mikaela-danielle",
+      "source_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/mikaela-danielle/headshot-4x5.webp"
+    },
+    {
+      "index": 7,
+      "job_id": "90902757-8adf-443a-88a7-52f15379e1ef",
+      "status": "completed",
+      "type": "image",
+      "model": "bytedance_image_upscale",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260919_135224_90902757-8adf-443a-88a7-52f15379e1ef.png",
+      "slug": "maris-cabrera",
+      "source_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/maris-cabrera/headshot-4x5.webp"
+    },
+    {
+      "index": 8,
+      "job_id": "e9157178-816c-4d1f-80ef-8f1e0a917f8f",
+      "status": "completed",
+      "type": "image",
+      "model": "bytedance_image_upscale",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260919_135226_e9157178-816c-4d1f-80ef-8f1e0a917f8f.png",
+      "slug": "francis-acido",
+      "source_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/francis-acido/headshot-4x5.webp"
+    }
+  ]
+}

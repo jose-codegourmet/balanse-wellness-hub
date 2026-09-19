@@ -14,7 +14,7 @@ const meta = {
 export default meta;
 
 export const LandingHero: StoryObj = {
-  name: "Hero — landing (hero-33)",
+  name: "Hero — editorial composition",
   render: () => (
     <BalanseHero
       assetId="landing-a"
@@ -71,7 +71,7 @@ export const AboutCtaBand: StoryObj = {
 };
 
 export const ClosingCta: StoryObj = {
-  name: "Closing CTA — cta28",
+  name: "Closing CTA — quiet invitation",
   render: () => (
     <BalanseCtaSection
       blockId="landing-final"
@@ -99,7 +99,7 @@ export const FaqSection: StoryObj = {
 };
 
 export const SiteFooter: StoryObj = {
-  name: "Footer — footer-16",
+  name: "Footer — quiet luxury",
   render: () => <BalanseFooter year={2026} />,
 };
 

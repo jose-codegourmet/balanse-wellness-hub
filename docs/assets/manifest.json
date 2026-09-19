@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "updated": "2026-09-19",
-  "notes": "Closed inventory + CTA marketing refresh (studio mood plate). NEW: landing mid-cta 21x9, about cta-band 21x9, specialty calisthenics/pilates/dance. Retire desert mood plate for marketing. ASSET-015 group hero still skipped. ASSET-030 storage upload deferred (anon RLS).",
+  "notes": "Warm quiet luxury refresh: six independent 2K Higgsfield generations, twelve marketing slots. Nano Banana Pro requested; provider reports nano_banana_2. Coach portraits preserved. Local mock delivery only; existing storage URLs remain intended handoff destinations, not updated uploads.",
   "assets": [
     {
       "id": "landing-a",
@@ -15,36 +15,27 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_2_shots",
+      "model": "nano_banana_2",
       "model_parameters": {
-        "resolution": "1k",
+        "requested_model": "nano_banana_pro",
+        "reported_model": "nano_banana_2",
+        "resolution": "2k",
         "aspect_ratio": "16:9",
-        "image_references": [
-          "d8a483d7-a892-4161-b14f-58d96b5f14da"
-        ],
-        "image_references_role": "mood_plate",
+        "generation_job_id": "0570b4f4-eaea-4e2e-83ca-2e9bb0e0529d",
         "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
-      "alt_text": "Soft Cebu wellness studio interior with calm limestone floor and open negative space for hero copy.",
+      "approver": "Codex visual QA for user-authorized marketing refresh, 2026-09-19",
+      "alt_text": "Sunlit ivory movement studio with an oak floor, linen curtains, and a rolled mat.",
       "post_processing": [
         {
-          "op": "mood-plate-reference",
-          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
-        },
-        {
-          "op": "contact-sheet-tile-pick",
-          "notes": "CTA refresh v2 studio plate; contact-sheet tile crop."
+          "op": "standalone-generation",
+          "notes": "Requested Nano Banana Pro 2K through Higgsfield MCP. Provider reports nano_banana_2. Job 0570b4f4-eaea-4e2e-83ca-2e9bb0e0529d. Full-resolution master: docs/assets/marketing/masters/quiet-luxury-studio-2k.webp. Illustrative imagery; not a photograph of the real premises."
         },
         {
           "op": "webready",
-          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
-        },
-        {
-          "op": "ready-for-storage",
-          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
+          "notes": "1600px responsive delivery; WebP q84, JPEG q87, 480px thumbnails. No contact sheets or upscaling."
         }
       ],
       "storage_key": "marketing-assets/landing/hero-accent-16x9.webp",
@@ -76,36 +67,27 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_2_shots",
+      "model": "nano_banana_2",
       "model_parameters": {
-        "resolution": "1k",
+        "requested_model": "nano_banana_pro",
+        "reported_model": "nano_banana_2",
+        "resolution": "2k",
         "aspect_ratio": "3:2",
-        "image_references": [
-          "d8a483d7-a892-4161-b14f-58d96b5f14da"
-        ],
-        "image_references_role": "mood_plate",
+        "generation_job_id": "990e0a80-a820-4aa2-82ae-9082bb715f9c",
         "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
-      "alt_text": "Editorial still of class props and warm studio light for the classes section.",
+      "approver": "Codex visual QA for user-authorized marketing refresh, 2026-09-19",
+      "alt_text": "Small group practicing grounded yoga stretches in a softly lit studio.",
       "post_processing": [
         {
-          "op": "mood-plate-reference",
-          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
-        },
-        {
-          "op": "contact-sheet-tile-pick",
-          "notes": "CTA refresh v2."
+          "op": "standalone-generation",
+          "notes": "Requested Nano Banana Pro 2K through Higgsfield MCP. Provider reports nano_banana_2. Job 990e0a80-a820-4aa2-82ae-9082bb715f9c. Full-resolution master: docs/assets/marketing/masters/quiet-luxury-movement-2k.webp. Illustrative imagery; not a photograph of the real premises."
         },
         {
           "op": "webready",
-          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
-        },
-        {
-          "op": "ready-for-storage",
-          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
+          "notes": "1600px responsive delivery; WebP q84, JPEG q87, 480px thumbnails. No contact sheets or upscaling."
         }
       ],
       "storage_key": "marketing-assets/landing/classes-editorial-3x2.webp",
@@ -137,36 +119,27 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_2_shots",
+      "model": "nano_banana_2",
       "model_parameters": {
-        "resolution": "1k",
+        "requested_model": "nano_banana_pro",
+        "reported_model": "nano_banana_2",
+        "resolution": "2k",
         "aspect_ratio": "1:1",
-        "image_references": [
-          "d8a483d7-a892-4161-b14f-58d96b5f14da"
-        ],
-        "image_references_role": "mood_plate",
+        "generation_job_id": "1e088f5a-0258-47e3-9a4a-ae48373ce75e",
         "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
-      "alt_text": "Quiet wellness still life for the how-it-works strip.",
+      "approver": "Codex visual QA for user-authorized marketing refresh, 2026-09-19",
+      "alt_text": "Folded cotton towel, water bottle, boxing wraps, and yoga strap on an oak bench.",
       "post_processing": [
         {
-          "op": "mood-plate-reference",
-          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
-        },
-        {
-          "op": "contact-sheet-tile-pick",
-          "notes": "CTA refresh v2."
+          "op": "standalone-generation",
+          "notes": "Requested Nano Banana Pro 2K through Higgsfield MCP. Provider reports nano_banana_2. Job 1e088f5a-0258-47e3-9a4a-ae48373ce75e. Full-resolution master: docs/assets/marketing/masters/quiet-luxury-ritual-2k.webp. Illustrative imagery; not a photograph of the real premises."
         },
         {
           "op": "webready",
-          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
-        },
-        {
-          "op": "ready-for-storage",
-          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
+          "notes": "1600px responsive delivery; WebP q84, JPEG q87, 480px thumbnails. No contact sheets or upscaling."
         }
       ],
       "storage_key": "marketing-assets/landing/how-it-works-still-life-1x1.webp",
@@ -198,36 +171,27 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_2_shots",
+      "model": "nano_banana_2",
       "model_parameters": {
-        "resolution": "1k",
+        "requested_model": "nano_banana_pro",
+        "reported_model": "nano_banana_2",
+        "resolution": "2k",
         "aspect_ratio": "21:9",
-        "image_references": [
-          "d8a483d7-a892-4161-b14f-58d96b5f14da"
-        ],
-        "image_references_role": "mood_plate",
+        "generation_job_id": "c37f5b76-62b1-48b1-82e1-587b8dd39af7",
         "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
-      "alt_text": "Wide cinematic studio band with soft light and empty center for final CTA overlay.",
+      "approver": "Codex visual QA for user-authorized marketing refresh, 2026-09-19",
+      "alt_text": "Two people unwinding after class in a warm, light-filled movement studio.",
       "post_processing": [
         {
-          "op": "mood-plate-reference",
-          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
-        },
-        {
-          "op": "contact-sheet-tile-pick",
-          "notes": "CTA refresh v2."
+          "op": "standalone-generation",
+          "notes": "Requested Nano Banana Pro 2K through Higgsfield MCP. Provider reports nano_banana_2. Job c37f5b76-62b1-48b1-82e1-587b8dd39af7. Full-resolution master: docs/assets/marketing/masters/quiet-luxury-evening-2k.webp. Illustrative imagery; not a photograph of the real premises."
         },
         {
           "op": "webready",
-          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
-        },
-        {
-          "op": "ready-for-storage",
-          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
+          "notes": "1600px responsive delivery; WebP q84, JPEG q87, 480px thumbnails. No contact sheets or upscaling."
         }
       ],
       "storage_key": "marketing-assets/landing/final-cta-21x9.webp",
@@ -259,36 +223,27 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_2_shots",
+      "model": "nano_banana_2",
       "model_parameters": {
-        "resolution": "1k",
+        "requested_model": "nano_banana_pro",
+        "reported_model": "nano_banana_2",
+        "resolution": "2k",
         "aspect_ratio": "16:9",
-        "image_references": [
-          "d8a483d7-a892-4161-b14f-58d96b5f14da"
-        ],
-        "image_references_role": "mood_plate",
+        "generation_job_id": "0570b4f4-eaea-4e2e-83ca-2e9bb0e0529d",
         "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
-      "alt_text": "About hero: airy studio looking toward palms and soft daylight.",
+      "approver": "Codex visual QA for user-authorized marketing refresh, 2026-09-19",
+      "alt_text": "Sunlit ivory movement studio with an oak floor, linen curtains, and a rolled mat.",
       "post_processing": [
         {
-          "op": "mood-plate-reference",
-          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
-        },
-        {
-          "op": "contact-sheet-tile-pick",
-          "notes": "CTA refresh v2."
+          "op": "standalone-generation",
+          "notes": "Requested Nano Banana Pro 2K through Higgsfield MCP. Provider reports nano_banana_2. Job 0570b4f4-eaea-4e2e-83ca-2e9bb0e0529d. Full-resolution master: docs/assets/marketing/masters/quiet-luxury-studio-2k.webp. Illustrative imagery; not a photograph of the real premises."
         },
         {
           "op": "webready",
-          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
-        },
-        {
-          "op": "ready-for-storage",
-          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
+          "notes": "1600px responsive delivery; WebP q84, JPEG q87, 480px thumbnails. No contact sheets or upscaling."
         }
       ],
       "storage_key": "marketing-assets/about/hero-16x9.webp",
@@ -320,36 +275,27 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_2_shots",
+      "model": "nano_banana_2",
       "model_parameters": {
-        "resolution": "1k",
+        "requested_model": "nano_banana_pro",
+        "reported_model": "nano_banana_2",
+        "resolution": "2k",
         "aspect_ratio": "4:3",
-        "image_references": [
-          "d8a483d7-a892-4161-b14f-58d96b5f14da"
-        ],
-        "image_references_role": "mood_plate",
+        "generation_job_id": "fb3b1056-ac97-4a46-bf05-e9a063bbd272",
         "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
-      "alt_text": "Our approach: contemplative studio detail with wood and linen textures.",
+      "approver": "Codex visual QA for user-authorized marketing refresh, 2026-09-19",
+      "alt_text": "Friends sharing a relaxed water break after a movement class.",
       "post_processing": [
         {
-          "op": "mood-plate-reference",
-          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
-        },
-        {
-          "op": "contact-sheet-tile-pick",
-          "notes": "CTA refresh v2."
+          "op": "standalone-generation",
+          "notes": "Requested Nano Banana Pro 2K through Higgsfield MCP. Provider reports nano_banana_2. Job fb3b1056-ac97-4a46-bf05-e9a063bbd272. Full-resolution master: docs/assets/marketing/masters/quiet-luxury-community-2k.webp. Illustrative imagery; not a photograph of the real premises."
         },
         {
           "op": "webready",
-          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
-        },
-        {
-          "op": "ready-for-storage",
-          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
+          "notes": "1600px responsive delivery; WebP q84, JPEG q87, 480px thumbnails. No contact sheets or upscaling."
         }
       ],
       "storage_key": "marketing-assets/about/our-approach-4x3.webp",
@@ -381,34 +327,27 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_2_shots",
+      "model": "nano_banana_2",
       "model_parameters": {
-        "resolution": "1k",
-        "aspect_ratio": "21:9 generate then crop to 3:1",
-        "image_references": [
-          "0dad9831-2091-4538-b892-f9f96e6d7352"
-        ],
-        "image_references_role": "mood_plate",
+        "requested_model": "nano_banana_pro",
+        "reported_model": "nano_banana_2",
+        "resolution": "2k",
+        "aspect_ratio": "3:1",
+        "generation_job_id": "0570b4f4-eaea-4e2e-83ca-2e9bb0e0529d",
         "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve, 2026-09-19)",
-      "alt_text": "Abstract photographic texture of fabric, warm concrete, and soft shadows.",
+      "approver": "Codex visual QA for user-authorized marketing refresh, 2026-09-19",
+      "alt_text": "Sunlit ivory movement studio with an oak floor, linen curtains, and a rolled mat.",
       "post_processing": [
         {
-          "op": "mood-plate-reference",
-          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 as image_references. Not a likeness source."
+          "op": "standalone-generation",
+          "notes": "Requested Nano Banana Pro 2K through Higgsfield MCP. Provider reports nano_banana_2. Job 0570b4f4-eaea-4e2e-83ca-2e9bb0e0529d. Full-resolution master: docs/assets/marketing/masters/quiet-luxury-studio-2k.webp. Illustrative imagery; not a photograph of the real premises."
         },
         {
-          "op": "crop",
-          "from": "21:9",
-          "to": "3:1",
-          "notes": "Delivered already cropped to 2400\u00d7800 (true 3:1). Source generate ratio 21:9 recorded."
-        },
-        {
-          "op": "ready-for-storage",
-          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null."
+          "op": "webready",
+          "notes": "1600px responsive delivery; WebP q84, JPEG q87, 480px thumbnails. No contact sheets or upscaling."
         }
       ],
       "storage_key": "marketing-assets/about/brand-texture-3x1.webp",
@@ -440,36 +379,27 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_2_shots",
+      "model": "nano_banana_2",
       "model_parameters": {
-        "resolution": "1k",
+        "requested_model": "nano_banana_pro",
+        "reported_model": "nano_banana_2",
+        "resolution": "2k",
         "aspect_ratio": "16:9",
-        "image_references": [
-          "d8a483d7-a892-4161-b14f-58d96b5f14da"
-        ],
-        "image_references_role": "mood_plate",
+        "generation_job_id": "a8b950ac-2b70-4c9c-bc60-be2b3a54f629",
         "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
-      "alt_text": "Visit us hero: welcoming studio entrance mood without invented storefront signage.",
+      "approver": "Codex visual QA for user-authorized marketing refresh, 2026-09-19",
+      "alt_text": "A quiet studio corner with an oak bench, linen tote, and yoga mat.",
       "post_processing": [
         {
-          "op": "mood-plate-reference",
-          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
-        },
-        {
-          "op": "contact-sheet-tile-pick",
-          "notes": "CTA refresh v2."
+          "op": "standalone-generation",
+          "notes": "Requested Nano Banana Pro 2K through Higgsfield MCP. Provider reports nano_banana_2. Job a8b950ac-2b70-4c9c-bc60-be2b3a54f629. Full-resolution master: docs/assets/marketing/masters/quiet-luxury-welcome-2k.webp. Illustrative imagery; not a photograph of the real premises."
         },
         {
           "op": "webready",
-          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
-        },
-        {
-          "op": "ready-for-storage",
-          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
+          "notes": "1600px responsive delivery; WebP q84, JPEG q87, 480px thumbnails. No contact sheets or upscaling."
         }
       ],
       "storage_key": "marketing-assets/contact/visit-hero-16x9.webp",
@@ -501,32 +431,27 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_2_shots",
+      "model": "nano_banana_2",
       "model_parameters": {
-        "resolution": "1k",
+        "requested_model": "nano_banana_pro",
+        "reported_model": "nano_banana_2",
+        "resolution": "2k",
         "aspect_ratio": "1:1",
-        "image_references": [
-          "0dad9831-2091-4538-b892-f9f96e6d7352"
-        ],
-        "image_references_role": "mood_plate",
+        "generation_job_id": "1e088f5a-0258-47e3-9a4a-ae48373ce75e",
         "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve, 2026-09-19)",
-      "alt_text": "Phone near an abstract, non-scannable tabletop QR stand.",
+      "approver": "Codex visual QA for user-authorized marketing refresh, 2026-09-19",
+      "alt_text": "Folded cotton towel, water bottle, boxing wraps, and yoga strap on an oak bench.",
       "post_processing": [
         {
-          "op": "mood-plate-reference",
-          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only \u2014 not a likeness source."
+          "op": "standalone-generation",
+          "notes": "Requested Nano Banana Pro 2K through Higgsfield MCP. Provider reports nano_banana_2. Job 1e088f5a-0258-47e3-9a4a-ae48373ce75e. Full-resolution master: docs/assets/marketing/masters/quiet-luxury-ritual-2k.webp. Illustrative imagery; not a photograph of the real premises."
         },
         {
-          "op": "contact-sheet",
-          "notes": "3\u00d73 sheet 2400\u00d72400. No scannable QR, no fake app UI. Delivery WebP 137 KB."
-        },
-        {
-          "op": "ready-for-storage",
-          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+          "op": "webready",
+          "notes": "1600px responsive delivery; WebP q84, JPEG q87, 480px thumbnails. No contact sheets or upscaling."
         }
       ],
       "storage_key": "marketing-assets/contact/walk-in-qr-1x1.webp",
@@ -558,36 +483,27 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_2_shots",
+      "model": "nano_banana_2",
       "model_parameters": {
-        "resolution": "1k",
+        "requested_model": "nano_banana_pro",
+        "reported_model": "nano_banana_2",
+        "resolution": "2k",
         "aspect_ratio": "3:2",
-        "image_references": [
-          "d8a483d7-a892-4161-b14f-58d96b5f14da"
-        ],
-        "image_references_role": "mood_plate",
+        "generation_job_id": "a8b950ac-2b70-4c9c-bc60-be2b3a54f629",
         "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
-      "alt_text": "FAQ header accent: soft abstract studio texture with calm negative space.",
+      "approver": "Codex visual QA for user-authorized marketing refresh, 2026-09-19",
+      "alt_text": "A quiet studio corner with an oak bench, linen tote, and yoga mat.",
       "post_processing": [
         {
-          "op": "mood-plate-reference",
-          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
-        },
-        {
-          "op": "contact-sheet-tile-pick",
-          "notes": "CTA refresh v2."
+          "op": "standalone-generation",
+          "notes": "Requested Nano Banana Pro 2K through Higgsfield MCP. Provider reports nano_banana_2. Job a8b950ac-2b70-4c9c-bc60-be2b3a54f629. Full-resolution master: docs/assets/marketing/masters/quiet-luxury-welcome-2k.webp. Illustrative imagery; not a photograph of the real premises."
         },
         {
           "op": "webready",
-          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
-        },
-        {
-          "op": "ready-for-storage",
-          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
+          "notes": "1600px responsive delivery; WebP q84, JPEG q87, 480px thumbnails. No contact sheets or upscaling."
         }
       ],
       "storage_key": "marketing-assets/faqs/header-accent-3x2.webp",
@@ -912,22 +828,28 @@
           "op": "archive-lossless",
           "from": "docs/assets/headshots/rex-francis-regis/headshot-4x5.jpg",
           "to": "docs/assets/headshots/rex-francis-regis/archive/headshot-4x5.png",
-          "notes": "PNG32 archive of approved ASSET-012 master (3\u00d73 sheet). Master JPEG left untouched."
+          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
         },
         {
           "op": "extract-hero-tile",
           "from": "3x3-sheet",
           "to": "4:5-card-tile",
-          "notes": "ImageMagick crop of reviewed 3\u00d73 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
         },
         {
           "op": "lanczos-resize",
           "to": "800w",
-          "notes": "Same tile resampled with Lanczos to ~800\u00d7992 for card delivery (tile was ~400px)."
+          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
         },
         {
           "op": "ready-for-storage",
           "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
+        },
+        {
+          "op": "ai-upscale-4k",
+          "from": "docs/assets/headshots/rex-francis-regis/headshot-card-4x5.webp",
+          "to": "docs/assets/headshots/rex-francis-regis/headshot-upscaled-4k.webp",
+          "notes": "User-requested faithful enhancement, 2026-09-19. Higgsfield bytedance_image_upscale, resolution 4k, job 78249c30-1d97-46bf-81b2-5c646afb14ff. Output 3311×4096. Original contact sheet and archive preserved. Refreshed card/avatars and added 1600px card source. Local delivery only; remote source remains unchanged."
         }
       ],
       "storage_key": "coach-photos/rex-francis-regis/headshot-4x5.webp",
@@ -987,11 +909,17 @@
           "op": "crop",
           "from": "4:5-hero-tile",
           "to": "1:1",
-          "notes": "Center square of hero cell 1,0; Lanczos to 800\u00d7800. WebP q82 + JPEG q85. Responsive w400 and w200."
+          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
         },
         {
           "op": "ready-for-storage",
           "notes": "coach-photos/rex-francis-regis/headshot-1x1.webp"
+        },
+        {
+          "op": "ai-upscale-4k",
+          "from": "docs/assets/headshots/rex-francis-regis/headshot-card-4x5.webp",
+          "to": "docs/assets/headshots/rex-francis-regis/headshot-upscaled-4k.webp",
+          "notes": "User-requested faithful enhancement, 2026-09-19. Higgsfield bytedance_image_upscale, resolution 4k, job 78249c30-1d97-46bf-81b2-5c646afb14ff. Output 3311×4096. Original contact sheet and archive preserved. Refreshed card/avatars and added 1600px card source. Local delivery only; remote source remains unchanged."
         }
       ],
       "storage_key": "coach-photos/rex-francis-regis/headshot-1x1.webp",
@@ -1061,22 +989,28 @@
           "op": "archive-lossless",
           "from": "docs/assets/headshots/ephraim-bacaltos/headshot-4x5.jpg",
           "to": "docs/assets/headshots/ephraim-bacaltos/archive/headshot-4x5.png",
-          "notes": "PNG32 archive of approved ASSET-012 master (3\u00d73 sheet). Master JPEG left untouched."
+          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
         },
         {
           "op": "extract-hero-tile",
           "from": "3x3-sheet",
           "to": "4:5-card-tile",
-          "notes": "ImageMagick crop of reviewed 3\u00d73 cell 2,2 (col,row 0-indexed). Same session, no re-generation."
+          "notes": "ImageMagick crop of reviewed 3×3 cell 2,2 (col,row 0-indexed). Same session, no re-generation."
         },
         {
           "op": "lanczos-resize",
           "to": "800w",
-          "notes": "Same tile resampled with Lanczos to ~800\u00d7992 for card delivery (tile was ~400px)."
+          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
         },
         {
           "op": "ready-for-storage",
           "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
+        },
+        {
+          "op": "ai-upscale-4k",
+          "from": "docs/assets/headshots/ephraim-bacaltos/headshot-card-4x5.webp",
+          "to": "docs/assets/headshots/ephraim-bacaltos/headshot-upscaled-4k.webp",
+          "notes": "User-requested faithful enhancement, 2026-09-19. Higgsfield bytedance_image_upscale, resolution 4k, job 126c6100-5458-4846-aa24-12b9ca9be6fb. Output 3311×4096. Original contact sheet and archive preserved. Refreshed card/avatars and added 1600px card source. Local delivery only; remote source remains unchanged."
         }
       ],
       "storage_key": "coach-photos/ephraim-bacaltos/headshot-4x5.webp",
@@ -1136,11 +1070,17 @@
           "op": "crop",
           "from": "4:5-hero-tile",
           "to": "1:1",
-          "notes": "Center square of hero cell 2,2; Lanczos to 800\u00d7800. WebP q82 + JPEG q85. Responsive w400 and w200."
+          "notes": "Center square of hero cell 2,2; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
         },
         {
           "op": "ready-for-storage",
           "notes": "coach-photos/ephraim-bacaltos/headshot-1x1.webp"
+        },
+        {
+          "op": "ai-upscale-4k",
+          "from": "docs/assets/headshots/ephraim-bacaltos/headshot-card-4x5.webp",
+          "to": "docs/assets/headshots/ephraim-bacaltos/headshot-upscaled-4k.webp",
+          "notes": "User-requested faithful enhancement, 2026-09-19. Higgsfield bytedance_image_upscale, resolution 4k, job 126c6100-5458-4846-aa24-12b9ca9be6fb. Output 3311×4096. Original contact sheet and archive preserved. Refreshed card/avatars and added 1600px card source. Local delivery only; remote source remains unchanged."
         }
       ],
       "storage_key": "coach-photos/ephraim-bacaltos/headshot-1x1.webp",
@@ -1209,22 +1149,28 @@
           "op": "archive-lossless",
           "from": "docs/assets/headshots/rachelle-tobiano/headshot-4x5.jpg",
           "to": "docs/assets/headshots/rachelle-tobiano/archive/headshot-4x5.png",
-          "notes": "PNG32 archive of approved ASSET-012 master (3\u00d73 sheet). Master JPEG left untouched."
+          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
         },
         {
           "op": "extract-hero-tile",
           "from": "3x3-sheet",
           "to": "4:5-card-tile",
-          "notes": "ImageMagick crop of reviewed 3\u00d73 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
         },
         {
           "op": "lanczos-resize",
           "to": "800w",
-          "notes": "Same tile resampled with Lanczos to ~800\u00d7992 for card delivery (tile was ~400px)."
+          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
         },
         {
           "op": "ready-for-storage",
           "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
+        },
+        {
+          "op": "ai-upscale-4k",
+          "from": "docs/assets/headshots/rachelle-tobiano/headshot-card-4x5.webp",
+          "to": "docs/assets/headshots/rachelle-tobiano/headshot-upscaled-4k.webp",
+          "notes": "User-requested faithful enhancement, 2026-09-19. Higgsfield bytedance_image_upscale, resolution 4k, job 2b3220ea-a6a6-4436-9871-f4c713dd3957. Output 3311×4096. Original contact sheet and archive preserved. Refreshed card/avatars and added 1600px card source. Local delivery only; remote source remains unchanged."
         }
       ],
       "storage_key": "coach-photos/rachelle-tobiano/headshot-4x5.webp",
@@ -1284,11 +1230,17 @@
           "op": "crop",
           "from": "4:5-hero-tile",
           "to": "1:1",
-          "notes": "Center square of hero cell 1,0; Lanczos to 800\u00d7800. WebP q82 + JPEG q85. Responsive w400 and w200."
+          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
         },
         {
           "op": "ready-for-storage",
           "notes": "coach-photos/rachelle-tobiano/headshot-1x1.webp"
+        },
+        {
+          "op": "ai-upscale-4k",
+          "from": "docs/assets/headshots/rachelle-tobiano/headshot-card-4x5.webp",
+          "to": "docs/assets/headshots/rachelle-tobiano/headshot-upscaled-4k.webp",
+          "notes": "User-requested faithful enhancement, 2026-09-19. Higgsfield bytedance_image_upscale, resolution 4k, job 2b3220ea-a6a6-4436-9871-f4c713dd3957. Output 3311×4096. Original contact sheet and archive preserved. Refreshed card/avatars and added 1600px card source. Local delivery only; remote source remains unchanged."
         }
       ],
       "storage_key": "coach-photos/rachelle-tobiano/headshot-1x1.webp",
@@ -1386,22 +1338,28 @@
           "op": "archive-lossless",
           "from": "docs/assets/headshots/jodi-tio/headshot-4x5.jpg",
           "to": "docs/assets/headshots/jodi-tio/archive/headshot-4x5.png",
-          "notes": "PNG32 archive of approved ASSET-012 master (3\u00d73 sheet). Master JPEG left untouched."
+          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
         },
         {
           "op": "extract-hero-tile",
           "from": "3x3-sheet",
           "to": "4:5-card-tile",
-          "notes": "ImageMagick crop of reviewed 3\u00d73 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
         },
         {
           "op": "lanczos-resize",
           "to": "800w",
-          "notes": "Same tile resampled with Lanczos to ~800\u00d7992 for card delivery (tile was ~400px)."
+          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
         },
         {
           "op": "ready-for-storage",
           "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
+        },
+        {
+          "op": "ai-upscale-4k",
+          "from": "docs/assets/headshots/jodi-tio/headshot-card-4x5.webp",
+          "to": "docs/assets/headshots/jodi-tio/headshot-upscaled-4k.webp",
+          "notes": "User-requested faithful enhancement, 2026-09-19. Higgsfield bytedance_image_upscale, resolution 4k, job 03cdc361-7901-4372-aa87-aba3c92ae964. Output 3311×4096. Original contact sheet and archive preserved. Refreshed card/avatars and added 1600px card source. Local delivery only; remote source remains unchanged."
         }
       ],
       "storage_key": "coach-photos/jodi-tio/headshot-4x5.webp",
@@ -1461,11 +1419,17 @@
           "op": "crop",
           "from": "4:5-hero-tile",
           "to": "1:1",
-          "notes": "Center square of hero cell 1,0; Lanczos to 800\u00d7800. WebP q82 + JPEG q85. Responsive w400 and w200."
+          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
         },
         {
           "op": "ready-for-storage",
           "notes": "coach-photos/jodi-tio/headshot-1x1.webp"
+        },
+        {
+          "op": "ai-upscale-4k",
+          "from": "docs/assets/headshots/jodi-tio/headshot-card-4x5.webp",
+          "to": "docs/assets/headshots/jodi-tio/headshot-upscaled-4k.webp",
+          "notes": "User-requested faithful enhancement, 2026-09-19. Higgsfield bytedance_image_upscale, resolution 4k, job 03cdc361-7901-4372-aa87-aba3c92ae964. Output 3311×4096. Original contact sheet and archive preserved. Refreshed card/avatars and added 1600px card source. Local delivery only; remote source remains unchanged."
         }
       ],
       "storage_key": "coach-photos/jodi-tio/headshot-1x1.webp",
@@ -1534,22 +1498,28 @@
           "op": "archive-lossless",
           "from": "docs/assets/headshots/wolf/headshot-4x5.jpg",
           "to": "docs/assets/headshots/wolf/archive/headshot-4x5.png",
-          "notes": "PNG32 archive of approved ASSET-012 master (3\u00d73 sheet). Master JPEG left untouched."
+          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
         },
         {
           "op": "extract-hero-tile",
           "from": "3x3-sheet",
           "to": "4:5-card-tile",
-          "notes": "ImageMagick crop of reviewed 3\u00d73 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
         },
         {
           "op": "lanczos-resize",
           "to": "800w",
-          "notes": "Same tile resampled with Lanczos to ~800\u00d7992 for card delivery (tile was ~400px)."
+          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
         },
         {
           "op": "ready-for-storage",
           "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
+        },
+        {
+          "op": "ai-upscale-4k",
+          "from": "docs/assets/headshots/wolf/headshot-card-4x5.webp",
+          "to": "docs/assets/headshots/wolf/headshot-upscaled-4k.webp",
+          "notes": "User-requested faithful enhancement, 2026-09-19. Higgsfield bytedance_image_upscale, resolution 4k, job 172b0f08-fe92-47e8-b183-33a2d420f5f6. Output 3311×4096. Original contact sheet and archive preserved. Refreshed card/avatars and added 1600px card source. Local delivery only; remote source remains unchanged."
         }
       ],
       "storage_key": "coach-photos/wolf/headshot-4x5.webp",
@@ -1609,11 +1579,17 @@
           "op": "crop",
           "from": "4:5-hero-tile",
           "to": "1:1",
-          "notes": "Center square of hero cell 1,0; Lanczos to 800\u00d7800. WebP q82 + JPEG q85. Responsive w400 and w200."
+          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
         },
         {
           "op": "ready-for-storage",
           "notes": "coach-photos/wolf/headshot-1x1.webp"
+        },
+        {
+          "op": "ai-upscale-4k",
+          "from": "docs/assets/headshots/wolf/headshot-card-4x5.webp",
+          "to": "docs/assets/headshots/wolf/headshot-upscaled-4k.webp",
+          "notes": "User-requested faithful enhancement, 2026-09-19. Higgsfield bytedance_image_upscale, resolution 4k, job 172b0f08-fe92-47e8-b183-33a2d420f5f6. Output 3311×4096. Original contact sheet and archive preserved. Refreshed card/avatars and added 1600px card source. Local delivery only; remote source remains unchanged."
         }
       ],
       "storage_key": "coach-photos/wolf/headshot-1x1.webp",
@@ -1740,22 +1716,28 @@
           "op": "archive-lossless",
           "from": "docs/assets/headshots/mikaela-danielle/headshot-4x5.jpg",
           "to": "docs/assets/headshots/mikaela-danielle/archive/headshot-4x5.png",
-          "notes": "PNG32 archive of approved ASSET-012 master (3\u00d73 sheet). Master JPEG left untouched."
+          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
         },
         {
           "op": "extract-hero-tile",
           "from": "3x3-sheet",
           "to": "4:5-card-tile",
-          "notes": "ImageMagick crop of reviewed 3\u00d73 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
         },
         {
           "op": "lanczos-resize",
           "to": "800w",
-          "notes": "Same tile resampled with Lanczos to ~800\u00d7992 for card delivery (tile was ~400px)."
+          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
         },
         {
           "op": "ready-for-storage",
           "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
+        },
+        {
+          "op": "ai-upscale-4k",
+          "from": "docs/assets/headshots/mikaela-danielle/headshot-card-4x5.webp",
+          "to": "docs/assets/headshots/mikaela-danielle/headshot-upscaled-4k.webp",
+          "notes": "User-requested faithful enhancement, 2026-09-19. Higgsfield bytedance_image_upscale, resolution 4k, job fceff033-2aa4-4f87-b1a9-0dd7b5979ba3. Output 3311×4096. Original contact sheet and archive preserved. Refreshed card/avatars and added 1600px card source. Local delivery only; remote source remains unchanged."
         }
       ],
       "storage_key": "coach-photos/mikaela-danielle/headshot-4x5.webp",
@@ -1815,11 +1797,17 @@
           "op": "crop",
           "from": "4:5-hero-tile",
           "to": "1:1",
-          "notes": "Center square of hero cell 1,0; Lanczos to 800\u00d7800. WebP q82 + JPEG q85. Responsive w400 and w200."
+          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
         },
         {
           "op": "ready-for-storage",
           "notes": "coach-photos/mikaela-danielle/headshot-1x1.webp"
+        },
+        {
+          "op": "ai-upscale-4k",
+          "from": "docs/assets/headshots/mikaela-danielle/headshot-card-4x5.webp",
+          "to": "docs/assets/headshots/mikaela-danielle/headshot-upscaled-4k.webp",
+          "notes": "User-requested faithful enhancement, 2026-09-19. Higgsfield bytedance_image_upscale, resolution 4k, job fceff033-2aa4-4f87-b1a9-0dd7b5979ba3. Output 3311×4096. Original contact sheet and archive preserved. Refreshed card/avatars and added 1600px card source. Local delivery only; remote source remains unchanged."
         }
       ],
       "storage_key": "coach-photos/mikaela-danielle/headshot-1x1.webp",
@@ -1888,22 +1876,28 @@
           "op": "archive-lossless",
           "from": "docs/assets/headshots/maris-cabrera/headshot-4x5.jpg",
           "to": "docs/assets/headshots/maris-cabrera/archive/headshot-4x5.png",
-          "notes": "PNG32 archive of approved ASSET-012 master (3\u00d73 sheet). Master JPEG left untouched."
+          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
         },
         {
           "op": "extract-hero-tile",
           "from": "3x3-sheet",
           "to": "4:5-card-tile",
-          "notes": "ImageMagick crop of reviewed 3\u00d73 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
         },
         {
           "op": "lanczos-resize",
           "to": "800w",
-          "notes": "Same tile resampled with Lanczos to ~800\u00d7992 for card delivery (tile was ~400px)."
+          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
         },
         {
           "op": "ready-for-storage",
           "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
+        },
+        {
+          "op": "ai-upscale-4k",
+          "from": "docs/assets/headshots/maris-cabrera/headshot-card-4x5.webp",
+          "to": "docs/assets/headshots/maris-cabrera/headshot-upscaled-4k.webp",
+          "notes": "User-requested faithful enhancement, 2026-09-19. Higgsfield bytedance_image_upscale, resolution 4k, job 90902757-8adf-443a-88a7-52f15379e1ef. Output 3311×4096. Original contact sheet and archive preserved. Refreshed card/avatars and added 1600px card source. Local delivery only; remote source remains unchanged."
         }
       ],
       "storage_key": "coach-photos/maris-cabrera/headshot-4x5.webp",
@@ -1963,11 +1957,17 @@
           "op": "crop",
           "from": "4:5-hero-tile",
           "to": "1:1",
-          "notes": "Center square of hero cell 1,0; Lanczos to 800\u00d7800. WebP q82 + JPEG q85. Responsive w400 and w200."
+          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
         },
         {
           "op": "ready-for-storage",
           "notes": "coach-photos/maris-cabrera/headshot-1x1.webp"
+        },
+        {
+          "op": "ai-upscale-4k",
+          "from": "docs/assets/headshots/maris-cabrera/headshot-card-4x5.webp",
+          "to": "docs/assets/headshots/maris-cabrera/headshot-upscaled-4k.webp",
+          "notes": "User-requested faithful enhancement, 2026-09-19. Higgsfield bytedance_image_upscale, resolution 4k, job 90902757-8adf-443a-88a7-52f15379e1ef. Output 3311×4096. Original contact sheet and archive preserved. Refreshed card/avatars and added 1600px card source. Local delivery only; remote source remains unchanged."
         }
       ],
       "storage_key": "coach-photos/maris-cabrera/headshot-1x1.webp",
@@ -2036,22 +2036,28 @@
           "op": "archive-lossless",
           "from": "docs/assets/headshots/francis-acido/headshot-4x5.jpg",
           "to": "docs/assets/headshots/francis-acido/archive/headshot-4x5.png",
-          "notes": "PNG32 archive of approved ASSET-012 master (3\u00d73 sheet). Master JPEG left untouched."
+          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
         },
         {
           "op": "extract-hero-tile",
           "from": "3x3-sheet",
           "to": "4:5-card-tile",
-          "notes": "ImageMagick crop of reviewed 3\u00d73 cell 2,0 (col,row 0-indexed). Same session, no re-generation."
+          "notes": "ImageMagick crop of reviewed 3×3 cell 2,0 (col,row 0-indexed). Same session, no re-generation."
         },
         {
           "op": "lanczos-resize",
           "to": "800w",
-          "notes": "Same tile resampled with Lanczos to ~800\u00d7992 for card delivery (tile was ~400px)."
+          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
         },
         {
           "op": "ready-for-storage",
           "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
+        },
+        {
+          "op": "ai-upscale-4k",
+          "from": "docs/assets/headshots/francis-acido/headshot-card-4x5.webp",
+          "to": "docs/assets/headshots/francis-acido/headshot-upscaled-4k.webp",
+          "notes": "User-requested faithful enhancement, 2026-09-19. Higgsfield bytedance_image_upscale, resolution 4k, job e9157178-816c-4d1f-80ef-8f1e0a917f8f. Output 3311×4096. Original contact sheet and archive preserved. Refreshed card/avatars and added 1600px card source. Local delivery only; remote source remains unchanged."
         }
       ],
       "storage_key": "coach-photos/francis-acido/headshot-4x5.webp",
@@ -2111,11 +2117,17 @@
           "op": "crop",
           "from": "4:5-hero-tile",
           "to": "1:1",
-          "notes": "Center square of hero cell 2,0; Lanczos to 800\u00d7800. WebP q82 + JPEG q85. Responsive w400 and w200."
+          "notes": "Center square of hero cell 2,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
         },
         {
           "op": "ready-for-storage",
           "notes": "coach-photos/francis-acido/headshot-1x1.webp"
+        },
+        {
+          "op": "ai-upscale-4k",
+          "from": "docs/assets/headshots/francis-acido/headshot-card-4x5.webp",
+          "to": "docs/assets/headshots/francis-acido/headshot-upscaled-4k.webp",
+          "notes": "User-requested faithful enhancement, 2026-09-19. Higgsfield bytedance_image_upscale, resolution 4k, job e9157178-816c-4d1f-80ef-8f1e0a917f8f. Output 3311×4096. Original contact sheet and archive preserved. Refreshed card/avatars and added 1600px card source. Local delivery only; remote source remains unchanged."
         }
       ],
       "storage_key": "coach-photos/francis-acido/headshot-1x1.webp",
@@ -2250,36 +2262,27 @@
       "slot_letter": "E",
       "aspect_ratio": "21:9",
       "source_prompt_key": "landing-E",
-      "model": "nano_banana_2_shots",
+      "model": "nano_banana_2",
       "model_parameters": {
-        "resolution": "1k",
+        "requested_model": "nano_banana_pro",
+        "reported_model": "nano_banana_2",
+        "resolution": "2k",
         "aspect_ratio": "21:9",
-        "image_references": [
-          "d8a483d7-a892-4161-b14f-58d96b5f14da"
-        ],
-        "image_references_role": "mood_plate",
+        "generation_job_id": "c37f5b76-62b1-48b1-82e1-587b8dd39af7",
         "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
-      "alt_text": "Wide mid-page CTA band: calm studio aisle with negative space for membership pitch.",
+      "approver": "Codex visual QA for user-authorized marketing refresh, 2026-09-19",
+      "alt_text": "Two people unwinding after class in a warm, light-filled movement studio.",
       "post_processing": [
         {
-          "op": "mood-plate-reference",
-          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
-        },
-        {
-          "op": "contact-sheet-tile-pick",
-          "notes": "NEW slot mid-cta 21:9."
+          "op": "standalone-generation",
+          "notes": "Requested Nano Banana Pro 2K through Higgsfield MCP. Provider reports nano_banana_2. Job c37f5b76-62b1-48b1-82e1-587b8dd39af7. Full-resolution master: docs/assets/marketing/masters/quiet-luxury-evening-2k.webp. Illustrative imagery; not a photograph of the real premises."
         },
         {
           "op": "webready",
-          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
-        },
-        {
-          "op": "ready-for-storage",
-          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
+          "notes": "1600px responsive delivery; WebP q84, JPEG q87, 480px thumbnails. No contact sheets or upscaling."
         }
       ],
       "storage_key": "marketing-assets/landing/mid-cta-21x9.webp",
@@ -2311,36 +2314,27 @@
       "slot_letter": "D",
       "aspect_ratio": "21:9",
       "source_prompt_key": "about-D",
-      "model": "nano_banana_2_shots",
+      "model": "nano_banana_2",
       "model_parameters": {
-        "resolution": "1k",
+        "requested_model": "nano_banana_pro",
+        "reported_model": "nano_banana_2",
+        "resolution": "2k",
         "aspect_ratio": "21:9",
-        "image_references": [
-          "d8a483d7-a892-4161-b14f-58d96b5f14da"
-        ],
-        "image_references_role": "mood_plate",
+        "generation_job_id": "c37f5b76-62b1-48b1-82e1-587b8dd39af7",
         "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
-      "alt_text": "About page CTA band with open floor and warm side light for overlay copy.",
+      "approver": "Codex visual QA for user-authorized marketing refresh, 2026-09-19",
+      "alt_text": "Two people unwinding after class in a warm, light-filled movement studio.",
       "post_processing": [
         {
-          "op": "mood-plate-reference",
-          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
-        },
-        {
-          "op": "contact-sheet-tile-pick",
-          "notes": "NEW slot about cta-band."
+          "op": "standalone-generation",
+          "notes": "Requested Nano Banana Pro 2K through Higgsfield MCP. Provider reports nano_banana_2. Job c37f5b76-62b1-48b1-82e1-587b8dd39af7. Full-resolution master: docs/assets/marketing/masters/quiet-luxury-evening-2k.webp. Illustrative imagery; not a photograph of the real premises."
         },
         {
           "op": "webready",
-          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
-        },
-        {
-          "op": "ready-for-storage",
-          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
+          "notes": "1600px responsive delivery; WebP q84, JPEG q87, 480px thumbnails. No contact sheets or upscaling."
         }
       ],
       "storage_key": "marketing-assets/about/cta-band-21x9.webp",

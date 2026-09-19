@@ -1,23 +1,19 @@
 import type { PublicClass, PublicCoach, PublicSession } from "@balanse/domain";
-import {
-  ABOUT_CLASS_FAMILIES,
-  BOOKING_STEPS,
-  CONTACT_DETAILS,
-  CREATE_ACCOUNT_ACTION,
-  LANDING_HERO_COPY,
-  landingScheduleHref,
-} from "@balanse/domain";
-import { MarketingImage, SectionHeading } from "@balanse/ui";
+import { ABOUT_CLASS_FAMILIES, CONTACT_DETAILS } from "@balanse/domain";
+import { MarketingImage } from "@balanse/ui";
+import { ArrowDown, ArrowUpRight, MapPin } from "lucide-react";
 import Link from "next/link";
-import { BalanseCtaBand } from "@/components/balanse/marketing/BalanseCtaBand";
 import { BalanseCtaSection } from "@/components/balanse/marketing/BalanseCtaSection";
-import { BalanseHero } from "@/components/balanse/marketing/BalanseHero";
+import { Button } from "@/components/jabkit/button";
 import { ScheduleCalendarSection } from "@/modules/schedule/ScheduleCalendarSection";
 import { CoachPreviewCard } from "./CoachPreviewCard";
 
-const HERO_TITLE_LINES = LANDING_HERO_COPY.split(". ")
-  .filter(Boolean)
-  .map((line, index, all) => (index === all.length - 1 ? line : `${line}.`));
+const STEPS = [
+  { title: "Find your class", body: "Choose a day, a discipline, and a time that works for you." },
+  { title: "Reserve your space", body: "Sign in to reserve a spot or join the waitlist." },
+  { title: "Make your payment", body: "Pay with GCash or at the counter." },
+  { title: "You're on your way", body: "Check your booking for the studio's confirmation." },
+];
 
 export function LandingPage({
   coaches,
@@ -35,39 +31,39 @@ export function LandingPage({
   classId?: string;
 }) {
   return (
-    <div>
-      <BalanseHero
-        assetId="landing-a"
-        eyebrow="Cebu City · Movement, wellness, community"
-        titleLines={HERO_TITLE_LINES}
-        primaryAction={{ label: "Browse this week", href: landingScheduleHref() }}
-        secondaryAction={{ label: CREATE_ACCOUNT_ACTION.label, href: CREATE_ACCOUNT_ACTION.href }}
-        features={[
-          {
-            icon: "monitor",
-            title: "Book on the calendar",
-            description: "Browse as a guest, then reserve\nonce you are signed in.",
-          },
-          {
-            icon: "armchair",
-            title: "Recovery is part of it",
-            description: "Movement, education, and rest\nin one dedicated space.",
-          },
-        ]}
-      />
+    <div className="marketing-home">
+      <div className="marketing-container">
+        <section data-section="hero-copy" className="home-intro">
+          <div>
+            <p className="marketing-eyebrow">Movement. Wellness. Community.</p>
+            <h1 className="mt-3 font-display text-4xl font-normal leading-[1.1] tracking-[-0.04em] md:text-6xl">
+              Find your balance.
+            </h1>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground md:text-base">
+              Choose a class. Make a little space for yourself.
+            </p>
+          </div>
+          <MarketingImage
+            assetId="landing-a"
+            decorative
+            loading="eager"
+            className="home-intro-image"
+          />
+        </section>
 
-      <div className="mx-auto max-w-6xl px-4 pt-12 md:pt-16">
         <section
           id="schedule"
           data-section="calendar-hero"
-          className="scroll-mt-24 rounded-2xl border border-[var(--balanse-tan)]/50 bg-card/95 p-4 shadow-[0_18px_50px_-30px_var(--balanse-navy)] md:p-6"
+          aria-labelledby="schedule-title"
+          className="booking-hero scroll-mt-24"
         >
-          <SectionHeading
-            eyebrow="This week"
-            title="This week at Balansé"
-            description="Browse openly. Reserve or join the waitlist after you sign in — the selected session stays with you."
-          />
-          <div className="mt-6">
+          <div className="booking-hero-heading flex flex-wrap items-center justify-between gap-2">
+            <h2 id="schedule-title" className="font-display text-2xl font-normal tracking-tight">
+              Book a class
+            </h2>
+            <span className="text-xs text-muted-foreground">Cebu City · Philippine time</span>
+          </div>
+          <div className="booking-calendar">
             <ScheduleCalendarSection
               audience="guest"
               initialSessions={sessions}
@@ -78,142 +74,157 @@ export function LandingPage({
               initialClassFilter={classId}
             />
           </div>
+          <p className="booking-hero-note text-xs leading-relaxed text-muted-foreground">
+            Explore the schedule freely. Sign in when you find your class.
+          </p>
         </section>
 
-        <section data-section="how-it-works" className="mt-16 md:mt-20">
-          <SectionHeading
-            eyebrow="Four steps"
-            title="How it works"
-            description="Payment is manual — GCash or Pay at Counter. An admin confirms the booking once it clears."
-          />
-          <div className="mt-8 grid gap-8 md:grid-cols-[1fr_16rem] md:items-start">
-            <ol className="grid gap-3 sm:grid-cols-2">
-              {BOOKING_STEPS.map((step, index) => (
-                <li
-                  key={step}
-                  className="rounded-xl border border-[var(--balanse-tan)]/50 bg-card p-5 transition-colors hover:border-accent"
-                >
-                  <span className="inline-flex size-7 items-center justify-center rounded-full bg-secondary font-display text-sm text-foreground">
-                    {index + 1}
-                  </span>
-                  <p className="mt-3 font-medium">{step}</p>
-                </li>
-              ))}
-            </ol>
-            <MarketingImage assetId="landing-c" className="md:sticky md:top-24" />
+        <section data-section="how-it-works" className="marketing-section">
+          <div className="max-w-xl">
+            <h2 className="marketing-title">A little time. All for you.</h2>
+            <p className="marketing-copy">
+              From your first class to your weekly ritual, getting started is simple.
+            </p>
           </div>
+          <ol className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {STEPS.map((step, index) => (
+              <li key={step.title} className="border-t border-border pt-5">
+                <span className="font-display text-2xl text-muted-foreground">0{index + 1}</span>
+                <h3 className="mt-5 text-sm font-semibold">{step.title}</h3>
+                <p className="mt-2 max-w-60 text-sm leading-relaxed text-muted-foreground">
+                  {step.body}
+                </p>
+              </li>
+            ))}
+          </ol>
         </section>
 
-        <section id="classes" data-section="classes" className="mt-16 scroll-mt-24 md:mt-20">
-          <SectionHeading
-            eyebrow="What we run"
-            title="Classes"
-            description="A weekly mix of movement. Filter the calendar above — there is no separate Classes page."
-            action={
-              <a
-                href={landingScheduleHref()}
-                className="inline-flex h-10 items-center rounded-full border border-[var(--balanse-tan)] px-5 text-sm font-semibold transition-colors hover:border-accent hover:bg-secondary/60"
-              >
-                Filter the calendar
-              </a>
-            }
-          />
-          <div className="mt-8 grid gap-6 md:grid-cols-[1.4fr_1fr] md:items-center">
-            <MarketingImage assetId="landing-b" className="order-last md:order-first" />
-            <ul className="flex flex-wrap gap-2 self-start">
-              {ABOUT_CLASS_FAMILIES.map((name) => (
-                <li
-                  key={name}
-                  className="rounded-full border border-[var(--balanse-tan)]/60 bg-secondary/60 px-3.5 py-1.5 text-sm font-medium"
-                >
-                  {name}
-                </li>
-              ))}
+        <section
+          id="classes"
+          data-section="classes"
+          className="marketing-section scroll-mt-24 grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:items-center lg:gap-20"
+        >
+          <MarketingImage assetId="landing-b" className="!rounded-sm" />
+          <div>
+            <p className="marketing-eyebrow">Find your practice</p>
+            <h2 className="marketing-title mt-4">
+              Room to move.
+              <br />
+              Space to grow.
+            </h2>
+            <p className="marketing-copy">
+              Stretch, strengthen, or try something new. Discover a practice that feels right for
+              you.
+            </p>
+            <ul className="mt-7 grid grid-cols-2 gap-x-4 gap-y-0">
+              {ABOUT_CLASS_FAMILIES.map((name) => {
+                const discipline = classes.find((item) => item.name === name);
+                return (
+                  <li key={name}>
+                    <Link
+                      href={
+                        discipline
+                          ? `/?classId=${encodeURIComponent(discipline.id)}#schedule`
+                          : "/#schedule"
+                      }
+                      className="group flex min-h-12 items-center justify-between gap-2 border-b border-border/70 py-3 text-sm transition-colors hover:text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"
+                    >
+                      {name}
+                      <ArrowUpRight
+                        className="size-3.5 shrink-0 opacity-50 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                        aria-hidden="true"
+                      />
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </section>
-      </div>
 
-      <BalanseCtaBand
-        blockId="landing-mid"
-        sectionName="mid-cta"
-        supportingTitle="Every discipline, one room"
-        className="mt-16 md:mt-20"
-      />
-
-      <div className="mx-auto max-w-6xl px-4">
-        <section id="coaches" data-section="coaches" className="mt-16 scroll-mt-24 md:mt-20">
-          <SectionHeading
-            eyebrow="Your coaches"
-            title="Coaches"
-            description="Every coach teaches published sessions on the calendar above."
-            action={
-              <Link
-                href="/coaches"
-                className="inline-flex h-10 items-center rounded-full border border-[var(--balanse-tan)] px-5 text-sm font-semibold transition-colors hover:border-accent hover:bg-secondary/60"
-              >
-                Meet the team
-              </Link>
-            }
-          />
-          <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {coaches.map((coach) => (
+        <section id="coaches" data-section="coaches" className="marketing-section scroll-mt-24">
+          <h2 className="marketing-title">Good people. Thoughtful guidance.</h2>
+          <p className="marketing-copy max-w-xl">
+            Meet the people who bring care, experience, and their own love of movement to every
+            class.
+          </p>
+          <ul className="mt-10 grid gap-8 sm:grid-cols-3">
+            {coaches.slice(0, 3).map((coach) => (
               <li key={coach.id}>
-                <CoachPreviewCard coach={coach} />
+                <CoachPreviewCard coach={coach} showViewClasses />
               </li>
             ))}
           </ul>
+          <Link href="/coaches" className="marketing-text-link mt-8">
+            Meet all our coaches <ArrowUpRight className="size-4" aria-hidden="true" />
+          </Link>
         </section>
 
-        <div className="mt-16 grid gap-6 md:mt-20 md:grid-cols-2">
-          <section
-            data-section="about"
-            className="rounded-2xl border border-[var(--balanse-tan)]/50 bg-card p-6 md:p-8"
-          >
-            <SectionHeading
-              eyebrow="The studio"
-              title="About Balansé"
-              description="We promote holistic wellness by combining movement, fitness education, recovery, and tranquility. Join us for workshops, classes, and community support."
-            />
-            <Link
-              href="/about"
-              className="mt-6 inline-flex h-10 items-center rounded-full border border-[var(--balanse-tan)] px-5 text-sm font-semibold transition-colors hover:border-accent hover:bg-secondary/60"
-            >
-              More about the studio
+        <section
+          data-section="about"
+          className="marketing-section grid gap-10 lg:grid-cols-[1fr_1.15fr] lg:items-center lg:gap-20"
+        >
+          <div>
+            <p className="marketing-eyebrow">The Balansé way</p>
+            <h2 className="marketing-title mt-4">
+              More than movement.
+              <br />A sense of belonging.
+            </h2>
+            <p className="marketing-copy">
+              Movement, fitness education, recovery, and tranquility. A dedicated space in Cebu to
+              find your rhythm, with a community beside you.
+            </p>
+            <Link href="/about" className="marketing-text-link mt-7">
+              Get to know Balansé <ArrowUpRight className="size-4" aria-hidden="true" />
             </Link>
-          </section>
+          </div>
+          <MarketingImage assetId="about-b" className="!rounded-sm" />
+        </section>
 
-          <section
-            data-section="location"
-            className="rounded-2xl border border-[var(--balanse-tan)]/50 bg-card p-6 md:p-8"
-          >
-            <SectionHeading
-              eyebrow="Find us"
-              title="Location / walking in"
-              description="Walking in is the same booking path: scan the Balansé QR, sign in or create an account, then reserve on this calendar. There is no separate walk-in desk."
+        <section
+          data-section="location"
+          className="marketing-section grid gap-8 border-y border-border py-10 md:grid-cols-[1fr_1fr] md:gap-20 md:py-14"
+        >
+          <div>
+            <MapPin
+              className="mb-4 size-5 text-muted-foreground"
+              strokeWidth={1.5}
+              aria-hidden="true"
             />
-            <p className="mt-6 text-sm font-medium">{CONTACT_DETAILS.address}</p>
-            <Link
-              href="/contact"
-              className="mt-4 inline-flex h-10 items-center rounded-full border border-[var(--balanse-tan)] px-5 text-sm font-semibold transition-colors hover:border-accent hover:bg-secondary/60"
+            <h2 className="font-display text-3xl font-normal">Your space in the city.</h2>
+            <p className="marketing-copy max-w-sm">{CONTACT_DETAILS.address}</p>
+            <a
+              href={CONTACT_DETAILS.mapHref}
+              target="_blank"
+              rel="noreferrer"
+              className="marketing-text-link mt-5"
             >
-              Directions and contact
-            </Link>
-          </section>
-        </div>
+              Find the studio <ArrowUpRight className="size-4" aria-hidden="true" />
+            </a>
+          </div>
+          <div className="md:pt-9">
+            <h3 className="text-base font-semibold">Dropping by?</h3>
+            <p className="marketing-copy max-w-md">
+              Scan the Balansé QR at the studio, sign in, and choose your class on the calendar. The
+              same simple booking, wherever you begin.
+            </p>
+            <Button
+              asChild
+              variant="secondary"
+              className="mt-6 rounded-full border-border bg-transparent px-5 hover:bg-secondary"
+            >
+              <a href="#schedule">
+                See the schedule <ArrowDown className="ml-3 size-4" aria-hidden="true" />
+              </a>
+            </Button>
+          </div>
+        </section>
       </div>
-
       <BalanseCtaSection
         blockId="landing-final"
         sectionName="final-cta"
-        assetIds={["landing-d", "landing-b", "landing-c"]}
-        features={[
-          { icon: "sparkles", label: "Guests browse the calendar free" },
-          { icon: "users", label: "Small groups, familiar coaches" },
-          { icon: "workflow", label: "GCash or Pay at Counter" },
-          { icon: "shield", label: "An admin confirms every booking" },
-        ]}
-        className="mt-16 md:mt-20"
+        assetIds={["landing-d"]}
+        className="marketing-section"
       />
     </div>
   );

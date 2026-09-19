@@ -47,6 +47,8 @@ export function PublicNav({
   ctaHref = "/#schedule",
   ctaLabel = "Reserve a spot",
   skipToId = "main-content",
+  mobileCtaVisible = true,
+  mobileCtaOnly = false,
 }: {
   pathname: string;
   hash?: string;
@@ -56,6 +58,9 @@ export function PublicNav({
   ctaHref?: string;
   ctaLabel?: string;
   skipToId?: string;
+  /** Visibility is controlled by the host booking-area observer. */
+  mobileCtaVisible?: boolean;
+  mobileCtaOnly?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const navId = useId();
@@ -86,7 +91,7 @@ export function PublicNav({
     <header
       data-section="header"
       data-menu-open={open}
-      className="sticky top-0 z-50 border-b border-[var(--balanse-tan)]/45 bg-[color-mix(in_oklab,var(--balanse-warm-white)_88%,transparent)] backdrop-blur-md supports-[backdrop-filter]:bg-[color-mix(in_oklab,var(--balanse-warm-white)_78%,transparent)]"
+      className="sticky top-0 z-50 border-b border-[var(--balanse-tan)]/45 bg-background/95 backdrop-blur-md"
     >
       <a
         href={`#${skipToId}`}
@@ -95,16 +100,16 @@ export function PublicNav({
         Skip to content
       </a>
 
-      <div className="mx-auto flex min-h-16 max-w-6xl items-center gap-4 px-4">
+      <div className="mx-auto flex min-h-20 max-w-7xl items-center gap-4 px-5 md:px-8">
         <Link
           href={brandHref}
           className="rounded-md py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <span className="sr-only">Balansé Wellness Hub home</span>
-          <BrandLockup />
+          <BrandLockup className="[&>span:last-child]:text-muted-foreground" />
         </Link>
 
-        <nav aria-label="Public" className="ml-auto hidden items-center gap-1 md:flex">
+        <nav aria-label="Public" className="ml-auto hidden items-center gap-1 lg:flex">
           {browseItems.map((item) => {
             const active = isPublicNavActive(item, pathname, hash);
             return (
@@ -120,11 +125,11 @@ export function PublicNav({
           })}
         </nav>
 
-        <div className="ml-auto flex items-center gap-2 md:ml-0">
+        <div className="ml-auto flex items-center gap-2 lg:ml-0">
           <Link
             href={authItem.href}
             className={cn(
-              "hidden h-9 items-center rounded-full border px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:inline-flex",
+              "hidden h-9 items-center rounded-full border px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:inline-flex",
               authActive
                 ? "border-accent bg-secondary/70 text-foreground"
                 : "border-[var(--balanse-tan)] text-foreground hover:border-accent hover:bg-secondary/50",
@@ -135,13 +140,18 @@ export function PublicNav({
           </Link>
           <Link
             href={ctaHref}
-            className="inline-flex h-9 items-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            onClick={() => setOpen(false)}
+            className={cn(
+              "h-10 items-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              mobileCtaVisible ? "inline-flex" : "hidden",
+              mobileCtaOnly ? "lg:hidden" : "lg:inline-flex",
+            )}
           >
             {ctaLabel}
           </Link>
           <button
             type="button"
-            className="inline-flex size-9 items-center justify-center rounded-full border border-[var(--balanse-tan)] text-foreground transition-colors hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+            className="inline-flex size-9 items-center justify-center rounded-full border border-[var(--balanse-tan)] text-foreground transition-colors hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
             aria-expanded={open}
             aria-controls={navId}
             aria-label={open ? "Close menu" : "Open menu"}
@@ -155,9 +165,9 @@ export function PublicNav({
       <div
         id={navId}
         hidden={!open}
-        className="border-t border-[var(--balanse-tan)]/45 bg-[var(--balanse-warm-white)] md:hidden"
+        className="border-t border-[var(--balanse-tan)]/45 bg-background lg:hidden"
       >
-        <nav aria-label="Public (compact)" className="mx-auto max-w-6xl px-4 py-3">
+        <nav aria-label="Public (compact)" className="mx-auto max-w-7xl px-4 py-3">
           <ul className="flex flex-col">
             {browseItems.map((item) => {
               const active = isPublicNavActive(item, pathname, hash);
@@ -186,13 +196,6 @@ export function PublicNav({
             })}
           </ul>
           <div className="mt-4 flex flex-col gap-2 pb-2">
-            <Link
-              href={ctaHref}
-              onClick={() => setOpen(false)}
-              className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {ctaLabel}
-            </Link>
             <Link
               href={authItem.href}
               onClick={() => setOpen(false)}

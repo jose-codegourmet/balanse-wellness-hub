@@ -34,6 +34,10 @@ Jabkit is source-distributed. Each app has `jabkit.config.json`.
 
 Screens obtain data only through `getMockAdapter()` (`MockDataAdapter`). Do not import fixture files from screen components. Coach rates exist only on admin coach types.
 
+## Tests
+
+Do **not** write new unit tests, test files, or test suites. Do not add, expand, or “complete” `*.test.*` / `*.spec.*` files unless the user explicitly asks. Prefer typecheck and lint for confidence.
+
 ## Validation
 
-`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm build-storybook`, `pnpm guard:brand`, `pnpm secrets:scan`.
+`pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm build-storybook`, `pnpm guard:brand`, `pnpm secrets:scan`. Skip `pnpm test` unless the user asks.

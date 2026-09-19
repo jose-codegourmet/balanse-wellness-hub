@@ -145,8 +145,8 @@ export function bundledAssetSources(asset: AssetManifestRecord): BundledAssetSou
 }
 
 /**
- * Slots that shipped a `-thumb` pair in the pass-2 refresh. `about-c` and
- * `contact-b` were left unchanged and have no thumb (see FE-PATHS.md).
+ * Marketing slots with a 480px responsive thumbnail delivery, including the
+ * quiet-luxury refresh of the about texture and contact still life.
  */
 const MARKETING_SLOTS_WITH_THUMBS = new Set([
   "landing-a",
@@ -156,8 +156,10 @@ const MARKETING_SLOTS_WITH_THUMBS = new Set([
   "landing-e",
   "about-a",
   "about-b",
+  "about-c",
   "about-d",
   "contact-a",
+  "contact-b",
   "faqs-a",
   "coaches-c-yoga",
   "coaches-c-boxing",
