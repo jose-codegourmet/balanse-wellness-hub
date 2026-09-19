@@ -1,12 +1,11 @@
 name: Seed MVP roadmap issues
 
 on:
-  push:
-    branches: [main, chore/seed-mvp-issues]
-    paths:
-      - 'scripts/seed-mvp-issues/**'
-      - '.github/workflows/seed-mvp-issues.yml'
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type CREATE to run (normally disabled)'
+        required: true
 
 permissions:
   contents: read
@@ -14,19 +13,12 @@ permissions:
 
 jobs:
   seed:
+    if: github.event.inputs.confirm == 'CREATE'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Create issues from MVP roadmap
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: python3 scripts/seed-mvp-issues/create.py
-
-      - name: Upload results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: seed-results
-          path: seed-results.json
