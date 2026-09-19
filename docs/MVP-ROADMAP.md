@@ -184,7 +184,7 @@ From `21-canonical-rules.md` §Do not invent [R63–R66] and `docs/screen-specs/
 
 | Phase | Name | Lanes active | Exit condition |
 | --- | --- | --- | --- |
-| **P0** | Ground zero | INF, FE, **Assets** | Repo bootstrapped, PawPair removed, Jabkit wired, Supabase env + migration workflow proven with one no-op migration, **coach reference-image sourcing started** (it is the longest-lead asset dependency). |
+| **P0** | Ground zero | INF, FE, **Assets** | Repo bootstrapped, PawPair removed, Jabkit wired, Supabase env + migration workflow proven with one no-op migration, **coach source-image intake under way via Balanse image assets dev** (it is the longest-lead asset dependency). |
 | **P1** | Skeletons | INF, BE, FE, **Assets** | Core schema domains (identity, catalogue, sessions) migrated; FE route shells + mock data layer + shared systems exist and render; asset pipeline, inventory conventions, and the approved headshot look are locked. |
 | **P2** | Booking engine + public surface | BE, FE, **Assets** | Booking/waitlist/payment/request schema + rules + jobs done; all 5 public screens mocked; **all coach headshots and public-page imagery generated, approved, and dropped into the mocks**. |
 | **P3** | Customer surface + API | BE, FE | Customer-facing API routes implemented and testable; all 13 customer screens mocked. |
@@ -201,7 +201,7 @@ P0 ─────────────────────────�
                                   │                            │
                                   └──► INF-005 Auth config     └──► BE-001 enums+conventions
   FE-FND-001 bootstrap ──► FE-FND-002 strip PawPair ──► FE-FND-003 Jabkit ──► FE-FND-004 brand tokens
-  ASSET-010 coach reference sourcing (start immediately — longest lead)         │
+  ASSET-010 coach source intake via Balanse image assets dev (in progress)      │
 P1 ──────────────────────────────────────────────────────────────────────────  │
   BE-001 ──┬─► BE-002 profiles ──► BE-003 staff/roles                          │
            ├─► BE-004 coaches ──► BE-005 classes ──► BE-006 sessions(+snapshot)│
@@ -229,8 +229,9 @@ P2 ─────────────────────────�
   BE-019 developer config ──► BE-017/BE-018
   BE-020 RLS suite (needs BE-002..BE-016)
   FE-SHR-005 + FE-FND-007 ──► FE-PUB-001..005
-  ASSET-011 ──► ASSET-012 roster headshots ──► ASSET-013 post-processing ──┐
-  ASSET-010 ──► ASSET-014 placeholder avatar                               ├─► FE-SHR-004
+  ASSET-010 source photos ──► ASSET-012 roster headshots (source-driven) ──┐
+  ASSET-011 recipe ─────────► ASSET-012 ──► ASSET-013 post-processing ─────┤
+  ASSET-010 ──► ASSET-014 placeholder avatar (the no-source path)          ├─► FE-SHR-004
   ASSET-012 ──► ASSET-015 coaches group hero + specialty accents           │
   ASSET-001/002 ──► ASSET-020 landing · ASSET-021 about · ASSET-022 contact · ASSET-023 faq ──┘
 
@@ -257,7 +258,7 @@ LATER ────────────────────────�
 
 `FE-FND-001 → FE-FND-002 → FE-FND-003 → FE-FND-005 → FE-SHR-005 → FE-CUS-007` is the FE critical path (the calendar is the product's hero and is reused by public and customer surfaces).
 
-`ASSET-010 → ASSET-011 → ASSET-012 → ASSET-013 → ASSET-030` is the Assets critical path, and `ASSET-010` (coach reference-image sourcing and consent) should start on day one: it depends on people outside the delivery team, and the screen specs forbid generating a coach portrait without a valid reference image, so every headshot ticket stalls behind it.
+`ASSET-010 → ASSET-011 → ASSET-012 → ASSET-013 → ASSET-030` is the Assets critical path — source intake, then recipe, then generation, then delivery crops, then Storage. `ASSET-010` is already under way (Jose is uploading coach photos through Balanse image assets dev) and should stay the lane's first priority: the screen specs forbid generating a coach portrait without a valid source image, so each coach's headshot starts only once their photo has landed. The sub-track is designed to run in waves rather than waiting for the last upload.
 
 ### 3.4 Blocked-by-business items
 
@@ -1975,9 +1976,26 @@ Asset generation has its own lane and its own section — see [Section 7](#7-ass
 
 `docs/screen-specs/` does not just describe layouts — every public screen spec carries **explicit generation prompts**, and `docs/screen-specs/shared/04-marketing-image-generation.md` fixes the conventions for all of them ("intended for generation through Higgsfield CLI using Nano Banana Pro or GPT Image 2"). Coach imagery additionally has a data rule attached to it: `public/05-coaches.md` and `public/01-landing-page.md` both require coach photos to come from the **database-managed coach record**, never from hardcoded page imagery, with a designed fallback avatar when a coach has no photo. That makes assets a delivery lane with its own dependencies (people, consent, approval) rather than a decoration step at the end of FE work.
 
-Jose confirmed **professional coach headshots** as the priority output of this track.
+Jose confirmed **professional coach headshots** as the priority output of this track, and confirmed the intake path: **coach source images are being uploaded through _Balanse image assets dev_**. That is the canonical place raw/source photography arrives. This roadmap does not invent an alternative sourcing route, and no generation ticket starts from an empty prompt for a real person.
 
-### 7.2 Ground rules (from the specs, not invented)
+### 7.2 The asset pipeline (every generated asset follows this chain)
+
+```text
+1. SOURCE      raw/source image ingested and catalogued via Balanse image assets dev
+                  └─ identity-bound assets (coach headshots) REQUIRE this step
+                  └─ non-identity assets (studio scenes, still lifes, textures) legitimately have no source
+2. GENERATE    Higgsfield run that takes the catalogued source as its reference input
+3. REVIEW      internal review gate + client approval; status moves draft → client-review → approved
+4. STORE       approved output uploaded to Supabase Storage (coach-photos / marketing-assets)
+                  └─ depends on INF-004 (buckets) and BE-021 (bucket policies)
+```
+
+Each generation ticket's acceptance criteria restate this chain for its own assets. Two rules follow from it and are not negotiable:
+
+- **No coach headshot is generated from scratch.** Every portrait takes a real, catalogued source image of that coach as its input. A coach with no source image does not get a generated face — they get the designed placeholder, and `ASSET-014` is the one ticket that explicitly covers that fallback.
+- **Non-identity marketing imagery is text-to-image by design.** The landing, about, contact, and FAQ prompts in the screen specs describe scenes and objects, not specific people, so they have no source-asset prerequisite — but they still pass through review and Storage in the same way.
+
+### 7.3 Ground rules (from the specs, not invented)
 
 From `shared/04-marketing-image-generation.md`:
 
@@ -1998,7 +2016,7 @@ From `public/05-coaches.md` (the hard constraints on headshots):
 
 Brand direction for the "Balansé look" comes from `docs/facebook-findings/findings.md` §5: cream, warm white, beige/tan, muted brown, dark navy/charcoal, and **gold accents**; calm, warm, community-minded; muted neutral backgrounds with gold/brown labels and simple editorial typography.
 
-### 7.3 Confirmed coach roster (owner-provided)
+### 7.4 Confirmed coach roster (owner-provided)
 
 Source: `docs/facebook-findings/findings.md` §4b. This roster **supersedes** names inferred from the Facebook schedule graphic and is the definitive list for headshot production: eleven coaches, and nobody else. Each one resolves to either a generated headshot (reference + consent available) or the designed placeholder — never to an invented face and never to an omission from the page.
 
@@ -2016,11 +2034,18 @@ Source: `docs/facebook-findings/findings.md` §4b. This roster **supersedes** na
 | 10 | Maris Cabrera | Dance Fitness | `coach-maris-cabrera` |
 | 11 | Francis Acido | Dance Fitness | `coach-francis-acido` |
 
-### 7.4 Reference-image reality check
+### 7.5 Source-image intake status
 
-`docs/facebook-findings/README.md` refers to `coaches-roster.jpg` and a `facebook_findings.zip` screenshot set held in Google Drive, but **the repository currently contains no image files at all** — `docs/facebook-findings/` holds only `README.md` and `findings.md`. Since the screen spec forbids generating a coach portrait without a valid reference image, reference sourcing (`ASSET-010`) is the gating dependency for the entire headshot sub-track and is raised as **OQ-REF** in [Section 9](#9-deferred-open-business-questions).
+**Intake path:** coach source images are uploaded and managed through **Balanse image assets dev**. That is the system of record for raw source photography, and `ASSET-010` tracks and catalogues what lands there rather than sourcing photos by some other route. The roadmap deliberately does not describe that system's internals — `ASSET-010` records its concrete location and access details as part of its deliverable.
 
-### 7.5 Tooling notes (verified against the Higgsfield catalogue)
+**Status at time of writing:** upload is **in progress**. This matters for sequencing rather than for feasibility:
+
+- The repository itself still contains no image files — `docs/facebook-findings/` holds only `README.md` and `findings.md`, while `coaches-roster.jpg` and the `facebook_findings.zip` screenshot set live in Google Drive per `docs/facebook-findings/README.md`. Those Facebook captures are **research material, not headshot sources**.
+- Because uploads are ongoing, per-coach coverage is not yet known. `ASSET-010` resolves that into a coverage matrix, and until a coach's source image is catalogued, that coach's headshot cannot start — not because the work is blocked in principle, but because the pipeline in §7.2 has no input for them.
+
+Remaining open items (per-coach coverage and likeness consent) are tracked as **OQ-REF** in [Section 9](#9-deferred-open-business-questions). The intake route itself is settled.
+
+### 7.6 Tooling notes (verified against the Higgsfield catalogue)
 
 These are engineering notes for whoever runs generation, not product rules:
 
@@ -2028,21 +2053,23 @@ These are engineering notes for whoever runs generation, not product rules:
 - **`soul_2` / Higgsfield Soul 2.0** is the portrait/character-oriented model (tags include `portrait`, `character-generation`) and supports a `soul_id` for personalised, repeatable identity — useful for a coherent per-coach set. It takes **one** reference image and supports `1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3`.
 - **Aspect-ratio gaps to plan around:** `soul_2` does **not** offer the `4:5` ratio the coach-portrait prompt asks for (generate `3:4` and reframe, or use `nano_banana_pro`), and **no** listed image model offers the `3:1` ratio the About brand-texture divider asks for (generate `21:9` and crop/reframe). Record the crop step in the manifest so the delivered asset still matches the spec's ratio.
 - Supporting operations available for the post-processing pass: `upscale_image`, `remove_background`, `outpaint_image`, `reframe`, and `generate_image_batch` + `jobs_wait` for roster-scale runs.
-- Reference images must be uploaded through the Higgsfield media path (upload widget / `media_upload` / `media_import_url`) and referenced by media id; never paste raw URLs into prompt parameters.
+- **Getting a source image into a generation run:** a catalogued source from Balanse image assets dev must be registered as Higgsfield media (upload widget / `media_upload` / `media_import_url`) and then passed **by media id** in the generation call's `medias` array. Never paste a raw URL into a prompt parameter. The resulting media id is what the manifest records as `source_asset_id`, which is how a finished headshot stays traceable to the photo it came from.
 - Free-trial "unlim" generations were **not** spendable at the time of writing, so budget for paid generations and record spend per ticket.
 
 ---
 
-### 7.6 Foundations
+### 7.7 Foundations
 
 #### ASSET-001 — Higgsfield generation pipeline, models, and prompt conventions
 
 - **Lane:** Assets
 - **Depends on:** FE-FND-004
 - **Source docs:** `docs/screen-specs/shared/04-marketing-image-generation.md`; `docs/screen-specs/README.md` §Marketing image-generation prompts; `docs/facebook-findings/findings.md` §5
-- **Scope notes:** Stand up the repeatable generation pipeline before any asset is produced. Codify the prompt structure and the shared art-direction tail from §7.2, the model selection guidance and aspect-ratio gaps from §7.5, the reference-media upload path, the **when not to generate** checklist, and the review gate (who approves, what disqualifies an output). Include a cost log so spend per asset is visible. This ticket produces a runbook plus prompt library — not images.
+- **Scope notes:** Stand up the repeatable generation pipeline before any asset is produced. Codify the four-stage chain in §7.2 (source → generate → review → store), the prompt structure and shared art-direction tail from §7.3, the model selection guidance and aspect-ratio gaps from §7.6, the **Balanse image assets dev → Higgsfield media id** handoff, the **when not to generate** checklist, and the review gate (who approves, what disqualifies an output). Include a cost log so spend per asset is visible. This ticket produces a runbook plus prompt library — not images.
 - **Acceptance criteria:**
-  - [ ] A generation runbook exists covering: prompt structure (aspect ratio first), the shared art-direction tail, model selection per asset type, reference-media upload, and the post-processing operations available.
+  - [ ] A generation runbook exists covering: the four-stage pipeline, prompt structure (aspect ratio first), the shared art-direction tail, model selection per asset type, and the post-processing operations available.
+  - [ ] The runbook documents the source handoff end to end: locate a catalogued source in Balanse image assets dev → register it as Higgsfield media → pass it by media id → record that id against the output.
+  - [ ] The runbook states which asset classes require a source image (identity-bound: coach headshots, group hero) and which do not (non-identity scenes and still lifes), so no operator has to guess.
   - [ ] A prompt library file holds every prompt from the screen specs **verbatim**, keyed by page and asset letter, so no prompt is paraphrased at generation time.
   - [ ] The do-not-generate checklist from `shared/04` is reproduced and is part of the review gate.
   - [ ] The reviewer checklist exists and rejects: embedded text, logos, fake UI/signage, watermarks, insufficient negative space, duplicated people, visible AI distortion.
@@ -2057,60 +2084,74 @@ These are engineering notes for whoever runs generation, not product rules:
 - **Lane:** Assets
 - **Depends on:** ASSET-001
 - **Source docs:** `docs/screen-specs/shared/04-marketing-image-generation.md`; all `docs/screen-specs/public/*` §Image / Visual Asset Prompts; `docs/screen-specs/admin/07-coach-management.md` §Profile photo management
-- **Scope notes:** Produce the single inventory of every image the product needs, the naming convention that carries it from generation through Storage, and the manifest/provenance record consumed by `FE-SHR-004`. The inventory is closed — it contains exactly the slots the screen specs define (see §7.7 and §7.8), plus the coach placeholder. Proposed naming, aligned with the bucket key conventions in `INF-004`:
+- **Scope notes:** Produce the single inventory of every image the product needs, the naming convention that carries it from generation through Storage, and the manifest/provenance record consumed by `FE-SHR-004`. The inventory is closed — it contains exactly the slots the screen specs define (see §7.8 and §7.9), plus the coach placeholder. Proposed naming, aligned with the bucket key conventions in `INF-004`:
 
   ```text
   marketing-assets/{page}/{slot}-{aspect}.{ext}      e.g. marketing-assets/landing/hero-accent-16x9.webp
   coach-photos/{coach-slug}/headshot-{aspect}.{ext}  e.g. coach-photos/rachelle-tobiano/headshot-4x5.webp
   ```
 
-  Manifest fields: asset id, page, slot, aspect ratio, source prompt key, model + parameters used, generation date, reference-image provenance (for coach portraits), approval status and approver, alt text, and the crop/post-processing applied.
+  Manifest fields: asset id, page, slot, aspect ratio, source prompt key, **`source_asset_id`** (the Balanse image assets dev item and its Higgsfield media id, required for identity-bound assets), model + parameters used, generation date, approval status and approver, alt text, the crop/post-processing applied, and the final Storage key once `ASSET-030` runs. The manifest is the audit trail for the whole §7.2 chain: for any published image it must answer *what source did this come from, what produced it, who approved it, and where does it live now*.
 - **Acceptance criteria:**
   - [ ] The inventory lists every slot from the public screen specs (landing A–D, about A–C, contact A–B, faqs A, coaches A–C) plus 11 coach headshots and the placeholder avatar, with no extra invented slots.
   - [ ] Naming convention is documented and matches the bucket key conventions in `INF-004`.
   - [ ] Manifest schema is defined, versioned, and consumable by `FE-SHR-004` without transformation.
   - [ ] Every manifest entry requires alt text before it can be marked approved.
-  - [ ] Coach entries require a reference-provenance value; the manifest rejects a coach portrait without one.
+  - [ ] Identity-bound entries require a `source_asset_id` pointing at a catalogued Balanse image assets dev item; the manifest **rejects a coach portrait without one**, and a validation check enforces this rather than relying on reviewer discipline.
+  - [ ] Non-identity entries are explicitly marked as source-free so the missing `source_asset_id` reads as intentional rather than as an omission.
   - [ ] Approval status is explicit (`draft` / `client-review` / `approved` / `rejected`), and only `approved` assets may ship to a public page.
+  - [ ] Every entry has a slot for its final Storage key, populated by `ASSET-030`.
   - [ ] The inventory records which slots are deliberately **not** generated and why (per the do-not-generate rule).
 - **Out of scope:** Generating images; uploading to Storage (`ASSET-030`).
 - **Phase:** P1
 
 ---
 
-### 7.7 Professional coach headshots
+### 7.8 Professional coach headshots
 
-> This sub-track is the priority of the Assets lane. Every ticket in it inherits one hard constraint from `docs/screen-specs/public/05-coaches.md`: **no portrait may be generated for a coach without a valid reference image, and no coach may be invented.** Where a reference is missing, the placeholder from `ASSET-014` ships instead — that is a complete, acceptable outcome, not a failure.
+> This sub-track is the priority of the Assets lane. Every ticket in it inherits one hard constraint from `docs/screen-specs/public/05-coaches.md`: **no portrait may be generated for a coach without a valid source image of that coach, and no coach may be invented.** Headshots are always source-driven — stage 1 of the §7.2 pipeline is not optional here. Where a source is missing, the placeholder from `ASSET-014` ships instead; that is a complete, acceptable outcome, not a failure.
 
-#### ASSET-010 — Coach reference-image sourcing, consent, and eligibility matrix
+#### ASSET-010 — Coach source-image intake via Balanse image assets dev
 
 - **Lane:** Assets
-- **Depends on:** none — **start on day one**
+- **Depends on:** none — **start on day one**; intake is already under way
 - **Source docs:** `docs/screen-specs/public/05-coaches.md` §Image / Visual Asset Prompts, §Coach image source; `docs/facebook-findings/findings.md` §4b, §Not found / limitations; `docs/facebook-findings/README.md`
-- **Scope notes:** Collect, for each of the 11 roster coaches, either a usable reference image or a recorded "none available". The repo contains no images today (§7.4), and `findings.md` notes that no coach bios or portraits were visible in the Facebook review, so references must come from Coach Rex: the Google Drive `facebook_findings.zip` / `coaches-roster.jpg`, the gym's own photo library, or a fresh capture. Also capture **written consent** to generate and publish an AI-assisted likeness for each coach, because these are real, named people on a public page. Deliver a per-coach eligibility matrix that every downstream headshot ticket reads. **⛔ BLOCKED-BY-OQ-REF** until Rex supplies the material.
+- **Scope notes:** Own the **source** stage of the pipeline. Jose is uploading coach photography through **Balanse image assets dev**; this ticket ingests, catalogues, and quality-checks what arrives there, and turns it into the per-coach coverage matrix that every downstream headshot ticket reads. It does **not** invent a parallel sourcing route — Balanse image assets dev is the intake path, and where a coach's photo is missing the resolution is to request it through that same workflow.
+
+  Three things to keep distinct:
+  1. **Source photos** — real photographs of a named coach, arriving via Balanse image assets dev. These are the only valid inputs for a headshot.
+  2. **Research captures** — the Facebook screenshots and `coaches-roster.jpg` in Google Drive. These establish *who the coaches are and what they teach*; they are **not** headshot sources.
+  3. **Consent** — written permission to generate and publish an AI-assisted likeness. These are real, named people appearing on a public page, so consent is tracked per coach alongside the photo, and a photo without consent is treated the same as no photo.
+
+  Also record the concrete intake details (where Balanse image assets dev lives, how the team accesses it, how a new upload is noticed) so the pipeline is operable by someone other than Jose.
 - **Acceptance criteria:**
-  - [ ] An eligibility matrix exists with a row per roster coach: reference available (yes/no), source, resolution/quality assessment, consent recorded (yes/no), decision (generate / placeholder).
-  - [ ] Reference images are stored in a private working location with provenance recorded; they are **not** committed to the public repo.
-  - [ ] Minimum reference quality is defined (face clearly visible, adequate resolution, not heavily filtered) and applied consistently.
-  - [ ] Coaches without a usable reference or without consent are routed to `ASSET-014` and are explicitly **not** queued for generation.
-  - [ ] All 11 roster names are represented; no additional person appears.
-  - [ ] Outstanding requests to Coach Rex are tracked with dates so the blocker is visible.
-- **Out of scope:** Generating anything; retouching; a photo shoot (raise separately if Rex prefers real photography, which the spec says to prefer where possible).
-- **Phase:** P0 (start) → P1 (complete)
+  - [ ] The intake path is documented concretely: location/URL of Balanse image assets dev, access instructions, and how the team detects newly uploaded coach photos.
+  - [ ] A coverage matrix exists with one row per roster coach: source photo received (yes/no), intake item reference, upload date, quality assessment, consent recorded (yes/no), decision (**generate** / **placeholder**).
+  - [ ] Every received source is catalogued with a stable identifier that `ASSET-002` can store as `source_asset_id`, and registered as Higgsfield media so it is usable as a generation input.
+  - [ ] Minimum source quality is defined (face clearly visible, adequate resolution, not heavily filtered, reasonably current) and applied consistently, with rejected uploads flagged back through the intake rather than silently used.
+  - [ ] Source photos live in a private working location with provenance recorded; they are **not** committed to the public repo.
+  - [ ] Coaches with no source photo **or** no consent are routed to `ASSET-014` and are explicitly **not** queued for generation.
+  - [ ] All 11 roster names appear in the matrix; no additional person appears.
+  - [ ] Outstanding uploads are tracked with request dates so partial coverage stays visible instead of quietly stalling `ASSET-012`.
+  - [ ] The matrix is treated as living: it is re-checked before `ASSET-012` starts and again before `ASSET-030` uploads, so late-arriving photos are picked up.
+- **Out of scope:** Generating anything; retouching; running a photo shoot (raise separately if Coach Rex prefers real photography, which the screen spec says to prefer where it is available).
+- **Phase:** P0 (start, in progress) → P1 (matrix complete for coaches whose photos have landed)
 
 #### ASSET-011 — Coach headshot art-direction lockup and pilot approval
 
 - **Lane:** Assets
-- **Depends on:** ASSET-001, ASSET-010 (at least one eligible coach)
+- **Depends on:** ASSET-001, ASSET-010 (at least two coaches with catalogued source photos and consent)
 - **Source docs:** `docs/screen-specs/public/05-coaches.md` §Asset A — Coach portrait template; `docs/facebook-findings/findings.md` §5; `docs/screen-specs/shared/04-marketing-image-generation.md`
-- **Scope notes:** Lock the single look every headshot will share before producing eleven of them. The spec's portrait template is the base (4:5, waist-up or three-quarter, subject slightly off-centre, relaxed confident posture, enough environmental context to suggest their discipline, clean negative space, natural daylight, modern Cebu wellness studio, realistic skin and fabric texture, approachable, athletic without aggressive bodybuilding aesthetics). Layer the Balansé palette on top: cream / warm white / beige-tan backdrop, muted brown and dark navy-charcoal accents, restrained gold warmth in the light — **as art direction, not as an overlaid logo or text**. Produce a pilot on one consenting coach, iterate with Coach Rex, and freeze the resulting prompt, model, parameters, and post-processing recipe.
+- **Scope notes:** Lock the single look every headshot will share before producing a roster's worth of them. **Input is a real source photo from the `ASSET-010` intake**, passed to Higgsfield as a reference media id — the pilot is an edit/restyle of an actual coach, not a text-only invention. The spec's portrait template is the base (4:5, waist-up or three-quarter, subject slightly off-centre, relaxed confident posture, enough environmental context to suggest their discipline, clean negative space, natural daylight, modern Cebu wellness studio, realistic skin and fabric texture, approachable, athletic without aggressive bodybuilding aesthetics). Layer the Balansé palette on top: cream / warm white / beige-tan backdrop, muted brown and dark navy-charcoal accents, restrained gold warmth in the light — **as art direction, not as an overlaid logo or text**. Iterate with Coach Rex, then freeze the prompt, model, parameters, and post-processing recipe.
 - **Acceptance criteria:**
-  - [ ] One approved pilot headshot exists for a real, consenting roster coach.
-  - [ ] The frozen recipe is recorded: exact prompt text, model and version, parameters, seed/`soul_id` strategy, aspect ratio, and post-processing steps.
-  - [ ] The recipe demonstrably reproduces a consistent look across at least two different coaches (consistency test before roster rollout).
-  - [ ] The pilot preserves the referenced person's identity, judged by someone who knows them.
+  - [ ] One approved pilot headshot exists for a real, consenting roster coach, produced **from that coach's catalogued source photo**.
+  - [ ] The frozen recipe is recorded: exact prompt text, model and version, parameters, how the source media id is supplied, seed/`soul_id` strategy, aspect ratio, and post-processing steps.
+  - [ ] The recipe demonstrably reproduces a consistent look across **two different coaches from two different source photos** — proving the look survives varied input quality, lighting, and framing before roster rollout.
+  - [ ] Source-to-output likeness is verified: the pilot is recognisably the person in the source photo, judged by someone who knows them.
+  - [ ] Guidance exists for handling poor-quality sources (when to request a better upload through the intake rather than over-processing a weak photo).
   - [ ] Background, lighting, crop, and colour treatment are specified tightly enough that a different operator gets the same result.
   - [ ] No text, logo, watermark, invented credential, or invented accessory appears.
+  - [ ] The pilot's manifest entry carries its `source_asset_id`.
   - [ ] Coach Rex has signed off on the look in writing before roster generation starts.
 - **Out of scope:** Generating the rest of the roster (`ASSET-012`).
 - **Phase:** P1
@@ -2118,19 +2159,23 @@ These are engineering notes for whoever runs generation, not product rules:
 #### ASSET-012 — Professional headshots for the full coach roster
 
 - **Lane:** Assets
-- **Depends on:** ASSET-011, ASSET-010 (complete matrix), ASSET-002
+- **Depends on:** ASSET-011, ASSET-010 (coverage matrix), ASSET-002
 - **Source docs:** `docs/screen-specs/public/05-coaches.md`; `docs/facebook-findings/findings.md` §4b; `docs/screen-specs/admin/07-coach-management.md` §Profile photo management
-- **Scope notes:** Run the frozen recipe across every eligible coach in the §7.3 table, one approved primary headshot each, at 4:5 per the portrait template. Each coach's environmental context should hint at their own discipline (calisthenics, Mat Pilates, Caliyoga, circuit training, groundworks, kickboxing, Brazilian jiu-jitsu, yoga, dance fitness) without turning into a themed costume shoot. Use batch generation with per-coach review; the set must read as one coherent series when placed side by side on the Coaches page. Coaches marked placeholder-only in `ASSET-010` are skipped, not substituted.
+- **Scope notes:** Run the frozen recipe across every coach in the §7.4 roster whose source photo and consent are catalogued in `ASSET-010`, producing one approved primary headshot each at 4:5 per the portrait template. **Each run takes that coach's own source photo as its reference input** — this is a restyle of a real photograph into the Balansé look, never a fresh invention of a face. Each coach's environmental context should hint at their own discipline (calisthenics, Mat Pilates, Caliyoga, circuit training, groundworks, kickboxing, Brazilian jiu-jitsu, yoga, dance fitness) without turning into a themed costume shoot. Use batch generation with per-coach review; the set must read as one coherent series when placed side by side on the Coaches page.
+
+  Because intake is still in progress, this ticket is expected to run in waves: generate for the coaches whose photos have landed, and re-run for late arrivals rather than blocking the whole roster on the last upload. Coaches marked placeholder-only are skipped, not substituted.
 - **Acceptance criteria:**
-  - [ ] One approved primary headshot exists per **eligible** coach; the skipped coaches are listed with their reason.
-  - [ ] Every headshot preserves the referenced person's identity and was confirmed by someone who knows them.
+  - [ ] Every generated headshot was produced from that specific coach's catalogued source photo; a headshot with no `source_asset_id` fails review.
+  - [ ] One approved primary headshot exists per coach with a source photo and consent; coaches without one are listed with their reason and routed to `ASSET-014`.
+  - [ ] Each headshot is recognisably the person in their source photo, confirmed by someone who knows them.
   - [ ] Side-by-side review of the full set shows consistent framing, lighting, background treatment, and colour — a coherent set, per the spec.
   - [ ] Brand direction reads as cream/beige with gold warmth, with **no** logo, text, watermark, or graphic overlay.
   - [ ] No fake medals or credentials, no invented tattoos or accessories, no invented people.
-  - [ ] Each asset is registered in the manifest with model, parameters, generation date, reference provenance, approver, and alt text.
+  - [ ] Each asset is registered in the manifest with `source_asset_id`, model, parameters, generation date, approver, and alt text, then moved to `approved` only after review.
+  - [ ] A late-arrival procedure is documented and exercised at least once: a photo that lands after the first wave gets a headshot without re-running the whole roster.
   - [ ] Coach Rex has approved the full set before it is marked `approved`.
   - [ ] Generation spend is recorded in the cost log.
-- **Out of scope:** Crops/derivatives (`ASSET-013`); group hero (`ASSET-015`); upload to Storage (`ASSET-030`).
+- **Out of scope:** Generating a portrait for any coach without a source photo — that case is `ASSET-014` and produces a placeholder, not a face. Crops/derivatives (`ASSET-013`); group hero (`ASSET-015`); upload to Storage (`ASSET-030`).
 - **Phase:** P2
 
 #### ASSET-013 — Headshot post-processing and delivery set
@@ -2144,25 +2189,27 @@ These are engineering notes for whoever runs generation, not product rules:
   - [ ] All derivatives originate from the approved master, not from a fresh generation.
   - [ ] Faces are not cropped awkwardly at any ratio (visual review of every crop).
   - [ ] Output format and compression meet the page-weight budget agreed in `FE-FND-011`; modern format with fallback.
-  - [ ] Masters are archived losslessly and are traceable from the manifest.
+  - [ ] Masters are archived losslessly and are traceable from the manifest **back to the original source photo** via `source_asset_id`.
   - [ ] Derivative filenames follow the `ASSET-002` convention.
+  - [ ] Every derivative is marked ready for the Storage stage, so `ASSET-030` has an unambiguous set to upload.
 - **Out of scope:** Storage upload (`ASSET-030`); rendering (`FE-SHR-004`).
 - **Phase:** P2
 
-#### ASSET-014 — Coach placeholder avatar and no-reference fallback
+#### ASSET-014 — Coach placeholder avatar (the explicit no-source fallback)
 
 - **Lane:** Assets
 - **Depends on:** FE-FND-004, ASSET-010
 - **Source docs:** `docs/screen-specs/public/05-coaches.md` §Fallback behavior; `docs/screen-specs/admin/07-coach-management.md` §Photo behavior
-- **Scope notes:** Both specs demand a **deliberate** fallback rather than a broken image: the public Coaches page shows "a designed placeholder/avatar" when a coach has no photo, and the admin coach form must present the same fallback after a photo is removed. Design an on-brand placeholder (cream/beige ground, muted brown or gold line treatment consistent with the Balansé emblem language) that works at card size and avatar size. It must be obviously a placeholder without looking broken or unfinished, and it must not depict an invented face.
+- **Scope notes:** **This is the one ticket that covers what happens when a coach has no source photo**, and its answer is a designed placeholder — never a generated face. Both specs demand a deliberate fallback rather than a broken image: the public Coaches page shows "a designed placeholder/avatar" when a coach has no photo, and the admin coach form must present the same fallback after a photo is removed. Design an on-brand placeholder (cream/beige ground, muted brown or gold line treatment consistent with the Balansé emblem language) that works at card size and avatar size. It must read as intentional rather than broken or unfinished. It is also the interim state for coaches whose uploads are still in flight, so it needs to look acceptable on a live public page, not just in a wireframe.
 - **Acceptance criteria:**
   - [ ] Placeholder exists at both card (4:5) and avatar (square) sizes.
-  - [ ] It uses Balanse brand tokens and sits comfortably next to real headshots in the same grid.
-  - [ ] It contains no generated human face and no text beyond, at most, initials.
+  - [ ] It uses Balanse brand tokens and sits comfortably next to real headshots in the same grid — a mixed grid of real and placeholder cards is reviewed and looks deliberate.
+  - [ ] It contains **no generated human face** and no text beyond, at most, initials.
   - [ ] It is used by the public Coaches page, landing coach previews, and the admin coach form.
   - [ ] No code path can render a broken image for a photo-less coach (verified in `FE-PUB-005` and `FE-ADM-007`).
-  - [ ] Registered in the manifest like any other asset.
-- **Out of scope:** Generating portraits for coaches without references — this ticket is the answer to that case.
+  - [ ] Swapping a placeholder for a real headshot later is a data change only — no layout or code change is needed when a late upload arrives.
+  - [ ] Registered in the manifest like any other asset, marked source-free by design.
+- **Out of scope:** Generating a portrait for a coach who has no source photo. That is explicitly not done anywhere in this roadmap; this ticket is the sanctioned alternative.
 - **Phase:** P1
 
 #### ASSET-015 — Coaches page group hero and specialty accents (conditional)
@@ -2170,10 +2217,11 @@ These are engineering notes for whoever runs generation, not product rules:
 - **Lane:** Assets
 - **Depends on:** ASSET-012
 - **Source docs:** `docs/screen-specs/public/05-coaches.md` §Asset B — Coaches page group hero, §Asset C — Coach specialty card background accents
-- **Scope notes:** Two conditional assets. **Group hero (16:9):** allowed **only if** valid reference images exist for every coach depicted, per the spec — coaches interacting naturally rather than in a formal lineup, room for heading copy on one side, hints of the disciplines without staged props, each person's identity preserved, no invented team members. If references are incomplete, **skip it** and record the skip. **Specialty accents (1:1):** close-crop movement details — hands, footwork, equipment, body movement — for the disciplines the roster actually teaches, explicitly **without showing a full face**, so these are not identity-bound and can proceed regardless.
+- **Scope notes:** Two conditional assets with opposite source requirements. **Group hero (16:9)** is identity-bound: allowed **only if** catalogued source photos and consent exist for every coach depicted, per the spec — coaches interacting naturally rather than in a formal lineup, room for heading copy on one side, hints of the disciplines without staged props, each person's identity preserved, no invented team members. If source coverage is incomplete, **skip it** and record the skip; do not depict a subset as "the team" without saying so, and do not fill gaps with invented figures. **Specialty accents (1:1)** are not identity-bound — close-crop movement details (hands, footwork, equipment, body movement) explicitly **without showing a full face** — so they are text-to-image and proceed regardless of intake status.
 - **Acceptance criteria:**
-  - [ ] Specialty accents delivered at 1:1 for the roster's real disciplines, with no full faces and no cliché stock poses.
-  - [ ] Group hero is produced only when every depicted coach has a valid reference and consent; otherwise the skip is recorded in the inventory with its reason.
+  - [ ] Specialty accents delivered at 1:1 for the roster's real disciplines, with no full faces and no cliché stock poses; marked source-free in the manifest.
+  - [ ] Group hero is produced only when every depicted coach has a catalogued source photo and consent; otherwise the skip is recorded in the inventory with its reason.
+  - [ ] If produced, the group hero records the `source_asset_id` of every coach it depicts.
   - [ ] If produced, the group hero preserves every depicted person's identity and adds nobody who is not on the roster.
   - [ ] Heading-copy negative space is preserved on one side.
   - [ ] No text, logos, or watermarks.
@@ -2183,9 +2231,11 @@ These are engineering notes for whoever runs generation, not product rules:
 
 ---
 
-### 7.8 Marketing and public-page imagery
+### 7.9 Marketing and public-page imagery
 
 > These tickets execute prompts that **already exist verbatim** in the screen specs. No new prompt is authored, and no new image slot is invented.
+>
+> All four are **non-identity** assets — the specs describe studio scenes, objects, and textures rather than named people — so they have no source-photo prerequisite and are generated text-to-image. They still pass through the rest of the §7.2 chain: generate → review and client approval → Supabase Storage via `ASSET-030`. Where Balanse supplies real photography for one of these slots, the real photograph **replaces** the generated asset rather than sitting alongside it, and that swap is recorded in the inventory.
 
 #### ASSET-020 — Landing page imagery (Assets A–D)
 
@@ -2201,7 +2251,7 @@ These are engineering notes for whoever runs generation, not product rules:
   - [ ] Asset D leaves the left side clear for CTA copy and a button, with subjects off-centre right.
   - [ ] No asset contains text, logos, fake UI, calendar graphics, or watermarks.
   - [ ] Page-weight budget from `FE-FND-011` is respected after optimisation.
-- **Out of scope:** Coach imagery (§7.7); any generated calendar UI.
+- **Out of scope:** Coach imagery (§7.8); any generated calendar UI.
 - **Phase:** P2
 
 #### ASSET-021 — About page imagery (Assets A–C)
@@ -2209,14 +2259,14 @@ These are engineering notes for whoever runs generation, not product rules:
 - **Lane:** Assets
 - **Depends on:** ASSET-001, ASSET-002
 - **Source docs:** `docs/screen-specs/public/02-about.md` §Image / Visual Asset Prompts
-- **Scope notes:** **A** About hero (16:9 — candid in-between moment after a class, subjects grouped to one side, generous negative space for heading copy, **not** a posed corporate team photo, no exaggerated fitness physiques). **B** Our Approach accent (4:3 — studio corner communicating balance between strength, mobility, and recovery; human presence optional and secondary). **C** brand texture divider (**3:1** — soft fabric folds, warm concrete, subtle shadows, gentle directional light; no people required). Note the ratio gap from §7.5: 3:1 is not natively available, so generate 21:9 and crop, recording the crop in the manifest.
+- **Scope notes:** **A** About hero (16:9 — candid in-between moment after a class, subjects grouped to one side, generous negative space for heading copy, **not** a posed corporate team photo, no exaggerated fitness physiques). **B** Our Approach accent (4:3 — studio corner communicating balance between strength, mobility, and recovery; human presence optional and secondary). **C** brand texture divider (**3:1** — soft fabric folds, warm concrete, subtle shadows, gentle directional light; no people required). Note the ratio gap from §7.6: 3:1 is not natively available, so generate 21:9 and crop, recording the crop in the manifest.
 - **Acceptance criteria:**
   - [ ] Three assets delivered at the specced ratios (Asset C delivered as a true 3:1 crop with the source ratio and crop recorded).
   - [ ] Hero reads as candid community, not a staged corporate lineup.
   - [ ] Negative space for heading copy is preserved on hero and approach assets.
   - [ ] No text, logos, fake signage, or watermarks; no exaggerated physiques.
   - [ ] Registered in the manifest with alt text.
-- **Out of scope:** Coach portraits used in the "Meet the team" block — those come from the coach record (§7.7).
+- **Out of scope:** Coach portraits used in the "Meet the team" block — those come from the coach record (§7.8).
 - **Phase:** P2
 
 #### ASSET-022 — Contact page imagery (Assets A–B)
@@ -2251,22 +2301,23 @@ These are engineering notes for whoever runs generation, not product rules:
 
 ---
 
-### 7.9 Storage handoff
+### 7.10 Storage handoff
 
 #### ASSET-030 — Upload approved assets into Supabase Storage
 
 - **Lane:** Assets + BE
 - **Depends on:** INF-004, BE-021, ASSET-013, ASSET-014, ASSET-020, ASSET-021, ASSET-022, ASSET-023
 - **Source docs:** `docs/screen-specs/admin/07-coach-management.md` §Profile photo management; `docs/screen-specs/public/05-coaches.md` §Coach image source; `docs/screen-specs/shared/04-marketing-image-generation.md`; `docs/business-requirements/03-roles-and-permissions.md` §Coach-rate privacy
-- **Scope notes:** Move approved assets from the working store into the buckets created by `INF-004` and secured by `BE-021`: coach headshots and the placeholder into **`coach-photos`** (public read, admin write), marketing imagery into **`marketing-assets`** (public read, admin write). Keys follow the `ASSET-002` convention. Because `public/05-coaches.md` requires coach cards to pull "the current coach profile photo from the database-managed coach record", the upload must also set each coach's photo key on the `coaches` row from `BE-004`, so exactly one active photo exists per coach. The upload is scripted and idempotent, not a manual console drag. Note the privacy boundary: coach **photos** are public; coach **rates** are not — this handoff touches only the photo column.
+- **Scope notes:** The final stage of the §7.2 chain. Move approved assets from the working store into the buckets created by `INF-004` and secured by `BE-021`: coach headshots and the placeholder into **`coach-photos`** (public read, admin write), marketing imagery into **`marketing-assets`** (public read, admin write). Keys follow the `ASSET-002` convention. Because `public/05-coaches.md` requires coach cards to pull "the current coach profile photo from the database-managed coach record", the upload must also set each coach's photo key on the `coaches` row from `BE-004`, so exactly one active photo exists per coach. The upload is scripted and idempotent, not a manual console drag — intake is ongoing, so this will run more than once as late headshots are approved. Note the privacy boundary: coach **photos** are public; coach **rates** are not — this handoff touches only the photo column.
 - **Acceptance criteria:**
   - [ ] Every approved asset exists in the correct bucket under a key matching the `ASSET-002` convention.
-  - [ ] Each eligible coach row carries exactly one active photo key pointing at a real object; photo-less coaches carry none and resolve to the placeholder.
-  - [ ] The upload script is idempotent and re-runnable without creating duplicates or orphans.
+  - [ ] Each coach row with an approved headshot carries exactly one active photo key pointing at a real object; coaches still awaiting a source photo carry none and resolve to the placeholder.
+  - [ ] Every uploaded coach headshot is traceable end to end — Storage object → manifest entry → `source_asset_id` → the Balanse image assets dev intake item — and an object that cannot be traced back to a source is treated as a defect.
+  - [ ] The upload script is idempotent and re-runnable without creating duplicates or orphans, so a second wave of approved headshots can be published without disturbing the first.
   - [ ] Public read works for `coach-photos` and `marketing-assets`; anonymous write fails; non-admin write fails (re-verifies `BE-021`).
   - [ ] The manifest records the final Storage key and public URL for each asset.
   - [ ] Only assets marked `approved` are uploaded; drafts and rejects are excluded by the script.
-  - [ ] A reconciliation report lists any manifest entry without an object and any object without a manifest entry, and both lists are empty at sign-off.
+  - [ ] A reconciliation report lists any manifest entry without an object, any object without a manifest entry, and any coach whose photo key points at a missing object — all three lists empty at sign-off.
 - **Out of scope:** The mocked FE fetching these URLs at runtime — that is `WIRE-012`. The GCash QR image is an admin-uploaded business artefact handled by `BE-043`/`FE-ADM-013`, not by this ticket.
 - **Phase:** P4
 
@@ -2330,13 +2381,13 @@ These are unresolved **business** decisions. No ticket may guess an answer. Each
 | **OQ-PRICE** | No source document contains real per-class pricing or real coach rates; `findings.md` has no pricing beyond a one-off ₱1,000 charity event. | `docs/facebook-findings/findings.md` §3 | `BE-023`, `FE-*` fixtures | All prices and rates in seeds/fixtures are obvious placeholders, flagged as non-authoritative. |
 | **OQ-HOURS** | Opening hours were not exposed in the Facebook review ("Open now" only). | `docs/facebook-findings/findings.md` §2, §Not found | `BE-043`, `FE-PUB-003`, `FE-ADM-013` | Hours field ships empty; no hours are invented on the Contact page. |
 | **OQ-CLASSFAM** | Screen specs use `Yoga / Boxing / Capoeira` as filter examples, while the Facebook findings list the live families as Yoga, Mat Pilates, Calisthenics, Caliyoga, Circuit Training, Kickboxing, Brazilian Jiu-Jitsu, Groundworks, Dance Fitness. | `docs/screen-specs/public/05-coaches.md` vs `docs/facebook-findings/findings.md` §3, §4b | `BE-023`, `FE-PUB-005`, `FE-SHR-005` | Filters are generated from the class catalogue rather than hardcoded, so either list renders correctly. Seeds use the findings list. |
-| **OQ-REF** | **Coach reference images and likeness consent.** `public/05-coaches.md` forbids generating a coach portrait without a valid reference image, but the repo contains no image files — `coaches-roster.jpg` and the screenshot set live in Google Drive per `docs/facebook-findings/README.md`. Which coaches have usable reference photos, who supplies them, and has each coach consented to an AI-assisted likeness being published? Would Coach Rex prefer a real photo shoot, which the spec says to prefer where possible? | `docs/screen-specs/public/05-coaches.md` vs `docs/facebook-findings/README.md` and the repo contents | `ASSET-010`, `ASSET-011`, `ASSET-012`, `ASSET-013`, `ASSET-015`, `FE-PUB-005` | Reference sourcing runs as its own ticket (`ASSET-010`) starting in P0. Any coach without a usable reference **or** without consent gets the designed placeholder from `ASSET-014` — no face is invented, and no coach is dropped from the roster. |
+| **OQ-REF** | **Coach source-photo coverage and likeness consent.** The intake route is settled — Jose is uploading coach photography through **Balanse image assets dev** — but two things remain open: which of the 11 roster coaches will end up with a usable source photo, and has each coach consented to an AI-assisted likeness being published on a public page? A secondary question: would Coach Rex prefer a real photo shoot, which `public/05-coaches.md` says to prefer where photography is available? | `docs/screen-specs/public/05-coaches.md` §Coach image source; intake status in §7.5 | `ASSET-010`, `ASSET-011`, `ASSET-012`, `ASSET-013`, `ASSET-015`, `FE-PUB-005` | `ASSET-010` catalogues uploads as they arrive and maintains the per-coach coverage matrix; `ASSET-012` generates in waves so partial coverage never blocks the roster. Any coach without a source photo **or** without consent gets the designed placeholder from `ASSET-014` — no face is invented, and no coach is dropped from the page. |
 
 ### 9.4 Escalation
 
 Every OQ above should be raised with Coach Rex as a single consolidated list before the wiring phase begins, because **OQ-1**, **OQ-2**, **OQ-3**, and **OQ-4** all change either the schema or the legal surface of the product, and are cheapest to answer before real data exists.
 
-**OQ-REF is the exception to that timing** — it should be raised immediately, ahead of the rest. It gates the entire coach-headshot sub-track, it depends on eleven individual people rather than a single decision from Rex, and it is the only open item on the Assets critical path.
+**OQ-REF is the exception to that timing** — it should be chased continuously rather than batched. Its intake route is already settled and in use, but coverage and consent depend on eleven individual people rather than a single decision from Rex, and every missing photo is one coach who ships as a placeholder.
 
 ---
 
@@ -2377,13 +2428,16 @@ The phase is complete when every statement below is true and evidenced.
 
 - [ ] The generation runbook, verbatim prompt library, and review gate from `ASSET-001` exist and were actually used — every shipped asset traces to a prompt in the library.
 - [ ] The closed asset inventory from `ASSET-002` is complete, and every entry has an approval status, alt text, and provenance; deliberately-skipped slots are recorded with their reason.
-- [ ] The coach eligibility matrix covers all 11 roster coaches with a reference/consent decision each.
-- [ ] Every **eligible** coach has an approved professional headshot; the set reads as one coherent series; every **ineligible** coach resolves to the designed placeholder.
-- [ ] No generated image depicts a person who is not on the confirmed roster, and no portrait exists without a recorded reference image and consent.
+- [ ] Every asset followed the §7.2 chain — source (where identity-bound) → Higgsfield generation → review and approval → Supabase Storage — with each stage evidenced in the manifest.
+- [ ] The coach coverage matrix covers all 11 roster coaches with a source-photo and consent decision each, reconciled against Balanse image assets dev at sign-off.
+- [ ] Every coach with a catalogued source photo and consent has an approved professional headshot generated **from that photo**; the set reads as one coherent series.
+- [ ] Every coach without one resolves to the designed placeholder from `ASSET-014`, and swapping in a late headshot is a data change only.
+- [ ] **No coach headshot was generated from scratch**: every portrait in the manifest carries a `source_asset_id`, and a spot check confirms each traces back to a real uploaded photo of that person.
+- [ ] No generated image depicts a person who is not on the confirmed roster.
 - [ ] Landing (A–D), About (A–C), Contact (A–B), and FAQ (A) imagery is delivered at the specced aspect ratios, with crops recorded where the ratio was not natively available.
 - [ ] No asset contains text, logos, fake UI, fake signage, a readable QR code, or a watermark; the Contact hero fabricates no storefront.
 - [ ] No product UI — calendar or booking — was generated as an image.
-- [ ] Approved assets are uploaded to `coach-photos` and `marketing-assets` with keys matching the naming convention, each eligible coach row points at exactly one active photo, and the reconciliation report is clean.
+- [ ] Approved assets are uploaded to `coach-photos` and `marketing-assets` with keys matching the naming convention, each coach row with an approved headshot points at exactly one active photo, and the reconciliation report is clean.
 - [ ] Mocked pages render approved assets from bundled paths; nothing fetches a Storage URL at runtime yet.
 - [ ] Generation spend is recorded per asset in the cost log.
 
@@ -2574,11 +2628,11 @@ Every file under `docs/screen-specs/` and the FE ticket(s) that cover it.
 | --- | --- | --- |
 | ASSET-001 | Higgsfield generation pipeline, models, and prompt conventions | P1 |
 | ASSET-002 | Asset inventory, naming conventions, and provenance manifest | P1 |
-| ASSET-010 | Coach reference-image sourcing, consent, and eligibility matrix | P0 → P1 |
+| ASSET-010 | Coach source-image intake via Balanse image assets dev | P0 → P1 |
 | ASSET-011 | Coach headshot art-direction lockup and pilot approval | P1 |
 | ASSET-012 | Professional headshots for the full coach roster | P2 |
 | ASSET-013 | Headshot post-processing and delivery set | P2 |
-| ASSET-014 | Coach placeholder avatar and no-reference fallback | P1 |
+| ASSET-014 | Coach placeholder avatar (the explicit no-source fallback) | P1 |
 | ASSET-015 | Coaches page group hero and specialty accents (conditional) | P2 |
 | ASSET-020 | Landing page imagery (Assets A–D) | P2 |
 | ASSET-021 | About page imagery (Assets A–C) | P2 |
