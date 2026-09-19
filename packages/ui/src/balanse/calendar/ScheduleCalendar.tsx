@@ -81,6 +81,10 @@ export function ScheduleCalendar({
   const [selectedId, setSelectedId] = useState<string | null>(selectedSessionId);
 
   useEffect(() => {
+    if (selectedSessionId) setSelectedId(selectedSessionId);
+  }, [selectedSessionId]);
+
+  useEffect(() => {
     if (view !== "auto") return;
     const update = () => setWidth(window.innerWidth);
     update();
@@ -129,8 +133,12 @@ export function ScheduleCalendar({
     .filter((session) => manilaYmd(session.startsAt) === selectedDay)
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 
-  const selected =
-    daySessions.find((session) => session.id === selectedId) ?? daySessions[0] ?? null;
+  const preferred =
+    daySessions.find((session) => session.id === selectedId) ??
+    daySessions.find((session) => session.reservable) ??
+    daySessions[0] ??
+    null;
+  const selected = preferred;
   const becameFull = selected && sessionBecameFullId === selected.id;
 
   const filterEmpty = classFilter !== "all" && filtered.length === 0;

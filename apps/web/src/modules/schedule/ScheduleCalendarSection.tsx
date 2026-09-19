@@ -7,14 +7,24 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
-export function ScheduleCalendarSection({ audience }: { audience: "guest" | "customer" }) {
+export function ScheduleCalendarSection({
+  audience,
+  initialSessions,
+  initialClasses,
+  initialLoadError = false,
+}: {
+  audience: "guest" | "customer";
+  initialSessions: PublicSession[];
+  initialClasses: PublicClass[];
+  initialLoadError?: boolean;
+}) {
   const router = useRouter();
   const { principal } = useMockPrincipal();
-  const [sessions, setSessions] = useState<PublicSession[]>([]);
-  const [classes, setClasses] = useState<PublicClass[]>([]);
+  const [sessions, setSessions] = useState(initialSessions);
+  const [classes, setClasses] = useState(initialClasses);
   const [bookingSessionIds, setBookingSessionIds] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(initialLoadError);
   const [fullId, setFullId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -43,8 +53,11 @@ export function ScheduleCalendarSection({ audience }: { audience: "guest" | "cus
   }, [audience, principal.customerId]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    const runtime = getMockRuntime();
+    if (runtime.failPublicSessions || runtime.sessionBecameFullId || audience === "customer") {
+      void load();
+    }
+  }, [audience, load]);
 
   return (
     <ScheduleCalendar
