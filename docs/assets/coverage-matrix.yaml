@@ -4,7 +4,7 @@
 # Sella is NOT on this roster (Facebook timetable only) — do not add a row.
 # consent_recorded is not yet written for anyone; ASSET-012 stays blocked on consent
 # even when decision is generate (photo exists).
-# last_reviewed: 2026-09-19
+# last_reviewed: 2026-09-19 (ASSET-014 files landed)
 
 coaches:
   - slug: rex-francis-regis
@@ -61,7 +61,7 @@ coaches:
     consent_recorded: no
     decision: placeholder
     outstanding_request: "2026-09-19 — request ARW source photos via Drive"
-    notes: Intro PDF only. Route to ASSET-014. Do not invent a face.
+    notes: Intro PDF only. Uses docs/assets/placeholders/ (ASSET-014). Do not invent a face.
 
   - slug: jodi-tio
     display_name: Jodi Tio
@@ -103,7 +103,7 @@ coaches:
     consent_recorded: no
     decision: placeholder
     outstanding_request: "2026-09-19 — no Drive folder yet; request photos via Coaches Photos and Docs"
-    notes: Confirmed 11th roster name. No docs/coaches/kate/. ASSET-014 until ARWs land.
+    notes: Confirmed 11th roster name. No docs/coaches/kate/. Uses docs/assets/placeholders/ (ASSET-014) until ARWs land.
 
   - slug: sofia-ocampo
     display_name: Sofia Ocampo
@@ -117,7 +117,7 @@ coaches:
     consent_recorded: no
     decision: placeholder
     outstanding_request: "2026-09-19 — request ARW source photos via Drive"
-    notes: Intro docx only. Route to ASSET-014.
+    notes: Intro docx only. Uses docs/assets/placeholders/ (ASSET-014).
 
   - slug: mikaela-danielle
     display_name: Mikaela Danielle
