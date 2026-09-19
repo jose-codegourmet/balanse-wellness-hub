@@ -18,4 +18,6 @@ Foundations for Higgsfield marketing imagery and coach headshots.
 | [headshots/](headshots/) | ASSET-012 / ASSET-013 | Approved 4:5 masters (contact sheets) plus ImageMagick card 4:5, 1:1 avatar, responsive WebP/JPEG, lossless PNG archive; Alec / Sofia / Kate stay on ASSET-014 |
 | [marketing/](marketing/) | ASSET-015 C · ASSET-020–023 | Working WebP + JPEG under `{landing,about,contact,faqs,coaches}/` using ASSET-002 `{slot}-{aspect}` names. Mood plate `0dad9831-2091-4538-b892-f9f96e6d7352` (source_free). Group hero not in this folder. |
 
-**Not generated here:** invented faces for placeholder coaches; coaches-B group hero (incomplete source coverage); Storage upload (`ASSET-030` — blocked on Storage buckets / `INF-004` + `BE-021`).
+**Storage:** `ASSET-030` — [storage-upload.md](storage-upload.md) / `pnpm assets:upload -- --dry-run`. Live buckets `coach-photos` (84 objects uploaded this wave) and `marketing-assets` (0 this run). Coach table photo columns remain a BE follow-up.
+
+**Not generated here:** invented faces for placeholder coaches; coaches-B group hero (incomplete source coverage).

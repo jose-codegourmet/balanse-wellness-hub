@@ -11,7 +11,7 @@ Brand: cream / warm-white / beige ground with muted-brown and gold line treatmen
 | Public Coaches page cards | 4:5 | `coach-placeholder-4x5.svg` | `.png`, `.webp` (800×1000) |
 | Landing coach previews, admin list/form avatar | 1:1 | `coach-placeholder-1x1.svg` | `.png`, `.webp` (800×800) |
 
-Future Storage keys (`ASSET-030`, after `INF-004` / `BE-021`):
+Storage keys (`ASSET-030`):
 
 ```text
 coach-photos/placeholder/headshot-4x5.webp

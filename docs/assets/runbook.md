@@ -74,9 +74,23 @@ See [review gate](#review-gate).
 
 ### Stage 4 — Store (`ASSET-030`)
 
-**Skipped until `INF-004` and `BE-021` exist.** There are currently **zero** storage buckets on the Supabase project. Do not invent a parallel public CDN.
+Buckets `coach-photos` and `marketing-assets` exist on project `xydundrayuusqizssgby` (INF-004). Do **not** write `payment-proofs`.
 
-When buckets land, keys follow [naming.md](naming.md). The manifest `storage_key` field stays `null` until that upload.
+Upload is scripted and idempotent:
+
+```bash
+# Plan only (no network writes)
+node scripts/upload-approved-assets.mjs --dry-run
+
+# Write intended storage_key + public_url onto approved rows
+node scripts/upload-approved-assets.mjs --write-manifest
+
+# Upsert objects (requires SUPABASE_SERVICE_ROLE_KEY; never invent a key)
+SUPABASE_URL=https://xydundrayuusqizssgby.supabase.co \
+  node scripts/upload-approved-assets.mjs --upload
+```
+
+See [storage-upload.md](storage-upload.md). Keys follow [naming.md](naming.md). Only `approved` assets ship. Coach `photo_*` columns are **not** written by this script (BE follow-up). BE already upserted **84** `coach-photos` objects; marketing was **0** this run.
 
 ---
 

@@ -131,7 +131,25 @@
         },
         "storage_key": {
           "type": ["string", "null"],
-          "description": "Final INF-004 / ASSET-030 object key. Null until buckets exist."
+          "description": "ASSET-002 object path {bucket}/{object_key}. Intended key is written by ASSET-030 even before upload; live object after --upload."
+        },
+        "public_url": {
+          "type": ["string", "null"],
+          "description": "Public URL template: {SUPABASE_URL}/storage/v1/object/public/{storage_key}."
+        },
+        "storage_objects": {
+          "type": "array",
+          "description": "Primary + derivative objects for this manifest row (webp/jpeg srcset).",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["working_path", "storage_key", "public_url"],
+            "properties": {
+              "working_path": { "type": "string" },
+              "storage_key": { "type": "string" },
+              "public_url": { "type": "string" }
+            }
+          }
         },
         "working_path": {
           "type": ["string", "null"],
