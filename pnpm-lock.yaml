@@ -190,9 +190,15 @@ importers:
 
   apps/web:
     dependencies:
+      '@balanse/api':
+        specifier: workspace:*
+        version: link:../../packages/api
       '@balanse/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@balanse/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@balanse/domain':
         specifier: workspace:*
         version: link:../../packages/domain
@@ -353,6 +359,28 @@ importers:
       vitest:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@20.19.43)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(vite@8.1.5(@types/node@20.19.43)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))
+
+  packages/api:
+    dependencies:
+      '@balanse/db':
+        specifier: workspace:*
+        version: link:../db
+      '@balanse/domain':
+        specifier: workspace:*
+        version: link:../domain
+      '@supabase/supabase-js':
+        specifier: ^2.57.4
+        version: 2.116.0
+    devDependencies:
+      '@types/node':
+        specifier: ^22
+        version: 22.20.1
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@22.20.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(vite@8.1.5(@types/node@22.20.1)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))
 
   packages/config:
     devDependencies:

@@ -11,6 +11,7 @@ Read this file first. Product truth lives in `docs/MVP-ROADMAP.md` and `docs/scr
 - `@balanse/ui`: shared primitives and wrappers
 - `@balanse/config`: brand tokens and breakpoints
 - `@balanse/db`: Prisma schema (`AppMeta` + BE-001–BE-024 business models, RLS, jobs)
+- `@balanse/api`: BE-030–BE-043 HTTP handlers (mounted on `apps/web` `/api/*`; no FE wiring)
 
 ## Infrastructure
 
