@@ -1,6 +1,6 @@
 # Agent Instructions — Balansé Wellness Hub
 
-Read this file first. Product truth lives in `docs/MVP-ROADMAP.md` and `docs/screen-specs/`. This phase is **mocks only**: no `fetch` to `/api/*`, no Supabase client calls from screens.
+Read this file first. Product truth lives in `docs/MVP-ROADMAP.md` and `docs/screen-specs/`. This phase is **mocks only** for screens: no `fetch` to `/api/*`, no Supabase client calls from UI.
 
 ## Layout
 
@@ -10,7 +10,14 @@ Read this file first. Product truth lives in `docs/MVP-ROADMAP.md` and `docs/scr
 - `@balanse/mock`: `MockDataAdapter` + in-memory fixtures + mock session
 - `@balanse/ui`: shared primitives and wrappers
 - `@balanse/config`: brand tokens and breakpoints
-- `@balanse/db`: placeholder Prisma schema (no business models yet)
+- `@balanse/db`: Prisma schema (`AppMeta` baseline; business models in BE-001+)
+
+## Infrastructure
+
+- Do **not** create a new Supabase project. Use `xydundrayuusqizssgby`.
+- Prisma lives in `packages/db/prisma/schema/*.prisma` (multi-file). Conventions: both relation sides, `@id @default(...)`, `createdAt`/`updatedAt`, `@@index`, `@unique`.
+- Never commit secrets. Service-role keys must not appear in `NEXT_PUBLIC_*`.
+- Previews run mock mode. Full backend docs: `docs/backend/`.
 
 ## UI components (JabKit)
 
@@ -28,4 +35,4 @@ Screens obtain data only through `getMockAdapter()` (`MockDataAdapter`). Do not 
 
 ## Validation
 
-`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm build-storybook`, `pnpm guard:brand`.
+`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm build-storybook`, `pnpm guard:brand`, `pnpm secrets:scan`.

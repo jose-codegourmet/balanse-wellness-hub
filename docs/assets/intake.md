@@ -26,9 +26,11 @@ There is **no** second sourcing route. Missing photo → request another Drive u
 2. Image-assets agent (or a human) compares Drive folders to `docs/coaches/README.md` and [coverage-matrix.yaml](coverage-matrix.yaml).
 3. New ARWs → develop web derivatives (existing dcraw / JPEG+WebP recipe) into `docs/coaches/{slug}/` **without** committing ARWs.
 4. Update the coverage matrix (upload date, quality, decision) and catalog ids.
-5. Re-check the matrix **before `ASSET-012`** and **before `ASSET-030`**.
+5. Re-check the matrix **before any late-arrival generate** and **before `ASSET-030`**.
 
-Outstanding requests are dated in the matrix so `ASSET-012` is not silently blocked.
+Outstanding requests are dated in the matrix so a late photo is not silently blocked.
+
+Late arrivals (photo after the first generate wave): follow [recipes/headshot-v1.md](recipes/headshot-v1.md) § Late-arrival procedure — one coach, do not re-run the roster. Exercised in ASSET-012 (seven coaches after the Ephraim pilot). Alec / Sofia / Kate remain ASSET-014 until sources land.
 
 ---
 
@@ -36,7 +38,7 @@ Outstanding requests are dated in the matrix so `ASSET-012` is not silently bloc
 
 1. **Source photos** — real photographs of a named roster coach (Drive ARW → catalogued item). Only valid headshot inputs.
 2. **Research captures** — Facebook screenshots and `coaches-roster.jpg`. They answer *who teaches what*. They are **not** references for `generate_image`.
-3. **Consent** — written permission to generate and publish an AI-assisted likeness. A photo without consent is treated like **no photo** for generation (`ASSET-014` placeholder). As of 2026-09-19, written consent is **not yet recorded** for any coach (OQ-REF). Photos may still be catalogued; `ASSET-012` must not start until `consent_recorded: yes`.
+3. **Consent** — written permission to generate and publish an AI-assisted likeness. A photo without consent is treated like **no photo** for generation (`ASSET-014` placeholder). **Jose auto-approved all Assets on 2026-09-19** (standing). `consent_recorded: yes` for every coach with a catalogued source photo (`decision: generate`). Placeholder-only coaches stay `no` until a source lands.
 
 ---
 

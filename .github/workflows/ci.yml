@@ -5,7 +5,54 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
+  DIRECT_URL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
+  NEXT_PUBLIC_APP_MODE: mock
+  NEXT_PUBLIC_ENABLE_MOCK_HARNESS: "true"
+  NEXT_PUBLIC_SUPABASE_URL: https://xydundrayuusqizssgby.supabase.co
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_CI_PLACEHOLDER
+
 jobs:
+  secrets-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.0.8
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Scan for privileged keys
+        run: node scripts/secrets-scan.mjs
+
+  commitlint:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.0.8
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Lint PR commits
+        run: pnpm exec commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+
   quality:
     runs-on: ubuntu-latest
     steps:
@@ -17,15 +64,21 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      - name: Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-
       - name: Install
         run: pnpm install --frozen-lockfile
       - name: Generate Prisma client
         run: pnpm db:generate
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
-          DIRECT_URL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
       - name: Brand guard
         run: pnpm guard:brand
+      - name: Secrets scan
+        run: pnpm secrets:scan
       - name: Lint
         run: pnpm lint
       - name: Typecheck
@@ -36,3 +89,15 @@ jobs:
         run: pnpm build
       - name: Storybook
         run: pnpm build-storybook
+
+  be-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Placeholder until BE-001
+        run: |
+          if grep -q '"test:integration"' packages/db/package.json; then
+            echo "Wire a disposable Postgres job when BE-001 lands."
+            exit 1
+          fi
+          echo "No @balanse/db test:integration script yet — skipping (INF-007)."

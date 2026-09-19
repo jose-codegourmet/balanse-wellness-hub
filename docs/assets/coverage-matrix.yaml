@@ -2,9 +2,15 @@
 # Re-check before ASSET-012 and before ASSET-030.
 # Roster: docs/facebook-findings/findings.md §4b (11 names only).
 # Sella is NOT on this roster (Facebook timetable only) — do not add a row.
-# consent_recorded is not yet written for anyone; ASSET-012 stays blocked on consent
-# even when decision is generate (photo exists).
-# last_reviewed: 2026-09-19 (ASSET-014 files landed)
+# consent_recorded: yes for generate coaches (catalogued source photos).
+# Standing Jose auto-approve of all Assets, 2026-09-19.
+# Placeholder-only coaches stay consent_recorded: no until a source lands.
+# last_reviewed: 2026-09-19 (ASSET-013 delivery crops; ASSET-015 group hero skipped)
+#
+# ASSET-015 inventory skip: coaches-B group hero is do_not_generate until Alec,
+# Sofia, and Kate have catalogued sources + consent. Specialty 1:1 accents
+# (yoga / boxing / capoeira) remain generate but were not produced in the
+# 2026-09-19 cloud run — nano_banana_2_shots requires image_references.
 
 coaches:
   - slug: rex-francis-regis
@@ -16,10 +22,10 @@ coaches:
     repo_preview: docs/coaches/rex/
     upload_date: 2026-09-19
     quality: pass
-    consent_recorded: no
+    consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Web derivatives committed (ARWs not in repo). Higgsfield media_id pending generate tickets.
+    notes: Jose auto-approve 2026-09-19. ASSET-012 headshot generated (headshot-v1 / nano_banana_2_shots). Master docs/assets/headshots/rex-francis-regis/headshot-4x5.jpg.
 
   - slug: ephraim-bacaltos
     display_name: Ephraim Bacaltos
@@ -30,10 +36,10 @@ coaches:
     repo_preview: docs/coaches/ephraim/
     upload_date: 2026-09-19
     quality: pass
-    consent_recorded: no
+    consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Three web-ready frames. Primary catalog id is shot 01.
+    notes: Jose auto-approve 2026-09-19. ASSET-011 pilot + ASSET-012 roster set. Master docs/assets/headshots/ephraim-bacaltos/headshot-4x5.jpg.
 
   - slug: rachelle-tobiano
     display_name: Rachelle Tobiano
@@ -44,10 +50,10 @@ coaches:
     repo_preview: docs/coaches/rachelle/
     upload_date: 2026-09-19
     quality: pass
-    consent_recorded: no
+    consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: ""
+    notes: Jose auto-approve 2026-09-19. ASSET-012 headshot generated. Master docs/assets/headshots/rachelle-tobiano/headshot-4x5.jpg.
 
   - slug: alec-james-co
     display_name: Alec James Co
@@ -72,10 +78,10 @@ coaches:
     repo_preview: docs/coaches/jodi/
     upload_date: 2026-09-19
     quality: pass
-    consent_recorded: no
+    consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Four web-ready frames.
+    notes: Jose auto-approve 2026-09-19. ASSET-012 headshot generated. Master docs/assets/headshots/jodi-tio/headshot-4x5.jpg.
 
   - slug: wolf
     display_name: Wolf
@@ -86,10 +92,10 @@ coaches:
     repo_preview: docs/coaches/wolf/
     upload_date: 2026-09-19
     quality: pass
-    consent_recorded: no
+    consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Intro docx + three frames.
+    notes: Jose auto-approve 2026-09-19. ASSET-012 headshot generated. Master docs/assets/headshots/wolf/headshot-4x5.jpg.
 
   - slug: kate-go
     display_name: Kate Go
@@ -128,10 +134,10 @@ coaches:
     repo_preview: docs/coaches/mikaela/
     upload_date: 2026-09-19
     quality: pass
-    consent_recorded: no
+    consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Facebook timetable used “Mikala”; roster name is Mikaela Danielle.
+    notes: Jose auto-approve 2026-09-19. ASSET-012 headshot generated. Master docs/assets/headshots/mikaela-danielle/headshot-4x5.jpg. Facebook timetable used “Mikala”; roster name is Mikaela Danielle.
 
   - slug: maris-cabrera
     display_name: Maris Cabrera
@@ -142,10 +148,10 @@ coaches:
     repo_preview: docs/coaches/maris/
     upload_date: 2026-09-19
     quality: pass
-    consent_recorded: no
+    consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: ""
+    notes: Jose auto-approve 2026-09-19. ASSET-012 headshot generated. Master docs/assets/headshots/maris-cabrera/headshot-4x5.jpg.
 
   - slug: francis-acido
     display_name: Francis Acido
@@ -156,7 +162,7 @@ coaches:
     repo_preview: docs/coaches/francis/
     upload_date: 2026-09-19
     quality: pass
-    consent_recorded: no
+    consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Distinct from Rex Francis Regis.
+    notes: Jose auto-approve 2026-09-19. ASSET-012 headshot generated. Master docs/assets/headshots/francis-acido/headshot-4x5.jpg. Distinct from Rex Francis Regis.

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "updated": "2026-09-19",
-  "notes": "Closed inventory: landing A–D, about A–C, contact A–B, faqs A, coaches A–C, 11 roster headshots, designed placeholder at 4:5 and 1:1 (ASSET-014). storage_key filled by ASSET-030 after INF-004/BE-021. Only approved assets may ship.",
+  "notes": "Closed inventory: landing A–D, about A–C, contact A–B, faqs A, coaches A–C, 11 roster headshots + 1:1 delivery crops (ASSET-013), designed placeholder at 4:5 and 1:1 (ASSET-014). Headshot runtime model is nano_banana_2_shots (not nano_banana_pro). ASSET-012: eight source-backed 4:5 masters approved. ASSET-013: ImageMagick hero-tile card + avatar + responsive WebP/JPEG from those masters (no face re-generation); lossless PNG archive of each sheet. ASSET-015 group hero skipped (Alec / Sofia / Kate lack sources). Specialty accents and landing A–D not generated here: Higgsfield nano_banana_2_shots requires exactly one image_references and rejected text-only submits — hand off to Balanse image assets agent. storage_key filled by ASSET-030. Only approved assets may ship.",
   "assets": [
     {
       "id": "landing-a",
@@ -15,7 +15,7 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_pro",
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "16:9"
@@ -24,7 +24,12 @@
       "approval_status": "draft",
       "approver": null,
       "alt_text": "Soft wellness-studio interior with quiet center for the booking calendar.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "blocked-text-to-image",
+          "notes": "ASSET-020 not generated in this run: nano_banana_2_shots rejected text-only (requires one image_references). Hand off to image-assets agent."
+        }
+      ],
       "storage_key": null,
       "coach_slug": null
     },
@@ -40,7 +45,7 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_pro",
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "3:2"
@@ -49,7 +54,12 @@
       "approval_status": "draft",
       "approver": null,
       "alt_text": "Candid small-group movement class in a contemporary studio.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "blocked-text-to-image",
+          "notes": "ASSET-020 not generated in this run: nano_banana_2_shots rejected text-only (requires one image_references). Hand off to image-assets agent."
+        }
+      ],
       "storage_key": null,
       "coach_slug": null
     },
@@ -65,7 +75,7 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_pro",
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "1:1"
@@ -74,7 +84,12 @@
       "approval_status": "draft",
       "approver": null,
       "alt_text": "Towel, water bottle, hand wraps, yoga strap, and a face-down phone.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "blocked-text-to-image",
+          "notes": "ASSET-020 not generated in this run: nano_banana_2_shots rejected text-only (requires one image_references). Hand off to image-assets agent."
+        }
+      ],
       "storage_key": null,
       "coach_slug": null
     },
@@ -90,7 +105,7 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_pro",
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "21:9"
@@ -99,7 +114,12 @@
       "approval_status": "draft",
       "approver": null,
       "alt_text": "Wide golden-hour studio floor with people at the far right.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "blocked-text-to-image",
+          "notes": "ASSET-020 not generated in this run: nano_banana_2_shots rejected text-only (requires one image_references). Hand off to image-assets agent."
+        }
+      ],
       "storage_key": null,
       "coach_slug": null
     },
@@ -272,7 +292,7 @@
       "source_asset_id": null,
       "generation_policy": "per_coach",
       "do_not_generate_reason": "Template only. Actual files are the 11 coach-headshot-* rows using this prompt.",
-      "model": "nano_banana_pro",
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "4:5"
@@ -296,8 +316,8 @@
       "source_free": false,
       "source_asset_id": null,
       "generation_policy": "do_not_generate",
-      "do_not_generate_reason": "Identity-bound group hero skipped until every depicted coach has source photo + consent (ASSET-010 incomplete: Alec, Sofia, Kate).",
-      "model": "nano_banana_pro",
+      "do_not_generate_reason": "ASSET-015 skip 2026-09-19: identity-bound group hero not produced — Alec James Co, Sofia Ocampo, and Kate Go have no catalogued source photo/consent. Do not depict a partial roster as the team.",
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "16:9"
@@ -322,7 +342,7 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_pro",
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "1:1"
@@ -331,7 +351,12 @@
       "approval_status": "draft",
       "approver": null,
       "alt_text": "Close-crop movement detail without a full face.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "blocked-text-to-image",
+          "notes": "2026-09-19 cloud agent: nano_banana_2_shots 422 — image_references must contain exactly one image. Yoga/boxing/capoeira 1:1 accents still required; generate via Balanse image assets agent (do not invent faces)."
+        }
+      ],
       "storage_key": null,
       "coach_slug": null
     },
@@ -349,18 +374,82 @@
         "higgsfield_media_id": null
       },
       "generation_policy": "generate",
-      "do_not_generate_reason": "Queued after consent + ASSET-011 look lockup. Do not invent a face.",
-      "model": "nano_banana_pro",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "4:5"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Editorial portrait of Coach Rex Francis Regis.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "archive-lossless",
+          "from": "docs/assets/headshots/rex-francis-regis/headshot-4x5.jpg",
+          "to": "docs/assets/headshots/rex-francis-regis/archive/headshot-4x5.png",
+          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
+        },
+        {
+          "op": "extract-hero-tile",
+          "from": "3x3-sheet",
+          "to": "4:5-card-tile",
+          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+        },
+        {
+          "op": "lanczos-resize",
+          "to": "800w",
+          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
+        }
+      ],
       "storage_key": null,
+      "working_path": "docs/assets/headshots/rex-francis-regis/headshot-4x5.jpg",
+      "coach_slug": "rex-francis-regis"
+    },
+    {
+      "id": "coach-headshot-rex-francis-regis-1x1",
+      "page": "coaches",
+      "slot": "headshot-avatar",
+      "slot_letter": null,
+      "aspect_ratio": "1:1",
+      "source_prompt_key": "coaches-A",
+      "identity_bound": true,
+      "source_free": false,
+      "source_asset_id": {
+        "intake_item_id": "src-coach-rex-01",
+        "higgsfield_media_id": null
+      },
+      "generation_policy": "generate",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
+      "model_parameters": {
+        "resolution": "1k",
+        "aspect_ratio": "4:5",
+        "derived_from": "coach-headshot-rex-francis-regis"
+      },
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
+      "alt_text": "Square avatar crop of Coach Rex Francis Regis from the approved ASSET-012 master (same session).",
+      "post_processing": [
+        {
+          "op": "crop",
+          "from": "4:5-hero-tile",
+          "to": "1:1",
+          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "coach-photos/rex-francis-regis/headshot-1x1.webp"
+        }
+      ],
+      "storage_key": null,
+      "working_path": "docs/assets/headshots/rex-francis-regis/headshot-1x1.webp",
       "coach_slug": "rex-francis-regis"
     },
     {
@@ -374,21 +463,86 @@
       "source_free": false,
       "source_asset_id": {
         "intake_item_id": "src-coach-ephraim-01",
-        "higgsfield_media_id": null
+        "higgsfield_media_id": "1e2d2abe-ba25-4967-9861-a96dbd45f7b9"
       },
       "generation_policy": "generate",
-      "do_not_generate_reason": "Queued after consent + ASSET-011 look lockup. Do not invent a face.",
-      "model": "nano_banana_pro",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
-        "aspect_ratio": "4:5"
+        "aspect_ratio": "4:5",
+        "job_id": "af39341b-0d60-4959-9c60-0ef77aab707f"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Editorial portrait of Coach Ephraim Bacaltos.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "archive-lossless",
+          "from": "docs/assets/headshots/ephraim-bacaltos/headshot-4x5.jpg",
+          "to": "docs/assets/headshots/ephraim-bacaltos/archive/headshot-4x5.png",
+          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
+        },
+        {
+          "op": "extract-hero-tile",
+          "from": "3x3-sheet",
+          "to": "4:5-card-tile",
+          "notes": "ImageMagick crop of reviewed 3×3 cell 2,2 (col,row 0-indexed). Same session, no re-generation."
+        },
+        {
+          "op": "lanczos-resize",
+          "to": "800w",
+          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
+        }
+      ],
       "storage_key": null,
+      "working_path": "docs/assets/headshots/ephraim-bacaltos/headshot-4x5.jpg",
+      "coach_slug": "ephraim-bacaltos"
+    },
+    {
+      "id": "coach-headshot-ephraim-bacaltos-1x1",
+      "page": "coaches",
+      "slot": "headshot-avatar",
+      "slot_letter": null,
+      "aspect_ratio": "1:1",
+      "source_prompt_key": "coaches-A",
+      "identity_bound": true,
+      "source_free": false,
+      "source_asset_id": {
+        "intake_item_id": "src-coach-ephraim-01",
+        "higgsfield_media_id": "1e2d2abe-ba25-4967-9861-a96dbd45f7b9"
+      },
+      "generation_policy": "generate",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
+      "model_parameters": {
+        "resolution": "1k",
+        "aspect_ratio": "4:5",
+        "derived_from": "coach-headshot-ephraim-bacaltos"
+      },
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
+      "alt_text": "Square avatar crop of Coach Ephraim Bacaltos from the approved ASSET-012 master (same session).",
+      "post_processing": [
+        {
+          "op": "crop",
+          "from": "4:5-hero-tile",
+          "to": "1:1",
+          "notes": "Center square of hero cell 2,2; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "coach-photos/ephraim-bacaltos/headshot-1x1.webp"
+        }
+      ],
+      "storage_key": null,
+      "working_path": "docs/assets/headshots/ephraim-bacaltos/headshot-1x1.webp",
       "coach_slug": "ephraim-bacaltos"
     },
     {
@@ -405,18 +559,82 @@
         "higgsfield_media_id": null
       },
       "generation_policy": "generate",
-      "do_not_generate_reason": "Queued after consent + ASSET-011 look lockup. Do not invent a face.",
-      "model": "nano_banana_pro",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "4:5"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Editorial portrait of Coach Rachelle Tobiano.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "archive-lossless",
+          "from": "docs/assets/headshots/rachelle-tobiano/headshot-4x5.jpg",
+          "to": "docs/assets/headshots/rachelle-tobiano/archive/headshot-4x5.png",
+          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
+        },
+        {
+          "op": "extract-hero-tile",
+          "from": "3x3-sheet",
+          "to": "4:5-card-tile",
+          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+        },
+        {
+          "op": "lanczos-resize",
+          "to": "800w",
+          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
+        }
+      ],
       "storage_key": null,
+      "working_path": "docs/assets/headshots/rachelle-tobiano/headshot-4x5.jpg",
+      "coach_slug": "rachelle-tobiano"
+    },
+    {
+      "id": "coach-headshot-rachelle-tobiano-1x1",
+      "page": "coaches",
+      "slot": "headshot-avatar",
+      "slot_letter": null,
+      "aspect_ratio": "1:1",
+      "source_prompt_key": "coaches-A",
+      "identity_bound": true,
+      "source_free": false,
+      "source_asset_id": {
+        "intake_item_id": "src-coach-rachelle-01",
+        "higgsfield_media_id": null
+      },
+      "generation_policy": "generate",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
+      "model_parameters": {
+        "resolution": "1k",
+        "aspect_ratio": "4:5",
+        "derived_from": "coach-headshot-rachelle-tobiano"
+      },
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
+      "alt_text": "Square avatar crop of Coach Rachelle Tobiano from the approved ASSET-012 master (same session).",
+      "post_processing": [
+        {
+          "op": "crop",
+          "from": "4:5-hero-tile",
+          "to": "1:1",
+          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "coach-photos/rachelle-tobiano/headshot-1x1.webp"
+        }
+      ],
+      "storage_key": null,
+      "working_path": "docs/assets/headshots/rachelle-tobiano/headshot-1x1.webp",
       "coach_slug": "rachelle-tobiano"
     },
     {
@@ -461,18 +679,82 @@
         "higgsfield_media_id": null
       },
       "generation_policy": "generate",
-      "do_not_generate_reason": "Queued after consent + ASSET-011 look lockup. Do not invent a face.",
-      "model": "nano_banana_pro",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "4:5"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Editorial portrait of Coach Jodi Tio.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "archive-lossless",
+          "from": "docs/assets/headshots/jodi-tio/headshot-4x5.jpg",
+          "to": "docs/assets/headshots/jodi-tio/archive/headshot-4x5.png",
+          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
+        },
+        {
+          "op": "extract-hero-tile",
+          "from": "3x3-sheet",
+          "to": "4:5-card-tile",
+          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+        },
+        {
+          "op": "lanczos-resize",
+          "to": "800w",
+          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
+        }
+      ],
       "storage_key": null,
+      "working_path": "docs/assets/headshots/jodi-tio/headshot-4x5.jpg",
+      "coach_slug": "jodi-tio"
+    },
+    {
+      "id": "coach-headshot-jodi-tio-1x1",
+      "page": "coaches",
+      "slot": "headshot-avatar",
+      "slot_letter": null,
+      "aspect_ratio": "1:1",
+      "source_prompt_key": "coaches-A",
+      "identity_bound": true,
+      "source_free": false,
+      "source_asset_id": {
+        "intake_item_id": "src-coach-jodi-01",
+        "higgsfield_media_id": null
+      },
+      "generation_policy": "generate",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
+      "model_parameters": {
+        "resolution": "1k",
+        "aspect_ratio": "4:5",
+        "derived_from": "coach-headshot-jodi-tio"
+      },
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
+      "alt_text": "Square avatar crop of Coach Jodi Tio from the approved ASSET-012 master (same session).",
+      "post_processing": [
+        {
+          "op": "crop",
+          "from": "4:5-hero-tile",
+          "to": "1:1",
+          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "coach-photos/jodi-tio/headshot-1x1.webp"
+        }
+      ],
+      "storage_key": null,
+      "working_path": "docs/assets/headshots/jodi-tio/headshot-1x1.webp",
       "coach_slug": "jodi-tio"
     },
     {
@@ -489,18 +771,82 @@
         "higgsfield_media_id": null
       },
       "generation_policy": "generate",
-      "do_not_generate_reason": "Queued after consent + ASSET-011 look lockup. Do not invent a face.",
-      "model": "nano_banana_pro",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "4:5"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Editorial portrait of Coach Wolf.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "archive-lossless",
+          "from": "docs/assets/headshots/wolf/headshot-4x5.jpg",
+          "to": "docs/assets/headshots/wolf/archive/headshot-4x5.png",
+          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
+        },
+        {
+          "op": "extract-hero-tile",
+          "from": "3x3-sheet",
+          "to": "4:5-card-tile",
+          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+        },
+        {
+          "op": "lanczos-resize",
+          "to": "800w",
+          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
+        }
+      ],
       "storage_key": null,
+      "working_path": "docs/assets/headshots/wolf/headshot-4x5.jpg",
+      "coach_slug": "wolf"
+    },
+    {
+      "id": "coach-headshot-wolf-1x1",
+      "page": "coaches",
+      "slot": "headshot-avatar",
+      "slot_letter": null,
+      "aspect_ratio": "1:1",
+      "source_prompt_key": "coaches-A",
+      "identity_bound": true,
+      "source_free": false,
+      "source_asset_id": {
+        "intake_item_id": "src-coach-wolf-01",
+        "higgsfield_media_id": null
+      },
+      "generation_policy": "generate",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
+      "model_parameters": {
+        "resolution": "1k",
+        "aspect_ratio": "4:5",
+        "derived_from": "coach-headshot-wolf"
+      },
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
+      "alt_text": "Square avatar crop of Coach Wolf from the approved ASSET-012 master (same session).",
+      "post_processing": [
+        {
+          "op": "crop",
+          "from": "4:5-hero-tile",
+          "to": "1:1",
+          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "coach-photos/wolf/headshot-1x1.webp"
+        }
+      ],
+      "storage_key": null,
+      "working_path": "docs/assets/headshots/wolf/headshot-1x1.webp",
       "coach_slug": "wolf"
     },
     {
@@ -573,18 +919,82 @@
         "higgsfield_media_id": null
       },
       "generation_policy": "generate",
-      "do_not_generate_reason": "Queued after consent + ASSET-011 look lockup. Do not invent a face.",
-      "model": "nano_banana_pro",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "4:5"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Editorial portrait of Coach Mikaela Danielle.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "archive-lossless",
+          "from": "docs/assets/headshots/mikaela-danielle/headshot-4x5.jpg",
+          "to": "docs/assets/headshots/mikaela-danielle/archive/headshot-4x5.png",
+          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
+        },
+        {
+          "op": "extract-hero-tile",
+          "from": "3x3-sheet",
+          "to": "4:5-card-tile",
+          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+        },
+        {
+          "op": "lanczos-resize",
+          "to": "800w",
+          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
+        }
+      ],
       "storage_key": null,
+      "working_path": "docs/assets/headshots/mikaela-danielle/headshot-4x5.jpg",
+      "coach_slug": "mikaela-danielle"
+    },
+    {
+      "id": "coach-headshot-mikaela-danielle-1x1",
+      "page": "coaches",
+      "slot": "headshot-avatar",
+      "slot_letter": null,
+      "aspect_ratio": "1:1",
+      "source_prompt_key": "coaches-A",
+      "identity_bound": true,
+      "source_free": false,
+      "source_asset_id": {
+        "intake_item_id": "src-coach-mikaela-01",
+        "higgsfield_media_id": null
+      },
+      "generation_policy": "generate",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
+      "model_parameters": {
+        "resolution": "1k",
+        "aspect_ratio": "4:5",
+        "derived_from": "coach-headshot-mikaela-danielle"
+      },
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
+      "alt_text": "Square avatar crop of Coach Mikaela Danielle from the approved ASSET-012 master (same session).",
+      "post_processing": [
+        {
+          "op": "crop",
+          "from": "4:5-hero-tile",
+          "to": "1:1",
+          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "coach-photos/mikaela-danielle/headshot-1x1.webp"
+        }
+      ],
+      "storage_key": null,
+      "working_path": "docs/assets/headshots/mikaela-danielle/headshot-1x1.webp",
       "coach_slug": "mikaela-danielle"
     },
     {
@@ -601,18 +1011,82 @@
         "higgsfield_media_id": null
       },
       "generation_policy": "generate",
-      "do_not_generate_reason": "Queued after consent + ASSET-011 look lockup. Do not invent a face.",
-      "model": "nano_banana_pro",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "4:5"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Editorial portrait of Coach Maris Cabrera.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "archive-lossless",
+          "from": "docs/assets/headshots/maris-cabrera/headshot-4x5.jpg",
+          "to": "docs/assets/headshots/maris-cabrera/archive/headshot-4x5.png",
+          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
+        },
+        {
+          "op": "extract-hero-tile",
+          "from": "3x3-sheet",
+          "to": "4:5-card-tile",
+          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+        },
+        {
+          "op": "lanczos-resize",
+          "to": "800w",
+          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
+        }
+      ],
       "storage_key": null,
+      "working_path": "docs/assets/headshots/maris-cabrera/headshot-4x5.jpg",
+      "coach_slug": "maris-cabrera"
+    },
+    {
+      "id": "coach-headshot-maris-cabrera-1x1",
+      "page": "coaches",
+      "slot": "headshot-avatar",
+      "slot_letter": null,
+      "aspect_ratio": "1:1",
+      "source_prompt_key": "coaches-A",
+      "identity_bound": true,
+      "source_free": false,
+      "source_asset_id": {
+        "intake_item_id": "src-coach-maris-01",
+        "higgsfield_media_id": null
+      },
+      "generation_policy": "generate",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
+      "model_parameters": {
+        "resolution": "1k",
+        "aspect_ratio": "4:5",
+        "derived_from": "coach-headshot-maris-cabrera"
+      },
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
+      "alt_text": "Square avatar crop of Coach Maris Cabrera from the approved ASSET-012 master (same session).",
+      "post_processing": [
+        {
+          "op": "crop",
+          "from": "4:5-hero-tile",
+          "to": "1:1",
+          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "coach-photos/maris-cabrera/headshot-1x1.webp"
+        }
+      ],
+      "storage_key": null,
+      "working_path": "docs/assets/headshots/maris-cabrera/headshot-1x1.webp",
       "coach_slug": "maris-cabrera"
     },
     {
@@ -629,18 +1103,82 @@
         "higgsfield_media_id": null
       },
       "generation_policy": "generate",
-      "do_not_generate_reason": "Queued after consent + ASSET-011 look lockup. Do not invent a face.",
-      "model": "nano_banana_pro",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "4:5"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Editorial portrait of Coach Francis Acido.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "archive-lossless",
+          "from": "docs/assets/headshots/francis-acido/headshot-4x5.jpg",
+          "to": "docs/assets/headshots/francis-acido/archive/headshot-4x5.png",
+          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
+        },
+        {
+          "op": "extract-hero-tile",
+          "from": "3x3-sheet",
+          "to": "4:5-card-tile",
+          "notes": "ImageMagick crop of reviewed 3×3 cell 2,0 (col,row 0-indexed). Same session, no re-generation."
+        },
+        {
+          "op": "lanczos-resize",
+          "to": "800w",
+          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
+        }
+      ],
       "storage_key": null,
+      "working_path": "docs/assets/headshots/francis-acido/headshot-4x5.jpg",
+      "coach_slug": "francis-acido"
+    },
+    {
+      "id": "coach-headshot-francis-acido-1x1",
+      "page": "coaches",
+      "slot": "headshot-avatar",
+      "slot_letter": null,
+      "aspect_ratio": "1:1",
+      "source_prompt_key": "coaches-A",
+      "identity_bound": true,
+      "source_free": false,
+      "source_asset_id": {
+        "intake_item_id": "src-coach-francis-01",
+        "higgsfield_media_id": null
+      },
+      "generation_policy": "generate",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
+      "model_parameters": {
+        "resolution": "1k",
+        "aspect_ratio": "4:5",
+        "derived_from": "coach-headshot-francis-acido"
+      },
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
+      "alt_text": "Square avatar crop of Coach Francis Acido from the approved ASSET-012 master (same session).",
+      "post_processing": [
+        {
+          "op": "crop",
+          "from": "4:5-hero-tile",
+          "to": "1:1",
+          "notes": "Center square of hero cell 2,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "coach-photos/francis-acido/headshot-1x1.webp"
+        }
+      ],
+      "storage_key": null,
+      "working_path": "docs/assets/headshots/francis-acido/headshot-1x1.webp",
       "coach_slug": "francis-acido"
     },
     {
