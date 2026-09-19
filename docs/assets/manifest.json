@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "updated": "2026-09-19",
-  "notes": "Closed inventory: landing A–D, about A–C, contact A–B, faqs A, coaches A–C, 11 roster headshots + 1:1 delivery crops (ASSET-013), designed placeholder at 4:5 and 1:1 (ASSET-014). Headshot and marketing runtime model is nano_banana_2_shots (not nano_banana_pro). ASSET-012/013: eight source-backed headshot sets approved. ASSET-015 group hero skipped (Alec / Sofia / Kate lack sources). ASSET-015 specialty accents + ASSET-020–023 marketing slots generated 2026-09-19 with mood plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 (source_free / non-identity). Jose auto-approve. Working files in docs/assets/marketing/{page}/. ASSET-030: storage_key + public_url written for approved rows. BE service-role upsert: 84 objects in coach-photos this run; marketing-assets 0 this run. Sample: https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rex-francis-regis/headshot-4x5.webp. Coach photo columns not seeded from this script. Only approved assets may ship.",
+  "notes": "Closed inventory + CTA marketing refresh (studio mood plate). NEW: landing mid-cta 21x9, about cta-band 21x9, specialty calisthenics/pilates/dance. Retire desert mood plate for marketing. ASSET-015 group hero still skipped. ASSET-030 storage upload deferred (anon RLS).",
   "assets": [
     {
       "id": "landing-a",
@@ -20,27 +20,31 @@
         "resolution": "1k",
         "aspect_ratio": "16:9",
         "image_references": [
-          "0dad9831-2091-4538-b892-f9f96e6d7352"
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
         ],
         "image_references_role": "mood_plate",
         "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve, 2026-09-19)",
-      "alt_text": "Soft wellness-studio interior with quiet center for the booking calendar.",
+      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
+      "alt_text": "Soft Cebu wellness studio interior with calm limestone floor and open negative space for hero copy.",
       "post_processing": [
         {
           "op": "mood-plate-reference",
-          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
         },
         {
-          "op": "contact-sheet",
-          "notes": "3×3 nano_banana_2_shots sheet, 2400×1340 (~16:9). Quiet abstract plates; no centered faces. Delivery WebP 108 KB."
+          "op": "contact-sheet-tile-pick",
+          "notes": "CTA refresh v2 studio plate; contact-sheet tile crop."
+        },
+        {
+          "op": "webready",
+          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
         },
         {
           "op": "ready-for-storage",
-          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
         }
       ],
       "storage_key": "marketing-assets/landing/hero-accent-16x9.webp",
@@ -77,28 +81,31 @@
         "resolution": "1k",
         "aspect_ratio": "3:2",
         "image_references": [
-          "0dad9831-2091-4538-b892-f9f96e6d7352"
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
         ],
         "image_references_role": "mood_plate",
-        "source_kind": "source_free_non_identity",
-        "native_canvas": "1:1 contact sheet 2400×2400"
+        "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve, 2026-09-19)",
-      "alt_text": "Candid small-group movement class in a contemporary studio.",
+      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
+      "alt_text": "Editorial still of class props and warm studio light for the classes section.",
       "post_processing": [
         {
           "op": "mood-plate-reference",
-          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
         },
         {
-          "op": "contact-sheet",
-          "notes": "3×3 sheet 2400×2400 (square canvas). Filename token remains 3x2 per ASSET-002 slot. Single coherent abstract field per cell — not a collage. Delivery WebP 113 KB."
+          "op": "contact-sheet-tile-pick",
+          "notes": "CTA refresh v2."
+        },
+        {
+          "op": "webready",
+          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
         },
         {
           "op": "ready-for-storage",
-          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
         }
       ],
       "storage_key": "marketing-assets/landing/classes-editorial-3x2.webp",
@@ -135,27 +142,31 @@
         "resolution": "1k",
         "aspect_ratio": "1:1",
         "image_references": [
-          "0dad9831-2091-4538-b892-f9f96e6d7352"
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
         ],
         "image_references_role": "mood_plate",
         "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve, 2026-09-19)",
-      "alt_text": "Towel, water bottle, hand wraps, yoga strap, and a face-down phone.",
+      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
+      "alt_text": "Quiet wellness still life for the how-it-works strip.",
       "post_processing": [
         {
           "op": "mood-plate-reference",
-          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
         },
         {
-          "op": "contact-sheet",
-          "notes": "3×3 sheet 2400×2400. No readable text, no phone-screen UI. Delivery WebP 75 KB."
+          "op": "contact-sheet-tile-pick",
+          "notes": "CTA refresh v2."
+        },
+        {
+          "op": "webready",
+          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
         },
         {
           "op": "ready-for-storage",
-          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
         }
       ],
       "storage_key": "marketing-assets/landing/how-it-works-still-life-1x1.webp",
@@ -192,28 +203,31 @@
         "resolution": "1k",
         "aspect_ratio": "21:9",
         "image_references": [
-          "0dad9831-2091-4538-b892-f9f96e6d7352"
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
         ],
         "image_references_role": "mood_plate",
-        "source_kind": "source_free_non_identity",
-        "native_canvas": "16:9 contact sheet 2400×1340"
+        "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve, 2026-09-19)",
-      "alt_text": "Wide golden-hour studio floor with people at the far right.",
+      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
+      "alt_text": "Wide cinematic studio band with soft light and empty center for final CTA overlay.",
       "post_processing": [
         {
           "op": "mood-plate-reference",
-          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
         },
         {
-          "op": "contact-sheet",
-          "notes": "3×3 sheet 2400×1340. Filename token 21x9 per slot. Cells keep left-side negative space with figures off-centre. Delivery WebP 60 KB."
+          "op": "contact-sheet-tile-pick",
+          "notes": "CTA refresh v2."
+        },
+        {
+          "op": "webready",
+          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
         },
         {
           "op": "ready-for-storage",
-          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
         }
       ],
       "storage_key": "marketing-assets/landing/final-cta-21x9.webp",
@@ -250,27 +264,31 @@
         "resolution": "1k",
         "aspect_ratio": "16:9",
         "image_references": [
-          "0dad9831-2091-4538-b892-f9f96e6d7352"
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
         ],
         "image_references_role": "mood_plate",
         "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve, 2026-09-19)",
-      "alt_text": "Candid post-class moment with people grouped to one side.",
+      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
+      "alt_text": "About hero: airy studio looking toward palms and soft daylight.",
       "post_processing": [
         {
           "op": "mood-plate-reference",
-          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
         },
         {
-          "op": "contact-sheet",
-          "notes": "3×3 sheet 2400×1340. Abstract candid field with grouping/negative space, not a corporate lineup. Delivery WebP 42 KB."
+          "op": "contact-sheet-tile-pick",
+          "notes": "CTA refresh v2."
+        },
+        {
+          "op": "webready",
+          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
         },
         {
           "op": "ready-for-storage",
-          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
         }
       ],
       "storage_key": "marketing-assets/about/hero-16x9.webp",
@@ -307,28 +325,31 @@
         "resolution": "1k",
         "aspect_ratio": "4:3",
         "image_references": [
-          "0dad9831-2091-4538-b892-f9f96e6d7352"
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
         ],
         "image_references_role": "mood_plate",
-        "source_kind": "source_free_non_identity",
-        "native_canvas": "1:1 contact sheet 2400×2400"
+        "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve, 2026-09-19)",
-      "alt_text": "Studio corner balancing strength, mobility, and recovery props.",
+      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
+      "alt_text": "Our approach: contemplative studio detail with wood and linen textures.",
       "post_processing": [
         {
           "op": "mood-plate-reference",
-          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
         },
         {
-          "op": "contact-sheet",
-          "notes": "3×3 sheet 2400×2400. Filename token 4x3 per slot. Secondary human presence only. Delivery WebP 84 KB."
+          "op": "contact-sheet-tile-pick",
+          "notes": "CTA refresh v2."
+        },
+        {
+          "op": "webready",
+          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
         },
         {
           "op": "ready-for-storage",
-          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
         }
       ],
       "storage_key": "marketing-assets/about/our-approach-4x3.webp",
@@ -383,7 +404,7 @@
           "op": "crop",
           "from": "21:9",
           "to": "3:1",
-          "notes": "Delivered already cropped to 2400×800 (true 3:1). Source generate ratio 21:9 recorded."
+          "notes": "Delivered already cropped to 2400\u00d7800 (true 3:1). Source generate ratio 21:9 recorded."
         },
         {
           "op": "ready-for-storage",
@@ -424,27 +445,31 @@
         "resolution": "1k",
         "aspect_ratio": "16:9",
         "image_references": [
-          "0dad9831-2091-4538-b892-f9f96e6d7352"
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
         ],
         "image_references_role": "mood_plate",
         "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve, 2026-09-19)",
-      "alt_text": "Atmospheric studio arrival threshold; not a real storefront.",
+      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
+      "alt_text": "Visit us hero: welcoming studio entrance mood without invented storefront signage.",
       "post_processing": [
         {
           "op": "mood-plate-reference",
-          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
         },
         {
-          "op": "contact-sheet",
-          "notes": "3×3 sheet 2400×1340. Atmospheric threshold only — no storefront, signage, or address. Real location photography, if Coach Rex supplies it, replaces this slot rather than sitting beside it. Delivery WebP 37 KB."
+          "op": "contact-sheet-tile-pick",
+          "notes": "CTA refresh v2."
+        },
+        {
+          "op": "webready",
+          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
         },
         {
           "op": "ready-for-storage",
-          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
         }
       ],
       "storage_key": "marketing-assets/contact/visit-hero-16x9.webp",
@@ -493,11 +518,11 @@
       "post_processing": [
         {
           "op": "mood-plate-reference",
-          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only \u2014 not a likeness source."
         },
         {
           "op": "contact-sheet",
-          "notes": "3×3 sheet 2400×2400. No scannable QR, no fake app UI. Delivery WebP 137 KB."
+          "notes": "3\u00d73 sheet 2400\u00d72400. No scannable QR, no fake app UI. Delivery WebP 137 KB."
         },
         {
           "op": "ready-for-storage",
@@ -538,28 +563,31 @@
         "resolution": "1k",
         "aspect_ratio": "3:2",
         "image_references": [
-          "0dad9831-2091-4538-b892-f9f96e6d7352"
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
         ],
         "image_references_role": "mood_plate",
-        "source_kind": "source_free_non_identity",
-        "native_canvas": "1:1 contact sheet 2400×2400"
+        "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve, 2026-09-19)",
-      "alt_text": "Calm after-class studio corner with mat, wraps, towel, and bottle.",
+      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
+      "alt_text": "FAQ header accent: soft abstract studio texture with calm negative space.",
       "post_processing": [
         {
           "op": "mood-plate-reference",
-          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
         },
         {
-          "op": "contact-sheet",
-          "notes": "3×3 sheet 2400×2400. Filename token 3x2 per slot. Quiet accent with offset objects / negative space. Inventory: no further FAQ imagery is to be generated. Delivery WebP 72 KB."
+          "op": "contact-sheet-tile-pick",
+          "notes": "CTA refresh v2."
+        },
+        {
+          "op": "webready",
+          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
         },
         {
           "op": "ready-for-storage",
-          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
         }
       ],
       "storage_key": "marketing-assets/faqs/header-accent-3x2.webp",
@@ -616,7 +644,7 @@
       "source_free": false,
       "source_asset_id": null,
       "generation_policy": "do_not_generate",
-      "do_not_generate_reason": "ASSET-015 skip 2026-09-19: identity-bound group hero not produced — Alec James Co, Sofia Ocampo, and Kate Go have no catalogued source photo/consent. Do not depict a partial roster as the team.",
+      "do_not_generate_reason": "ASSET-015 skip: identity-bound group hero (Alec/Sofia/Kate). Do not invent faces.",
       "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
@@ -661,6 +689,10 @@
         {
           "op": "specialty-variants",
           "notes": "ASSET-015 specialty accents delivered as three 1:1 source-free variants (yoga, boxing, capoeira). Group hero (coaches-b) remains skipped."
+        },
+        {
+          "op": "rollup",
+          "notes": "Published specialty files: yoga, boxing, capoeira, calisthenics, pilates, dance. Group hero still skipped."
         }
       ],
       "storage_key": null,
@@ -674,7 +706,7 @@
       "slot": "specialty-accent-yoga",
       "slot_letter": "C",
       "aspect_ratio": "1:1",
-      "source_prompt_key": "coaches-C",
+      "source_prompt_key": "coaches-C-yoga",
       "identity_bound": false,
       "source_free": true,
       "source_asset_id": null,
@@ -685,28 +717,31 @@
         "resolution": "1k",
         "aspect_ratio": "1:1",
         "image_references": [
-          "0dad9831-2091-4538-b892-f9f96e6d7352"
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
         ],
         "image_references_role": "mood_plate",
-        "source_kind": "source_free_non_identity",
-        "discipline": "yoga"
+        "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve, 2026-09-19)",
-      "alt_text": "Close-crop yoga movement accent without a full face.",
+      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
+      "alt_text": "Yoga specialty accent: mat and soft light, no identifiable faces.",
       "post_processing": [
         {
           "op": "mood-plate-reference",
-          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
         },
         {
-          "op": "contact-sheet",
-          "notes": "3×3 sheet 2400×2400. No full faces. Discipline token: yoga. Delivery WebP under docs/assets/marketing/coaches/specialty-accent-yoga-1x1.webp."
+          "op": "contact-sheet-tile-pick",
+          "notes": "CTA refresh v2."
+        },
+        {
+          "op": "webready",
+          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
         },
         {
           "op": "ready-for-storage",
-          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
         }
       ],
       "storage_key": "marketing-assets/coaches/specialty-accent-yoga-1x1.webp",
@@ -732,7 +767,7 @@
       "slot": "specialty-accent-boxing",
       "slot_letter": "C",
       "aspect_ratio": "1:1",
-      "source_prompt_key": "coaches-C",
+      "source_prompt_key": "coaches-C-boxing",
       "identity_bound": false,
       "source_free": true,
       "source_asset_id": null,
@@ -743,28 +778,31 @@
         "resolution": "1k",
         "aspect_ratio": "1:1",
         "image_references": [
-          "0dad9831-2091-4538-b892-f9f96e6d7352"
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
         ],
         "image_references_role": "mood_plate",
-        "source_kind": "source_free_non_identity",
-        "discipline": "boxing"
+        "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve, 2026-09-19)",
-      "alt_text": "Close-crop boxing movement accent without a full face.",
+      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
+      "alt_text": "Boxing specialty accent: gloves and ring-adjacent still life, no faces.",
       "post_processing": [
         {
           "op": "mood-plate-reference",
-          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
         },
         {
-          "op": "contact-sheet",
-          "notes": "3×3 sheet 2400×2400. No full faces. Discipline token: boxing. Delivery WebP under docs/assets/marketing/coaches/specialty-accent-boxing-1x1.webp."
+          "op": "contact-sheet-tile-pick",
+          "notes": "CTA refresh v2."
+        },
+        {
+          "op": "webready",
+          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
         },
         {
           "op": "ready-for-storage",
-          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
         }
       ],
       "storage_key": "marketing-assets/coaches/specialty-accent-boxing-1x1.webp",
@@ -790,7 +828,7 @@
       "slot": "specialty-accent-capoeira",
       "slot_letter": "C",
       "aspect_ratio": "1:1",
-      "source_prompt_key": "coaches-C",
+      "source_prompt_key": "coaches-C-capoeira",
       "identity_bound": false,
       "source_free": true,
       "source_asset_id": null,
@@ -801,28 +839,31 @@
         "resolution": "1k",
         "aspect_ratio": "1:1",
         "image_references": [
-          "0dad9831-2091-4538-b892-f9f96e6d7352"
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
         ],
         "image_references_role": "mood_plate",
-        "source_kind": "source_free_non_identity",
-        "discipline": "capoeira"
+        "source_kind": "source_free_non_identity"
       },
       "generation_date": "2026-09-19",
       "approval_status": "approved",
-      "approver": "Jose (standing auto-approve, 2026-09-19)",
-      "alt_text": "Close-crop capoeira movement accent without a full face.",
+      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
+      "alt_text": "Capoeira specialty accent: berimbau/motion still without identifiable faces.",
       "post_processing": [
         {
           "op": "mood-plate-reference",
-          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
         },
         {
-          "op": "contact-sheet",
-          "notes": "3×3 sheet 2400×2400. No full faces. Discipline token: capoeira. Delivery WebP under docs/assets/marketing/coaches/specialty-accent-capoeira-1x1.webp."
+          "op": "contact-sheet-tile-pick",
+          "notes": "CTA refresh v2."
+        },
+        {
+          "op": "webready",
+          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
         },
         {
           "op": "ready-for-storage",
-          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
         }
       ],
       "storage_key": "marketing-assets/coaches/specialty-accent-capoeira-1x1.webp",
@@ -871,18 +912,18 @@
           "op": "archive-lossless",
           "from": "docs/assets/headshots/rex-francis-regis/headshot-4x5.jpg",
           "to": "docs/assets/headshots/rex-francis-regis/archive/headshot-4x5.png",
-          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
+          "notes": "PNG32 archive of approved ASSET-012 master (3\u00d73 sheet). Master JPEG left untouched."
         },
         {
           "op": "extract-hero-tile",
           "from": "3x3-sheet",
           "to": "4:5-card-tile",
-          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+          "notes": "ImageMagick crop of reviewed 3\u00d73 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
         },
         {
           "op": "lanczos-resize",
           "to": "800w",
-          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
+          "notes": "Same tile resampled with Lanczos to ~800\u00d7992 for card delivery (tile was ~400px)."
         },
         {
           "op": "ready-for-storage",
@@ -946,7 +987,7 @@
           "op": "crop",
           "from": "4:5-hero-tile",
           "to": "1:1",
-          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
+          "notes": "Center square of hero cell 1,0; Lanczos to 800\u00d7800. WebP q82 + JPEG q85. Responsive w400 and w200."
         },
         {
           "op": "ready-for-storage",
@@ -1020,18 +1061,18 @@
           "op": "archive-lossless",
           "from": "docs/assets/headshots/ephraim-bacaltos/headshot-4x5.jpg",
           "to": "docs/assets/headshots/ephraim-bacaltos/archive/headshot-4x5.png",
-          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
+          "notes": "PNG32 archive of approved ASSET-012 master (3\u00d73 sheet). Master JPEG left untouched."
         },
         {
           "op": "extract-hero-tile",
           "from": "3x3-sheet",
           "to": "4:5-card-tile",
-          "notes": "ImageMagick crop of reviewed 3×3 cell 2,2 (col,row 0-indexed). Same session, no re-generation."
+          "notes": "ImageMagick crop of reviewed 3\u00d73 cell 2,2 (col,row 0-indexed). Same session, no re-generation."
         },
         {
           "op": "lanczos-resize",
           "to": "800w",
-          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
+          "notes": "Same tile resampled with Lanczos to ~800\u00d7992 for card delivery (tile was ~400px)."
         },
         {
           "op": "ready-for-storage",
@@ -1095,7 +1136,7 @@
           "op": "crop",
           "from": "4:5-hero-tile",
           "to": "1:1",
-          "notes": "Center square of hero cell 2,2; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
+          "notes": "Center square of hero cell 2,2; Lanczos to 800\u00d7800. WebP q82 + JPEG q85. Responsive w400 and w200."
         },
         {
           "op": "ready-for-storage",
@@ -1168,18 +1209,18 @@
           "op": "archive-lossless",
           "from": "docs/assets/headshots/rachelle-tobiano/headshot-4x5.jpg",
           "to": "docs/assets/headshots/rachelle-tobiano/archive/headshot-4x5.png",
-          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
+          "notes": "PNG32 archive of approved ASSET-012 master (3\u00d73 sheet). Master JPEG left untouched."
         },
         {
           "op": "extract-hero-tile",
           "from": "3x3-sheet",
           "to": "4:5-card-tile",
-          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+          "notes": "ImageMagick crop of reviewed 3\u00d73 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
         },
         {
           "op": "lanczos-resize",
           "to": "800w",
-          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
+          "notes": "Same tile resampled with Lanczos to ~800\u00d7992 for card delivery (tile was ~400px)."
         },
         {
           "op": "ready-for-storage",
@@ -1243,7 +1284,7 @@
           "op": "crop",
           "from": "4:5-hero-tile",
           "to": "1:1",
-          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
+          "notes": "Center square of hero cell 1,0; Lanczos to 800\u00d7800. WebP q82 + JPEG q85. Responsive w400 and w200."
         },
         {
           "op": "ready-for-storage",
@@ -1345,18 +1386,18 @@
           "op": "archive-lossless",
           "from": "docs/assets/headshots/jodi-tio/headshot-4x5.jpg",
           "to": "docs/assets/headshots/jodi-tio/archive/headshot-4x5.png",
-          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
+          "notes": "PNG32 archive of approved ASSET-012 master (3\u00d73 sheet). Master JPEG left untouched."
         },
         {
           "op": "extract-hero-tile",
           "from": "3x3-sheet",
           "to": "4:5-card-tile",
-          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+          "notes": "ImageMagick crop of reviewed 3\u00d73 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
         },
         {
           "op": "lanczos-resize",
           "to": "800w",
-          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
+          "notes": "Same tile resampled with Lanczos to ~800\u00d7992 for card delivery (tile was ~400px)."
         },
         {
           "op": "ready-for-storage",
@@ -1420,7 +1461,7 @@
           "op": "crop",
           "from": "4:5-hero-tile",
           "to": "1:1",
-          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
+          "notes": "Center square of hero cell 1,0; Lanczos to 800\u00d7800. WebP q82 + JPEG q85. Responsive w400 and w200."
         },
         {
           "op": "ready-for-storage",
@@ -1493,18 +1534,18 @@
           "op": "archive-lossless",
           "from": "docs/assets/headshots/wolf/headshot-4x5.jpg",
           "to": "docs/assets/headshots/wolf/archive/headshot-4x5.png",
-          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
+          "notes": "PNG32 archive of approved ASSET-012 master (3\u00d73 sheet). Master JPEG left untouched."
         },
         {
           "op": "extract-hero-tile",
           "from": "3x3-sheet",
           "to": "4:5-card-tile",
-          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+          "notes": "ImageMagick crop of reviewed 3\u00d73 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
         },
         {
           "op": "lanczos-resize",
           "to": "800w",
-          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
+          "notes": "Same tile resampled with Lanczos to ~800\u00d7992 for card delivery (tile was ~400px)."
         },
         {
           "op": "ready-for-storage",
@@ -1568,7 +1609,7 @@
           "op": "crop",
           "from": "4:5-hero-tile",
           "to": "1:1",
-          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
+          "notes": "Center square of hero cell 1,0; Lanczos to 800\u00d7800. WebP q82 + JPEG q85. Responsive w400 and w200."
         },
         {
           "op": "ready-for-storage",
@@ -1699,18 +1740,18 @@
           "op": "archive-lossless",
           "from": "docs/assets/headshots/mikaela-danielle/headshot-4x5.jpg",
           "to": "docs/assets/headshots/mikaela-danielle/archive/headshot-4x5.png",
-          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
+          "notes": "PNG32 archive of approved ASSET-012 master (3\u00d73 sheet). Master JPEG left untouched."
         },
         {
           "op": "extract-hero-tile",
           "from": "3x3-sheet",
           "to": "4:5-card-tile",
-          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+          "notes": "ImageMagick crop of reviewed 3\u00d73 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
         },
         {
           "op": "lanczos-resize",
           "to": "800w",
-          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
+          "notes": "Same tile resampled with Lanczos to ~800\u00d7992 for card delivery (tile was ~400px)."
         },
         {
           "op": "ready-for-storage",
@@ -1774,7 +1815,7 @@
           "op": "crop",
           "from": "4:5-hero-tile",
           "to": "1:1",
-          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
+          "notes": "Center square of hero cell 1,0; Lanczos to 800\u00d7800. WebP q82 + JPEG q85. Responsive w400 and w200."
         },
         {
           "op": "ready-for-storage",
@@ -1847,18 +1888,18 @@
           "op": "archive-lossless",
           "from": "docs/assets/headshots/maris-cabrera/headshot-4x5.jpg",
           "to": "docs/assets/headshots/maris-cabrera/archive/headshot-4x5.png",
-          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
+          "notes": "PNG32 archive of approved ASSET-012 master (3\u00d73 sheet). Master JPEG left untouched."
         },
         {
           "op": "extract-hero-tile",
           "from": "3x3-sheet",
           "to": "4:5-card-tile",
-          "notes": "ImageMagick crop of reviewed 3×3 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
+          "notes": "ImageMagick crop of reviewed 3\u00d73 cell 1,0 (col,row 0-indexed). Same session, no re-generation."
         },
         {
           "op": "lanczos-resize",
           "to": "800w",
-          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
+          "notes": "Same tile resampled with Lanczos to ~800\u00d7992 for card delivery (tile was ~400px)."
         },
         {
           "op": "ready-for-storage",
@@ -1922,7 +1963,7 @@
           "op": "crop",
           "from": "4:5-hero-tile",
           "to": "1:1",
-          "notes": "Center square of hero cell 1,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
+          "notes": "Center square of hero cell 1,0; Lanczos to 800\u00d7800. WebP q82 + JPEG q85. Responsive w400 and w200."
         },
         {
           "op": "ready-for-storage",
@@ -1995,18 +2036,18 @@
           "op": "archive-lossless",
           "from": "docs/assets/headshots/francis-acido/headshot-4x5.jpg",
           "to": "docs/assets/headshots/francis-acido/archive/headshot-4x5.png",
-          "notes": "PNG32 archive of approved ASSET-012 master (3×3 sheet). Master JPEG left untouched."
+          "notes": "PNG32 archive of approved ASSET-012 master (3\u00d73 sheet). Master JPEG left untouched."
         },
         {
           "op": "extract-hero-tile",
           "from": "3x3-sheet",
           "to": "4:5-card-tile",
-          "notes": "ImageMagick crop of reviewed 3×3 cell 2,0 (col,row 0-indexed). Same session, no re-generation."
+          "notes": "ImageMagick crop of reviewed 3\u00d73 cell 2,0 (col,row 0-indexed). Same session, no re-generation."
         },
         {
           "op": "lanczos-resize",
           "to": "800w",
-          "notes": "Same tile resampled with Lanczos to ~800×992 for card delivery (tile was ~400px)."
+          "notes": "Same tile resampled with Lanczos to ~800\u00d7992 for card delivery (tile was ~400px)."
         },
         {
           "op": "ready-for-storage",
@@ -2070,7 +2111,7 @@
           "op": "crop",
           "from": "4:5-hero-tile",
           "to": "1:1",
-          "notes": "Center square of hero cell 2,0; Lanczos to 800×800. WebP q82 + JPEG q85. Responsive w400 and w200."
+          "notes": "Center square of hero cell 2,0; Lanczos to 800\u00d7800. WebP q82 + JPEG q85. Responsive w400 and w200."
         },
         {
           "op": "ready-for-storage",
@@ -2193,6 +2234,311 @@
           "working_path": "docs/assets/placeholders/coach-placeholder-1x1.png",
           "storage_key": "coach-photos/placeholder/headshot-1x1.png",
           "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/placeholder/headshot-1x1.png"
+        }
+      ]
+    },
+    {
+      "id": "landing-e",
+      "coach_slug": null,
+      "source_asset_id": null,
+      "do_not_generate_reason": null,
+      "identity_bound": false,
+      "source_free": true,
+      "generation_policy": "generate",
+      "page": "landing",
+      "slot": "mid-cta",
+      "slot_letter": "E",
+      "aspect_ratio": "21:9",
+      "source_prompt_key": "landing-E",
+      "model": "nano_banana_2_shots",
+      "model_parameters": {
+        "resolution": "1k",
+        "aspect_ratio": "21:9",
+        "image_references": [
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity"
+      },
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
+      "alt_text": "Wide mid-page CTA band: calm studio aisle with negative space for membership pitch.",
+      "post_processing": [
+        {
+          "op": "mood-plate-reference",
+          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
+        },
+        {
+          "op": "contact-sheet-tile-pick",
+          "notes": "NEW slot mid-cta 21:9."
+        },
+        {
+          "op": "webready",
+          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
+        }
+      ],
+      "storage_key": "marketing-assets/landing/mid-cta-21x9.webp",
+      "working_path": "docs/assets/marketing/landing/mid-cta-21x9.webp",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/landing/mid-cta-21x9.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/landing/mid-cta-21x9.webp",
+          "storage_key": "marketing-assets/landing/mid-cta-21x9.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/landing/mid-cta-21x9.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/landing/mid-cta-21x9.jpg",
+          "storage_key": "marketing-assets/landing/mid-cta-21x9.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/landing/mid-cta-21x9.jpg"
+        }
+      ]
+    },
+    {
+      "id": "about-d",
+      "coach_slug": null,
+      "source_asset_id": null,
+      "do_not_generate_reason": null,
+      "identity_bound": false,
+      "source_free": true,
+      "generation_policy": "generate",
+      "page": "about",
+      "slot": "cta-band",
+      "slot_letter": "D",
+      "aspect_ratio": "21:9",
+      "source_prompt_key": "about-D",
+      "model": "nano_banana_2_shots",
+      "model_parameters": {
+        "resolution": "1k",
+        "aspect_ratio": "21:9",
+        "image_references": [
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity"
+      },
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
+      "alt_text": "About page CTA band with open floor and warm side light for overlay copy.",
+      "post_processing": [
+        {
+          "op": "mood-plate-reference",
+          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
+        },
+        {
+          "op": "contact-sheet-tile-pick",
+          "notes": "NEW slot about cta-band."
+        },
+        {
+          "op": "webready",
+          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
+        }
+      ],
+      "storage_key": "marketing-assets/about/cta-band-21x9.webp",
+      "working_path": "docs/assets/marketing/about/cta-band-21x9.webp",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/about/cta-band-21x9.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/about/cta-band-21x9.webp",
+          "storage_key": "marketing-assets/about/cta-band-21x9.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/about/cta-band-21x9.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/about/cta-band-21x9.jpg",
+          "storage_key": "marketing-assets/about/cta-band-21x9.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/about/cta-band-21x9.jpg"
+        }
+      ]
+    },
+    {
+      "id": "coaches-c-calisthenics",
+      "coach_slug": null,
+      "source_asset_id": null,
+      "do_not_generate_reason": null,
+      "identity_bound": false,
+      "source_free": true,
+      "generation_policy": "generate",
+      "page": "coaches",
+      "slot": "specialty-accent-calisthenics",
+      "slot_letter": "C",
+      "aspect_ratio": "1:1",
+      "source_prompt_key": "coaches-C-calisthenics",
+      "model": "nano_banana_2_shots",
+      "model_parameters": {
+        "resolution": "1k",
+        "aspect_ratio": "1:1",
+        "image_references": [
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity"
+      },
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
+      "alt_text": "Calisthenics specialty accent: bars and chalk still life, no faces.",
+      "post_processing": [
+        {
+          "op": "mood-plate-reference",
+          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
+        },
+        {
+          "op": "contact-sheet-tile-pick",
+          "notes": "NEW specialty accent."
+        },
+        {
+          "op": "webready",
+          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
+        }
+      ],
+      "storage_key": "marketing-assets/coaches/specialty-accent-calisthenics-1x1.webp",
+      "working_path": "docs/assets/marketing/coaches/specialty-accent-calisthenics-1x1.webp",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-calisthenics-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/coaches/specialty-accent-calisthenics-1x1.webp",
+          "storage_key": "marketing-assets/coaches/specialty-accent-calisthenics-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-calisthenics-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/coaches/specialty-accent-calisthenics-1x1.jpg",
+          "storage_key": "marketing-assets/coaches/specialty-accent-calisthenics-1x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-calisthenics-1x1.jpg"
+        }
+      ]
+    },
+    {
+      "id": "coaches-c-pilates",
+      "coach_slug": null,
+      "source_asset_id": null,
+      "do_not_generate_reason": null,
+      "identity_bound": false,
+      "source_free": true,
+      "generation_policy": "generate",
+      "page": "coaches",
+      "slot": "specialty-accent-pilates",
+      "slot_letter": "C",
+      "aspect_ratio": "1:1",
+      "source_prompt_key": "coaches-C-pilates",
+      "model": "nano_banana_2_shots",
+      "model_parameters": {
+        "resolution": "1k",
+        "aspect_ratio": "1:1",
+        "image_references": [
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity"
+      },
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
+      "alt_text": "Pilates specialty accent: reformer straps and calm studio light, no faces.",
+      "post_processing": [
+        {
+          "op": "mood-plate-reference",
+          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
+        },
+        {
+          "op": "contact-sheet-tile-pick",
+          "notes": "NEW specialty accent."
+        },
+        {
+          "op": "webready",
+          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
+        }
+      ],
+      "storage_key": "marketing-assets/coaches/specialty-accent-pilates-1x1.webp",
+      "working_path": "docs/assets/marketing/coaches/specialty-accent-pilates-1x1.webp",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-pilates-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/coaches/specialty-accent-pilates-1x1.webp",
+          "storage_key": "marketing-assets/coaches/specialty-accent-pilates-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-pilates-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/coaches/specialty-accent-pilates-1x1.jpg",
+          "storage_key": "marketing-assets/coaches/specialty-accent-pilates-1x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-pilates-1x1.jpg"
+        }
+      ]
+    },
+    {
+      "id": "coaches-c-dance",
+      "coach_slug": null,
+      "source_asset_id": null,
+      "do_not_generate_reason": null,
+      "identity_bound": false,
+      "source_free": true,
+      "generation_policy": "generate",
+      "page": "coaches",
+      "slot": "specialty-accent-dance",
+      "slot_letter": "C",
+      "aspect_ratio": "1:1",
+      "source_prompt_key": "coaches-C-dance",
+      "model": "nano_banana_2_shots",
+      "model_parameters": {
+        "resolution": "1k",
+        "aspect_ratio": "1:1",
+        "image_references": [
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity"
+      },
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve Assets, 2026-09-19)",
+      "alt_text": "Dance specialty accent: soft floor reflection and warm light, no faces.",
+      "post_processing": [
+        {
+          "op": "mood-plate-reference",
+          "notes": "Studio empty-interior mood plate d8a483d7-a892-4161-b14f-58d96b5f14da (retires desert plate for marketing)."
+        },
+        {
+          "op": "contact-sheet-tile-pick",
+          "notes": "NEW specialty accent."
+        },
+        {
+          "op": "webready",
+          "notes": "jpg q78 + webp q72, long-edge<=1600; optional thumbs."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional."
+        }
+      ],
+      "storage_key": "marketing-assets/coaches/specialty-accent-dance-1x1.webp",
+      "working_path": "docs/assets/marketing/coaches/specialty-accent-dance-1x1.webp",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-dance-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/coaches/specialty-accent-dance-1x1.webp",
+          "storage_key": "marketing-assets/coaches/specialty-accent-dance-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-dance-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/coaches/specialty-accent-dance-1x1.jpg",
+          "storage_key": "marketing-assets/coaches/specialty-accent-dance-1x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-dance-1x1.jpg"
         }
       ]
     }

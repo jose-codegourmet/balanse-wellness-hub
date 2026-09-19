@@ -22,6 +22,8 @@ coach-photos/placeholder/headshot-1x1.webp
 Working delivery files (until ASSET-030): `docs/assets/headshots/{slug}/headshot-card-4x5.webp` (card) and `headshot-1x1.webp` (avatar). The approved master remains `headshot-4x5.jpg`.
 
 Marketing working files (until ASSET-030): `docs/assets/marketing/{page}/{slot}-{aspect}.webp` (+ `.jpg` fallback). Examples: `docs/assets/marketing/landing/hero-accent-16x9.webp`, `docs/assets/marketing/coaches/specialty-accent-yoga-1x1.webp`.
+
+Blur-up derivative (local only, 480px long edge): `docs/assets/marketing/{page}/{slot}-{aspect}-thumb.{webp,jpg}`. Thumbs are not uploaded, so they get no `storage_key` and no manifest `storage_objects` row.
 ```
 
 ## Tokens
