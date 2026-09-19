@@ -16,6 +16,8 @@
     "lint:fix": "biome check --write .",
     "lint:fix:unsafe": "biome check --write --unsafe .",
     "db:generate": "turbo run db:generate",
+    "db:smoke": "pnpm --filter @balanse/db db:smoke",
+    "secrets:scan": "node scripts/secrets-scan.mjs",
     "prepare": "husky",
     "test": "turbo run test --filter=@balanse/domain --filter=@balanse/mock",
     "guard:brand": "node scripts/guard-brand.mjs"

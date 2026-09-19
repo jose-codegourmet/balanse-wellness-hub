@@ -1,0 +1,12 @@
+# Backend / infrastructure
+
+| Doc | Ticket |
+| --- | --- |
+| [supabase-project.md](./supabase-project.md) | INF-001 |
+| [environment-variables.md](./environment-variables.md) | INF-002 |
+| [migrations.md](./migrations.md) | INF-003 |
+| [storage-buckets.md](./storage-buckets.md) | INF-004 |
+| [auth.md](./auth.md) | INF-005 |
+| [secrets-and-environments.md](./secrets-and-environments.md) | INF-006 |
+| [ci.md](./ci.md) | INF-007 |
+| [preview-and-staging.md](./preview-and-staging.md) | INF-008 |

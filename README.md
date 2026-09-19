@@ -1,17 +1,17 @@
 # Balansé Wellness Hub
 
-Calendar-first class booking for **Balansé** (Cebu). This repository is a pnpm + Turborepo monorepo based on `fe-multi-web-template`, with all demo brand content removed.
+Calendar-first class booking for **Balansé** (Cebu). This repository is a pnpm + Turborepo monorepo based on `fe-multi-web-template`, with demo brand content removed.
 
-This phase ships **mocked screens and foundation only**. There is no live Supabase or API wiring from the apps.
+This phase ships **mocked screens** plus INF wiring to the existing Supabase project `xydundrayuusqizssgby` (ap-southeast-1). Apps do not call live APIs yet. See `docs/backend/`.
 
 ## Apps
 
 | App | Port | Purpose |
 | --- | --- | --- |
 | `apps/web` | 9000 | Public site + customer portal |
-| `apps/admin` | 9001 | Admin portal |
+| `apps/admin` | 9001 | Admin portal (no public sign-up) |
 
-Shared packages: `@balanse/ui`, `@balanse/domain`, `@balanse/mock`, `@balanse/config`, `@balanse/db` (placeholder schema).
+Shared packages: `@balanse/ui`, `@balanse/domain`, `@balanse/mock`, `@balanse/config`, `@balanse/db`.
 
 ## Quick start
 
@@ -22,6 +22,7 @@ cp .env.example .env
 cp packages/db/.env.example packages/db/.env
 cp apps/web/.env.example apps/web/.env.local
 cp apps/admin/.env.example apps/admin/.env.local
+# Fill DATABASE_URL / DIRECT_URL / publishable key locally — never commit them
 pnpm --filter @balanse/db db:generate
 pnpm dev
 ```
@@ -41,6 +42,7 @@ pnpm test
 pnpm build
 pnpm build-storybook
 pnpm guard:brand
+pnpm secrets:scan
 ```
 
 Conventional Commits are enforced via Husky + commitlint.
@@ -49,6 +51,7 @@ Conventional Commits are enforced via Husky + commitlint.
 
 - Product roadmap: `docs/MVP-ROADMAP.md`
 - Screen specs: `docs/screen-specs/`
+- Infra: `docs/backend/`
 - FE screen checklist: `docs/engineering/fe-screen-ticket-checklist.md`
 - Jabkit convention: `docs/engineering/jabkit.md`
 - Mock harness removal (WIRE-002): `docs/engineering/mock-harness-removal.md`
