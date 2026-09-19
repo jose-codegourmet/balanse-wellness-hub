@@ -58,3 +58,15 @@ export function bundledAssetSrc(asset: AssetManifestRecord): string | undefined 
   }
   return undefined;
 }
+
+/** Master contact-sheet path when the map needs the ASSET-012 original. */
+export function bundledMasterSrc(asset: AssetManifestRecord): string | undefined {
+  if (
+    asset.coach_slug &&
+    (COACHES_WITH_HEADSHOTS as readonly string[]).includes(asset.coach_slug) &&
+    asset.approval_status === "approved"
+  ) {
+    return `/assets/headshots/${asset.coach_slug}/headshot-4x5.jpg`;
+  }
+  return undefined;
+}

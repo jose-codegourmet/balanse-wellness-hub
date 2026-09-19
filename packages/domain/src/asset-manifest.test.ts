@@ -2,7 +2,12 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { ASSET_MANIFEST, bundledAssetSrc, publicPageSlotIds } from "./asset-manifest";
+import {
+  ASSET_MANIFEST,
+  bundledAssetSrc,
+  bundledMasterSrc,
+  publicPageSlotIds,
+} from "./asset-manifest";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -23,6 +28,7 @@ describe("FE-SHR-004 asset manifest", () => {
     expect(rex).toBeDefined();
     if (!rex) return;
     expect(bundledAssetSrc(rex)).toBe("/assets/headshots/rex-francis-regis/headshot-card-4x5.webp");
+    expect(bundledMasterSrc(rex)).toBe("/assets/headshots/rex-francis-regis/headshot-4x5.jpg");
     expect(bundledAssetSrc(rex)).not.toMatch(/^https?:/);
   });
 

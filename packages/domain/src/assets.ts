@@ -32,35 +32,129 @@ export const COACHES_WITH_HEADSHOTS = [
 
 export const COACHES_ON_PLACEHOLDER = ["alec-james-co", "sofia-ocampo", "kate-go"] as const;
 
+export type CoachPhotoRole = "card" | "avatar" | "master";
+
+export type CoachPhotoSources = {
+  slug: string | null;
+  role: CoachPhotoRole;
+  webp: string;
+  jpeg: string;
+  srcSetWebp?: string;
+  srcSetJpeg?: string;
+  sizes?: string;
+  masterWebp?: string;
+  masterJpeg?: string;
+  isPlaceholder: boolean;
+};
+
 export function coachPhotoKey(slug: string): string {
   return `coach-photos/${slug}`;
 }
 
+export function coachSlugFromPhotoKey(photoKey: string | null): string | null {
+  if (!photoKey || photoKey.startsWith("http://") || photoKey.startsWith("https://")) return null;
+  if (photoKey.startsWith("/")) return null;
+  const slug = photoKey.replace(/^coach-photos\//, "").split("/")[0] ?? "";
+  return slug.length > 0 ? slug : null;
+}
+
+function publicHeadshot(slug: string, file: string): string {
+  return `/assets/headshots/${slug}/${file}`;
+}
+
 export function localCoachPhotoPath(slug: string, ratio: "1:1" | "4:5"): string {
-  if (ratio === "1:1") return `/assets/headshots/${slug}/headshot-1x1.webp`;
-  return `/assets/headshots/${slug}/headshot-card-4x5.webp`;
+  return ratio === "1:1"
+    ? publicHeadshot(slug, "headshot-1x1.webp")
+    : publicHeadshot(slug, "headshot-card-4x5.webp");
+}
+
+export function localCoachMasterPath(slug: string, ext: "webp" | "jpg" = "jpg"): string {
+  return publicHeadshot(slug, `headshot-4x5.${ext}`);
+}
+
+export function resolveCoachPhotoSources(
+  photoKey: string | null,
+  role: CoachPhotoRole = "card",
+): CoachPhotoSources {
+  const placeholder =
+    role === "avatar" ? LOCAL_PLACEHOLDER_PATHS.coach1x1 : LOCAL_PLACEHOLDER_PATHS.coach4x5;
+  const slug = coachSlugFromPhotoKey(photoKey);
+  const hasDelivery = Boolean(slug && (COACHES_WITH_HEADSHOTS as readonly string[]).includes(slug));
+
+  if (!hasDelivery || !slug) {
+    return {
+      slug,
+      role,
+      webp: photoKey?.startsWith("/") ? photoKey : placeholder,
+      jpeg: photoKey?.startsWith("/") ? photoKey : placeholder,
+      isPlaceholder: !photoKey?.startsWith("/"),
+    };
+  }
+
+  if (role === "master") {
+    return {
+      slug,
+      role,
+      webp: localCoachMasterPath(slug, "webp"),
+      jpeg: localCoachMasterPath(slug, "jpg"),
+      masterWebp: localCoachMasterPath(slug, "webp"),
+      masterJpeg: localCoachMasterPath(slug, "jpg"),
+      isPlaceholder: false,
+    };
+  }
+
+  if (role === "avatar") {
+    return {
+      slug,
+      role,
+      webp: publicHeadshot(slug, "headshot-1x1.webp"),
+      jpeg: publicHeadshot(slug, "headshot-1x1.jpg"),
+      srcSetWebp: [
+        `${publicHeadshot(slug, "headshot-1x1-w200.webp")} 200w`,
+        `${publicHeadshot(slug, "headshot-1x1-w400.webp")} 400w`,
+        `${publicHeadshot(slug, "headshot-1x1.webp")} 800w`,
+      ].join(", "),
+      srcSetJpeg: [
+        `${publicHeadshot(slug, "headshot-1x1-w200.jpg")} 200w`,
+        `${publicHeadshot(slug, "headshot-1x1-w400.jpg")} 400w`,
+        `${publicHeadshot(slug, "headshot-1x1.jpg")} 800w`,
+      ].join(", "),
+      sizes: "(max-width: 640px) 96px, 128px",
+      masterWebp: localCoachMasterPath(slug, "webp"),
+      masterJpeg: localCoachMasterPath(slug, "jpg"),
+      isPlaceholder: false,
+    };
+  }
+
+  return {
+    slug,
+    role: "card",
+    webp: publicHeadshot(slug, "headshot-card-4x5.webp"),
+    jpeg: publicHeadshot(slug, "headshot-card-4x5.jpg"),
+    srcSetWebp: [
+      `${publicHeadshot(slug, "headshot-card-4x5-w400.webp")} 400w`,
+      `${publicHeadshot(slug, "headshot-card-4x5.webp")} 800w`,
+    ].join(", "),
+    srcSetJpeg: [
+      `${publicHeadshot(slug, "headshot-card-4x5-w400.jpg")} 400w`,
+      `${publicHeadshot(slug, "headshot-card-4x5.jpg")} 800w`,
+    ].join(", "),
+    sizes: "(max-width: 640px) 160px, 320px",
+    masterWebp: localCoachMasterPath(slug, "webp"),
+    masterJpeg: localCoachMasterPath(slug, "jpg"),
+    isPlaceholder: false,
+  };
 }
 
 /**
  * Maps a coach fixture `photoKey` (storage-style prefix or public path) to a
- * bundled FE path. Never returns a Storage URL.
+ * bundled FE path. Never returns a Storage URL. Cards use 4:5 crops; avatars use 1:1.
  */
 export function resolveCoachPhotoSrc(
   photoKey: string | null,
   ratio: "1:1" | "4:5" = "4:5",
 ): string {
-  if (!photoKey) {
-    return ratio === "1:1" ? LOCAL_PLACEHOLDER_PATHS.coach1x1 : LOCAL_PLACEHOLDER_PATHS.coach4x5;
-  }
-  if (photoKey.startsWith("/")) return photoKey;
-  if (photoKey.startsWith("http://") || photoKey.startsWith("https://")) {
-    return ratio === "1:1" ? LOCAL_PLACEHOLDER_PATHS.coach1x1 : LOCAL_PLACEHOLDER_PATHS.coach4x5;
-  }
-  const slug = photoKey.replace(/^coach-photos\//, "").split("/")[0] ?? "";
-  if ((COACHES_WITH_HEADSHOTS as readonly string[]).includes(slug)) {
-    return localCoachPhotoPath(slug, ratio);
-  }
-  return ratio === "1:1" ? LOCAL_PLACEHOLDER_PATHS.coach1x1 : LOCAL_PLACEHOLDER_PATHS.coach4x5;
+  return resolveCoachPhotoSources(photoKey, ratio === "1:1" ? "avatar" : "card").webp;
 }
 
 export function isMarketingAspectRatio(value: string): value is MarketingAspectRatio {
