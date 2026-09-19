@@ -15,8 +15,11 @@ Examples:
 marketing-assets/landing/hero-accent-16x9.webp
 marketing-assets/about/brand-texture-3x1.webp
 coach-photos/rachelle-tobiano/headshot-4x5.webp
+coach-photos/rachelle-tobiano/headshot-1x1.webp
 coach-photos/placeholder/headshot-4x5.webp
 coach-photos/placeholder/headshot-1x1.webp
+
+Working delivery files (until ASSET-030): `docs/assets/headshots/{slug}/headshot-card-4x5.webp` (card) and `headshot-1x1.webp` (avatar). The approved master remains `headshot-4x5.jpg`.
 ```
 
 ## Tokens
