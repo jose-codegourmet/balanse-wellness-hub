@@ -1,6 +1,13 @@
 import type {
+  AdminClass,
   AdminCoach,
   AdminCustomer,
+  AdminCustomerDetail,
+  AdminDashboardSnapshot,
+  AdminReportFilters,
+  AdminReports,
+  AdminSession,
+  AdminSettings,
   AdminStaff,
   BookingStatus,
   CustomerBooking,
@@ -12,6 +19,8 @@ import type {
   PublicCoach,
   PublicContent,
   PublicSession,
+  SessionReportDrilldown,
+  SessionStatus,
 } from "@balanse/domain";
 
 /**
@@ -54,6 +63,8 @@ export type MockDataAdapter = {
   getAdminBookings: (filters?: {
     status?: BookingStatus;
     query?: string;
+    classId?: string;
+    date?: string;
   }) => Promise<CustomerBooking[]>;
   confirmAdminBooking: (id: string) => Promise<CustomerBooking>;
   rejectAdminBooking: (id: string, reason: string) => Promise<CustomerBooking>;
@@ -62,13 +73,50 @@ export type MockDataAdapter = {
   markRefundPending: (bookingId: string) => Promise<CustomerBooking>;
   markRefunded: (bookingId: string) => Promise<CustomerBooking>;
   getAdminPaymentProofSignedUrl: (bookingId: string) => Promise<{ url: string }>;
-  getAdminClasses: () => Promise<PublicClass[]>;
+  getAdminClasses: () => Promise<AdminClass[]>;
+  upsertAdminClass: (input: {
+    id?: string;
+    name: string;
+    shortDescription: string;
+    defaultDurationMinutes: number | null;
+    defaultPricePhp: number | null;
+    active: boolean;
+    associatedCoachIds: string[];
+  }) => Promise<AdminClass>;
   getAdminCoaches: () => Promise<AdminCoach[]>;
-  getAdminSessions: () => Promise<PublicSession[]>;
-  cancelAdminSession: (id: string) => Promise<PublicSession>;
+  upsertAdminCoach: (input: {
+    id?: string;
+    name: string;
+    specialties: string[];
+    shortBio: string;
+    photoKey: string | null;
+    active: boolean;
+    defaultRatePhp: number;
+    rateType: AdminCoach["rateType"];
+  }) => Promise<AdminCoach>;
+  getAdminSessions: () => Promise<AdminSession[]>;
+  upsertAdminSession: (input: {
+    id?: string;
+    classId: string;
+    coachId: string;
+    startsAt: string;
+    endsAt: string;
+    pricePhp: number;
+    capacity: number;
+    bookable: boolean;
+    status: SessionStatus;
+    coachRatePhp: number;
+    coachRateType: AdminSession["coachRateType"];
+  }) => Promise<AdminSession>;
+  cancelAdminSession: (id: string) => Promise<AdminSession>;
   getAdminCancellationRequests: () => Promise<CustomerBooking[]>;
+  completeAdminCancellation: (bookingId: string) => Promise<CustomerBooking>;
+  rejectAdminCancellation: (bookingId: string, reason: string) => Promise<CustomerBooking>;
   getAdminRescheduleRequests: () => Promise<CustomerBooking[]>;
+  approveAdminReschedule: (bookingId: string) => Promise<CustomerBooking>;
+  rejectAdminReschedule: (bookingId: string, reason: string) => Promise<CustomerBooking>;
   getAdminSessionRoster: (sessionId: string) => Promise<{
+    session: AdminSession;
     confirmed: CustomerBooking[];
     held: CustomerBooking[];
     waitlisted: CustomerBooking[];
@@ -79,14 +127,32 @@ export type MockDataAdapter = {
     waitlistedCount: number;
     checkedIn: number;
     noShow: number;
+    occupancy: number;
+    attendanceUtilisation: number;
   }>;
   checkIn: (bookingId: string) => Promise<CustomerBooking>;
   markNoShow: (bookingId: string) => Promise<CustomerBooking>;
   getAdminReportsSales: () => Promise<{ grossPhp: number; refundsPhp: number; netPhp: number }>;
+  getAdminReports: (filters: AdminReportFilters) => Promise<AdminReports>;
+  getAdminSessionReport: (sessionId: string) => Promise<SessionReportDrilldown | null>;
   getAdminStaff: () => Promise<AdminStaff[]>;
-  getAdminCustomers: () => Promise<AdminCustomer[]>;
-  getAdminCustomer: (id: string) => Promise<AdminCustomer | null>;
-  getAdminSettings: () => Promise<PublicContent & PaymentInstructions>;
+  upsertAdminStaff: (input: {
+    id?: string;
+    name: string;
+    email: string;
+    role: AdminStaff["role"];
+    status: AdminStaff["status"];
+  }) => Promise<AdminStaff>;
+  disableAdminStaff: (id: string) => Promise<AdminStaff>;
+  getAdminCustomers: (filters?: {
+    query?: string;
+    hasUpcoming?: boolean;
+  }) => Promise<AdminCustomer[]>;
+  getAdminCustomer: (id: string) => Promise<AdminCustomerDetail | null>;
+  getAdminSettings: () => Promise<AdminSettings>;
+  updateAdminSettings: (patch: Partial<AdminSettings>) => Promise<AdminSettings>;
+  promotePolicyVersion: (documentName: string, version: string) => Promise<AdminSettings>;
+  getAdminDashboard: () => Promise<AdminDashboardSnapshot>;
 };
 
 export type MockRuntimeOptions = {
@@ -98,6 +164,8 @@ export type MockRuntimeOptions = {
   sessionBecameFullId: string | null;
   /** Sticky GCash proof upload failure for FE-CUS-010. */
   failProofUpload: boolean;
+  /** Empty admin queues for FE-ADM empty-state demos. */
+  emptyAdminQueues: boolean;
 };
 
 export const defaultMockRuntime: MockRuntimeOptions = {
@@ -106,4 +174,5 @@ export const defaultMockRuntime: MockRuntimeOptions = {
   failPublicSessions: false,
   sessionBecameFullId: null,
   failProofUpload: false,
+  emptyAdminQueues: false,
 };

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { RosterPage } from "@/modules/admin/RosterPage";
+import { SessionFormPage } from "@/modules/admin/SchedulePages";
 
 export const metadata: Metadata = {
-  title: "Session roster",
-  description: "Check-in and waitlist.",
+  title: "Session",
+  description: "Create or edit a session.",
 };
 
 export default async function Page({ params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = await params;
-  return <RosterPage sessionId={sessionId} />;
+  return <SessionFormPage sessionId={sessionId} />;
 }

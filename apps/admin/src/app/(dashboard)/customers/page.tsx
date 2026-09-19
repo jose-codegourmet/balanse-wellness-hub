@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
+import { CustomerListPage } from "@/modules/admin/CustomerPages";
 
 export const metadata: Metadata = {
   title: "Customers",
-  description: "Customer records.",
+  description: "Customer management.",
 };
 
 export default function Page() {
-  return (
-    <section>
-      <h1 className="font-display text-3xl">Customers</h1>
-      <p className="mt-3 max-w-2xl text-muted-foreground">
-        Customer records. Screen content is owned by the matching FE-ADM ticket.
-      </p>
-    </section>
-  );
+  return <CustomerListPage />;
 }
