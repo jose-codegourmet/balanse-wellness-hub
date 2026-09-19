@@ -37,6 +37,7 @@ describe("settings invariants", () => {
 
   it("forbids hold/cutoff on settings payloads", () => {
     expect(() => assertNoDeveloperConfig({ holdDuration: 8 })).toThrow(ApiError);
+    expect(() => assertNoDeveloperConfig({ policies: [{ isPlaceholder: true }] })).not.toThrow();
   });
 });
 

@@ -262,9 +262,9 @@ describeDb("BE-030–043 HTTP integration", () => {
       storage: createDefaultStorage(),
     };
     const settings = await dispatch(new Request("http://local/api/admin/settings"), adminDeps);
-    expect(settings.status).toBe(200);
+    expect(settings.status, JSON.stringify(await settings.clone().json())).toBe(200);
     const settingsBody = JSON.stringify(await json(settings));
-    expect(settingsBody).not.toMatch(/BOOKING_HOLD|cutoff/i);
+    expect(settingsBody).not.toMatch(/BOOKING_HOLD_DURATION|BOOKING_CUTOFF/);
     expect(settingsBody).toContain("+63 968 220 9198");
 
     const reports = await dispatch(

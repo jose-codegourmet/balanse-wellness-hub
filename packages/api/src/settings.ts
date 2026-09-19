@@ -52,25 +52,18 @@ export type SettingsPayload = {
   };
 };
 
-const FORBIDDEN_SETTING_KEYS = [
-  "hold",
-  "cutoff",
-  "BOOKING_HOLD_DURATION_HOURS",
-  "BOOKING_CUTOFF_MINUTES_BEFORE_START",
-  "holdDuration",
-  "bookingCutoff",
-];
+/** Whole JSON keys only — do not match substrings like `isPlaceholder`. */
+const FORBIDDEN_SETTING_KEY_RE =
+  /"(BOOKING_HOLD_DURATION_HOURS|BOOKING_CUTOFF_MINUTES_BEFORE_START|holdDuration|bookingCutoff|hold_duration|booking_cutoff)"/;
 
 export function assertNoDeveloperConfig(payload: unknown): void {
   const raw = JSON.stringify(payload);
-  for (const key of FORBIDDEN_SETTING_KEYS) {
-    if (raw.includes(key)) {
-      throw new ApiError(
-        400,
-        "developer_config_forbidden",
-        "Reservation hold duration and booking cutoff are not admin settings.",
-      );
-    }
+  if (FORBIDDEN_SETTING_KEY_RE.test(raw)) {
+    throw new ApiError(
+      400,
+      "developer_config_forbidden",
+      "Reservation hold duration and booking cutoff are not admin settings.",
+    );
   }
 }
 
