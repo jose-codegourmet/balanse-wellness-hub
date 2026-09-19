@@ -1,6 +1,6 @@
 # Stable source_asset_id.intake_item_id values for ASSET-002.
 # Private ARWs are Drive-only. Repo paths are web derivatives already committed.
-# higgsfield_media_id: fill at ASSET-011/012 registration (not this PR).
+# higgsfield_media_id: fill at ASSET-011/012 registration.
 
 items:
   - intake_item_id: src-coach-rex-01
@@ -11,7 +11,7 @@ items:
   - intake_item_id: src-coach-ephraim-01
     coach_slug: ephraim-bacaltos
     working_preview: docs/coaches/ephraim/coach-ephraim-01.webp
-    higgsfield_media_id: null
+    higgsfield_media_id: 1e2d2abe-ba25-4967-9861-a96dbd45f7b9
     usable_for_generation: true
   - intake_item_id: src-coach-rachelle-01
     coach_slug: rachelle-tobiano
