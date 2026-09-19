@@ -6,7 +6,7 @@
 > - `docs/screen-specs/` (`README.md`, `SCREEN_INDEX.md`, `public/`, `customer/`, `admin/`, `shared/`)
 > - `docs/facebook-findings/` (`README.md`, `findings.md`)
 >
-> No new product scope is introduced. Where the business documents leave a decision **OPEN**, this roadmap records it as a deferred blocker in [Section 8](#8-deferred-open-business-questions) and points at the tickets it gates. It does **not** invent an answer.
+> No new product scope is introduced. Where the business documents leave a decision **OPEN**, this roadmap records it as a deferred blocker in [Section 9](#9-deferred-open-business-questions) and points at the tickets it gates. It does **not** invent an answer.
 >
 > Where this roadmap makes a purely technical choice that the business docs do not cover (folder layout, which app hosts which route group, naming), the choice is labelled **Engineering decision (not a product rule)** so reviewers can tell product truth from implementation convenience.
 
@@ -22,11 +22,12 @@
 4. [INF and BE tickets — schema, RLS, buckets, API routes](#4-inf-and-be-tickets)
 5. [FE foundation tickets](#5-fe-foundation-tickets)
 6. [FE screen tickets](#6-fe-screen-tickets)
-7. [Later phase — FE↔BE wiring (thin stubs)](#7-later-phase--febe-wiring-thin-stubs)
-8. [Deferred OPEN business questions](#8-deferred-open-business-questions)
-9. [Definition of done for this phase](#9-definition-of-done-for-this-phase)
-10. [Appendix A — screen-spec coverage matrix](#appendix-a--screen-spec-coverage-matrix)
-11. [Appendix B — ticket index](#appendix-b--ticket-index)
+7. [Assets / Higgsfield generation track](#7-assets--higgsfield-generation-track)
+8. [Later phase — FE↔BE wiring (thin stubs)](#8-later-phase--febe-wiring-thin-stubs)
+9. [Deferred OPEN business questions](#9-deferred-open-business-questions)
+10. [Definition of done for this phase](#10-definition-of-done-for-this-phase)
+11. [Appendix A — screen-spec coverage matrix](#appendix-a--screen-spec-coverage-matrix)
+12. [Appendix B — ticket index](#appendix-b--ticket-index)
 
 ---
 
@@ -49,9 +50,11 @@ This phase runs **two independent lanes in parallel** and deliberately does **no
 | --- | --- | --- |
 | **FE** | Every screen in `docs/screen-specs/` implemented as a **mocked UI page** — real routes, real components, real states, fixture data. Built on `fe-multi-web-template` with all PawPair content stripped, using **Jabkit** as the component library. | No live API calls, no Supabase client calls from screens, no real auth session, no real uploads. |
 | **BE / INF** | Supabase schema (tables, enums, constraints, indexes), RLS policies, storage buckets, scheduled jobs, reporting queries, and the **API route inventory** implemented and testable on its own (integration tests / REST client), on the existing Supabase project. | No FE consumption of those routes. No UI-driven end-to-end flows. |
-| **Assets** | Marketing image generation per `docs/screen-specs/shared/04-marketing-image-generation.md` and the per-page prompts in `docs/screen-specs/public/*`. | No generated product UI (the calendar and booking UI stay coded). |
+| **Assets** | Higgsfield generation of **professional coach headshots** for the confirmed roster plus the public-page marketing imagery whose prompts already exist in the screen specs, delivered with an asset inventory, naming conventions, and a Storage handoff. See the dedicated track in [Section 7](#7-assets--higgsfield-generation-track). | No generated product UI (the calendar and booking UI stay coded); no invented coaches; no live Storage-backed rendering in the mocked FE. |
 
-**Wiring FE to BE is an explicitly later phase** and appears in this document only as thin stubs ([Section 7](#7-later-phase--febe-wiring-thin-stubs)). Do not expand those stubs into build-now tickets during this phase.
+**Wiring FE to BE is an explicitly later phase** and appears in this document only as thin stubs ([Section 8](#8-later-phase--febe-wiring-thin-stubs)). Do not expand those stubs into build-now tickets during this phase.
+
+**Asset generation is in scope now**, even though the FE stays mocked. Generated assets land in the repo/asset store and the manifest, are dropped into the mock pages as they are approved, and are uploaded to Supabase Storage once the bucket tickets land. Serving them *from* Storage at runtime is a wiring-phase concern.
 
 ### 1.3 Locked decisions carried into every ticket
 
@@ -81,8 +84,12 @@ This phase runs **two independent lanes in parallel** and deliberately does **no
 | FE public screens | `FE-PUB-001` – `FE-PUB-005` | 5 |
 | FE customer screens | `FE-CUS-001` – `FE-CUS-013` | 13 |
 | FE admin screens | `FE-ADM-001` – `FE-ADM-014` | 14 |
-| Assets | `ASSET-001` – `ASSET-004` | 4 |
-| Later-phase wiring stubs | `WIRE-001` – `WIRE-012` | 12 |
+| Assets — foundations | `ASSET-001` – `ASSET-002` | 2 |
+| Assets — coach headshots | `ASSET-010` – `ASSET-015` | 6 |
+| Assets — marketing imagery | `ASSET-020` – `ASSET-023` | 4 |
+| Assets — Storage handoff | `ASSET-030` | 1 |
+| Later-phase wiring stubs | `WIRE-001` – `WIRE-013` | 13 |
+| **Total build-now tickets** | | **108** |
 
 ### 1.5 Ticket format used throughout
 
@@ -177,12 +184,12 @@ From `21-canonical-rules.md` §Do not invent [R63–R66] and `docs/screen-specs/
 
 | Phase | Name | Lanes active | Exit condition |
 | --- | --- | --- | --- |
-| **P0** | Ground zero | INF, FE | Repo bootstrapped, PawPair removed, Jabkit wired, Supabase env + migration workflow proven with one no-op migration. |
-| **P1** | Skeletons | INF, BE, FE, Assets | Core schema domains (identity, catalogue, sessions) migrated; FE route shells + mock data layer + shared systems exist and render. |
-| **P2** | Booking engine + public surface | BE, FE, Assets | Booking/waitlist/payment/request schema + rules + jobs done; all 5 public screens mocked. |
+| **P0** | Ground zero | INF, FE, **Assets** | Repo bootstrapped, PawPair removed, Jabkit wired, Supabase env + migration workflow proven with one no-op migration, **coach reference-image sourcing started** (it is the longest-lead asset dependency). |
+| **P1** | Skeletons | INF, BE, FE, **Assets** | Core schema domains (identity, catalogue, sessions) migrated; FE route shells + mock data layer + shared systems exist and render; asset pipeline, inventory conventions, and the approved headshot look are locked. |
+| **P2** | Booking engine + public surface | BE, FE, **Assets** | Booking/waitlist/payment/request schema + rules + jobs done; all 5 public screens mocked; **all coach headshots and public-page imagery generated, approved, and dropped into the mocks**. |
 | **P3** | Customer surface + API | BE, FE | Customer-facing API routes implemented and testable; all 13 customer screens mocked. |
-| **P4** | Admin surface + reporting | BE, FE | Admin API routes + reporting queries done; all 14 admin screens mocked; storage buckets and RLS suite complete. |
-| **LATER** | Wiring | FE + BE together | Out of scope for this phase — see [Section 7](#7-later-phase--febe-wiring-thin-stubs). |
+| **P4** | Admin surface + reporting | BE, FE, **Assets** | Admin API routes + reporting queries done; all 14 admin screens mocked; storage buckets and RLS suite complete; **approved assets uploaded into `coach-photos` and `marketing-assets`**. |
+| **LATER** | Wiring | FE + BE together | Out of scope for this phase — see [Section 8](#8-later-phase--febe-wiring-thin-stubs). |
 
 FE and BE lanes are independent within P1–P4; the only cross-lane dependency in this phase is **shared vocabulary** (status names, field names, money/date formats) so that wiring later is mechanical. That vocabulary is owned by `BE-001` (enums) and consumed by `FE-FND-005` (mock domain types) and `FE-SHR-002` (status language).
 
@@ -194,7 +201,7 @@ P0 ─────────────────────────�
                                   │                            │
                                   └──► INF-005 Auth config     └──► BE-001 enums+conventions
   FE-FND-001 bootstrap ──► FE-FND-002 strip PawPair ──► FE-FND-003 Jabkit ──► FE-FND-004 brand tokens
-                                                                                │
+  ASSET-010 coach reference sourcing (start immediately — longest lead)         │
 P1 ──────────────────────────────────────────────────────────────────────────  │
   BE-001 ──┬─► BE-002 profiles ──► BE-003 staff/roles                          │
            ├─► BE-004 coaches ──► BE-005 classes ──► BE-006 sessions(+snapshot)│
@@ -207,7 +214,8 @@ P1 ─────────────────────────�
                ├─► FE-FND-010 mock upload      ├─► FE-SHR-003 empty/error states
                ├─► FE-FND-011 quality gate     ├─► FE-SHR-005 responsive calendar
                └─► FE-FND-012 format utils     
-  ASSET-001 prompt conventions
+  FE-FND-004 ──► ASSET-001 Higgsfield pipeline ──► ASSET-002 inventory+naming
+  ASSET-001 + ASSET-010 ──► ASSET-011 headshot look lockup (pilot approval)
 
 P2 ──────────────────────────────────────────────────────────────────────────
   BE-006 ──┬─► BE-008 bookings ──┬─► BE-009 policy acceptance
@@ -220,7 +228,11 @@ P2 ─────────────────────────�
            └─► BE-017 capacity integrity ──► BE-018 expiry+promotion jobs
   BE-019 developer config ──► BE-017/BE-018
   BE-020 RLS suite (needs BE-002..BE-016)
-  FE-SHR-005 + FE-FND-007 ──► FE-PUB-001..005          ASSET-002/003/004
+  FE-SHR-005 + FE-FND-007 ──► FE-PUB-001..005
+  ASSET-011 ──► ASSET-012 roster headshots ──► ASSET-013 post-processing ──┐
+  ASSET-010 ──► ASSET-014 placeholder avatar                               ├─► FE-SHR-004
+  ASSET-012 ──► ASSET-015 coaches group hero + specialty accents           │
+  ASSET-001/002 ──► ASSET-020 landing · ASSET-021 about · ASSET-022 contact · ASSET-023 faq ──┘
 
 P3 ──────────────────────────────────────────────────────────────────────────
   BE-022 reporting queries (needs BE-010, BE-011, BE-015)
@@ -233,6 +245,7 @@ P4 ─────────────────────────�
   BE-036..BE-043 admin APIs (+ reports API needs BE-022)
   BE-024 API contract pack (OpenAPI-ish reference for the wiring phase)
   FE-FND-009 + FE-SHR-* ──► FE-ADM-001..014
+  INF-004 + BE-021 + ASSET-013/020..023 ──► ASSET-030 Storage handoff
 
 LATER ───────────────────────────────────────────────────────────────────────
   WIRE-001..012 (thin stubs only)
@@ -244,9 +257,11 @@ LATER ────────────────────────�
 
 `FE-FND-001 → FE-FND-002 → FE-FND-003 → FE-FND-005 → FE-SHR-005 → FE-CUS-007` is the FE critical path (the calendar is the product's hero and is reused by public and customer surfaces).
 
+`ASSET-010 → ASSET-011 → ASSET-012 → ASSET-013 → ASSET-030` is the Assets critical path, and `ASSET-010` (coach reference-image sourcing and consent) should start on day one: it depends on people outside the delivery team, and the screen specs forbid generating a coach portrait without a valid reference image, so every headshot ticket stalls behind it.
+
 ### 3.4 Blocked-by-business items
 
-Tickets gated on an OPEN business question are marked **⛔ BLOCKED-BY-OQ-n** in their scope notes and must ship the surrounding workflow with the undecided rule left configurable/absent, never guessed. See [Section 8](#8-deferred-open-business-questions).
+Tickets gated on an OPEN business question are marked **⛔ BLOCKED-BY-OQ-n** in their scope notes and must ship the surrounding workflow with the undecided rule left configurable/absent, never guessed. See [Section 9](#9-deferred-open-business-questions).
 
 ---
 
@@ -1090,7 +1105,7 @@ apps/admin (port 9001)
                                                /reports       → admin/14-sales-inventory-reports.md
 ```
 
-**Navigation gap to flag, not fill:** `docs/screen-specs/shared/01-navigation.md` lists a public **"Classes"** item and a public **"Schedule"** item, but `docs/screen-specs/public/` contains no dedicated Classes or Schedule screen spec — the calendar lives on the landing page. Do **not** design new pages for them. Point both nav items at the landing calendar (Schedule → calendar anchor; Classes → calendar with the class filter surfaced) and raise the discrepancy as **OQ-NAV** in [Section 8](#8-deferred-open-business-questions).
+**Navigation gap to flag, not fill:** `docs/screen-specs/shared/01-navigation.md` lists a public **"Classes"** item and a public **"Schedule"** item, but `docs/screen-specs/public/` contains no dedicated Classes or Schedule screen spec — the calendar lives on the landing page. Do **not** design new pages for them. Point both nav items at the landing calendar (Schedule → calendar anchor; Classes → calendar with the class filter surfaced) and raise the discrepancy as **OQ-NAV** in [Section 9](#9-deferred-open-business-questions).
 
 ---
 
@@ -1378,7 +1393,7 @@ apps/admin (port 9001)
 #### FE-SHR-004 — Marketing asset integration layer
 
 - **Lane:** FE
-- **Depends on:** FE-FND-004, ASSET-001
+- **Depends on:** FE-FND-004, ASSET-002
 - **Source docs:** `docs/screen-specs/shared/04-marketing-image-generation.md`; `docs/screen-specs/public/05-coaches.md` §Coach image source; `docs/screen-specs/public/01-landing-page.md` §Coach image source
 - **Scope notes:** How generated imagery enters the app: an asset manifest (id, page, slot, aspect ratio, source prompt reference, alt text), responsive image components honouring the specced aspect ratios (16:9, 3:2, 1:1, 21:9, 4:3, 3:1, 4:5), and the coach-photo rule — coach imagery always comes from the coach record (mocked this phase), never hardcoded per page, with a designed placeholder avatar when absent.
 - **Acceptance criteria:**
@@ -1388,7 +1403,8 @@ apps/admin (port 9001)
   - [ ] Alt text exists for every decorative-vs-informative image, with decorative images correctly marked.
   - [ ] No generated image contains product UI (reviewer checklist item from the shared spec).
   - [ ] Missing asset falls back gracefully rather than breaking the layout.
-- **Out of scope:** Generating the images (`ASSET-002`–`ASSET-004`).
+  - [ ] Approved assets from the Assets track are consumed from the local/bundled asset path this phase; no Storage URL is fetched at runtime (that is `WIRE-012`).
+- **Out of scope:** Generating the images ([Section 7](#7-assets--higgsfield-generation-track)); serving from Supabase Storage (`WIRE-012`).
 - **Phase:** P2
 
 #### FE-SHR-005 — Responsive calendar component (mock)
@@ -1949,71 +1965,314 @@ apps/admin (port 9001)
 
 ### 6.4 Asset tickets
 
-#### ASSET-001 — Marketing image generation conventions and manifest
+Asset generation has its own lane and its own section — see [Section 7](#7-assets--higgsfield-generation-track). The FE screen tickets above consume approved assets through the manifest built in `FE-SHR-004`; they are not blocked on generation, because every image slot degrades to a designed placeholder.
+
+---
+
+## 7. Assets / Higgsfield generation track
+
+### 7.1 Why this track exists
+
+`docs/screen-specs/` does not just describe layouts — every public screen spec carries **explicit generation prompts**, and `docs/screen-specs/shared/04-marketing-image-generation.md` fixes the conventions for all of them ("intended for generation through Higgsfield CLI using Nano Banana Pro or GPT Image 2"). Coach imagery additionally has a data rule attached to it: `public/05-coaches.md` and `public/01-landing-page.md` both require coach photos to come from the **database-managed coach record**, never from hardcoded page imagery, with a designed fallback avatar when a coach has no photo. That makes assets a delivery lane with its own dependencies (people, consent, approval) rather than a decoration step at the end of FE work.
+
+Jose confirmed **professional coach headshots** as the priority output of this track.
+
+### 7.2 Ground rules (from the specs, not invented)
+
+From `shared/04-marketing-image-generation.md`:
+
+- Put the target **aspect ratio first** in every prompt; follow the prompt structure `[ASPECT RATIO] → Create … → Purpose → Composition → Visual direction → Important constraints`.
+- Generate **image assets only**. No embedded text, logos, labels, fake UI, watermarks, or unreadable signage unless explicitly requested.
+- Keep **negative space** where the layout needs copy or controls.
+- Reuse the shared art-direction tail: *"modern Cebu wellness studio atmosphere, calm but energetic, editorial fitness photography, natural daylight, warm neutral materials, subtle tropical cues without resort clichés, contemporary minimal interior styling, authentic movement, premium but approachable, realistic skin texture, realistic fabric and equipment, clean composition, generous negative space, no text, no logos, no watermark."*
+- **The calendar and booking UI are real product UI and must be built in code, never generated into an image.**
+- **Do not generate to fill space.** Skip when the calendar already carries the hierarchy, when typography and spacing work better, when an icon or CSS accent suffices, or when the image would make booking slower or noisier.
+
+From `public/05-coaches.md` (the hard constraints on headshots):
+
+- Coach portraits should feel like **a coherent set**.
+- If real coach photos are available, **prefer editing or consistent re-shoot direction rather than inventing people**.
+- Generate a portrait **only per real coach and only when a valid reference image is available**.
+- **Preserve the referenced person's identity accurately.** No fake medals or credentials, no invented tattoos or accessories, **no invented team members**.
+- If a coach has no photo, show a **designed placeholder/avatar** — never a broken image.
+
+Brand direction for the "Balansé look" comes from `docs/facebook-findings/findings.md` §5: cream, warm white, beige/tan, muted brown, dark navy/charcoal, and **gold accents**; calm, warm, community-minded; muted neutral backgrounds with gold/brown labels and simple editorial typography.
+
+### 7.3 Confirmed coach roster (owner-provided)
+
+Source: `docs/facebook-findings/findings.md` §4b. This roster **supersedes** names inferred from the Facebook schedule graphic and is the definitive list for headshot production: eleven coaches, and nobody else. Each one resolves to either a generated headshot (reference + consent available) or the designed placeholder — never to an invented face and never to an omission from the page.
+
+| # | Coach | Classes | Headshot asset id |
+| --- | --- | --- | --- |
+| 1 | Rex Francis Regis | Calisthenics / Mat Pilates / Caliyoga | `coach-rex-francis-regis` |
+| 2 | Ephraim Bacaltos | Circuit Training / Groundworks / Calisthenics | `coach-ephraim-bacaltos` |
+| 3 | Rachelle Tobiano | Kickboxing / Brazilian Jiu-Jitsu | `coach-rachelle-tobiano` |
+| 4 | Alec James Co | Calisthenics / Circuit Training | `coach-alec-james-co` |
+| 5 | Jodi Tio | Mat Pilates | `coach-jodi-tio` |
+| 6 | Wolf | Yoga | `coach-wolf` |
+| 7 | Kate Go | Yoga | `coach-kate-go` |
+| 8 | Sofia Ocampo | Mat Pilates | `coach-sofia-ocampo` |
+| 9 | Mikaela Danielle | Dance Fitness | `coach-mikaela-danielle` |
+| 10 | Maris Cabrera | Dance Fitness | `coach-maris-cabrera` |
+| 11 | Francis Acido | Dance Fitness | `coach-francis-acido` |
+
+### 7.4 Reference-image reality check
+
+`docs/facebook-findings/README.md` refers to `coaches-roster.jpg` and a `facebook_findings.zip` screenshot set held in Google Drive, but **the repository currently contains no image files at all** — `docs/facebook-findings/` holds only `README.md` and `findings.md`. Since the screen spec forbids generating a coach portrait without a valid reference image, reference sourcing (`ASSET-010`) is the gating dependency for the entire headshot sub-track and is raised as **OQ-REF** in [Section 9](#9-deferred-open-business-questions).
+
+### 7.5 Tooling notes (verified against the Higgsfield catalogue)
+
+These are engineering notes for whoever runs generation, not product rules:
+
+- **`nano_banana_pro`** (Google Nano Banana Pro) is the model the shared spec already names. It accepts reference media in an `image_references` role and supports `1:1, 3:2, 2:3, 4:3, 3:4, 4:5, 5:4, 9:16, 16:9, 21:9` at 1k/2k/4k.
+- **`soul_2` / Higgsfield Soul 2.0** is the portrait/character-oriented model (tags include `portrait`, `character-generation`) and supports a `soul_id` for personalised, repeatable identity — useful for a coherent per-coach set. It takes **one** reference image and supports `1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3`.
+- **Aspect-ratio gaps to plan around:** `soul_2` does **not** offer the `4:5` ratio the coach-portrait prompt asks for (generate `3:4` and reframe, or use `nano_banana_pro`), and **no** listed image model offers the `3:1` ratio the About brand-texture divider asks for (generate `21:9` and crop/reframe). Record the crop step in the manifest so the delivered asset still matches the spec's ratio.
+- Supporting operations available for the post-processing pass: `upscale_image`, `remove_background`, `outpaint_image`, `reframe`, and `generate_image_batch` + `jobs_wait` for roster-scale runs.
+- Reference images must be uploaded through the Higgsfield media path (upload widget / `media_upload` / `media_import_url`) and referenced by media id; never paste raw URLs into prompt parameters.
+- Free-trial "unlim" generations were **not** spendable at the time of writing, so budget for paid generations and record spend per ticket.
+
+---
+
+### 7.6 Foundations
+
+#### ASSET-001 — Higgsfield generation pipeline, models, and prompt conventions
 
 - **Lane:** Assets
 - **Depends on:** FE-FND-004
-- **Source docs:** `docs/screen-specs/shared/04-marketing-image-generation.md`; `docs/screen-specs/README.md` §Marketing image-generation prompts
-- **Scope notes:** Operationalise the shared guidance: prompts target Higgsfield with Nano Banana Pro or GPT Image 2; aspect ratio comes first; no embedded text, logos, labels, fake UI, or watermarks; keep negative space where copy/controls go; reuse the shared art-direction tail ("modern Cebu wellness studio atmosphere, calm but energetic, editorial fitness photography, natural daylight, warm neutral materials, subtle tropical cues without resort clichés, …"). Also encode the **when not to generate** rule: skip generation when the calendar already carries the hierarchy, when typography suffices, when an icon/CSS accent is enough, or when the image would slow or clutter the booking experience. Deliver the manifest schema consumed by `FE-SHR-004` and the storage/naming convention for `marketing-assets`.
+- **Source docs:** `docs/screen-specs/shared/04-marketing-image-generation.md`; `docs/screen-specs/README.md` §Marketing image-generation prompts; `docs/facebook-findings/findings.md` §5
+- **Scope notes:** Stand up the repeatable generation pipeline before any asset is produced. Codify the prompt structure and the shared art-direction tail from §7.2, the model selection guidance and aspect-ratio gaps from §7.5, the reference-media upload path, the **when not to generate** checklist, and the review gate (who approves, what disqualifies an output). Include a cost log so spend per asset is visible. This ticket produces a runbook plus prompt library — not images.
 - **Acceptance criteria:**
-  - [ ] A generation runbook exists with the prompt structure, the shared tail, and the do-not-generate checklist.
-  - [ ] Manifest schema defined (id, page, slot, aspect ratio, prompt reference, alt text, licence/provenance note).
-  - [ ] Naming and storage conventions documented for `marketing-assets`.
-  - [ ] A reviewer checklist exists: no text, no logos, no fake UI, no watermark, adequate negative space.
-  - [ ] The rule that the calendar and booking UI are coded, never generated, is stated explicitly.
-- **Out of scope:** Generating images.
+  - [ ] A generation runbook exists covering: prompt structure (aspect ratio first), the shared art-direction tail, model selection per asset type, reference-media upload, and the post-processing operations available.
+  - [ ] A prompt library file holds every prompt from the screen specs **verbatim**, keyed by page and asset letter, so no prompt is paraphrased at generation time.
+  - [ ] The do-not-generate checklist from `shared/04` is reproduced and is part of the review gate.
+  - [ ] The reviewer checklist exists and rejects: embedded text, logos, fake UI/signage, watermarks, insufficient negative space, duplicated people, visible AI distortion.
+  - [ ] The rule that the calendar and booking UI are coded — never generated — is stated explicitly in the runbook.
+  - [ ] Aspect-ratio gaps (`4:5` on `soul_2`, `3:1` anywhere) have a documented generate-then-crop procedure.
+  - [ ] A per-asset cost log template exists and is populated as generation proceeds.
+- **Out of scope:** Generating any image; the inventory/manifest schema (`ASSET-002`).
 - **Phase:** P1
 
-#### ASSET-002 — Landing page imagery (Assets A–D)
+#### ASSET-002 — Asset inventory, naming conventions, and provenance manifest
 
 - **Lane:** Assets
 - **Depends on:** ASSET-001
-- **Source docs:** `docs/screen-specs/public/01-landing-page.md` §Image / Visual Asset Prompts
-- **Scope notes:** Generate the four specced assets using the prompts verbatim: **A** hero background accent (16:9, calm centre for calendar overlay), **B** classes section editorial strip (3:2, one coherent scene, no collage), **C** how-it-works still life (1:1, phone face-down, no screen UI), **D** final CTA background (21:9, subjects off-centre right, negative space left).
+- **Source docs:** `docs/screen-specs/shared/04-marketing-image-generation.md`; all `docs/screen-specs/public/*` §Image / Visual Asset Prompts; `docs/screen-specs/admin/07-coach-management.md` §Profile photo management
+- **Scope notes:** Produce the single inventory of every image the product needs, the naming convention that carries it from generation through Storage, and the manifest/provenance record consumed by `FE-SHR-004`. The inventory is closed — it contains exactly the slots the screen specs define (see §7.7 and §7.8), plus the coach placeholder. Proposed naming, aligned with the bucket key conventions in `INF-004`:
+
+  ```text
+  marketing-assets/{page}/{slot}-{aspect}.{ext}      e.g. marketing-assets/landing/hero-accent-16x9.webp
+  coach-photos/{coach-slug}/headshot-{aspect}.{ext}  e.g. coach-photos/rachelle-tobiano/headshot-4x5.webp
+  ```
+
+  Manifest fields: asset id, page, slot, aspect ratio, source prompt key, model + parameters used, generation date, reference-image provenance (for coach portraits), approval status and approver, alt text, and the crop/post-processing applied.
 - **Acceptance criteria:**
-  - [ ] Four assets delivered at the specified aspect ratios and registered in the manifest with alt text.
-  - [ ] Asset A leaves the calendar area visually quiet and passes a contrast check with the real calendar overlaid.
-  - [ ] No asset contains text, logos, fake UI, calendar graphics, or watermarks.
-  - [ ] Asset B is one scene, not a collage; no duplicated people or obvious distortions.
-  - [ ] Assets are optimised (modern format, responsive sizes) and do not regress page load beyond the agreed budget.
-- **Out of scope:** Coach portraits (`ASSET-004`).
+  - [ ] The inventory lists every slot from the public screen specs (landing A–D, about A–C, contact A–B, faqs A, coaches A–C) plus 11 coach headshots and the placeholder avatar, with no extra invented slots.
+  - [ ] Naming convention is documented and matches the bucket key conventions in `INF-004`.
+  - [ ] Manifest schema is defined, versioned, and consumable by `FE-SHR-004` without transformation.
+  - [ ] Every manifest entry requires alt text before it can be marked approved.
+  - [ ] Coach entries require a reference-provenance value; the manifest rejects a coach portrait without one.
+  - [ ] Approval status is explicit (`draft` / `client-review` / `approved` / `rejected`), and only `approved` assets may ship to a public page.
+  - [ ] The inventory records which slots are deliberately **not** generated and why (per the do-not-generate rule).
+- **Out of scope:** Generating images; uploading to Storage (`ASSET-030`).
+- **Phase:** P1
+
+---
+
+### 7.7 Professional coach headshots
+
+> This sub-track is the priority of the Assets lane. Every ticket in it inherits one hard constraint from `docs/screen-specs/public/05-coaches.md`: **no portrait may be generated for a coach without a valid reference image, and no coach may be invented.** Where a reference is missing, the placeholder from `ASSET-014` ships instead — that is a complete, acceptable outcome, not a failure.
+
+#### ASSET-010 — Coach reference-image sourcing, consent, and eligibility matrix
+
+- **Lane:** Assets
+- **Depends on:** none — **start on day one**
+- **Source docs:** `docs/screen-specs/public/05-coaches.md` §Image / Visual Asset Prompts, §Coach image source; `docs/facebook-findings/findings.md` §4b, §Not found / limitations; `docs/facebook-findings/README.md`
+- **Scope notes:** Collect, for each of the 11 roster coaches, either a usable reference image or a recorded "none available". The repo contains no images today (§7.4), and `findings.md` notes that no coach bios or portraits were visible in the Facebook review, so references must come from Coach Rex: the Google Drive `facebook_findings.zip` / `coaches-roster.jpg`, the gym's own photo library, or a fresh capture. Also capture **written consent** to generate and publish an AI-assisted likeness for each coach, because these are real, named people on a public page. Deliver a per-coach eligibility matrix that every downstream headshot ticket reads. **⛔ BLOCKED-BY-OQ-REF** until Rex supplies the material.
+- **Acceptance criteria:**
+  - [ ] An eligibility matrix exists with a row per roster coach: reference available (yes/no), source, resolution/quality assessment, consent recorded (yes/no), decision (generate / placeholder).
+  - [ ] Reference images are stored in a private working location with provenance recorded; they are **not** committed to the public repo.
+  - [ ] Minimum reference quality is defined (face clearly visible, adequate resolution, not heavily filtered) and applied consistently.
+  - [ ] Coaches without a usable reference or without consent are routed to `ASSET-014` and are explicitly **not** queued for generation.
+  - [ ] All 11 roster names are represented; no additional person appears.
+  - [ ] Outstanding requests to Coach Rex are tracked with dates so the blocker is visible.
+- **Out of scope:** Generating anything; retouching; a photo shoot (raise separately if Rex prefers real photography, which the spec says to prefer where possible).
+- **Phase:** P0 (start) → P1 (complete)
+
+#### ASSET-011 — Coach headshot art-direction lockup and pilot approval
+
+- **Lane:** Assets
+- **Depends on:** ASSET-001, ASSET-010 (at least one eligible coach)
+- **Source docs:** `docs/screen-specs/public/05-coaches.md` §Asset A — Coach portrait template; `docs/facebook-findings/findings.md` §5; `docs/screen-specs/shared/04-marketing-image-generation.md`
+- **Scope notes:** Lock the single look every headshot will share before producing eleven of them. The spec's portrait template is the base (4:5, waist-up or three-quarter, subject slightly off-centre, relaxed confident posture, enough environmental context to suggest their discipline, clean negative space, natural daylight, modern Cebu wellness studio, realistic skin and fabric texture, approachable, athletic without aggressive bodybuilding aesthetics). Layer the Balansé palette on top: cream / warm white / beige-tan backdrop, muted brown and dark navy-charcoal accents, restrained gold warmth in the light — **as art direction, not as an overlaid logo or text**. Produce a pilot on one consenting coach, iterate with Coach Rex, and freeze the resulting prompt, model, parameters, and post-processing recipe.
+- **Acceptance criteria:**
+  - [ ] One approved pilot headshot exists for a real, consenting roster coach.
+  - [ ] The frozen recipe is recorded: exact prompt text, model and version, parameters, seed/`soul_id` strategy, aspect ratio, and post-processing steps.
+  - [ ] The recipe demonstrably reproduces a consistent look across at least two different coaches (consistency test before roster rollout).
+  - [ ] The pilot preserves the referenced person's identity, judged by someone who knows them.
+  - [ ] Background, lighting, crop, and colour treatment are specified tightly enough that a different operator gets the same result.
+  - [ ] No text, logo, watermark, invented credential, or invented accessory appears.
+  - [ ] Coach Rex has signed off on the look in writing before roster generation starts.
+- **Out of scope:** Generating the rest of the roster (`ASSET-012`).
+- **Phase:** P1
+
+#### ASSET-012 — Professional headshots for the full coach roster
+
+- **Lane:** Assets
+- **Depends on:** ASSET-011, ASSET-010 (complete matrix), ASSET-002
+- **Source docs:** `docs/screen-specs/public/05-coaches.md`; `docs/facebook-findings/findings.md` §4b; `docs/screen-specs/admin/07-coach-management.md` §Profile photo management
+- **Scope notes:** Run the frozen recipe across every eligible coach in the §7.3 table, one approved primary headshot each, at 4:5 per the portrait template. Each coach's environmental context should hint at their own discipline (calisthenics, Mat Pilates, Caliyoga, circuit training, groundworks, kickboxing, Brazilian jiu-jitsu, yoga, dance fitness) without turning into a themed costume shoot. Use batch generation with per-coach review; the set must read as one coherent series when placed side by side on the Coaches page. Coaches marked placeholder-only in `ASSET-010` are skipped, not substituted.
+- **Acceptance criteria:**
+  - [ ] One approved primary headshot exists per **eligible** coach; the skipped coaches are listed with their reason.
+  - [ ] Every headshot preserves the referenced person's identity and was confirmed by someone who knows them.
+  - [ ] Side-by-side review of the full set shows consistent framing, lighting, background treatment, and colour — a coherent set, per the spec.
+  - [ ] Brand direction reads as cream/beige with gold warmth, with **no** logo, text, watermark, or graphic overlay.
+  - [ ] No fake medals or credentials, no invented tattoos or accessories, no invented people.
+  - [ ] Each asset is registered in the manifest with model, parameters, generation date, reference provenance, approver, and alt text.
+  - [ ] Coach Rex has approved the full set before it is marked `approved`.
+  - [ ] Generation spend is recorded in the cost log.
+- **Out of scope:** Crops/derivatives (`ASSET-013`); group hero (`ASSET-015`); upload to Storage (`ASSET-030`).
 - **Phase:** P2
 
-#### ASSET-003 — About, Contact, and FAQ imagery
+#### ASSET-013 — Headshot post-processing and delivery set
 
 - **Lane:** Assets
-- **Depends on:** ASSET-001
-- **Source docs:** `docs/screen-specs/public/02-about.md`, `public/03-contact.md`, `public/04-faqs.md` §Image / Visual Asset Prompts
-- **Scope notes:** About **A** hero (16:9 candid post-class community moment), **B** approach accent (4:3 balance of strength/mobility/recovery), **C** brand texture divider (3:1). Contact **A** arrival atmosphere (16:9 — explicitly **do not fabricate a specific storefront or address**), **B** walk-in QR still life (1:1 — QR must be abstract/non-scannable, phone screen blank). FAQ **A** header accent (3:2) — and the FAQ page stays content-first with **at most one** accent image.
+- **Depends on:** ASSET-012
+- **Source docs:** `docs/screen-specs/public/05-coaches.md` (4:5 card portrait); `docs/screen-specs/public/01-landing-page.md` §Coach image source (landing coach previews); `docs/screen-specs/admin/07-coach-management.md` (photo preview and fallback); `docs/screen-specs/shared/04-marketing-image-generation.md`
+- **Scope notes:** Turn each approved headshot into the delivery set the product actually consumes: the 4:5 Coaches-page card portrait, a square/avatar crop for coach previews and admin lists, and responsive web derivatives. Use `reframe`/crop for ratios the model cannot emit natively, `upscale_image` where resolution is short, and keep background treatment uniform across the set. Every derivative is the same person, same session, same look — derivatives must never be re-generated from scratch, because that breaks set consistency.
 - **Acceptance criteria:**
-  - [ ] Six assets delivered at the specified ratios and registered in the manifest.
-  - [ ] Contact hero depicts no identifiable real building, signage, or address.
-  - [ ] Walk-in asset contains no readable QR code and no fake app UI.
-  - [ ] FAQ page ships exactly one accent image.
-  - [ ] No text/logo/watermark in any asset.
-- **Out of scope:** Real location photography (would replace Contact A if supplied).
+  - [ ] Each eligible coach has the full delivery set: 4:5 card portrait, square/avatar crop, and responsive sizes.
+  - [ ] All derivatives originate from the approved master, not from a fresh generation.
+  - [ ] Faces are not cropped awkwardly at any ratio (visual review of every crop).
+  - [ ] Output format and compression meet the page-weight budget agreed in `FE-FND-011`; modern format with fallback.
+  - [ ] Masters are archived losslessly and are traceable from the manifest.
+  - [ ] Derivative filenames follow the `ASSET-002` convention.
+- **Out of scope:** Storage upload (`ASSET-030`); rendering (`FE-SHR-004`).
 - **Phase:** P2
 
-#### ASSET-004 — Coach imagery and placeholder policy
+#### ASSET-014 — Coach placeholder avatar and no-reference fallback
 
 - **Lane:** Assets
-- **Depends on:** ASSET-001
-- **Source docs:** `docs/screen-specs/public/05-coaches.md` §Image / Visual Asset Prompts and §Coach image source; `docs/facebook-findings/findings.md` §4b
-- **Scope notes:** The spec is strict: coach portraits should feel like a coherent set; if real coach photos exist, **prefer editing or consistent re-shoot direction rather than inventing people**; generate portraits (4:5) **only per real coach and only when a valid reference image is available**, preserving the referenced person's identity; the group hero (16:9) is allowed **only if** reference images exist for identity consistency; specialty card accents (1:1) must avoid full faces. Also deliver the designed placeholder avatar used when a coach has no photo. **No invented team members, no fake medals or credentials, no invented tattoos or accessories.**
+- **Depends on:** FE-FND-004, ASSET-010
+- **Source docs:** `docs/screen-specs/public/05-coaches.md` §Fallback behavior; `docs/screen-specs/admin/07-coach-management.md` §Photo behavior
+- **Scope notes:** Both specs demand a **deliberate** fallback rather than a broken image: the public Coaches page shows "a designed placeholder/avatar" when a coach has no photo, and the admin coach form must present the same fallback after a photo is removed. Design an on-brand placeholder (cream/beige ground, muted brown or gold line treatment consistent with the Balansé emblem language) that works at card size and avatar size. It must be obviously a placeholder without looking broken or unfinished, and it must not depict an invented face.
 - **Acceptance criteria:**
-  - [ ] No portrait is generated for any coach without a valid reference image; the gap is filled with the placeholder avatar instead.
-  - [ ] Generated portraits preserve the referenced person's identity and are reviewed by the client before publication.
-  - [ ] Group hero is produced only if references exist for every depicted coach; otherwise it is skipped.
-  - [ ] Specialty accents (Yoga / Kickboxing / Dance Fitness / etc.) show no full faces.
-  - [ ] Placeholder avatar is designed, on-brand, and never a broken image.
-  - [ ] All coach imagery is stored against the coach record, not hardcoded per page.
-  - [ ] Provenance (reference source, prompt, generation date) is recorded in the manifest for each portrait.
-- **Out of scope:** Inventing coaches not on the confirmed roster.
+  - [ ] Placeholder exists at both card (4:5) and avatar (square) sizes.
+  - [ ] It uses Balanse brand tokens and sits comfortably next to real headshots in the same grid.
+  - [ ] It contains no generated human face and no text beyond, at most, initials.
+  - [ ] It is used by the public Coaches page, landing coach previews, and the admin coach form.
+  - [ ] No code path can render a broken image for a photo-less coach (verified in `FE-PUB-005` and `FE-ADM-007`).
+  - [ ] Registered in the manifest like any other asset.
+- **Out of scope:** Generating portraits for coaches without references — this ticket is the answer to that case.
+- **Phase:** P1
+
+#### ASSET-015 — Coaches page group hero and specialty accents (conditional)
+
+- **Lane:** Assets
+- **Depends on:** ASSET-012
+- **Source docs:** `docs/screen-specs/public/05-coaches.md` §Asset B — Coaches page group hero, §Asset C — Coach specialty card background accents
+- **Scope notes:** Two conditional assets. **Group hero (16:9):** allowed **only if** valid reference images exist for every coach depicted, per the spec — coaches interacting naturally rather than in a formal lineup, room for heading copy on one side, hints of the disciplines without staged props, each person's identity preserved, no invented team members. If references are incomplete, **skip it** and record the skip. **Specialty accents (1:1):** close-crop movement details — hands, footwork, equipment, body movement — for the disciplines the roster actually teaches, explicitly **without showing a full face**, so these are not identity-bound and can proceed regardless.
+- **Acceptance criteria:**
+  - [ ] Specialty accents delivered at 1:1 for the roster's real disciplines, with no full faces and no cliché stock poses.
+  - [ ] Group hero is produced only when every depicted coach has a valid reference and consent; otherwise the skip is recorded in the inventory with its reason.
+  - [ ] If produced, the group hero preserves every depicted person's identity and adds nobody who is not on the roster.
+  - [ ] Heading-copy negative space is preserved on one side.
+  - [ ] No text, logos, or watermarks.
+  - [ ] Registered in the manifest with provenance.
+- **Out of scope:** Individual headshots (`ASSET-012`).
 - **Phase:** P2
 
 ---
 
-## 7. Later phase — FE↔BE wiring (thin stubs)
+### 7.8 Marketing and public-page imagery
+
+> These tickets execute prompts that **already exist verbatim** in the screen specs. No new prompt is authored, and no new image slot is invented.
+
+#### ASSET-020 — Landing page imagery (Assets A–D)
+
+- **Lane:** Assets
+- **Depends on:** ASSET-001, ASSET-002
+- **Source docs:** `docs/screen-specs/public/01-landing-page.md` §Image / Visual Asset Prompts
+- **Scope notes:** Four specced assets, prompts used verbatim: **A** hero background accent (16:9 — must sit behind/beside the calendar with a calm, visually quiet centre and no prominent faces in the middle), **B** classes section editorial strip (3:2 — one coherent scene with layered activity, explicitly **not** a collage), **C** how-it-works still life (1:1 — towel, water bottle, hand wraps, yoga strap, phone **face-down** so no screen UI shows), **D** final CTA background (21:9 — golden-hour studio, one or two people at the far right, broad negative space at the left, subjects **not** centred).
+- **Acceptance criteria:**
+  - [ ] Four assets delivered at exactly the specced ratios and registered in the manifest with alt text.
+  - [ ] Asset A keeps the calendar area quiet and passes a legibility/contrast check with the real calendar composited over it.
+  - [ ] Asset B is a single coherent scene — no collage, no duplicated people, no distorted anatomy.
+  - [ ] Asset C shows no phone screen UI and no readable text.
+  - [ ] Asset D leaves the left side clear for CTA copy and a button, with subjects off-centre right.
+  - [ ] No asset contains text, logos, fake UI, calendar graphics, or watermarks.
+  - [ ] Page-weight budget from `FE-FND-011` is respected after optimisation.
+- **Out of scope:** Coach imagery (§7.7); any generated calendar UI.
+- **Phase:** P2
+
+#### ASSET-021 — About page imagery (Assets A–C)
+
+- **Lane:** Assets
+- **Depends on:** ASSET-001, ASSET-002
+- **Source docs:** `docs/screen-specs/public/02-about.md` §Image / Visual Asset Prompts
+- **Scope notes:** **A** About hero (16:9 — candid in-between moment after a class, subjects grouped to one side, generous negative space for heading copy, **not** a posed corporate team photo, no exaggerated fitness physiques). **B** Our Approach accent (4:3 — studio corner communicating balance between strength, mobility, and recovery; human presence optional and secondary). **C** brand texture divider (**3:1** — soft fabric folds, warm concrete, subtle shadows, gentle directional light; no people required). Note the ratio gap from §7.5: 3:1 is not natively available, so generate 21:9 and crop, recording the crop in the manifest.
+- **Acceptance criteria:**
+  - [ ] Three assets delivered at the specced ratios (Asset C delivered as a true 3:1 crop with the source ratio and crop recorded).
+  - [ ] Hero reads as candid community, not a staged corporate lineup.
+  - [ ] Negative space for heading copy is preserved on hero and approach assets.
+  - [ ] No text, logos, fake signage, or watermarks; no exaggerated physiques.
+  - [ ] Registered in the manifest with alt text.
+- **Out of scope:** Coach portraits used in the "Meet the team" block — those come from the coach record (§7.7).
+- **Phase:** P2
+
+#### ASSET-022 — Contact page imagery (Assets A–B)
+
+- **Lane:** Assets
+- **Depends on:** ASSET-001, ASSET-002
+- **Source docs:** `docs/screen-specs/public/03-contact.md` §Image / Visual Asset Prompts; `docs/facebook-findings/findings.md` §2
+- **Scope notes:** **A** arrival atmosphere (16:9). The spec is emphatic: **do not invent a literal exterior or address** — use an atmospheric studio-arrival image, no fabricated storefront, no signage. This matters because a real address exists (`Unit 2A, Capitol Centrum Building, N Escario, Cebu City`) and a fabricated building would misrepresent it. **B** walk-in QR still life (1:1) — phone near a simple tabletop QR stand, with the **QR abstract and non-scannable** and the phone screen blank or out of focus.
+- **Acceptance criteria:**
+  - [ ] Two assets delivered at the specced ratios and registered in the manifest.
+  - [ ] Asset A depicts no identifiable real building, no signage, and no address.
+  - [ ] Asset B contains no readable/scannable QR code and no fake app UI.
+  - [ ] Negative space is preserved for contact copy.
+  - [ ] No text, logos, or watermarks.
+  - [ ] Inventory records that real location photography, if Coach Rex supplies it, **replaces** Asset A rather than supplementing it.
+- **Out of scope:** Real location photography; generating a scannable QR (the real walk-in QR is a product artefact, not a marketing image).
+- **Phase:** P2
+
+#### ASSET-023 — FAQ header accent (Asset A)
+
+- **Lane:** Assets
+- **Depends on:** ASSET-001, ASSET-002
+- **Source docs:** `docs/screen-specs/public/04-faqs.md` §Image / Visual Asset Prompts
+- **Scope notes:** One asset only. The spec states the FAQ page must remain **content-first** and use **at most one** quiet accent image: a calm studio corner after class (3:2) with objects offset to one side and large negative space for the FAQ heading and search field.
+- **Acceptance criteria:**
+  - [ ] Exactly one asset delivered at 3:2 and registered in the manifest.
+  - [ ] Negative space accommodates the heading and the search field without overlap at all breakpoints.
+  - [ ] No text, logos, phone screens, or watermarks.
+  - [ ] The inventory records that no further FAQ imagery is to be generated.
+- **Out of scope:** Additional FAQ imagery.
+- **Phase:** P2
+
+---
+
+### 7.9 Storage handoff
+
+#### ASSET-030 — Upload approved assets into Supabase Storage
+
+- **Lane:** Assets + BE
+- **Depends on:** INF-004, BE-021, ASSET-013, ASSET-014, ASSET-020, ASSET-021, ASSET-022, ASSET-023
+- **Source docs:** `docs/screen-specs/admin/07-coach-management.md` §Profile photo management; `docs/screen-specs/public/05-coaches.md` §Coach image source; `docs/screen-specs/shared/04-marketing-image-generation.md`; `docs/business-requirements/03-roles-and-permissions.md` §Coach-rate privacy
+- **Scope notes:** Move approved assets from the working store into the buckets created by `INF-004` and secured by `BE-021`: coach headshots and the placeholder into **`coach-photos`** (public read, admin write), marketing imagery into **`marketing-assets`** (public read, admin write). Keys follow the `ASSET-002` convention. Because `public/05-coaches.md` requires coach cards to pull "the current coach profile photo from the database-managed coach record", the upload must also set each coach's photo key on the `coaches` row from `BE-004`, so exactly one active photo exists per coach. The upload is scripted and idempotent, not a manual console drag. Note the privacy boundary: coach **photos** are public; coach **rates** are not — this handoff touches only the photo column.
+- **Acceptance criteria:**
+  - [ ] Every approved asset exists in the correct bucket under a key matching the `ASSET-002` convention.
+  - [ ] Each eligible coach row carries exactly one active photo key pointing at a real object; photo-less coaches carry none and resolve to the placeholder.
+  - [ ] The upload script is idempotent and re-runnable without creating duplicates or orphans.
+  - [ ] Public read works for `coach-photos` and `marketing-assets`; anonymous write fails; non-admin write fails (re-verifies `BE-021`).
+  - [ ] The manifest records the final Storage key and public URL for each asset.
+  - [ ] Only assets marked `approved` are uploaded; drafts and rejects are excluded by the script.
+  - [ ] A reconciliation report lists any manifest entry without an object and any object without a manifest entry, and both lists are empty at sign-off.
+- **Out of scope:** The mocked FE fetching these URLs at runtime — that is `WIRE-012`. The GCash QR image is an admin-uploaded business artefact handled by `BE-043`/`FE-ADM-013`, not by this ticket.
+- **Phase:** P4
+
+---
+
+## 8. Later phase — FE↔BE wiring (thin stubs)
 
 > **These are placeholders, not build-now tickets.** They exist so the team can see where the mocked FE and the standalone BE meet, and so nobody accidentally does wiring work during this phase. Each stub gets refined into detailed tickets **after** this phase closes, using the contract pack from `BE-024`. Do not expand, estimate, or start them now.
 
@@ -2032,17 +2291,18 @@ The intended mechanics: every mocked screen reads through the `MockDataAdapter` 
 | **WIRE-009** | Admin catalogue CRUD and coach photo upload against `BE-038` | FE | `WIRE-002` | `FE-ADM-005`–`FE-ADM-007` fixtures |
 | **WIRE-010** | Roster and check-in against `BE-040` | FE | `WIRE-002` | `FE-ADM-012` fixtures |
 | **WIRE-011** | Reports against `BE-041`, including admin-only access enforcement end to end | FE | `WIRE-002` | `FE-ADM-014` fixtures |
-| **WIRE-012** | End-to-end verification of the canonical loop and the edge cases in `16-edge-cases.md` | FE+BE | all above | — |
+| **WIRE-012** | Serve coach and marketing imagery from Supabase Storage instead of bundled assets | FE | `ASSET-030`, `FE-SHR-004` | Bundled asset paths in the manifest |
+| **WIRE-013** | End-to-end verification of the canonical loop and the edge cases in `16-edge-cases.md` | FE+BE | all above | — |
 
 **Deliberately excluded from the wiring phase as well** (still future scope per `docs/business-requirements/19-future-scope.md`): payment gateways, automated verification/refunds, memberships/packages/credits, recurring schedule automation, a coach portal, Resend email notifications, SMS/push, multi-branch, and admin-editable hold/cutoff settings.
 
 ---
 
-## 8. Deferred OPEN business questions
+## 9. Deferred OPEN business questions
 
 These are unresolved **business** decisions. No ticket may guess an answer. Each entry lists the tickets it gates and the interim behaviour that ships instead.
 
-### 8.1 High priority
+### 9.1 High priority
 
 | ID | Question | Source | Gates | Interim behaviour this phase |
 | --- | --- | --- | --- | --- |
@@ -2052,7 +2312,7 @@ These are unresolved **business** decisions. No ticket may guess an answer. Each
 | **OQ-4** | Actual waiver and policy documents — waiver text, gym policies, cancellation/refund policy if one exists, participation rules. | `20-open-questions.md` §4; `07-booking-form-and-waivers.md` §Content dependency; `21-canonical-rules.md` [R13, R65] | `BE-007`, `BE-043`, `FE-CUS-008`, `FE-ADM-013` | Placeholder document definitions for development **only**, visibly marked as placeholder. No invented legal content anywhere. |
 | **OQ-5** | Waiver re-acceptance rule — every booking, only on version change, or once per fixed period? | `20-open-questions.md` §5; `07-booking-form-and-waivers.md` §Re-acceptance | `BE-009`, `FE-CUS-008` | Per the business doc's guidance, require applicable acceptance in the booking flow until Rex chooses otherwise; keep the rule isolated in one place so it can change cheaply. |
 
-### 8.2 Medium priority
+### 9.2 Medium priority
 
 | ID | Question | Source | Gates | Interim behaviour this phase |
 | --- | --- | --- | --- | --- |
@@ -2062,7 +2322,7 @@ These are unresolved **business** decisions. No ticket may guess an answer. Each
 | **OQ-9** | Confirmation/reference format — human-readable booking reference, QR code, or in-app status only? | `20-open-questions.md` §9 | `BE-008`, `FE-CUS-011` | Generate an opaque unique reference and display it as plain text. **No QR code shipped.** |
 | **OQ-10** | Session completion — is a formal `COMPLETED` status needed after class, or is `CHECKED_IN` enough? | `20-open-questions.md` §10; `09-reservation-lifecycle.md` §COMPLETED | `BE-001`, `BE-015` | Define the enum value (the status-language table lists it) but ship **no transition into it**. |
 
-### 8.3 Raised by this roadmap
+### 9.3 Raised by this roadmap
 
 | ID | Question | Source of the discrepancy | Gates | Interim behaviour |
 | --- | --- | --- | --- | --- |
@@ -2070,18 +2330,21 @@ These are unresolved **business** decisions. No ticket may guess an answer. Each
 | **OQ-PRICE** | No source document contains real per-class pricing or real coach rates; `findings.md` has no pricing beyond a one-off ₱1,000 charity event. | `docs/facebook-findings/findings.md` §3 | `BE-023`, `FE-*` fixtures | All prices and rates in seeds/fixtures are obvious placeholders, flagged as non-authoritative. |
 | **OQ-HOURS** | Opening hours were not exposed in the Facebook review ("Open now" only). | `docs/facebook-findings/findings.md` §2, §Not found | `BE-043`, `FE-PUB-003`, `FE-ADM-013` | Hours field ships empty; no hours are invented on the Contact page. |
 | **OQ-CLASSFAM** | Screen specs use `Yoga / Boxing / Capoeira` as filter examples, while the Facebook findings list the live families as Yoga, Mat Pilates, Calisthenics, Caliyoga, Circuit Training, Kickboxing, Brazilian Jiu-Jitsu, Groundworks, Dance Fitness. | `docs/screen-specs/public/05-coaches.md` vs `docs/facebook-findings/findings.md` §3, §4b | `BE-023`, `FE-PUB-005`, `FE-SHR-005` | Filters are generated from the class catalogue rather than hardcoded, so either list renders correctly. Seeds use the findings list. |
+| **OQ-REF** | **Coach reference images and likeness consent.** `public/05-coaches.md` forbids generating a coach portrait without a valid reference image, but the repo contains no image files — `coaches-roster.jpg` and the screenshot set live in Google Drive per `docs/facebook-findings/README.md`. Which coaches have usable reference photos, who supplies them, and has each coach consented to an AI-assisted likeness being published? Would Coach Rex prefer a real photo shoot, which the spec says to prefer where possible? | `docs/screen-specs/public/05-coaches.md` vs `docs/facebook-findings/README.md` and the repo contents | `ASSET-010`, `ASSET-011`, `ASSET-012`, `ASSET-013`, `ASSET-015`, `FE-PUB-005` | Reference sourcing runs as its own ticket (`ASSET-010`) starting in P0. Any coach without a usable reference **or** without consent gets the designed placeholder from `ASSET-014` — no face is invented, and no coach is dropped from the roster. |
 
-### 8.4 Escalation
+### 9.4 Escalation
 
 Every OQ above should be raised with Coach Rex as a single consolidated list before the wiring phase begins, because **OQ-1**, **OQ-2**, **OQ-3**, and **OQ-4** all change either the schema or the legal surface of the product, and are cheapest to answer before real data exists.
 
+**OQ-REF is the exception to that timing** — it should be raised immediately, ahead of the rest. It gates the entire coach-headshot sub-track, it depends on eleven individual people rather than a single decision from Rex, and it is the only open item on the Assets critical path.
+
 ---
 
-## 9. Definition of done for this phase
+## 10. Definition of done for this phase
 
 The phase is complete when every statement below is true and evidenced.
 
-### 9.1 Backend / infrastructure
+### 10.1 Backend / infrastructure
 
 - [ ] All eleven schema domains from [§4.1](#41-schema-domain-overview) are migrated onto Supabase project `xydundrayuusqizssgby`, with the migration history visible and reproducible from a clean database.
 - [ ] Prisma schema conventions hold throughout: both sides of every relation declared, `@id @default(...)`, `createdAt`/`updatedAt` on every model, `@@index` on frequently queried columns, `@unique`/`@@unique` on business-unique fields.
@@ -2095,7 +2358,7 @@ The phase is complete when every statement below is true and evidenced.
 - [ ] Hold duration (8 h) and cutoff (15 min) live in exactly one developer-controlled place and are absent from every admin surface.
 - [ ] `BE-024` contract pack is published and CI fails if a route lacks contract coverage.
 
-### 9.2 Frontend
+### 10.2 Frontend
 
 - [ ] **Every file under `docs/screen-specs/` is covered by at least one shipped FE ticket** — see [Appendix A](#appendix-a--screen-spec-coverage-matrix).
 - [ ] No PawPair content remains: repo-wide search returns zero hits, no demo route resolves, no demo model or asset survives, and a CI guard prevents regression.
@@ -2110,10 +2373,24 @@ The phase is complete when every statement below is true and evidenced.
 - [ ] Both apps build, typecheck, and lint clean in CI; preview deployments are reachable for client review.
 - [ ] The mock layer is the only data source; a repo-wide check confirms no screen calls `/api/*` or a Supabase client.
 
-### 9.3 Product governance
+### 10.3 Assets
+
+- [ ] The generation runbook, verbatim prompt library, and review gate from `ASSET-001` exist and were actually used — every shipped asset traces to a prompt in the library.
+- [ ] The closed asset inventory from `ASSET-002` is complete, and every entry has an approval status, alt text, and provenance; deliberately-skipped slots are recorded with their reason.
+- [ ] The coach eligibility matrix covers all 11 roster coaches with a reference/consent decision each.
+- [ ] Every **eligible** coach has an approved professional headshot; the set reads as one coherent series; every **ineligible** coach resolves to the designed placeholder.
+- [ ] No generated image depicts a person who is not on the confirmed roster, and no portrait exists without a recorded reference image and consent.
+- [ ] Landing (A–D), About (A–C), Contact (A–B), and FAQ (A) imagery is delivered at the specced aspect ratios, with crops recorded where the ratio was not natively available.
+- [ ] No asset contains text, logos, fake UI, fake signage, a readable QR code, or a watermark; the Contact hero fabricates no storefront.
+- [ ] No product UI — calendar or booking — was generated as an image.
+- [ ] Approved assets are uploaded to `coach-photos` and `marketing-assets` with keys matching the naming convention, each eligible coach row points at exactly one active photo, and the reconciliation report is clean.
+- [ ] Mocked pages render approved assets from bundled paths; nothing fetches a Storage URL at runtime yet.
+- [ ] Generation spend is recorded per asset in the cost log.
+
+### 10.4 Product governance
 
 - [ ] No product rule exists in code or copy that cannot be traced to a specific line in `docs/business-requirements/` or `docs/screen-specs/`.
-- [ ] Every OPEN question in [Section 8](#8-deferred-open-business-questions) is still visibly open — none has been silently resolved by an implementation choice.
+- [ ] Every OPEN question in [Section 9](#9-deferred-open-business-questions) is still visibly open — none has been silently resolved by an implementation choice.
 - [ ] Placeholder content (waivers, prices, coach rates, imagery) is labelled as placeholder wherever it is stored or displayed.
 - [ ] The consolidated OQ list has been sent to Coach Rex.
 - [ ] A walkthrough of all 36 mocked screens has been reviewed with the client, and feedback is captured as new tickets rather than silent changes to these specs.
@@ -2128,11 +2405,11 @@ Every file under `docs/screen-specs/` and the FE ticket(s) that cover it.
 | --- | --- |
 | `README.md` (responsive contract, canonical assumptions) | `FE-SHR-005`, `FE-FND-011` |
 | `SCREEN_INDEX.md` (route inventory) | `FE-FND-007`, `FE-FND-008`, `FE-FND-009` |
-| `public/01-landing-page.md` | `FE-PUB-001` (+ `FE-SHR-005`, `ASSET-002`) |
-| `public/02-about.md` | `FE-PUB-002` (+ `ASSET-003`) |
-| `public/03-contact.md` | `FE-PUB-003` (+ `ASSET-003`) |
-| `public/04-faqs.md` | `FE-PUB-004` (+ `ASSET-003`) |
-| `public/05-coaches.md` | `FE-PUB-005` (+ `ASSET-004`) |
+| `public/01-landing-page.md` | `FE-PUB-001` (+ `FE-SHR-005`, `ASSET-020`, coach previews via `ASSET-013`) |
+| `public/02-about.md` | `FE-PUB-002` (+ `ASSET-021`) |
+| `public/03-contact.md` | `FE-PUB-003` (+ `ASSET-022`) |
+| `public/04-faqs.md` | `FE-PUB-004` (+ `ASSET-023`) |
+| `public/05-coaches.md` | `FE-PUB-005` (+ `ASSET-010`–`ASSET-015`) |
 | `customer/01-login.md` | `FE-CUS-001` |
 | `customer/02-sign-up.md` | `FE-CUS-002` |
 | `customer/03-forgot-password.md` | `FE-CUS-003` |
@@ -2152,7 +2429,7 @@ Every file under `docs/screen-specs/` and the FE ticket(s) that cover it.
 | `admin/04-customer-management.md` | `FE-ADM-004` |
 | `admin/05-schedule-management.md` | `FE-ADM-005` |
 | `admin/06-class-management.md` | `FE-ADM-006` |
-| `admin/07-coach-management.md` | `FE-ADM-007` (+ `FE-FND-010`) |
+| `admin/07-coach-management.md` | `FE-ADM-007` (+ `FE-FND-010`, `ASSET-014`, `ASSET-030`) |
 | `admin/08-booking-management.md` | `FE-ADM-008` |
 | `admin/09-payment-review.md` | `FE-ADM-009` |
 | `admin/10-cancellation-requests.md` | `FE-ADM-010` |
@@ -2163,7 +2440,7 @@ Every file under `docs/screen-specs/` and the FE ticket(s) that cover it.
 | `shared/01-navigation.md` | `FE-SHR-001` |
 | `shared/02-status-language.md` | `FE-SHR-002` |
 | `shared/03-empty-error-states.md` | `FE-SHR-003` |
-| `shared/04-marketing-image-generation.md` | `ASSET-001` (+ `FE-SHR-004`) |
+| `shared/04-marketing-image-generation.md` | `ASSET-001`, `ASSET-002` (+ `FE-SHR-004`) |
 
 **36 screen-spec files, all covered.**
 
@@ -2295,10 +2572,19 @@ Every file under `docs/screen-specs/` and the FE ticket(s) that cover it.
 
 | ID | Title | Phase |
 | --- | --- | --- |
-| ASSET-001 | Marketing image generation conventions and manifest | P1 |
-| ASSET-002 | Landing page imagery (Assets A–D) | P2 |
-| ASSET-003 | About, Contact, and FAQ imagery | P2 |
-| ASSET-004 | Coach imagery and placeholder policy | P2 |
+| ASSET-001 | Higgsfield generation pipeline, models, and prompt conventions | P1 |
+| ASSET-002 | Asset inventory, naming conventions, and provenance manifest | P1 |
+| ASSET-010 | Coach reference-image sourcing, consent, and eligibility matrix | P0 → P1 |
+| ASSET-011 | Coach headshot art-direction lockup and pilot approval | P1 |
+| ASSET-012 | Professional headshots for the full coach roster | P2 |
+| ASSET-013 | Headshot post-processing and delivery set | P2 |
+| ASSET-014 | Coach placeholder avatar and no-reference fallback | P1 |
+| ASSET-015 | Coaches page group hero and specialty accents (conditional) | P2 |
+| ASSET-020 | Landing page imagery (Assets A–D) | P2 |
+| ASSET-021 | About page imagery (Assets A–C) | P2 |
+| ASSET-022 | Contact page imagery (Assets A–B) | P2 |
+| ASSET-023 | FAQ header accent (Asset A) | P2 |
+| ASSET-030 | Upload approved assets into Supabase Storage | P4 |
 
 
 
