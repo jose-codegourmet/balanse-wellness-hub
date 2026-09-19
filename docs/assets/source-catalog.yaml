@@ -1,0 +1,45 @@
+# Stable source_asset_id.intake_item_id values for ASSET-002.
+# Private ARWs are Drive-only. Repo paths are web derivatives already committed.
+# higgsfield_media_id: fill at ASSET-011/012 registration (not this PR).
+
+items:
+  - intake_item_id: src-coach-rex-01
+    coach_slug: rex-francis-regis
+    working_preview: docs/coaches/rex/coach-rex-01.webp
+    higgsfield_media_id: null
+    usable_for_generation: true
+  - intake_item_id: src-coach-ephraim-01
+    coach_slug: ephraim-bacaltos
+    working_preview: docs/coaches/ephraim/coach-ephraim-01.webp
+    higgsfield_media_id: null
+    usable_for_generation: true
+  - intake_item_id: src-coach-rachelle-01
+    coach_slug: rachelle-tobiano
+    working_preview: docs/coaches/rachelle/coach-rachelle-01.webp
+    higgsfield_media_id: null
+    usable_for_generation: true
+  - intake_item_id: src-coach-jodi-01
+    coach_slug: jodi-tio
+    working_preview: docs/coaches/jodi/coach-jodi-01.webp
+    higgsfield_media_id: null
+    usable_for_generation: true
+  - intake_item_id: src-coach-wolf-01
+    coach_slug: wolf
+    working_preview: docs/coaches/wolf/coach-wolf-01.webp
+    higgsfield_media_id: null
+    usable_for_generation: true
+  - intake_item_id: src-coach-mikaela-01
+    coach_slug: mikaela-danielle
+    working_preview: docs/coaches/mikaela/coach-mikaela-01.webp
+    higgsfield_media_id: null
+    usable_for_generation: true
+  - intake_item_id: src-coach-maris-01
+    coach_slug: maris-cabrera
+    working_preview: docs/coaches/maris/coach-maris-01.webp
+    higgsfield_media_id: null
+    usable_for_generation: true
+  - intake_item_id: src-coach-francis-01
+    coach_slug: francis-acido
+    working_preview: docs/coaches/francis/coach-francis-01.webp
+    higgsfield_media_id: null
+    usable_for_generation: true

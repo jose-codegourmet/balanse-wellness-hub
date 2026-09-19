@@ -16,3 +16,6 @@ Reference photos and intro docs for Balanse Wellness Hub coaches.
 | [sofia](sofia/) | — | docx |
 
 Source: Google Drive folder "Coaches Photos and Docs".
+
+Intake, coverage (generate vs placeholder), and catalog ids: `docs/assets/intake.md`, `docs/assets/coverage-matrix.yaml`.  
+Raw ARWs stay in Drive; only web derivatives live here.
