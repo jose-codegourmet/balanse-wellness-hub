@@ -17,6 +17,7 @@ const config: StorybookConfig = {
     "@storybook/addon-mcp",
   ],
   framework: "@storybook/nextjs-vite",
+  staticDirs: ["../public"],
   async viteFinal(config) {
     config.resolve ??= {};
     config.resolve.alias = {

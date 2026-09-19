@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-labelledby="title desc">
+  <title id="title">Balanse coach avatar placeholder</title>
+  <desc id="desc">Square crop of the designed cream and gold line-art emblem. No human face. Source-free fallback for coaches without a catalogued photo.</desc>
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FAF6EE"/>
+      <stop offset="1" stop-color="#E8D5B5"/>
+    </linearGradient>
+    <style>
+      .wreath { fill: none; stroke: #8B6B4A; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+      .wreath-soft { fill: none; stroke: #C4A46A; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+      .figure { fill: none; stroke: #6E5338; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+      .gold { fill: none; stroke: #C4A46A; stroke-width: 1.4; }
+    </style>
+  </defs>
+  <rect width="800" height="800" fill="url(#ground)"/>
+  <rect x="36" y="36" width="728" height="728" rx="4" class="gold" opacity="0.55"/>
+  <rect x="48" y="48" width="704" height="704" rx="2" class="gold" opacity="0.28"/>
+
+  <g transform="translate(400 400)">
+    <ellipse cx="0" cy="8" rx="168" ry="196" class="wreath-soft"/>
+    <ellipse cx="0" cy="8" rx="152" ry="180" class="wreath"/>
+    <g class="wreath">
+      <path d="M-18 -188 c-18 -8 -38 6 -28 24 c8 12 22 10 32 2"/>
+      <path d="M 18 -188 c 18 -8 38 6 28 24 c-8 12 -22 10 -32 2"/>
+      <path d="M-92 -148 c-22 -4 -36 20 -22 34 c12 10 26 2 32 -10"/>
+      <path d="M 92 -148 c 22 -4 36 20 22 34 c-12 10 -26 2 -32 -10"/>
+      <path d="M-148 -70 c-20 10 -18 36 4 42 c16 4 26 -10 24 -24"/>
+      <path d="M 148 -70 c 20 10 18 36 -4 42 c-16 4 -26 -10 -24 -24"/>
+      <path d="M-164 30 c-16 16 -4 40 18 40 c16 0 24 -16 18 -30"/>
+      <path d="M 164 30 c 16 16 4 40 -18 40 c-16 0 -24 -16 -18 -30"/>
+      <path d="M-132 128 c-10 20 10 38 30 28 c14 -8 14 -24 2 -32"/>
+      <path d="M 132 128 c 10 20 -10 38 -30 28 c-14 -8 -14 -24 -2 -32"/>
+      <path d="M-52 188 c-4 22 22 32 36 16 c8 -10 2 -24 -12 -28"/>
+      <path d="M 52 188 c 4 22 -22 32 -36 16 c-8 -10 -2 -24 12 -28"/>
+    </g>
+    <g class="figure">
+      <circle cx="0" cy="-62" r="28"/>
+      <path d="M0 -32 v18"/>
+      <path d="M-46 22 c8 -28 20 -40 46 -40 c26 0 38 12 46 40"/>
+      <path d="M-46 22 c-18 8 -28 28 -10 40 c22 14 40 -6 56 -18"/>
+      <path d="M 46 22 c 18 8 28 28 10 40 c-22 14 -40 -6 -56 -18"/>
+      <path d="M-28 8 c-16 -2 -34 -18 -22 -36"/>
+      <path d="M 28 8 c 16 -2 34 -18 22 -36"/>
+    </g>
+  </g>
+</svg>

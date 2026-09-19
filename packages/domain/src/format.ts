@@ -82,3 +82,53 @@ export function formatHoldDeadline(
   const p = partsInManila(deadline);
   return `Reservation held until ${p.weekday}, ${p.month} ${p.day}, ${p.year} · ${p.hour}:${p.minute} ${p.dayPeriod} (Asia/Manila)`;
 }
+
+/** Calendar date key in business timezone (`YYYY-MM-DD`). */
+export function manilaYmd(iso: string | Date): string {
+  const date = typeof iso === "string" ? new Date(iso) : iso;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: BUSINESS_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+/** Instant for noon on a Manila calendar day (PH has no DST). */
+export function manilaYmdToUtcDate(ymd: string): Date {
+  const [year, month, day] = ymd.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day, 4, 0, 0));
+}
+
+export function addManilaDays(ymd: string, days: number): string {
+  const date = manilaYmdToUtcDate(ymd);
+  date.setUTCDate(date.getUTCDate() + days);
+  return manilaYmd(date);
+}
+
+export function startOfManilaWeekMonday(ymd: string): string {
+  const date = manilaYmdToUtcDate(ymd);
+  const weekday = new Intl.DateTimeFormat("en-US", {
+    timeZone: BUSINESS_TIME_ZONE,
+    weekday: "short",
+  }).format(date);
+  const offset: Record<string, number> = {
+    Mon: 0,
+    Tue: 1,
+    Wed: 2,
+    Thu: 3,
+    Fri: 4,
+    Sat: 5,
+    Sun: 6,
+  };
+  return addManilaDays(ymd, -(offset[weekday] ?? 0));
+}
+
+export function startOfManilaMonth(ymd: string): string {
+  return `${ymd.slice(0, 7)}-01`;
+}
+
+export function daysInManilaMonth(ymd: string): number {
+  const [year, month] = ymd.split("-").map(Number);
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}

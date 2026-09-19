@@ -1,7 +1,9 @@
 "use client";
 
+import { getMockRuntime, resetMockRuntime, setMockRuntime } from "@balanse/mock";
 import { isMockHarnessEnabled } from "@balanse/mock/session";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 const CUSTOMERS = [
@@ -16,10 +18,13 @@ const BOOKINGS = [
   "booking-confirmed",
 ];
 
+type Scenario = "normal" | "schedule-failed" | "session-became-full";
+
 export function MockSessionHarness() {
   const enabled = isMockHarnessEnabled();
   const { principal, setPrincipal } = useMockPrincipal();
   const router = useRouter();
+  const [scenario, setScenario] = useState<Scenario>("normal");
 
   if (!enabled) return null;
 
@@ -79,6 +84,32 @@ export function MockSessionHarness() {
             ))}
           </select>
         </label>
+        <label className="flex items-center gap-2">
+          Calendar scenario
+          <select
+            className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
+            value={scenario}
+            onChange={(event) => {
+              const next = event.target.value as Scenario;
+              setScenario(next);
+              resetMockRuntime();
+              if (next === "schedule-failed") {
+                setMockRuntime({ failPublicSessions: true });
+              }
+              if (next === "session-became-full") {
+                setMockRuntime({ sessionBecameFullId: "session-wed-open" });
+              }
+              router.refresh();
+            }}
+          >
+            <option value="normal">Normal</option>
+            <option value="schedule-failed">Schedule failed to load</option>
+            <option value="session-became-full">Session became full while viewed</option>
+          </select>
+        </label>
+        <span className="sr-only">
+          Runtime failPublicSessions={String(getMockRuntime().failPublicSessions)}
+        </span>
       </div>
     </aside>
   );

@@ -1,4 +1,4 @@
-import type { PaymentMethod } from "@balanse/domain";
+import type { PaymentMethod, PublicSession } from "@balanse/domain";
 import { formatPeso } from "@balanse/domain";
 import type { MockDataAdapter } from "./adapter";
 import {
@@ -14,7 +14,7 @@ import {
   staff,
   toPublicCoach,
 } from "./fixtures";
-import { applyMockEffects } from "./runtime";
+import { applyMockEffects, getMockRuntime } from "./runtime";
 
 function clone<T>(value: T): T {
   return structuredClone(value);
@@ -27,16 +27,39 @@ export function createMemoryAdapter(): MockDataAdapter {
 
   const findBooking = (id: string) => bookings.find((b) => b.id === id) ?? null;
 
+  const withFullOverlay = (session: PublicSession): PublicSession => {
+    const fullId = getMockRuntime().sessionBecameFullId;
+    if (!fullId || session.id !== fullId) return session;
+    return {
+      ...session,
+      remainingSlots: 0,
+      reservable: false,
+      availability: "full_with_waitlist",
+    };
+  };
+
   return {
     getPublicSessions: (query) =>
-      applyMockEffects(() => {
-        return sessions.filter((session) => {
-          if (query?.from && session.startsAt < query.from) return false;
-          if (query?.to && session.startsAt > query.to) return false;
-          return true;
-        });
-      }),
-    getPublicSession: (id) => applyMockEffects(() => sessions.find((s) => s.id === id) ?? null),
+      applyMockEffects(
+        () => {
+          return sessions
+            .filter((session) => {
+              if (query?.from && session.startsAt < query.from) return false;
+              if (query?.to && session.startsAt > query.to) return false;
+              return true;
+            })
+            .map(withFullOverlay);
+        },
+        { publicSessions: true },
+      ),
+    getPublicSession: (id) =>
+      applyMockEffects(
+        () => {
+          const session = sessions.find((s) => s.id === id);
+          return session ? withFullOverlay(session) : null;
+        },
+        { publicSessions: true },
+      ),
     getPublicCoaches: () => applyMockEffects(() => publicCoaches.map((c) => clone(c))),
     getPublicClasses: () => applyMockEffects(() => publicClasses.map((c) => clone(c))),
     getPublicContent: () => applyMockEffects(() => clone(publicContent)),
