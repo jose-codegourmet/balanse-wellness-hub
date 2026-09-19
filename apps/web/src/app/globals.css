@@ -12,6 +12,8 @@
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --font-heading: var(--font-fraunces), ui-serif, Georgia, serif;
+  /* Jabkit marketing blocks reach for `font-serif` on display headlines. */
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -36,6 +38,10 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
+  /* Semantic colors the Jabkit marketing blocks expect from the host theme. */
+  --color-warning: var(--balanse-gold);
+  --color-success: var(--balanse-muted-brown);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -52,7 +58,30 @@
 }
 
 /* Jabkit cssVars: semantic --primary/--background/--sidebar tokens.
-   Merged here via @balanse/config/tokens.css :root and .dark blocks. */
+   Merged here via @balanse/config/tokens.css :root and .dark blocks.
+
+   Vendored Jabkit sources build surfaces with `color-mix(... var(--jk-*) ...)`.
+   Those aliases are the kit's contract with the host app, so they are bound to
+   the Balansé palette here rather than patched inside the kit. Without them the
+   mixes resolve to nothing and marketing blocks render as invisible plates. */
+:root,
+.dark {
+  --jk-background: var(--background);
+  --jk-foreground: var(--foreground);
+  --jk-primary: var(--primary);
+  --jk-accent: var(--accent);
+  --jk-muted: var(--muted);
+  --jk-border: var(--border);
+  --jk-destructive: var(--destructive);
+  --jk-success: var(--color-success);
+  --jk-warning: var(--color-warning);
+  --jk-chart-1: var(--chart-1);
+  --jk-chart-2: var(--chart-2);
+  --jk-chart-3: var(--chart-3);
+  --jk-chart-4: var(--chart-4);
+  --jk-chart-5: var(--chart-5);
+  --jk-shadow-control: color-mix(in oklab, var(--balanse-navy) 14%, transparent);
+}
 
 @layer base {
   * { @apply border-border outline-ring/50; }

@@ -2,7 +2,7 @@
 
 import {
   aspectRatioNumber,
-  bundledAssetSrc,
+  bundledAssetSources,
   getAssetById,
   LOCAL_PLACEHOLDER_PATHS,
   type MarketingAspectRatio,
@@ -11,17 +11,29 @@ import {
 import { useState } from "react";
 import { AspectRatio } from "../../components/aspect-ratio/AspectRatio";
 import { cn } from "../../lib/utils";
+import { BrandFrame, type BrandFrameTone } from "../brand/BrandFrame";
 
 export function MarketingImage({
   assetId,
   className,
   decorative = false,
   preferMaster = false,
+  frameTone = "cream",
+  frameLabel,
+  frameCaption,
+  imgClassName,
+  loading = "lazy",
 }: {
   assetId: string;
   className?: string;
   decorative?: boolean;
   preferMaster?: boolean;
+  /** Tone of the brand frame shown if a slot ever loses its approved file. */
+  frameTone?: BrandFrameTone;
+  frameLabel?: string;
+  frameCaption?: string;
+  imgClassName?: string;
+  loading?: "lazy" | "eager";
 }) {
   const asset = getAssetById(assetId);
   const ratio = asset?.aspect_ratio ?? "16:9";
@@ -32,45 +44,46 @@ export function MarketingImage({
       : null;
   const bundled =
     fromCoach && !fromCoach.isPlaceholder
-      ? fromCoach.webp
+      ? { webp: fromCoach.webp, jpeg: fromCoach.jpeg }
       : asset
-        ? bundledAssetSrc(asset)
+        ? bundledAssetSources(asset)
         : undefined;
   const [failed, setFailed] = useState(false);
-  const showPlaceholder = !bundled || failed;
+  const showFrame = !bundled || failed;
   const alt = decorative || !asset?.alt_text ? "" : asset.alt_text;
 
   return (
     <AspectRatio
       ratio={aspectRatioNumber(ratio)}
-      className={cn("overflow-hidden rounded-xl bg-muted", className)}
+      className={cn("overflow-hidden rounded-xl bg-secondary/40", className)}
       data-asset-id={assetId}
       data-aspect-ratio={ratio}
+      data-asset-src={bundled?.webp}
       data-master-path={fromCoach?.masterJpeg}
     >
-      {showPlaceholder ? (
-        <div
-          className="flex size-full items-center justify-center bg-[linear-gradient(135deg,#faf6ee,#e8d5b5)] px-4 text-center text-sm text-muted-foreground"
-          role={decorative ? "presentation" : undefined}
-        >
-          {decorative ? null : (
-            <span>
-              {asset
-                ? `${asset.page} · ${asset.slot} (${asset.aspect_ratio}) — awaiting approved art`
-                : `Missing asset “${assetId}”`}
-            </span>
-          )}
-        </div>
+      {showFrame ? (
+        <BrandFrame
+          tone={frameTone}
+          decorative={decorative}
+          label={frameLabel}
+          caption={decorative ? undefined : frameCaption}
+        />
       ) : fromCoach && !fromCoach.isPlaceholder ? (
         <CoachPicture sources={fromCoach} alt={alt} onError={() => setFailed(true)} />
       ) : (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={bundled}
-          alt={alt}
-          className="size-full object-cover"
-          onError={() => setFailed(true)}
-        />
+        <picture>
+          <source type="image/webp" srcSet={bundled.webp} />
+          {bundled.jpeg ? <source type="image/jpeg" srcSet={bundled.jpeg} /> : null}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={bundled.jpeg ?? bundled.webp}
+            alt={alt}
+            loading={loading}
+            decoding="async"
+            className={cn("size-full object-cover", imgClassName)}
+            onError={() => setFailed(true)}
+          />
+        </picture>
       )}
     </AspectRatio>
   );
@@ -120,25 +133,27 @@ export function CoachPhoto({
   ratio?: Extract<MarketingAspectRatio, "1:1" | "4:5">;
   className?: string;
 }) {
-  const fallback =
+  const crest =
     ratio === "4:5" ? LOCAL_PLACEHOLDER_PATHS.coach4x5 : LOCAL_PLACEHOLDER_PATHS.coach1x1;
   const sources = resolveCoachPhotoSources(photoKey, ratio === "1:1" ? "avatar" : "card");
   const [failed, setFailed] = useState(false);
+  const useCrest = failed || sources.isPlaceholder;
 
   return (
     <AspectRatio
       ratio={aspectRatioNumber(ratio)}
-      className={cn("overflow-hidden rounded-xl bg-muted", className)}
+      className={cn("overflow-hidden rounded-xl bg-secondary/40", className)}
       data-photo-role={sources.role}
+      data-photo-kind={useCrest ? "crest" : "portrait"}
       data-master-path={sources.masterJpeg}
     >
-      {failed || sources.isPlaceholder ? (
+      {useCrest ? (
+        // ASSET-014 designed crest. Coaches without a catalogued, consented source
+        // photo keep this finished artwork rather than a grey box or a broken image.
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={failed ? fallback : sources.webp}
-          alt={
-            failed || sources.isPlaceholder ? `Placeholder portrait for ${name}` : `Coach ${name}`
-          }
+          src={failed ? crest : sources.webp}
+          alt={`Balansé crest artwork shown for ${name}`}
           className="size-full object-cover"
           onError={() => setFailed(true)}
         />

@@ -91,6 +91,29 @@ export function bundledAssetSrc(asset: AssetManifestRecord): string | undefined 
   return undefined;
 }
 
+export type BundledAssetSources = {
+  webp: string;
+  /** JPEG sibling delivered alongside every approved ASSET-020–023 marketing file. */
+  jpeg?: string;
+};
+
+/**
+ * Bundled `<picture>` sources for a marketing slot. Approved Higgsfield
+ * deliveries ship `.webp` + `.jpg` side by side, so both are wired.
+ */
+export function bundledAssetSources(asset: AssetManifestRecord): BundledAssetSources | undefined {
+  const webp = bundledAssetSrc(asset);
+  if (!webp) return undefined;
+  if (!webp.endsWith(".webp")) return { webp };
+  const jpeg = webp.replace(/\.webp$/, ".jpg");
+  const hasJpegSibling = asset.storage_objects?.some((object) =>
+    object.working_path.endsWith(".jpg"),
+  );
+  return hasJpegSibling || asset.working_path?.startsWith("docs/assets/marketing/")
+    ? { webp, jpeg }
+    : { webp };
+}
+
 /** Master contact-sheet path when the map needs the ASSET-012 original. */
 export function bundledMasterSrc(asset: AssetManifestRecord): string | undefined {
   if (

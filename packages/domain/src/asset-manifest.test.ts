@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   ASSET_MANIFEST,
+  bundledAssetSources,
   bundledAssetSrc,
   bundledMasterSrc,
   COACH_SPECIALTY_ACCENT_IDS,
@@ -77,6 +78,26 @@ describe("FE-SHR-004 asset manifest", () => {
     const groupHero = ASSET_MANIFEST.assets.find((asset) => asset.id === "coaches-b");
     expect(groupHero?.generation_policy).toBe("do_not_generate");
     expect(bundledAssetSrc(groupHero as NonNullable<typeof groupHero>)).toBeUndefined();
+  });
+
+  it("pairs every bundled marketing slot with its JPEG sibling on disk", () => {
+    const publicDir = resolve(here, "../../../apps/web/public");
+    const slots = (["landing", "about", "contact", "faqs", "coaches"] as const).flatMap((page) =>
+      publishedMarketingSlotIds(page),
+    );
+    expect(slots.length).toBe(13);
+    for (const id of slots) {
+      const asset = ASSET_MANIFEST.assets.find((item) => item.id === id);
+      expect(asset, id).toBeDefined();
+      if (!asset) continue;
+      const sources = bundledAssetSources(asset);
+      expect(sources, id).toBeDefined();
+      expect(sources?.webp, id).toMatch(/^\/assets\/marketing\/.+\.webp$/);
+      expect(sources?.jpeg, id).toMatch(/^\/assets\/marketing\/.+\.jpg$/);
+      for (const src of [sources?.webp, sources?.jpeg]) {
+        expect(existsSync(resolve(publicDir, (src ?? "").replace(/^\//, ""))), src).toBe(true);
+      }
+    }
   });
 
   it("covers every public-page lettered slot", () => {
