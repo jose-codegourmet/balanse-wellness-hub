@@ -65,6 +65,7 @@ describe("FE-SHR-001 navigation catalogs", () => {
   it("marks nested admin and customer routes active without lighting sibling items", () => {
     expect(isAdminNavActive(ADMIN_NAV_ITEMS[2], "/bookings/abc")).toBe(true);
     expect(isCustomerNavActive(CUSTOMER_NAV_ITEMS[0], "/portal/bookings/new")).toBe(true);
+    expect(isCustomerNavActive(CUSTOMER_NAV_ITEMS[0], "/portal/book/session-wed-open")).toBe(true);
     expect(isCustomerNavActive(CUSTOMER_NAV_ITEMS[0], "/portal/schedule")).toBe(false);
     expect(isCustomerNavActive(CUSTOMER_NAV_ITEMS[1], "/portal/schedule")).toBe(true);
     expect(isPublicNavActive(PUBLIC_NAV_ITEMS[0], "/", "")).toBe(true);

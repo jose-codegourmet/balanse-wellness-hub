@@ -86,7 +86,10 @@ export function ScheduleCalendarSection({
         }
       }}
       onReserve={(session) => {
-        const bookingPath = `/portal/bookings/new?sessionId=${session.id}`;
+        const waitlist = !session.reservable && session.availability === "full_with_waitlist";
+        const bookingPath = waitlist
+          ? `/portal/book/${session.id}?intent=waitlist`
+          : `/portal/book/${session.id}`;
         if (audience === "guest" || principal.role === "guest") {
           router.push(`/login?returnTo=${encodeURIComponent(bookingPath)}`);
           return;

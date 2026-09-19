@@ -103,7 +103,11 @@ export function isPublicNavActive(item: PublicNavItem, pathname: string, hash = 
 
 export function isCustomerNavActive(item: CustomerNavItem, pathname: string): boolean {
   if (item.id === "home") {
-    return pathname === "/portal" || pathname.startsWith("/portal/bookings");
+    return (
+      pathname === "/portal" ||
+      pathname.startsWith("/portal/bookings") ||
+      pathname.startsWith("/portal/book/")
+    );
   }
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }

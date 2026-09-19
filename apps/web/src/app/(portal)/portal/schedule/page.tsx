@@ -17,6 +17,7 @@ export default async function Page() {
           audience="customer"
           initialSessions={schedule.sessions}
           initialClasses={schedule.classes}
+          initialCoaches={schedule.coaches}
           initialLoadError={schedule.loadError}
         />
       </div>

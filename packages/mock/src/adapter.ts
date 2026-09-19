@@ -28,11 +28,20 @@ export type MockDataAdapter = {
   getMe: (customerId: string) => Promise<CustomerProfile | null>;
   patchMe: (
     customerId: string,
-    patch: Partial<Pick<CustomerProfile, "fullName" | "contactNumber">>,
+    patch: Partial<Pick<CustomerProfile, "fullName" | "email" | "contactNumber">>,
   ) => Promise<CustomerProfile>;
   getMePolicyAcceptances: (customerId: string) => Promise<PolicyAcceptance[]>;
+  createCustomer: (input: {
+    fullName: string;
+    email: string;
+    contactNumber: string;
+  }) => Promise<CustomerProfile>;
 
-  createBooking: (input: { customerId: string; sessionId: string }) => Promise<CustomerBooking>;
+  createBooking: (input: {
+    customerId: string;
+    sessionId: string;
+    policyAcceptances?: PolicyAcceptance[];
+  }) => Promise<CustomerBooking>;
   getBookings: (customerId: string) => Promise<CustomerBooking[]>;
   getBooking: (id: string) => Promise<CustomerBooking | null>;
   joinWaitlist: (bookingId: string) => Promise<CustomerBooking>;
@@ -87,6 +96,8 @@ export type MockRuntimeOptions = {
   failPublicSessions: boolean;
   /** When set, that session reports as full (session-became-full demo). */
   sessionBecameFullId: string | null;
+  /** Sticky GCash proof upload failure for FE-CUS-010. */
+  failProofUpload: boolean;
 };
 
 export const defaultMockRuntime: MockRuntimeOptions = {
@@ -94,4 +105,5 @@ export const defaultMockRuntime: MockRuntimeOptions = {
   failNext: false,
   failPublicSessions: false,
   sessionBecameFullId: null,
+  failProofUpload: false,
 };
