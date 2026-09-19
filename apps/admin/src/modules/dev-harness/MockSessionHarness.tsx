@@ -16,9 +16,20 @@ const BOOKINGS = [
   "booking-held_awaiting_payment",
   "booking-payment_submitted",
   "booking-confirmed",
+  "booking-cancellation_requested",
+  "booking-reschedule_requested",
+  "booking-reschedule-full",
+  "booking-counter-held",
 ];
 
-type Scenario = "normal" | "schedule-failed" | "session-became-full";
+const QUEUES = [
+  { id: "payments", label: "Payments", href: "/payments" },
+  { id: "cancellations", label: "Cancellations", href: "/cancellations" },
+  { id: "reschedules", label: "Reschedules", href: "/reschedules" },
+  { id: "roster", label: "Roster (Wed open)", href: "/sessions/session-wed-open/roster" },
+] as const;
+
+type Scenario = "normal" | "schedule-failed" | "session-became-full" | "empty-admin-queues";
 
 export function MockSessionHarness() {
   const enabled = isMockHarnessEnabled();
@@ -99,12 +110,34 @@ export function MockSessionHarness() {
               if (next === "session-became-full") {
                 setMockRuntime({ sessionBecameFullId: "session-wed-open" });
               }
+              if (next === "empty-admin-queues") {
+                setMockRuntime({ emptyAdminQueues: true });
+              }
               router.refresh();
             }}
           >
             <option value="normal">Normal</option>
             <option value="schedule-failed">Schedule failed to load</option>
             <option value="session-became-full">Session became full while viewed</option>
+            <option value="empty-admin-queues">Empty admin queues</option>
+          </select>
+        </label>
+        <label className="flex items-center gap-2">
+          Admin queue
+          <select
+            className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
+            defaultValue=""
+            onChange={(event) => {
+              const href = event.target.value;
+              if (href) router.push(href);
+            }}
+          >
+            <option value="">Jump to…</option>
+            {QUEUES.map((queue) => (
+              <option key={queue.id} value={queue.href}>
+                {queue.label}
+              </option>
+            ))}
           </select>
         </label>
       </div>

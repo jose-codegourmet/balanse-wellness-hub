@@ -1,5 +1,8 @@
 import type {
+  AdminClass,
   AdminCoach,
+  AdminSession,
+  AdminSettings,
   AdminStaff,
   BookingStatus,
   CustomerBooking,
@@ -11,7 +14,13 @@ import type {
   PublicContent,
   PublicSession,
 } from "@balanse/domain";
-import { BOOKING_STATUSES, coachPhotoKey, flattenFaqs, teachesBio } from "@balanse/domain";
+import {
+  BOOKING_STATUSES,
+  coachPhotoKey,
+  flattenFaqs,
+  snapshotRateFromCoach,
+  teachesBio,
+} from "@balanse/domain";
 
 /** Frozen "now" so Storybook and screenshots stay deterministic. Wed 10:50 Asia/Manila. */
 export const MOCK_NOW_ISO = "2026-09-16T02:50:00.000Z";
@@ -230,6 +239,8 @@ function session(
   };
 }
 
+export const MOCK_PROOF_PREVIEW_URL = "/assets/placeholders/coach-placeholder-1x1.svg";
+
 export const publicSessions: PublicSession[] = [
   session({
     id: "session-past-open",
@@ -403,6 +414,9 @@ function booking(
   };
 }
 
+const sunDance = publicSessions.find((s) => s.id === "session-sun-dance") ?? null;
+const satFull = publicSessions.find((s) => s.id === "session-sat-full") ?? null;
+
 export const bookings: CustomerBooking[] = BOOKING_STATUSES.map((status, index) => {
   const extras: Partial<CustomerBooking> = {};
   if (status === "HELD_AWAITING_PAYMENT") {
@@ -412,6 +426,7 @@ export const bookings: CustomerBooking[] = BOOKING_STATUSES.map((status, index) 
   if (status === "PAYMENT_SUBMITTED") {
     extras.paymentMethod = "GCASH";
     extras.paymentStatus = "PROOF_SUBMITTED";
+    extras.proofPreviewUrl = MOCK_PROOF_PREVIEW_URL;
   }
   if (
     status === "CONFIRMED" ||
@@ -426,6 +441,19 @@ export const bookings: CustomerBooking[] = BOOKING_STATUSES.map((status, index) 
     extras.refundStatus = "REFUNDED";
     extras.paymentStatus = "VERIFIED";
     extras.paymentMethod = "GCASH";
+  }
+  if (status === "CANCELLATION_REQUESTED") {
+    extras.paymentMethod = "GCASH";
+    extras.paymentStatus = "VERIFIED";
+    extras.cancellationReason = "Schedule conflict";
+    extras.requestCreatedAt = "2026-09-16T01:10:00.000Z";
+  }
+  if (status === "RESCHEDULE_REQUESTED") {
+    extras.paymentMethod = "GCASH";
+    extras.paymentStatus = "VERIFIED";
+    extras.requestCreatedAt = "2026-09-16T01:20:00.000Z";
+    extras.targetSessionId = "session-sun-dance";
+    extras.targetSession = sunDance;
   }
   return booking(`booking-${status.toLowerCase()}`, status, "session-wed-open", {
     createdAt: `2026-09-14T0${Math.min(index, 9)}:00:00.000Z`,
@@ -445,7 +473,33 @@ export const bookings: CustomerBooking[] = BOOKING_STATUSES.map((status, index) 
     createdAt: "2026-09-16T17:00:00.000Z",
     holdExpiresAt: "2026-09-17T01:00:00.000Z",
   }),
+  booking("booking-reschedule-full", "RESCHEDULE_REQUESTED", "session-wed-nearly", {
+    id: "booking-reschedule-full",
+    customerId: "cust-ben",
+    paymentMethod: "GCASH",
+    paymentStatus: "VERIFIED",
+    requestCreatedAt: "2026-09-16T01:30:00.000Z",
+    targetSessionId: "session-sat-full",
+    targetSession: satFull,
+  }),
+  booking("booking-counter-held", "HELD_AWAITING_PAYMENT", "session-wed-nearly", {
+    id: "booking-counter-held",
+    customerId: "cust-ben",
+    paymentMethod: "PAY_AT_COUNTER",
+    paymentStatus: "NONE",
+  }),
 ]);
+
+export const adminSessions: AdminSession[] = publicSessions.map((row) => {
+  const coach = adminCoaches.find((c) => c.id === row.coachId) ?? adminCoaches[0];
+  const snap = snapshotRateFromCoach(coach);
+  return {
+    ...row,
+    bookable: row.reservable,
+    coachRatePhp: row.id === "session-wed-open" ? 800 : snap.coachRatePhp,
+    coachRateType: snap.coachRateType,
+  };
+});
 
 export const paymentInstructions: PaymentInstructions = {
   gcashName: "Balansé Wellness Hub (placeholder)",
@@ -463,6 +517,36 @@ export const publicContent: PublicContent = {
     address: "Unit 2A, Capitol Centrum Building, N Escario, Cebu City, 6000",
   },
   faqs: flattenFaqs(),
+};
+
+export const adminClasses: AdminClass[] = publicClasses.map((row) => ({
+  ...row,
+  associatedCoachIds: adminCoaches
+    .filter((coach) => coach.specialties.includes(row.name))
+    .map((coach) => coach.id),
+}));
+
+export const adminSettings: AdminSettings = {
+  ...publicContent,
+  ...paymentInstructions,
+  businessName: "Balansé Wellness Hub",
+  openingHours: "",
+  policyDocuments: [
+    {
+      id: "policy-waiver-2026-01",
+      documentName: "Waiver",
+      version: "2026-01",
+      promotedAt: "2026-01-15T00:00:00.000Z",
+      current: true,
+    },
+    {
+      id: "policy-gym-2026-01",
+      documentName: "Gym Policy",
+      version: "2026-01",
+      promotedAt: "2026-01-15T00:00:00.000Z",
+      current: true,
+    },
+  ],
 };
 
 export const staff: AdminStaff[] = [

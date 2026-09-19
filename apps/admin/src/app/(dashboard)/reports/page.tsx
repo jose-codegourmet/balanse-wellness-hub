@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ReportsPage } from "@/modules/admin/ReportsPage";
 
 export const metadata: Metadata = {
   title: "Reports",
@@ -6,12 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return (
-    <section>
-      <h1 className="font-display text-3xl">Reports</h1>
-      <p className="mt-3 max-w-2xl text-muted-foreground">
-        Sales and inventory reports. Screen content is owned by the matching FE-ADM ticket.
-      </p>
-    </section>
-  );
+  return <ReportsPage />;
 }

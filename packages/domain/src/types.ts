@@ -89,6 +89,12 @@ export type CustomerBooking = {
   holdExpiresAt: string | null;
   createdAt: string;
   session: PublicSession;
+  cancellationReason?: string | null;
+  requestCreatedAt?: string | null;
+  targetSessionId?: string | null;
+  targetSession?: PublicSession | null;
+  rejectReason?: string | null;
+  proofPreviewUrl?: string | null;
 };
 
 export type PaymentInstructions = {
@@ -108,4 +114,6 @@ export type AdminStaff = {
 
 export type AdminCustomer = CustomerProfile & {
   bookingCount: number;
+  upcomingCount: number;
+  lastVisitAt: string | null;
 };
