@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>ASSET-014 mixed coach grid preview</title>
+  <style>
+    body { font-family: Georgia, serif; background: #faf6ee; color: #2c3338; margin: 32px; }
+    h1 { font-weight: 400; letter-spacing: 0.04em; }
+    p { max-width: 52rem; line-height: 1.5; }
+    .grid { display: grid; grid-template-columns: repeat(4, 160px); gap: 20px; margin: 28px 0; }
+    figure { margin: 0; }
+    .card { width: 160px; height: 200px; object-fit: cover; display: block; background: #e8d5b5; }
+    .avatar { width: 96px; height: 96px; object-fit: cover; border-radius: 50%; display: block; }
+    figcaption { font-size: 13px; margin-top: 8px; }
+    .note { color: #6e5338; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>Mixed grid — real headshot + designed placeholder</h1>
+  <p class="note">4:5 cards as on the public Coaches page. Placeholder is cream/gold line art, not a face. Late photo swap is a data change only.</p>
+  <div class="grid">
+    <figure>
+      <img class="card" src="../../coaches/ephraim/coach-ephraim-01-thumb.jpg" alt="Coach Ephraim Bacaltos portrait (source photo)."/>
+      <figcaption>Ephraim — source</figcaption>
+    </figure>
+    <figure>
+      <img class="card" src="coach-placeholder-4x5.svg" alt="On-brand coach photo placeholder."/>
+      <figcaption>Alec — placeholder</figcaption>
+    </figure>
+    <figure>
+      <img class="card" src="coach-placeholder-4x5.svg" alt="On-brand coach photo placeholder."/>
+      <figcaption>Sofia — placeholder</figcaption>
+    </figure>
+    <figure>
+      <img class="card" src="coach-placeholder-4x5.svg" alt="On-brand coach photo placeholder."/>
+      <figcaption>Kate Go — placeholder</figcaption>
+    </figure>
+  </div>
+  <p class="note">1:1 avatars for landing previews and the admin form fallback after photo remove:</p>
+  <div class="grid">
+    <figure>
+      <img class="avatar" src="../../coaches/ephraim/coach-ephraim-01-thumb.jpg" alt="Coach Ephraim Bacaltos avatar crop."/>
+      <figcaption>Ephraim</figcaption>
+    </figure>
+    <figure>
+      <img class="avatar" src="coach-placeholder-1x1.svg" alt="On-brand coach avatar placeholder."/>
+      <figcaption>Placeholder</figcaption>
+    </figure>
+  </div>
+</body>
+</html>

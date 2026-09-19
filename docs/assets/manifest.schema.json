@@ -133,6 +133,10 @@
           "type": ["string", "null"],
           "description": "Final INF-004 / ASSET-030 object key. Null until buckets exist."
         },
+        "working_path": {
+          "type": ["string", "null"],
+          "description": "Repo-relative working file until ASSET-030 fills storage_key."
+        },
         "coach_slug": { "type": ["string", "null"] }
       }
     }

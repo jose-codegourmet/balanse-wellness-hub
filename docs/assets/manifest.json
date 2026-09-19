@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "updated": "2026-09-19",
-  "notes": "Closed inventory: landing A–D, about A–C, contact A–B, faqs A, coaches A–C, 11 roster headshots, placeholder. storage_key filled by ASSET-030 after INF-004/BE-021. Only approved assets may ship.",
+  "notes": "Closed inventory: landing A–D, about A–C, contact A–B, faqs A, coaches A–C, 11 roster headshots, designed placeholder at 4:5 and 1:1 (ASSET-014). storage_key filled by ASSET-030 after INF-004/BE-021. Only approved assets may ship.",
   "assets": [
     {
       "id": "landing-a",
@@ -437,8 +437,14 @@
       "approval_status": "draft",
       "approver": null,
       "alt_text": "Designed placeholder for Coach Alec James Co until a source photo and consent are catalogued.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "use-shared-placeholder",
+          "notes": "docs/assets/placeholders/coach-placeholder-4x5.svg"
+        }
+      ],
       "storage_key": null,
+      "working_path": "docs/assets/placeholders/coach-placeholder-4x5.svg",
       "coach_slug": "alec-james-co"
     },
     {
@@ -515,8 +521,14 @@
       "approval_status": "draft",
       "approver": null,
       "alt_text": "Designed placeholder for Coach Kate Go until a source photo and consent are catalogued.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "use-shared-placeholder",
+          "notes": "docs/assets/placeholders/coach-placeholder-4x5.svg"
+        }
+      ],
       "storage_key": null,
+      "working_path": "docs/assets/placeholders/coach-placeholder-4x5.svg",
       "coach_slug": "kate-go"
     },
     {
@@ -537,8 +549,14 @@
       "approval_status": "draft",
       "approver": null,
       "alt_text": "Designed placeholder for Coach Sofia Ocampo until a source photo and consent are catalogued.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "use-shared-placeholder",
+          "notes": "docs/assets/placeholders/coach-placeholder-4x5.svg"
+        }
+      ],
       "storage_key": null,
+      "working_path": "docs/assets/placeholders/coach-placeholder-4x5.svg",
       "coach_slug": "sofia-ocampo"
     },
     {
@@ -640,11 +658,45 @@
       "model": null,
       "model_parameters": null,
       "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
-      "alt_text": "On-brand coach photo placeholder.",
-      "post_processing": [],
+      "approval_status": "approved",
+      "approver": "assets-lane ASSET-014",
+      "alt_text": "On-brand cream and gold line-art emblem used when a coach has no profile photo.",
+      "post_processing": [
+        {
+          "op": "raster-export",
+          "notes": "PNG and WebP at 800x1000 from the designed SVG. No crop from a generated portrait."
+        }
+      ],
       "storage_key": null,
+      "working_path": "docs/assets/placeholders/coach-placeholder-4x5.svg",
+      "coach_slug": "placeholder"
+    },
+    {
+      "id": "coach-placeholder-1x1",
+      "page": "coaches",
+      "slot": "placeholder-avatar",
+      "slot_letter": null,
+      "aspect_ratio": "1:1",
+      "source_prompt_key": null,
+      "identity_bound": false,
+      "source_free": true,
+      "source_asset_id": null,
+      "generation_policy": "placeholder",
+      "do_not_generate_reason": "Designed avatar only (ASSET-014). Square crop for landing previews and admin form. Never a generated human face.",
+      "model": null,
+      "model_parameters": null,
+      "generation_date": null,
+      "approval_status": "approved",
+      "approver": "assets-lane ASSET-014",
+      "alt_text": "On-brand cream and gold line-art emblem used as a square coach avatar when no photo exists.",
+      "post_processing": [
+        {
+          "op": "designed-square",
+          "notes": "Independent 1:1 composition of the same emblem language as coach-placeholder (not a face crop)."
+        }
+      ],
+      "storage_key": null,
+      "working_path": "docs/assets/placeholders/coach-placeholder-1x1.svg",
       "coach_slug": "placeholder"
     }
   ]

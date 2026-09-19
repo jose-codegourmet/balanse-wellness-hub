@@ -16,6 +16,7 @@ marketing-assets/landing/hero-accent-16x9.webp
 marketing-assets/about/brand-texture-3x1.webp
 coach-photos/rachelle-tobiano/headshot-4x5.webp
 coach-photos/placeholder/headshot-4x5.webp
+coach-photos/placeholder/headshot-1x1.webp
 ```
 
 ## Tokens

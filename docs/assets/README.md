@@ -13,5 +13,6 @@ Foundations for Higgsfield marketing imagery and coach headshots.
 | [intake.md](intake.md) | ASSET-010 | Balanse image assets / Drive intake path |
 | [coverage-matrix.yaml](coverage-matrix.yaml) | ASSET-010 | Per-coach source / consent / generate vs placeholder |
 | [source-catalog.yaml](source-catalog.yaml) | ASSET-010 | Stable `source_asset_id` values |
+| [placeholders/](placeholders/) | ASSET-014 | Designed 4:5 + 1:1 coach fallback (source-free, no face) |
 
-**Not in this PR:** generated images, Higgsfield media-id registration (done at generate time), Storage upload (`ASSET-030` — blocked on `INF-004` + `BE-021`).
+**Not generated here:** Higgsfield media-id registration (done at generate time), Storage upload (`ASSET-030` — blocked on `INF-004` + `BE-021`).

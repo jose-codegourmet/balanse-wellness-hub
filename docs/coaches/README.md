@@ -12,10 +12,12 @@ Reference photos and intro docs for Balanse Wellness Hub coaches.
 | [maris](maris/) | yes | pdf |
 | [mikaela](mikaela/) | yes | pdf |
 | [jodi](jodi/) | yes (4 shots) | — |
-| [alec](alec/) | — | pdf |
-| [sofia](sofia/) | — | docx |
+| [alec](alec/) | — (ASSET-014 placeholder) | pdf |
+| [sofia](sofia/) | — (ASSET-014 placeholder) | docx |
+| Kate Go | — (ASSET-014 placeholder; no folder yet) | — |
 
 Source: Google Drive folder "Coaches Photos and Docs".
 
 Intake, coverage (generate vs placeholder), and catalog ids: `docs/assets/intake.md`, `docs/assets/coverage-matrix.yaml`.  
+Designed no-photo fallback: `docs/assets/placeholders/` (`ASSET-014`).  
 Raw ARWs stay in Drive; only web derivatives live here.

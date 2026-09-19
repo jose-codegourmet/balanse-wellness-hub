@@ -111,7 +111,7 @@ Brand palette cues (findings §5; art direction only — **not** overlaid logos 
 | Coach headshots (4:5) | `nano_banana_pro` | 1k | Native `4:5`. Requires `image_references` media id |
 | Group hero (16:9) | `nano_banana_pro` | 1k | Identity-bound; skip if roster coverage incomplete |
 | Non-identity scenes / still lifes / textures | `nano_banana_pro` | 1k | Text-to-image; `source_free: true` |
-| Placeholder avatar | *not generated as a face* | — | `ASSET-014` design ticket |
+| Placeholder avatar | *not generated as a face* | — | Designed SVG at `docs/assets/placeholders/` (`ASSET-014`) |
 
 `soul_2` supports portraits and `soul_id` but **does not offer 4:5** and is **out of policy** for this work. Do not use it to work around ratio gaps.
 
