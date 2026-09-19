@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "updated": "2026-09-19",
-  "notes": "Closed inventory: landing A–D, about A–C, contact A–B, faqs A, coaches A–C, 11 roster headshots + 1:1 delivery crops (ASSET-013), designed placeholder at 4:5 and 1:1 (ASSET-014). Headshot and marketing runtime model is nano_banana_2_shots (not nano_banana_pro). ASSET-012/013: eight source-backed headshot sets approved. ASSET-015 group hero skipped (Alec / Sofia / Kate lack sources). ASSET-015 specialty accents + ASSET-020–023 marketing slots generated 2026-09-19 with mood plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 (source_free / non-identity). Jose auto-approve. Working files in docs/assets/marketing/{page}/. storage_key filled by ASSET-030 (still blocked on Storage buckets). Only approved assets may ship.",
+  "notes": "Closed inventory: landing A–D, about A–C, contact A–B, faqs A, coaches A–C, 11 roster headshots + 1:1 delivery crops (ASSET-013), designed placeholder at 4:5 and 1:1 (ASSET-014). Headshot and marketing runtime model is nano_banana_2_shots (not nano_banana_pro). ASSET-012/013: eight source-backed headshot sets approved. ASSET-015 group hero skipped (Alec / Sofia / Kate lack sources). ASSET-015 specialty accents + ASSET-020–023 marketing slots generated 2026-09-19 with mood plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 (source_free / non-identity). Jose auto-approve. Working files in docs/assets/marketing/{page}/. ASSET-030: storage_key + public_url written for approved rows. BE service-role upsert: 84 objects in coach-photos this run; marketing-assets 0 this run. Sample: https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rex-francis-regis/headshot-4x5.webp. Coach photo columns not seeded from this script. Only approved assets may ship.",
   "assets": [
     {
       "id": "landing-a",
@@ -43,9 +43,22 @@
           "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
-      "storage_key": null,
+      "storage_key": "marketing-assets/landing/hero-accent-16x9.webp",
       "coach_slug": null,
-      "working_path": "docs/assets/marketing/landing/hero-accent-16x9.webp"
+      "working_path": "docs/assets/marketing/landing/hero-accent-16x9.webp",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/landing/hero-accent-16x9.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/landing/hero-accent-16x9.webp",
+          "storage_key": "marketing-assets/landing/hero-accent-16x9.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/landing/hero-accent-16x9.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/landing/hero-accent-16x9.jpg",
+          "storage_key": "marketing-assets/landing/hero-accent-16x9.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/landing/hero-accent-16x9.jpg"
+        }
+      ]
     },
     {
       "id": "landing-b",
@@ -88,9 +101,22 @@
           "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
-      "storage_key": null,
+      "storage_key": "marketing-assets/landing/classes-editorial-3x2.webp",
       "coach_slug": null,
-      "working_path": "docs/assets/marketing/landing/classes-editorial-3x2.webp"
+      "working_path": "docs/assets/marketing/landing/classes-editorial-3x2.webp",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/landing/classes-editorial-3x2.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/landing/classes-editorial-3x2.webp",
+          "storage_key": "marketing-assets/landing/classes-editorial-3x2.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/landing/classes-editorial-3x2.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/landing/classes-editorial-3x2.jpg",
+          "storage_key": "marketing-assets/landing/classes-editorial-3x2.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/landing/classes-editorial-3x2.jpg"
+        }
+      ]
     },
     {
       "id": "landing-c",
@@ -132,9 +158,22 @@
           "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
-      "storage_key": null,
+      "storage_key": "marketing-assets/landing/how-it-works-still-life-1x1.webp",
       "coach_slug": null,
-      "working_path": "docs/assets/marketing/landing/how-it-works-still-life-1x1.webp"
+      "working_path": "docs/assets/marketing/landing/how-it-works-still-life-1x1.webp",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/landing/how-it-works-still-life-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/landing/how-it-works-still-life-1x1.webp",
+          "storage_key": "marketing-assets/landing/how-it-works-still-life-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/landing/how-it-works-still-life-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/landing/how-it-works-still-life-1x1.jpg",
+          "storage_key": "marketing-assets/landing/how-it-works-still-life-1x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/landing/how-it-works-still-life-1x1.jpg"
+        }
+      ]
     },
     {
       "id": "landing-d",
@@ -177,9 +216,22 @@
           "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
-      "storage_key": null,
+      "storage_key": "marketing-assets/landing/final-cta-21x9.webp",
       "coach_slug": null,
-      "working_path": "docs/assets/marketing/landing/final-cta-21x9.webp"
+      "working_path": "docs/assets/marketing/landing/final-cta-21x9.webp",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/landing/final-cta-21x9.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/landing/final-cta-21x9.webp",
+          "storage_key": "marketing-assets/landing/final-cta-21x9.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/landing/final-cta-21x9.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/landing/final-cta-21x9.jpg",
+          "storage_key": "marketing-assets/landing/final-cta-21x9.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/landing/final-cta-21x9.jpg"
+        }
+      ]
     },
     {
       "id": "about-a",
@@ -221,9 +273,22 @@
           "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
-      "storage_key": null,
+      "storage_key": "marketing-assets/about/hero-16x9.webp",
       "coach_slug": null,
-      "working_path": "docs/assets/marketing/about/hero-16x9.webp"
+      "working_path": "docs/assets/marketing/about/hero-16x9.webp",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/about/hero-16x9.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/about/hero-16x9.webp",
+          "storage_key": "marketing-assets/about/hero-16x9.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/about/hero-16x9.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/about/hero-16x9.jpg",
+          "storage_key": "marketing-assets/about/hero-16x9.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/about/hero-16x9.jpg"
+        }
+      ]
     },
     {
       "id": "about-b",
@@ -266,9 +331,22 @@
           "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
-      "storage_key": null,
+      "storage_key": "marketing-assets/about/our-approach-4x3.webp",
       "coach_slug": null,
-      "working_path": "docs/assets/marketing/about/our-approach-4x3.webp"
+      "working_path": "docs/assets/marketing/about/our-approach-4x3.webp",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/about/our-approach-4x3.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/about/our-approach-4x3.webp",
+          "storage_key": "marketing-assets/about/our-approach-4x3.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/about/our-approach-4x3.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/about/our-approach-4x3.jpg",
+          "storage_key": "marketing-assets/about/our-approach-4x3.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/about/our-approach-4x3.jpg"
+        }
+      ]
     },
     {
       "id": "about-c",
@@ -312,9 +390,22 @@
           "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null."
         }
       ],
-      "storage_key": null,
+      "storage_key": "marketing-assets/about/brand-texture-3x1.webp",
       "coach_slug": null,
-      "working_path": "docs/assets/marketing/about/brand-texture-3x1.webp"
+      "working_path": "docs/assets/marketing/about/brand-texture-3x1.webp",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/about/brand-texture-3x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/about/brand-texture-3x1.webp",
+          "storage_key": "marketing-assets/about/brand-texture-3x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/about/brand-texture-3x1.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/about/brand-texture-3x1.jpg",
+          "storage_key": "marketing-assets/about/brand-texture-3x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/about/brand-texture-3x1.jpg"
+        }
+      ]
     },
     {
       "id": "contact-a",
@@ -356,9 +447,22 @@
           "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
-      "storage_key": null,
+      "storage_key": "marketing-assets/contact/visit-hero-16x9.webp",
       "coach_slug": null,
-      "working_path": "docs/assets/marketing/contact/visit-hero-16x9.webp"
+      "working_path": "docs/assets/marketing/contact/visit-hero-16x9.webp",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/contact/visit-hero-16x9.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/contact/visit-hero-16x9.webp",
+          "storage_key": "marketing-assets/contact/visit-hero-16x9.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/contact/visit-hero-16x9.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/contact/visit-hero-16x9.jpg",
+          "storage_key": "marketing-assets/contact/visit-hero-16x9.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/contact/visit-hero-16x9.jpg"
+        }
+      ]
     },
     {
       "id": "contact-b",
@@ -400,9 +504,22 @@
           "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
-      "storage_key": null,
+      "storage_key": "marketing-assets/contact/walk-in-qr-1x1.webp",
       "coach_slug": null,
-      "working_path": "docs/assets/marketing/contact/walk-in-qr-1x1.webp"
+      "working_path": "docs/assets/marketing/contact/walk-in-qr-1x1.webp",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/contact/walk-in-qr-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/contact/walk-in-qr-1x1.webp",
+          "storage_key": "marketing-assets/contact/walk-in-qr-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/contact/walk-in-qr-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/contact/walk-in-qr-1x1.jpg",
+          "storage_key": "marketing-assets/contact/walk-in-qr-1x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/contact/walk-in-qr-1x1.jpg"
+        }
+      ]
     },
     {
       "id": "faqs-a",
@@ -445,9 +562,22 @@
           "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
-      "storage_key": null,
+      "storage_key": "marketing-assets/faqs/header-accent-3x2.webp",
       "coach_slug": null,
-      "working_path": "docs/assets/marketing/faqs/header-accent-3x2.webp"
+      "working_path": "docs/assets/marketing/faqs/header-accent-3x2.webp",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/faqs/header-accent-3x2.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/faqs/header-accent-3x2.webp",
+          "storage_key": "marketing-assets/faqs/header-accent-3x2.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/faqs/header-accent-3x2.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/faqs/header-accent-3x2.jpg",
+          "storage_key": "marketing-assets/faqs/header-accent-3x2.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/faqs/header-accent-3x2.jpg"
+        }
+      ]
     },
     {
       "id": "coaches-a",
@@ -472,7 +602,8 @@
       "alt_text": "Template for per-coach editorial portraits; not a published image.",
       "post_processing": [],
       "storage_key": null,
-      "coach_slug": null
+      "coach_slug": null,
+      "public_url": null
     },
     {
       "id": "coaches-b",
@@ -497,7 +628,8 @@
       "alt_text": "Candid coaching team in studio (only if full source coverage).",
       "post_processing": [],
       "storage_key": null,
-      "coach_slug": null
+      "coach_slug": null,
+      "public_url": null
     },
     {
       "id": "coaches-c",
@@ -533,7 +665,8 @@
       ],
       "storage_key": null,
       "coach_slug": null,
-      "working_path": null
+      "working_path": null,
+      "public_url": null
     },
     {
       "id": "coaches-c-yoga",
@@ -576,9 +709,22 @@
           "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
-      "storage_key": null,
+      "storage_key": "marketing-assets/coaches/specialty-accent-yoga-1x1.webp",
       "working_path": "docs/assets/marketing/coaches/specialty-accent-yoga-1x1.webp",
-      "coach_slug": null
+      "coach_slug": null,
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-yoga-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/coaches/specialty-accent-yoga-1x1.webp",
+          "storage_key": "marketing-assets/coaches/specialty-accent-yoga-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-yoga-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/coaches/specialty-accent-yoga-1x1.jpg",
+          "storage_key": "marketing-assets/coaches/specialty-accent-yoga-1x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-yoga-1x1.jpg"
+        }
+      ]
     },
     {
       "id": "coaches-c-boxing",
@@ -621,9 +767,22 @@
           "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
-      "storage_key": null,
+      "storage_key": "marketing-assets/coaches/specialty-accent-boxing-1x1.webp",
       "working_path": "docs/assets/marketing/coaches/specialty-accent-boxing-1x1.webp",
-      "coach_slug": null
+      "coach_slug": null,
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-boxing-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/coaches/specialty-accent-boxing-1x1.webp",
+          "storage_key": "marketing-assets/coaches/specialty-accent-boxing-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-boxing-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/coaches/specialty-accent-boxing-1x1.jpg",
+          "storage_key": "marketing-assets/coaches/specialty-accent-boxing-1x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-boxing-1x1.jpg"
+        }
+      ]
     },
     {
       "id": "coaches-c-capoeira",
@@ -666,9 +825,22 @@
           "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
-      "storage_key": null,
+      "storage_key": "marketing-assets/coaches/specialty-accent-capoeira-1x1.webp",
       "working_path": "docs/assets/marketing/coaches/specialty-accent-capoeira-1x1.webp",
-      "coach_slug": null
+      "coach_slug": null,
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-capoeira-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/coaches/specialty-accent-capoeira-1x1.webp",
+          "storage_key": "marketing-assets/coaches/specialty-accent-capoeira-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-capoeira-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/coaches/specialty-accent-capoeira-1x1.jpg",
+          "storage_key": "marketing-assets/coaches/specialty-accent-capoeira-1x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/specialty-accent-capoeira-1x1.jpg"
+        }
+      ]
     },
     {
       "id": "coach-headshot-rex-francis-regis",
@@ -717,9 +889,32 @@
           "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/rex-francis-regis/headshot-4x5.webp",
       "working_path": "docs/assets/headshots/rex-francis-regis/headshot-4x5.jpg",
-      "coach_slug": "rex-francis-regis"
+      "coach_slug": "rex-francis-regis",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rex-francis-regis/headshot-4x5.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/headshots/rex-francis-regis/headshot-card-4x5.webp",
+          "storage_key": "coach-photos/rex-francis-regis/headshot-4x5.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rex-francis-regis/headshot-4x5.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/rex-francis-regis/headshot-card-4x5.jpg",
+          "storage_key": "coach-photos/rex-francis-regis/headshot-4x5.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rex-francis-regis/headshot-4x5.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/rex-francis-regis/headshot-card-4x5-w400.webp",
+          "storage_key": "coach-photos/rex-francis-regis/headshot-4x5-w400.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rex-francis-regis/headshot-4x5-w400.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/rex-francis-regis/headshot-card-4x5-w400.jpg",
+          "storage_key": "coach-photos/rex-francis-regis/headshot-4x5-w400.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rex-francis-regis/headshot-4x5-w400.jpg"
+        }
+      ]
     },
     {
       "id": "coach-headshot-rex-francis-regis-1x1",
@@ -758,9 +953,42 @@
           "notes": "coach-photos/rex-francis-regis/headshot-1x1.webp"
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/rex-francis-regis/headshot-1x1.webp",
       "working_path": "docs/assets/headshots/rex-francis-regis/headshot-1x1.webp",
-      "coach_slug": "rex-francis-regis"
+      "coach_slug": "rex-francis-regis",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rex-francis-regis/headshot-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/headshots/rex-francis-regis/headshot-1x1.webp",
+          "storage_key": "coach-photos/rex-francis-regis/headshot-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rex-francis-regis/headshot-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/rex-francis-regis/headshot-1x1.jpg",
+          "storage_key": "coach-photos/rex-francis-regis/headshot-1x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rex-francis-regis/headshot-1x1.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/rex-francis-regis/headshot-1x1-w400.webp",
+          "storage_key": "coach-photos/rex-francis-regis/headshot-1x1-w400.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rex-francis-regis/headshot-1x1-w400.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/rex-francis-regis/headshot-1x1-w400.jpg",
+          "storage_key": "coach-photos/rex-francis-regis/headshot-1x1-w400.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rex-francis-regis/headshot-1x1-w400.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/rex-francis-regis/headshot-1x1-w200.webp",
+          "storage_key": "coach-photos/rex-francis-regis/headshot-1x1-w200.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rex-francis-regis/headshot-1x1-w200.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/rex-francis-regis/headshot-1x1-w200.jpg",
+          "storage_key": "coach-photos/rex-francis-regis/headshot-1x1-w200.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rex-francis-regis/headshot-1x1-w200.jpg"
+        }
+      ]
     },
     {
       "id": "coach-headshot-ephraim-bacaltos",
@@ -810,9 +1038,32 @@
           "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/ephraim-bacaltos/headshot-4x5.webp",
       "working_path": "docs/assets/headshots/ephraim-bacaltos/headshot-4x5.jpg",
-      "coach_slug": "ephraim-bacaltos"
+      "coach_slug": "ephraim-bacaltos",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/ephraim-bacaltos/headshot-4x5.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/headshots/ephraim-bacaltos/headshot-card-4x5.webp",
+          "storage_key": "coach-photos/ephraim-bacaltos/headshot-4x5.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/ephraim-bacaltos/headshot-4x5.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/ephraim-bacaltos/headshot-card-4x5.jpg",
+          "storage_key": "coach-photos/ephraim-bacaltos/headshot-4x5.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/ephraim-bacaltos/headshot-4x5.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/ephraim-bacaltos/headshot-card-4x5-w400.webp",
+          "storage_key": "coach-photos/ephraim-bacaltos/headshot-4x5-w400.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/ephraim-bacaltos/headshot-4x5-w400.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/ephraim-bacaltos/headshot-card-4x5-w400.jpg",
+          "storage_key": "coach-photos/ephraim-bacaltos/headshot-4x5-w400.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/ephraim-bacaltos/headshot-4x5-w400.jpg"
+        }
+      ]
     },
     {
       "id": "coach-headshot-ephraim-bacaltos-1x1",
@@ -851,9 +1102,42 @@
           "notes": "coach-photos/ephraim-bacaltos/headshot-1x1.webp"
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/ephraim-bacaltos/headshot-1x1.webp",
       "working_path": "docs/assets/headshots/ephraim-bacaltos/headshot-1x1.webp",
-      "coach_slug": "ephraim-bacaltos"
+      "coach_slug": "ephraim-bacaltos",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/ephraim-bacaltos/headshot-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/headshots/ephraim-bacaltos/headshot-1x1.webp",
+          "storage_key": "coach-photos/ephraim-bacaltos/headshot-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/ephraim-bacaltos/headshot-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/ephraim-bacaltos/headshot-1x1.jpg",
+          "storage_key": "coach-photos/ephraim-bacaltos/headshot-1x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/ephraim-bacaltos/headshot-1x1.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/ephraim-bacaltos/headshot-1x1-w400.webp",
+          "storage_key": "coach-photos/ephraim-bacaltos/headshot-1x1-w400.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/ephraim-bacaltos/headshot-1x1-w400.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/ephraim-bacaltos/headshot-1x1-w400.jpg",
+          "storage_key": "coach-photos/ephraim-bacaltos/headshot-1x1-w400.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/ephraim-bacaltos/headshot-1x1-w400.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/ephraim-bacaltos/headshot-1x1-w200.webp",
+          "storage_key": "coach-photos/ephraim-bacaltos/headshot-1x1-w200.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/ephraim-bacaltos/headshot-1x1-w200.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/ephraim-bacaltos/headshot-1x1-w200.jpg",
+          "storage_key": "coach-photos/ephraim-bacaltos/headshot-1x1-w200.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/ephraim-bacaltos/headshot-1x1-w200.jpg"
+        }
+      ]
     },
     {
       "id": "coach-headshot-rachelle-tobiano",
@@ -902,9 +1186,32 @@
           "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/rachelle-tobiano/headshot-4x5.webp",
       "working_path": "docs/assets/headshots/rachelle-tobiano/headshot-4x5.jpg",
-      "coach_slug": "rachelle-tobiano"
+      "coach_slug": "rachelle-tobiano",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rachelle-tobiano/headshot-4x5.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/headshots/rachelle-tobiano/headshot-card-4x5.webp",
+          "storage_key": "coach-photos/rachelle-tobiano/headshot-4x5.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rachelle-tobiano/headshot-4x5.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/rachelle-tobiano/headshot-card-4x5.jpg",
+          "storage_key": "coach-photos/rachelle-tobiano/headshot-4x5.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rachelle-tobiano/headshot-4x5.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/rachelle-tobiano/headshot-card-4x5-w400.webp",
+          "storage_key": "coach-photos/rachelle-tobiano/headshot-4x5-w400.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rachelle-tobiano/headshot-4x5-w400.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/rachelle-tobiano/headshot-card-4x5-w400.jpg",
+          "storage_key": "coach-photos/rachelle-tobiano/headshot-4x5-w400.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rachelle-tobiano/headshot-4x5-w400.jpg"
+        }
+      ]
     },
     {
       "id": "coach-headshot-rachelle-tobiano-1x1",
@@ -943,9 +1250,42 @@
           "notes": "coach-photos/rachelle-tobiano/headshot-1x1.webp"
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/rachelle-tobiano/headshot-1x1.webp",
       "working_path": "docs/assets/headshots/rachelle-tobiano/headshot-1x1.webp",
-      "coach_slug": "rachelle-tobiano"
+      "coach_slug": "rachelle-tobiano",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rachelle-tobiano/headshot-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/headshots/rachelle-tobiano/headshot-1x1.webp",
+          "storage_key": "coach-photos/rachelle-tobiano/headshot-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rachelle-tobiano/headshot-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/rachelle-tobiano/headshot-1x1.jpg",
+          "storage_key": "coach-photos/rachelle-tobiano/headshot-1x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rachelle-tobiano/headshot-1x1.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/rachelle-tobiano/headshot-1x1-w400.webp",
+          "storage_key": "coach-photos/rachelle-tobiano/headshot-1x1-w400.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rachelle-tobiano/headshot-1x1-w400.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/rachelle-tobiano/headshot-1x1-w400.jpg",
+          "storage_key": "coach-photos/rachelle-tobiano/headshot-1x1-w400.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rachelle-tobiano/headshot-1x1-w400.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/rachelle-tobiano/headshot-1x1-w200.webp",
+          "storage_key": "coach-photos/rachelle-tobiano/headshot-1x1-w200.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rachelle-tobiano/headshot-1x1-w200.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/rachelle-tobiano/headshot-1x1-w200.jpg",
+          "storage_key": "coach-photos/rachelle-tobiano/headshot-1x1-w200.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/rachelle-tobiano/headshot-1x1-w200.jpg"
+        }
+      ]
     },
     {
       "id": "coach-headshot-alec-james-co",
@@ -973,7 +1313,8 @@
       ],
       "storage_key": null,
       "working_path": "docs/assets/placeholders/coach-placeholder-4x5.svg",
-      "coach_slug": "alec-james-co"
+      "coach_slug": "alec-james-co",
+      "public_url": null
     },
     {
       "id": "coach-headshot-jodi-tio",
@@ -1022,9 +1363,32 @@
           "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/jodi-tio/headshot-4x5.webp",
       "working_path": "docs/assets/headshots/jodi-tio/headshot-4x5.jpg",
-      "coach_slug": "jodi-tio"
+      "coach_slug": "jodi-tio",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/jodi-tio/headshot-4x5.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/headshots/jodi-tio/headshot-card-4x5.webp",
+          "storage_key": "coach-photos/jodi-tio/headshot-4x5.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/jodi-tio/headshot-4x5.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/jodi-tio/headshot-card-4x5.jpg",
+          "storage_key": "coach-photos/jodi-tio/headshot-4x5.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/jodi-tio/headshot-4x5.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/jodi-tio/headshot-card-4x5-w400.webp",
+          "storage_key": "coach-photos/jodi-tio/headshot-4x5-w400.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/jodi-tio/headshot-4x5-w400.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/jodi-tio/headshot-card-4x5-w400.jpg",
+          "storage_key": "coach-photos/jodi-tio/headshot-4x5-w400.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/jodi-tio/headshot-4x5-w400.jpg"
+        }
+      ]
     },
     {
       "id": "coach-headshot-jodi-tio-1x1",
@@ -1063,9 +1427,42 @@
           "notes": "coach-photos/jodi-tio/headshot-1x1.webp"
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/jodi-tio/headshot-1x1.webp",
       "working_path": "docs/assets/headshots/jodi-tio/headshot-1x1.webp",
-      "coach_slug": "jodi-tio"
+      "coach_slug": "jodi-tio",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/jodi-tio/headshot-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/headshots/jodi-tio/headshot-1x1.webp",
+          "storage_key": "coach-photos/jodi-tio/headshot-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/jodi-tio/headshot-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/jodi-tio/headshot-1x1.jpg",
+          "storage_key": "coach-photos/jodi-tio/headshot-1x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/jodi-tio/headshot-1x1.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/jodi-tio/headshot-1x1-w400.webp",
+          "storage_key": "coach-photos/jodi-tio/headshot-1x1-w400.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/jodi-tio/headshot-1x1-w400.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/jodi-tio/headshot-1x1-w400.jpg",
+          "storage_key": "coach-photos/jodi-tio/headshot-1x1-w400.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/jodi-tio/headshot-1x1-w400.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/jodi-tio/headshot-1x1-w200.webp",
+          "storage_key": "coach-photos/jodi-tio/headshot-1x1-w200.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/jodi-tio/headshot-1x1-w200.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/jodi-tio/headshot-1x1-w200.jpg",
+          "storage_key": "coach-photos/jodi-tio/headshot-1x1-w200.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/jodi-tio/headshot-1x1-w200.jpg"
+        }
+      ]
     },
     {
       "id": "coach-headshot-wolf",
@@ -1114,9 +1511,32 @@
           "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/wolf/headshot-4x5.webp",
       "working_path": "docs/assets/headshots/wolf/headshot-4x5.jpg",
-      "coach_slug": "wolf"
+      "coach_slug": "wolf",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/wolf/headshot-4x5.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/headshots/wolf/headshot-card-4x5.webp",
+          "storage_key": "coach-photos/wolf/headshot-4x5.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/wolf/headshot-4x5.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/wolf/headshot-card-4x5.jpg",
+          "storage_key": "coach-photos/wolf/headshot-4x5.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/wolf/headshot-4x5.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/wolf/headshot-card-4x5-w400.webp",
+          "storage_key": "coach-photos/wolf/headshot-4x5-w400.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/wolf/headshot-4x5-w400.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/wolf/headshot-card-4x5-w400.jpg",
+          "storage_key": "coach-photos/wolf/headshot-4x5-w400.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/wolf/headshot-4x5-w400.jpg"
+        }
+      ]
     },
     {
       "id": "coach-headshot-wolf-1x1",
@@ -1155,9 +1575,42 @@
           "notes": "coach-photos/wolf/headshot-1x1.webp"
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/wolf/headshot-1x1.webp",
       "working_path": "docs/assets/headshots/wolf/headshot-1x1.webp",
-      "coach_slug": "wolf"
+      "coach_slug": "wolf",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/wolf/headshot-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/headshots/wolf/headshot-1x1.webp",
+          "storage_key": "coach-photos/wolf/headshot-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/wolf/headshot-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/wolf/headshot-1x1.jpg",
+          "storage_key": "coach-photos/wolf/headshot-1x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/wolf/headshot-1x1.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/wolf/headshot-1x1-w400.webp",
+          "storage_key": "coach-photos/wolf/headshot-1x1-w400.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/wolf/headshot-1x1-w400.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/wolf/headshot-1x1-w400.jpg",
+          "storage_key": "coach-photos/wolf/headshot-1x1-w400.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/wolf/headshot-1x1-w400.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/wolf/headshot-1x1-w200.webp",
+          "storage_key": "coach-photos/wolf/headshot-1x1-w200.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/wolf/headshot-1x1-w200.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/wolf/headshot-1x1-w200.jpg",
+          "storage_key": "coach-photos/wolf/headshot-1x1-w200.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/wolf/headshot-1x1-w200.jpg"
+        }
+      ]
     },
     {
       "id": "coach-headshot-kate-go",
@@ -1185,7 +1638,8 @@
       ],
       "storage_key": null,
       "working_path": "docs/assets/placeholders/coach-placeholder-4x5.svg",
-      "coach_slug": "kate-go"
+      "coach_slug": "kate-go",
+      "public_url": null
     },
     {
       "id": "coach-headshot-sofia-ocampo",
@@ -1213,7 +1667,8 @@
       ],
       "storage_key": null,
       "working_path": "docs/assets/placeholders/coach-placeholder-4x5.svg",
-      "coach_slug": "sofia-ocampo"
+      "coach_slug": "sofia-ocampo",
+      "public_url": null
     },
     {
       "id": "coach-headshot-mikaela-danielle",
@@ -1262,9 +1717,32 @@
           "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/mikaela-danielle/headshot-4x5.webp",
       "working_path": "docs/assets/headshots/mikaela-danielle/headshot-4x5.jpg",
-      "coach_slug": "mikaela-danielle"
+      "coach_slug": "mikaela-danielle",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/mikaela-danielle/headshot-4x5.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/headshots/mikaela-danielle/headshot-card-4x5.webp",
+          "storage_key": "coach-photos/mikaela-danielle/headshot-4x5.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/mikaela-danielle/headshot-4x5.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/mikaela-danielle/headshot-card-4x5.jpg",
+          "storage_key": "coach-photos/mikaela-danielle/headshot-4x5.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/mikaela-danielle/headshot-4x5.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/mikaela-danielle/headshot-card-4x5-w400.webp",
+          "storage_key": "coach-photos/mikaela-danielle/headshot-4x5-w400.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/mikaela-danielle/headshot-4x5-w400.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/mikaela-danielle/headshot-card-4x5-w400.jpg",
+          "storage_key": "coach-photos/mikaela-danielle/headshot-4x5-w400.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/mikaela-danielle/headshot-4x5-w400.jpg"
+        }
+      ]
     },
     {
       "id": "coach-headshot-mikaela-danielle-1x1",
@@ -1303,9 +1781,42 @@
           "notes": "coach-photos/mikaela-danielle/headshot-1x1.webp"
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/mikaela-danielle/headshot-1x1.webp",
       "working_path": "docs/assets/headshots/mikaela-danielle/headshot-1x1.webp",
-      "coach_slug": "mikaela-danielle"
+      "coach_slug": "mikaela-danielle",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/mikaela-danielle/headshot-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/headshots/mikaela-danielle/headshot-1x1.webp",
+          "storage_key": "coach-photos/mikaela-danielle/headshot-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/mikaela-danielle/headshot-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/mikaela-danielle/headshot-1x1.jpg",
+          "storage_key": "coach-photos/mikaela-danielle/headshot-1x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/mikaela-danielle/headshot-1x1.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/mikaela-danielle/headshot-1x1-w400.webp",
+          "storage_key": "coach-photos/mikaela-danielle/headshot-1x1-w400.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/mikaela-danielle/headshot-1x1-w400.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/mikaela-danielle/headshot-1x1-w400.jpg",
+          "storage_key": "coach-photos/mikaela-danielle/headshot-1x1-w400.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/mikaela-danielle/headshot-1x1-w400.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/mikaela-danielle/headshot-1x1-w200.webp",
+          "storage_key": "coach-photos/mikaela-danielle/headshot-1x1-w200.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/mikaela-danielle/headshot-1x1-w200.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/mikaela-danielle/headshot-1x1-w200.jpg",
+          "storage_key": "coach-photos/mikaela-danielle/headshot-1x1-w200.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/mikaela-danielle/headshot-1x1-w200.jpg"
+        }
+      ]
     },
     {
       "id": "coach-headshot-maris-cabrera",
@@ -1354,9 +1865,32 @@
           "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/maris-cabrera/headshot-4x5.webp",
       "working_path": "docs/assets/headshots/maris-cabrera/headshot-4x5.jpg",
-      "coach_slug": "maris-cabrera"
+      "coach_slug": "maris-cabrera",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/maris-cabrera/headshot-4x5.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/headshots/maris-cabrera/headshot-card-4x5.webp",
+          "storage_key": "coach-photos/maris-cabrera/headshot-4x5.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/maris-cabrera/headshot-4x5.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/maris-cabrera/headshot-card-4x5.jpg",
+          "storage_key": "coach-photos/maris-cabrera/headshot-4x5.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/maris-cabrera/headshot-4x5.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/maris-cabrera/headshot-card-4x5-w400.webp",
+          "storage_key": "coach-photos/maris-cabrera/headshot-4x5-w400.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/maris-cabrera/headshot-4x5-w400.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/maris-cabrera/headshot-card-4x5-w400.jpg",
+          "storage_key": "coach-photos/maris-cabrera/headshot-4x5-w400.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/maris-cabrera/headshot-4x5-w400.jpg"
+        }
+      ]
     },
     {
       "id": "coach-headshot-maris-cabrera-1x1",
@@ -1395,9 +1929,42 @@
           "notes": "coach-photos/maris-cabrera/headshot-1x1.webp"
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/maris-cabrera/headshot-1x1.webp",
       "working_path": "docs/assets/headshots/maris-cabrera/headshot-1x1.webp",
-      "coach_slug": "maris-cabrera"
+      "coach_slug": "maris-cabrera",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/maris-cabrera/headshot-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/headshots/maris-cabrera/headshot-1x1.webp",
+          "storage_key": "coach-photos/maris-cabrera/headshot-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/maris-cabrera/headshot-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/maris-cabrera/headshot-1x1.jpg",
+          "storage_key": "coach-photos/maris-cabrera/headshot-1x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/maris-cabrera/headshot-1x1.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/maris-cabrera/headshot-1x1-w400.webp",
+          "storage_key": "coach-photos/maris-cabrera/headshot-1x1-w400.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/maris-cabrera/headshot-1x1-w400.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/maris-cabrera/headshot-1x1-w400.jpg",
+          "storage_key": "coach-photos/maris-cabrera/headshot-1x1-w400.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/maris-cabrera/headshot-1x1-w400.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/maris-cabrera/headshot-1x1-w200.webp",
+          "storage_key": "coach-photos/maris-cabrera/headshot-1x1-w200.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/maris-cabrera/headshot-1x1-w200.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/maris-cabrera/headshot-1x1-w200.jpg",
+          "storage_key": "coach-photos/maris-cabrera/headshot-1x1-w200.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/maris-cabrera/headshot-1x1-w200.jpg"
+        }
+      ]
     },
     {
       "id": "coach-headshot-francis-acido",
@@ -1446,9 +2013,32 @@
           "notes": "ASSET-030 should upload headshot-card-4x5.webp (+ jpeg fallback) as coach-photos/{slug}/headshot-4x5.webp and 1:1 set as headshot-1x1.webp. Responsive: headshot-card-4x5-w400.*, headshot-1x1-w400.*, headshot-1x1-w200.*"
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/francis-acido/headshot-4x5.webp",
       "working_path": "docs/assets/headshots/francis-acido/headshot-4x5.jpg",
-      "coach_slug": "francis-acido"
+      "coach_slug": "francis-acido",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/francis-acido/headshot-4x5.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/headshots/francis-acido/headshot-card-4x5.webp",
+          "storage_key": "coach-photos/francis-acido/headshot-4x5.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/francis-acido/headshot-4x5.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/francis-acido/headshot-card-4x5.jpg",
+          "storage_key": "coach-photos/francis-acido/headshot-4x5.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/francis-acido/headshot-4x5.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/francis-acido/headshot-card-4x5-w400.webp",
+          "storage_key": "coach-photos/francis-acido/headshot-4x5-w400.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/francis-acido/headshot-4x5-w400.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/francis-acido/headshot-card-4x5-w400.jpg",
+          "storage_key": "coach-photos/francis-acido/headshot-4x5-w400.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/francis-acido/headshot-4x5-w400.jpg"
+        }
+      ]
     },
     {
       "id": "coach-headshot-francis-acido-1x1",
@@ -1487,9 +2077,42 @@
           "notes": "coach-photos/francis-acido/headshot-1x1.webp"
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/francis-acido/headshot-1x1.webp",
       "working_path": "docs/assets/headshots/francis-acido/headshot-1x1.webp",
-      "coach_slug": "francis-acido"
+      "coach_slug": "francis-acido",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/francis-acido/headshot-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/headshots/francis-acido/headshot-1x1.webp",
+          "storage_key": "coach-photos/francis-acido/headshot-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/francis-acido/headshot-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/francis-acido/headshot-1x1.jpg",
+          "storage_key": "coach-photos/francis-acido/headshot-1x1.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/francis-acido/headshot-1x1.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/francis-acido/headshot-1x1-w400.webp",
+          "storage_key": "coach-photos/francis-acido/headshot-1x1-w400.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/francis-acido/headshot-1x1-w400.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/francis-acido/headshot-1x1-w400.jpg",
+          "storage_key": "coach-photos/francis-acido/headshot-1x1-w400.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/francis-acido/headshot-1x1-w400.jpg"
+        },
+        {
+          "working_path": "docs/assets/headshots/francis-acido/headshot-1x1-w200.webp",
+          "storage_key": "coach-photos/francis-acido/headshot-1x1-w200.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/francis-acido/headshot-1x1-w200.webp"
+        },
+        {
+          "working_path": "docs/assets/headshots/francis-acido/headshot-1x1-w200.jpg",
+          "storage_key": "coach-photos/francis-acido/headshot-1x1-w200.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/francis-acido/headshot-1x1-w200.jpg"
+        }
+      ]
     },
     {
       "id": "coach-placeholder",
@@ -1515,9 +2138,22 @@
           "notes": "PNG and WebP at 800x1000 from the designed SVG. No crop from a generated portrait."
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/placeholder/headshot-4x5.webp",
       "working_path": "docs/assets/placeholders/coach-placeholder-4x5.svg",
-      "coach_slug": "placeholder"
+      "coach_slug": "placeholder",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/placeholder/headshot-4x5.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/placeholders/coach-placeholder-4x5.webp",
+          "storage_key": "coach-photos/placeholder/headshot-4x5.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/placeholder/headshot-4x5.webp"
+        },
+        {
+          "working_path": "docs/assets/placeholders/coach-placeholder-4x5.png",
+          "storage_key": "coach-photos/placeholder/headshot-4x5.png",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/placeholder/headshot-4x5.png"
+        }
+      ]
     },
     {
       "id": "coach-placeholder-1x1",
@@ -1543,9 +2179,22 @@
           "notes": "Independent 1:1 composition of the same emblem language as coach-placeholder (not a face crop)."
         }
       ],
-      "storage_key": null,
+      "storage_key": "coach-photos/placeholder/headshot-1x1.webp",
       "working_path": "docs/assets/placeholders/coach-placeholder-1x1.svg",
-      "coach_slug": "placeholder"
+      "coach_slug": "placeholder",
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/placeholder/headshot-1x1.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/placeholders/coach-placeholder-1x1.webp",
+          "storage_key": "coach-photos/placeholder/headshot-1x1.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/placeholder/headshot-1x1.webp"
+        },
+        {
+          "working_path": "docs/assets/placeholders/coach-placeholder-1x1.png",
+          "storage_key": "coach-photos/placeholder/headshot-1x1.png",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/coach-photos/placeholder/headshot-1x1.png"
+        }
+      ]
     }
   ]
 }

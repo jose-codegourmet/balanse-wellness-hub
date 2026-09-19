@@ -29,4 +29,4 @@ Per-coach files:
 | `headshot-1x1.{webp,jpg}` | **Storage avatar** (`coach-photos/{slug}/headshot-1x1.webp`). |
 | `headshot-1x1-w400` / `-w200` | Avatar srcset. |
 
-Recipe: `docs/assets/recipes/headshot-v1.md`. Delivery set is **ready for ASSET-030** (buckets still blocked on INF-004 / BE-021).
+Recipe: `docs/assets/recipes/headshot-v1.md`. Delivery set is uploaded by `ASSET-030` (`scripts/upload-approved-assets.mjs`).

@@ -50,4 +50,4 @@ Marketing working files (until ASSET-030): `docs/assets/marketing/{page}/{slot}-
 
 ## Out of bucket (this phase)
 
-Working files stay in git as docs (`docs/coaches/…` web derivatives only). **ARW originals are never committed.** `storage_key` in the manifest is filled only by `ASSET-030`.
+Working files stay in git as docs (`docs/coaches/…` web derivatives only). **ARW originals are never committed.** `ASSET-030` writes `storage_key` as `{bucket}/{object_key}` and `public_url` as `{SUPABASE_URL}/storage/v1/object/public/{storage_key}`. Intended keys may be recorded before the service-role upsert.

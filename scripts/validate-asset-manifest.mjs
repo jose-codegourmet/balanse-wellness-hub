@@ -46,6 +46,19 @@ for (const a of manifest.assets) {
   if (needsSource && a.generation_policy === "generate" && a.source_free) {
     errors.push(`${loc}: generate identity-bound cannot be source_free`);
   }
+  if (a.storage_key != null) {
+    const ok =
+      /^coach-photos\/[a-z0-9-]+\/headshot-[0-9x]+(?:-w\d+)?\.(webp|jpg|jpeg|png)$/.test(a.storage_key) ||
+      /^marketing-assets\/(landing|about|contact|faqs|coaches)\/[a-z0-9-]+-[0-9x]+\.(webp|jpg|jpeg|png|gif)$/.test(
+        a.storage_key,
+      );
+    if (!ok) {
+      errors.push(`${loc}: storage_key does not match ASSET-002`);
+    }
+  }
+  if (a.public_url != null && a.storage_key && !String(a.public_url).endsWith(`/${a.storage_key}`)) {
+    errors.push(`${loc}: public_url must end with /${a.storage_key}`);
+  }
 }
 
 if (errors.length) {

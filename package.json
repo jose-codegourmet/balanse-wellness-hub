@@ -18,6 +18,8 @@
     "db:generate": "turbo run db:generate",
     "db:smoke": "pnpm --filter @balanse/db db:smoke",
     "secrets:scan": "node scripts/secrets-scan.mjs",
+    "assets:upload": "node scripts/upload-approved-assets.mjs",
+    "assets:validate": "node scripts/validate-asset-manifest.mjs",
     "prepare": "husky",
     "test": "turbo run test --filter=@balanse/domain --filter=@balanse/mock --filter=@balanse/db",
     "guard:brand": "node scripts/guard-brand.mjs"
@@ -34,5 +36,8 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.0.8",
     "turbo": "^2.10.6"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.116.0"
   }
 }

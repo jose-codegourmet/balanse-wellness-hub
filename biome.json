@@ -5,6 +5,7 @@
       "apps/**/*.{js,ts,jsx,tsx,json}",
       "packages/**/*.{js,ts,jsx,tsx,json}",
       "scripts/secrets-scan.mjs",
+      "scripts/upload-approved-assets.mjs",
       "*.{js,ts,json}",
       "!!scripts/validate-asset-manifest.mjs",
       "!!**/node_modules",
