@@ -294,3 +294,9 @@ export function filterPublicSessions(
 export function teachesBio(specialties: readonly string[]): string {
   return `Teaches ${specialties.join(" / ")}.`;
 }
+
+/** Markup used by FE-PUB-005 privacy tests — never include rate or cost. */
+export function renderCoachCardPlainText(coach: PublicCoach): string {
+  const card = publicCoachCardFields(coach);
+  return [card.name, card.specialties.join(" · "), card.shortBio, "View Classes"].join(" | ");
+}

@@ -1,4 +1,9 @@
-import { BOOKING_STATUSES, CONFIRMED_COACH_ROSTER, publicCoachCardFields } from "@balanse/domain";
+import {
+  BOOKING_STATUSES,
+  CONFIRMED_COACH_ROSTER,
+  publicCoachCardFields,
+  renderCoachCardPlainText,
+} from "@balanse/domain";
 import { describe, expect, it } from "vitest";
 import { adminCoaches, bookings, publicCoaches, toPublicCoach } from "./fixtures";
 
@@ -42,6 +47,7 @@ describe("public/customer fixture privacy", () => {
     for (const coach of publicCoaches) {
       const serialized = JSON.stringify(publicCoachCardFields(coach));
       expect(serialized).not.toMatch(/rate|cost|defaultRate/i);
+      expect(renderCoachCardPlainText(coach)).not.toMatch(/rate|cost|php|₱/i);
     }
   });
 

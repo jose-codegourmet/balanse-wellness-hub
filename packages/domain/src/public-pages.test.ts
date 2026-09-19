@@ -17,6 +17,7 @@ import {
   LANDING_SECTION_ORDER,
   landingScheduleHref,
   publicCoachCardFields,
+  renderCoachCardPlainText,
   validateContactForm,
 } from "./public-pages";
 import type { PublicCoach, PublicSession } from "./types";
@@ -173,6 +174,7 @@ describe("FE-PUB public page contracts", () => {
     } as PublicCoach & { defaultRatePhp: number; rateType: string });
     expect(Object.keys(card).sort()).toEqual(["name", "photoKey", "shortBio", "specialties"]);
     expect(JSON.stringify(card)).not.toMatch(/rate|cost|php/i);
+    expect(renderCoachCardPlainText(sampleCoach)).not.toMatch(/rate|cost|php/i);
     expect(coachViewClassesHref("coach-wolf")).toBe("/?coachId=coach-wolf#schedule");
   });
 

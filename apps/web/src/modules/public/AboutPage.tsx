@@ -57,7 +57,7 @@ export function AboutPage({ coaches }: { coaches: PublicCoach[] }) {
       <section data-about-block="meet-the-team" className="mt-14">
         <h2 className="font-display text-2xl">Meet the Team</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Photos come from each coach record. Individual bios are not published.
+          Photos come from each coach record. Longer bios are not published.
         </p>
         <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {coaches.map((coach) => (

@@ -5,9 +5,8 @@ import {
   LANDING_HERO_COPY,
   landingScheduleHref,
 } from "@balanse/domain";
-import { CalendarSkeleton, MarketingImage } from "@balanse/ui";
+import { MarketingImage } from "@balanse/ui";
 import Link from "next/link";
-import { Suspense } from "react";
 import { ScheduleCalendarSection } from "@/modules/schedule/ScheduleCalendarSection";
 import { CoachPreviewCard } from "./CoachPreviewCard";
 
@@ -16,11 +15,15 @@ export function LandingPage({
   sessions,
   classes,
   loadError,
+  coachId = "all",
+  classId = "all",
 }: {
   coaches: PublicCoach[];
   sessions: PublicSession[];
   classes: PublicClass[];
   loadError: boolean;
+  coachId?: string;
+  classId?: string;
 }) {
   return (
     <div className="relative">
@@ -52,14 +55,15 @@ export function LandingPage({
             stays with you.
           </p>
           <div className="mt-6">
-            <Suspense fallback={<CalendarSkeleton />}>
-              <ScheduleCalendarSection
-                audience="guest"
-                initialSessions={sessions}
-                initialClasses={classes}
-                initialLoadError={loadError}
-              />
-            </Suspense>
+            <ScheduleCalendarSection
+              audience="guest"
+              initialSessions={sessions}
+              initialClasses={classes}
+              initialCoaches={coaches}
+              initialLoadError={loadError}
+              initialCoachFilter={coachId}
+              initialClassFilter={classId}
+            />
           </div>
         </section>
 

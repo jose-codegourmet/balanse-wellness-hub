@@ -8,7 +8,12 @@ export const metadata: Metadata = {
   description: "Find your balance. Browse Balansé classes on the Cebu calendar and reserve a spot.",
 };
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ coachId?: string; classId?: string }>;
+}) {
+  const params = await searchParams;
   const adapter = getMockAdapter();
   const [schedule, coaches] = await Promise.all([loadPublicSchedule(), adapter.getPublicCoaches()]);
   return (
@@ -17,6 +22,8 @@ export default async function Page() {
       sessions={schedule.sessions}
       classes={schedule.classes}
       loadError={schedule.loadError}
+      coachId={params.coachId ?? "all"}
+      classId={params.classId ?? "all"}
     />
   );
 }
