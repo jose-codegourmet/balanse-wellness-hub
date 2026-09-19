@@ -83,9 +83,15 @@ export type MockDataAdapter = {
 export type MockRuntimeOptions = {
   latencyMs: number;
   failNext: boolean;
+  /** Sticky calendar load failure for FE-SHR-003 / FE-SHR-005. */
+  failPublicSessions: boolean;
+  /** When set, that session reports as full (session-became-full demo). */
+  sessionBecameFullId: string | null;
 };
 
 export const defaultMockRuntime: MockRuntimeOptions = {
   latencyMs: 0,
   failNext: false,
+  failPublicSessions: false,
+  sessionBecameFullId: null,
 };

@@ -1,5 +1,7 @@
+import { publicPageSlotIds } from "@balanse/domain";
+import { MarketingImage } from "@balanse/ui";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { ScheduleCalendarSection } from "@/modules/schedule/ScheduleCalendarSection";
 
 export const metadata: Metadata = {
   title: "Schedule",
@@ -7,32 +9,34 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
+  const slots = publicPageSlotIds("landing");
   return (
     <section className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="font-display text-3xl">This week at Balansé</h1>
-      <p className="mt-3 max-w-2xl text-muted-foreground">
-        Public calendar mock. Schedule and Classes in the header jump here (OQ-NAV).
+      <p className="max-w-2xl text-lg text-muted-foreground">
+        Find your balance. Choose a class and reserve your spot.
       </p>
-      <div id="schedule" className="mt-8 scroll-mt-24 rounded-xl border border-border bg-card p-6">
-        <h2 className="font-display text-2xl">Schedule</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Landing calendar placeholder. FE-PUB-001 owns the real calendar UI.
-        </p>
+      <div className="mt-6 max-w-xl">
+        <MarketingImage assetId={slots[0] ?? "landing-a"} />
       </div>
-      <div id="classes" className="mt-6 scroll-mt-24 rounded-xl border border-border bg-card p-6">
+      <div id="schedule" className="mt-8 scroll-mt-24">
+        <h1 className="font-display text-3xl">This week at Balansé</h1>
+        <div className="mt-6">
+          <ScheduleCalendarSection audience="guest" />
+        </div>
+      </div>
+      <div id="classes" className="mt-10 scroll-mt-24">
         <h2 className="font-display text-2xl">Classes</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Class filter placeholder. No dedicated Classes page is created.
+          Use the calendar filters. There is no separate Classes page (OQ-NAV).
         </p>
+        <div className="mt-4 max-w-xl">
+          <MarketingImage assetId={slots[1] ?? "landing-b"} />
+        </div>
       </div>
-      <p className="mt-8">
-        <Link
-          className="text-primary underline"
-          href="/portal/bookings/new?sessionId=session-wed-open"
-        >
-          Reserve a sample session
-        </Link>
-      </p>
+      <div className="mt-8 grid gap-4 md:grid-cols-2">
+        <MarketingImage assetId={slots[2] ?? "landing-c"} />
+        <MarketingImage assetId={slots[3] ?? "landing-d"} />
+      </div>
     </section>
   );
 }
