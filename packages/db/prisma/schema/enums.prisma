@@ -1,0 +1,107 @@
+/// BE-001 — shared vocabulary. Values match docs/screen-specs/shared/02-status-language.md
+/// unless documented as internal-only in docs/backend/enum-vocabulary.md.
+/// COMPLETED is defined but has no transition (OQ-10).
+
+enum BookingStatus {
+  WAITLISTED
+  HELD_AWAITING_PAYMENT
+  PAYMENT_SUBMITTED
+  CONFIRMED
+  CANCELLATION_REQUESTED
+  RESCHEDULE_REQUESTED
+  CANCELLED
+  REJECTED
+  EXPIRED
+  CHECKED_IN
+  COMPLETED
+  NO_SHOW
+
+  @@map("booking_status")
+}
+
+enum PaymentMethod {
+  GCASH
+  PAY_AT_COUNTER
+
+  @@map("payment_method")
+}
+
+enum PaymentStatus {
+  NONE
+  PROOF_SUBMITTED
+  CASH_RECEIVED
+  VERIFIED
+  REJECTED
+
+  @@map("payment_status")
+}
+
+enum RefundStatus {
+  NOT_APPLICABLE
+  REFUND_PENDING
+  REFUNDED
+
+  @@map("refund_status")
+}
+
+enum CoachRateType {
+  PER_SESSION
+  PER_HOUR
+
+  @@map("coach_rate_type")
+}
+
+enum SessionStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+
+  @@map("session_status")
+}
+
+enum StaffRole {
+  ADMIN
+
+  @@map("staff_role")
+}
+
+enum StaffStatus {
+  ACTIVE
+  DISABLED
+
+  @@map("staff_status")
+}
+
+enum WaitlistStatus {
+  WAITING
+  PROMOTED
+  WITHDRAWN
+  EXPIRED
+
+  @@map("waitlist_status")
+}
+
+enum RequestResolution {
+  OPEN
+  COMPLETED
+  REJECTED
+
+  @@map("request_resolution")
+}
+
+enum AuditActorType {
+  STAFF
+  SYSTEM
+  CUSTOMER
+
+  @@map("audit_actor_type")
+}
+
+enum PolicyDocumentKind {
+  WAIVER
+  GYM_POLICY
+  PARTICIPATION_RULES
+  CANCELLATION_REFUND
+
+  @@map("policy_document_kind")
+}

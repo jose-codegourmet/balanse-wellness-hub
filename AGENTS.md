@@ -10,7 +10,7 @@ Read this file first. Product truth lives in `docs/MVP-ROADMAP.md` and `docs/scr
 - `@balanse/mock`: `MockDataAdapter` + in-memory fixtures + mock session
 - `@balanse/ui`: shared primitives and wrappers
 - `@balanse/config`: brand tokens and breakpoints
-- `@balanse/db`: Prisma schema (`AppMeta` baseline; business models in BE-001+)
+- `@balanse/db`: Prisma schema (`AppMeta` + BE-001–BE-024 business models, RLS, jobs)
 
 ## Infrastructure
 

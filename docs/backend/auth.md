@@ -2,6 +2,8 @@
 
 **INF-005.** Providers and URLs are configured on project `xydundrayuusqizssgby`. FE screens stay mock-only this phase (`WIRE-002` later). Role rows are `BE-003`.
 
+Profile rows (`BE-002`) are created by trigger `on_auth_user_created` → `app_private.handle_new_user` (full name / email / contact number only; OQ-3).
+
 ## Providers
 
 | Provider | Customer (`apps/web` :9000) | Admin (`apps/admin` :9001) |

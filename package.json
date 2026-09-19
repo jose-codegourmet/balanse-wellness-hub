@@ -19,7 +19,7 @@
     "db:smoke": "pnpm --filter @balanse/db db:smoke",
     "secrets:scan": "node scripts/secrets-scan.mjs",
     "prepare": "husky",
-    "test": "turbo run test --filter=@balanse/domain --filter=@balanse/mock",
+    "test": "turbo run test --filter=@balanse/domain --filter=@balanse/mock --filter=@balanse/db",
     "guard:brand": "node scripts/guard-brand.mjs"
   },
   "lint-staged": {

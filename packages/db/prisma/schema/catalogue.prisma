@@ -1,0 +1,85 @@
+/// BE-004 — public profile + internal rate. One photo key (not a collection).
+model Coach {
+  id            String        @id @default(cuid())
+  name          String
+  specialties   String[]
+  shortBio      String        @default("")
+  photoKey      String?
+  active        Boolean       @default(true)
+  defaultRate   Decimal       @db.Decimal(12, 2)
+  rateType      CoachRateType
+  /// Seed/demo rates are placeholders (OQ-PRICE). Not authoritative.
+  isPlaceholder Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  classLinks ClassCoach[]
+  sessions   GymSession[]
+
+  @@index([active])
+  @@map("coaches")
+}
+
+/// BE-005 — class catalogue. No coach compensation column.
+model GymClass {
+  id                     String   @id @default(cuid())
+  name                   String   @unique
+  shortDescription       String   @default("")
+  defaultDurationMinutes Int?
+  defaultCustomerPrice   Decimal? @db.Decimal(12, 2)
+  active                 Boolean  @default(true)
+  isPlaceholder          Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  coachLinks ClassCoach[]
+  sessions   GymSession[]
+
+  @@index([active])
+  @@map("classes")
+}
+
+model ClassCoach {
+  id        String   @id @default(cuid())
+  classId   String
+  coachId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  gymClass GymClass @relation(fields: [classId], references: [id])
+  coach    Coach    @relation(fields: [coachId], references: [id])
+
+  @@unique([classId, coachId])
+  @@index([coachId])
+  @@map("class_coaches")
+}
+
+/// BE-006 — scheduled session with financial snapshot (never back-written from coach rate).
+model GymSession {
+  id             String        @id @default(cuid())
+  classId        String
+  coachId        String?
+  startsAt       DateTime      @db.Timestamptz
+  endsAt         DateTime      @db.Timestamptz
+  capacity       Int
+  status         SessionStatus @default(DRAFT)
+  customerPrice  Decimal       @db.Decimal(12, 2)
+  coachRate      Decimal       @db.Decimal(12, 2)
+  coachRateType  CoachRateType
+  isPlaceholder  Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  gymClass           GymClass             @relation(fields: [classId], references: [id])
+  coach              Coach?               @relation(fields: [coachId], references: [id])
+  bookings           Booking[]
+  waitlistEntries    WaitlistEntry[]
+  rescheduleTargets  RescheduleRequest[]  @relation("RescheduleTargetSession")
+  rescheduleOrigins  RescheduleRequest[]  @relation("RescheduleFromSession")
+
+  @@index([startsAt])
+  @@index([status, startsAt])
+  @@index([classId])
+  @@index([coachId])
+  @@map("sessions")
+}

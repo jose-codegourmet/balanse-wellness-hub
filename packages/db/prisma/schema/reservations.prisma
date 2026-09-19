@@ -1,0 +1,176 @@
+/// BE-008 — core reservation. Rows are never deleted (R55).
+/// Attendance columns: BE-015.
+model Booking {
+  id              String         @id @default(cuid())
+  profileId       String         @db.Uuid
+  sessionId       String
+  status          BookingStatus
+  reservedAt      DateTime       @default(now()) @db.Timestamptz
+  holdExpiresAt   DateTime?      @db.Timestamptz
+  bookingReference String        @unique
+  paymentMethod   PaymentMethod?
+  checkedInAt     DateTime?      @db.Timestamptz
+  checkedInById   String?
+  noShowMarkedAt  DateTime?      @db.Timestamptz
+  noShowMarkedById String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  profile              Profile                   @relation(fields: [profileId], references: [id])
+  session              GymSession                @relation(fields: [sessionId], references: [id])
+  checkedInBy          StaffMember?              @relation("BookingCheckedInBy", fields: [checkedInById], references: [id])
+  noShowMarkedBy       StaffMember?              @relation("BookingNoShowBy", fields: [noShowMarkedById], references: [id])
+  policyAcceptances    BookingPolicyAcceptance[]
+  payments             Payment[]
+  refunds              Refund[]
+  waitlistEntries      WaitlistEntry[]
+  cancellationRequests CancellationRequest[]
+  rescheduleRequests   RescheduleRequest[]
+
+  @@index([sessionId, status])
+  @@index([profileId, status])
+  @@index([holdExpiresAt])
+  @@map("bookings")
+}
+
+/// BE-009 — append-only acceptances.
+model BookingPolicyAcceptance {
+  id              String   @id @default(cuid())
+  bookingId       String
+  profileId       String   @db.Uuid
+  policyVersionId String
+  acceptedAt      DateTime @default(now()) @db.Timestamptz
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  booking       Booking               @relation(fields: [bookingId], references: [id])
+  profile       Profile               @relation(fields: [profileId], references: [id])
+  policyVersion PolicyDocumentVersion @relation(fields: [policyVersionId], references: [id])
+
+  @@unique([bookingId, policyVersionId])
+  @@index([profileId, acceptedAt])
+  @@map("booking_policy_acceptances")
+}
+
+/// BE-010 — payment state is distinct from booking status.
+/// OQ-8: referenceNumber / payerName optional and unenforced.
+model Payment {
+  id              String        @id @default(cuid())
+  bookingId       String
+  method          PaymentMethod
+  status          PaymentStatus @default(NONE)
+  amount          Decimal       @db.Decimal(12, 2)
+  proofObjectKey  String?
+  submittedAt     DateTime?     @db.Timestamptz
+  reviewedById    String?
+  reviewedAt      DateTime?     @db.Timestamptz
+  adminNote       String?
+  referenceNumber String?
+  payerName       String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  booking    Booking      @relation(fields: [bookingId], references: [id])
+  reviewedBy StaffMember? @relation("PaymentReviewedBy", fields: [reviewedById], references: [id])
+  refunds    Refund[]
+
+  @@index([status, createdAt])
+  @@index([bookingId])
+  @@map("payments")
+}
+
+/// BE-011 — manual refund state only. No wallet/credit/voucher.
+model Refund {
+  id                 String       @id @default(cuid())
+  bookingId          String
+  paymentId          String
+  status             RefundStatus @default(NOT_APPLICABLE)
+  amount             Decimal      @db.Decimal(12, 2)
+  markedPendingById  String?
+  markedPendingAt    DateTime?    @db.Timestamptz
+  markedRefundedById String?
+  markedRefundedAt   DateTime?    @db.Timestamptz
+  note               String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  booking          Booking      @relation(fields: [bookingId], references: [id])
+  payment          Payment      @relation(fields: [paymentId], references: [id])
+  markedPendingBy  StaffMember? @relation("RefundMarkedPendingBy", fields: [markedPendingById], references: [id])
+  markedRefundedBy StaffMember? @relation("RefundMarkedRefundedBy", fields: [markedRefundedById], references: [id])
+
+  @@index([status, createdAt])
+  @@index([bookingId])
+  @@map("refunds")
+}
+
+/// BE-012 — FIFO waitlist. Sequence + joinedAt; does not consume capacity.
+model WaitlistEntry {
+  id        String         @id @default(cuid())
+  sessionId String
+  profileId String         @db.Uuid
+  bookingId String?
+  joinedAt  DateTime       @default(now()) @db.Timestamptz
+  sequence  BigInt
+  status    WaitlistStatus @default(WAITING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  session GymSession @relation(fields: [sessionId], references: [id])
+  profile Profile    @relation(fields: [profileId], references: [id])
+  booking Booking?   @relation(fields: [bookingId], references: [id])
+
+  @@index([sessionId, status, sequence])
+  @@index([profileId])
+  @@map("waitlist_entries")
+}
+
+/// BE-013 — cancellation request. Slot stays locked until admin completes.
+model CancellationRequest {
+  id             String             @id @default(cuid())
+  bookingId      String
+  requesterId    String             @db.Uuid
+  reason         String?
+  requestedAt    DateTime           @default(now()) @db.Timestamptz
+  resolution     RequestResolution  @default(OPEN)
+  resolverId     String?
+  resolvedAt     DateTime?          @db.Timestamptz
+  resolutionNote String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  booking   Booking      @relation(fields: [bookingId], references: [id])
+  requester Profile      @relation(fields: [requesterId], references: [id])
+  resolver  StaffMember? @relation("CancellationResolvedBy", fields: [resolverId], references: [id])
+
+  @@index([resolution, requestedAt])
+  @@index([bookingId])
+  @@map("cancellation_requests")
+}
+
+/// BE-014 — reschedule request. No OQ-2 eligibility rules. History keeps fromSessionId.
+model RescheduleRequest {
+  id               String            @id @default(cuid())
+  bookingId        String
+  requesterId      String            @db.Uuid
+  fromSessionId    String
+  targetSessionId  String?
+  preferenceNote   String?
+  requestedAt      DateTime          @default(now()) @db.Timestamptz
+  resolution       RequestResolution @default(OPEN)
+  resolverId       String?
+  resolvedAt       DateTime?         @db.Timestamptz
+  resolutionNote   String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  booking       Booking      @relation(fields: [bookingId], references: [id])
+  requester     Profile      @relation(fields: [requesterId], references: [id])
+  fromSession   GymSession   @relation("RescheduleFromSession", fields: [fromSessionId], references: [id])
+  targetSession GymSession?  @relation("RescheduleTargetSession", fields: [targetSessionId], references: [id])
+  resolver      StaffMember? @relation("RescheduleResolvedBy", fields: [resolverId], references: [id])
+
+  @@index([resolution, requestedAt])
+  @@index([bookingId])
+  @@map("reschedule_requests")
+}

@@ -14,7 +14,8 @@
       "!!**/.storybook",
       "!!**/storybook-static",
       "!!**/src/components/jabkit",
-      "!!**/.jabkit"
+      "!!**/.jabkit",
+      "!!packages/db/contracts/openapi.json"
     ]
   },
   "formatter": {

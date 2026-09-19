@@ -5,7 +5,9 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./client": "./src/client.ts"
+    "./client": "./src/client.ts",
+    "./enums": "./src/enums.ts",
+    "./developer-config": "./src/developer-config.ts"
   },
   "scripts": {
     "postinstall": "prisma generate",
@@ -19,9 +21,13 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:smoke": "tsx scripts/smoke-connection.ts",
     "db:ensure-buckets": "tsx scripts/ensure-storage-buckets.ts",
-    "typecheck": "tsc --noEmit"
+    "db:openapi": "tsx scripts/generate-openapi.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config vitest.config.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
+    "@balanse/domain": "workspace:*",
     "@prisma/client": "^6.3.0",
     "pg": "^8.16.3"
   },
@@ -31,6 +37,7 @@
     "dotenv": "^17.4.2",
     "prisma": "^6.3.0",
     "tsx": "^4.19.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }
