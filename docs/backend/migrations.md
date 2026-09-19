@@ -8,7 +8,13 @@
 packages/db/prisma/schema/
   schema.prisma          # generator + datasource
   app-meta.prisma        # INF baseline (`app_meta`)
-  <domain>.prisma        # BE-001+: identity, catalogue, bookings, payments, …
+  enums.prisma           # BE-001
+  config.prisma          # BE-019
+  identities.prisma      # BE-002 / BE-003
+  catalogue.prisma       # BE-004 / BE-005 / BE-006
+  policies.prisma        # BE-007
+  reservations.prisma    # BE-008…BE-015
+  audit.prisma           # BE-016
 packages/db/prisma/migrations/
   migration_lock.toml
   YYYYMMDDHHMMSS_<ticket>_<verb>_<object>/

@@ -1,0 +1,13 @@
+/// BE-019 — developer-controlled business configuration.
+/// Not an admin setting. Hold duration and booking cutoff live here only.
+/// Financial-privacy / admin UI must never expose these keys.
+model DeveloperConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+  @@map("developer_config")
+}

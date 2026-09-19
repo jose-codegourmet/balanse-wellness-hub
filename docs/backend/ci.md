@@ -7,7 +7,7 @@
 1. **secrets-scan** — `pnpm secrets:scan`
 2. **commitlint** — Conventional Commits on the PR title / commit range
 3. **verify** — `pnpm install --frozen-lockfile`, `pnpm db:generate`, `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm build-storybook`
-4. **be-integration** — reserved. Runs `pnpm --filter @balanse/db test:integration` against a disposable Postgres **only when** that script exists (after `BE-001`). Until then the job reports skipped.
+4. **be-integration** — stubs `auth`/`storage`, `prisma migrate deploy`, then `pnpm --filter @balanse/db test:integration` on disposable Postgres 17.
 
 A type error or lint error fails **verify**. Both `web` and `admin` build from a clean cache (Actions cache on the pnpm store + Turbo).
 

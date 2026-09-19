@@ -92,12 +92,37 @@ jobs:
 
   be-integration:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
+      DIRECT_URL: postgresql://postgres:postgres@127.0.0.1:5432/postgres
+      BALANSE_RUN_DB_INTEGRATION: "1"
     steps:
       - uses: actions/checkout@v4
-      - name: Placeholder until BE-001
-        run: |
-          if grep -q '"test:integration"' packages/db/package.json; then
-            echo "Wire a disposable Postgres job when BE-001 lands."
-            exit 1
-          fi
-          echo "No @balanse/db test:integration script yet — skipping (INF-007)."
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.0.8
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Stub auth/storage catalogs
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client && psql "$DIRECT_URL" -v ON_ERROR_STOP=1 -f packages/db/scripts/prepare-plain-postgres.sql
+      - name: Generate Prisma client
+        run: pnpm db:generate
+      - name: Apply migrations
+        run: pnpm --filter @balanse/db exec prisma migrate deploy
+      - name: Integration tests
+        run: pnpm --filter @balanse/db test:integration

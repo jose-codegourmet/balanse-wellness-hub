@@ -1,0 +1,2982 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Balanse Wellness Hub API (BE-024 contract pack)",
+    "version": "0.1.0",
+    "description": "Machine-readable contract for the wiring phase. HTTP routes are not implemented in this PR; names match BE-001 enums exactly. Hold duration and cutoff are absent from admin settings."
+  },
+  "paths": {
+    "/api/public/sessions": {
+      "get": {
+        "tags": [
+          "BE-030"
+        ],
+        "operationId": "BE-030_get__api_public_sessions",
+        "summary": "BE-030 GET /api/public/sessions",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/public/sessions/{id}": {
+      "get": {
+        "tags": [
+          "BE-030"
+        ],
+        "operationId": "BE-030_get__api_public_sessions_id_",
+        "summary": "BE-030 GET /api/public/sessions/{id}",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/public/coaches": {
+      "get": {
+        "tags": [
+          "BE-030"
+        ],
+        "operationId": "BE-030_get__api_public_coaches",
+        "summary": "BE-030 GET /api/public/coaches",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/public/classes": {
+      "get": {
+        "tags": [
+          "BE-030"
+        ],
+        "operationId": "BE-030_get__api_public_classes",
+        "summary": "BE-030 GET /api/public/classes",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/public/content": {
+      "get": {
+        "tags": [
+          "BE-030"
+        ],
+        "operationId": "BE-030_get__api_public_content",
+        "summary": "BE-030 GET /api/public/content",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/me": {
+      "get": {
+        "tags": [
+          "BE-031"
+        ],
+        "operationId": "BE-031_get__api_me",
+        "summary": "BE-031 GET /api/me",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "BE-031"
+        ],
+        "operationId": "BE-031_patch__api_me",
+        "summary": "BE-031 PATCH /api/me",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/me/policy-acceptances": {
+      "get": {
+        "tags": [
+          "BE-031"
+        ],
+        "operationId": "BE-031_get__api_me_policy_acceptances",
+        "summary": "BE-031 GET /api/me/policy-acceptances",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/bookings": {
+      "post": {
+        "tags": [
+          "BE-032"
+        ],
+        "operationId": "BE-032_post__api_bookings",
+        "summary": "BE-032 POST /api/bookings",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "BE-032"
+        ],
+        "operationId": "BE-032_get__api_bookings",
+        "summary": "BE-032 GET /api/bookings",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/bookings/{id}/waitlist": {
+      "post": {
+        "tags": [
+          "BE-032"
+        ],
+        "operationId": "BE-032_post__api_bookings_id_waitlist",
+        "summary": "BE-032 POST /api/bookings/{id}/waitlist",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/bookings/{id}": {
+      "get": {
+        "tags": [
+          "BE-032"
+        ],
+        "operationId": "BE-032_get__api_bookings_id_",
+        "summary": "BE-032 GET /api/bookings/{id}",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/bookings/{id}/payment-method": {
+      "post": {
+        "tags": [
+          "BE-033"
+        ],
+        "operationId": "BE-033_post__api_bookings_id_payment_method",
+        "summary": "BE-033 POST /api/bookings/{id}/payment-method",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/bookings/{id}/payment-proof": {
+      "post": {
+        "tags": [
+          "BE-033"
+        ],
+        "operationId": "BE-033_post__api_bookings_id_payment_proof",
+        "summary": "BE-033 POST /api/bookings/{id}/payment-proof",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/payment-instructions": {
+      "get": {
+        "tags": [
+          "BE-033"
+        ],
+        "operationId": "BE-033_get__api_payment_instructions",
+        "summary": "BE-033 GET /api/payment-instructions",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/bookings/{id}/cancellation-request": {
+      "post": {
+        "tags": [
+          "BE-034"
+        ],
+        "operationId": "BE-034_post__api_bookings_id_cancellation_request",
+        "summary": "BE-034 POST /api/bookings/{id}/cancellation-request",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/bookings/{id}/reschedule-request": {
+      "post": {
+        "tags": [
+          "BE-035"
+        ],
+        "operationId": "BE-035_post__api_bookings_id_reschedule_request",
+        "summary": "BE-035 POST /api/bookings/{id}/reschedule-request",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/bookings": {
+      "get": {
+        "tags": [
+          "BE-036"
+        ],
+        "operationId": "BE-036_get__api_admin_bookings",
+        "summary": "BE-036 GET /api/admin/bookings",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/bookings/{id}/confirm": {
+      "post": {
+        "tags": [
+          "BE-036"
+        ],
+        "operationId": "BE-036_post__api_admin_bookings_id_confirm",
+        "summary": "BE-036 POST /api/admin/bookings/{id}/confirm",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/bookings/{id}/reject": {
+      "post": {
+        "tags": [
+          "BE-036"
+        ],
+        "operationId": "BE-036_post__api_admin_bookings_id_reject",
+        "summary": "BE-036 POST /api/admin/bookings/{id}/reject",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/payments": {
+      "get": {
+        "tags": [
+          "BE-037"
+        ],
+        "operationId": "BE-037_get__api_admin_payments",
+        "summary": "BE-037 GET /api/admin/payments",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/payment-proofs/{id}/signed-url": {
+      "get": {
+        "tags": [
+          "BE-037"
+        ],
+        "operationId": "BE-037_get__api_admin_payment_proofs_id_signed_url",
+        "summary": "BE-037 GET /api/admin/payment-proofs/{id}/signed-url",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/payments/{id}/record-cash": {
+      "post": {
+        "tags": [
+          "BE-037"
+        ],
+        "operationId": "BE-037_post__api_admin_payments_id_record_cash",
+        "summary": "BE-037 POST /api/admin/payments/{id}/record-cash",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/refunds/{id}/mark-pending": {
+      "post": {
+        "tags": [
+          "BE-037"
+        ],
+        "operationId": "BE-037_post__api_admin_refunds_id_mark_pending",
+        "summary": "BE-037 POST /api/admin/refunds/{id}/mark-pending",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/refunds/{id}/mark-refunded": {
+      "post": {
+        "tags": [
+          "BE-037"
+        ],
+        "operationId": "BE-037_post__api_admin_refunds_id_mark_refunded",
+        "summary": "BE-037 POST /api/admin/refunds/{id}/mark-refunded",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/classes": {
+      "get": {
+        "tags": [
+          "BE-038"
+        ],
+        "operationId": "BE-038_get__api_admin_classes",
+        "summary": "BE-038 GET /api/admin/classes",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "BE-038"
+        ],
+        "operationId": "BE-038_post__api_admin_classes",
+        "summary": "BE-038 POST /api/admin/classes",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/classes/{id}": {
+      "patch": {
+        "tags": [
+          "BE-038"
+        ],
+        "operationId": "BE-038_patch__api_admin_classes_id_",
+        "summary": "BE-038 PATCH /api/admin/classes/{id}",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/coaches": {
+      "get": {
+        "tags": [
+          "BE-038"
+        ],
+        "operationId": "BE-038_get__api_admin_coaches",
+        "summary": "BE-038 GET /api/admin/coaches",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "BE-038"
+        ],
+        "operationId": "BE-038_post__api_admin_coaches",
+        "summary": "BE-038 POST /api/admin/coaches",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/coaches/{id}": {
+      "patch": {
+        "tags": [
+          "BE-038"
+        ],
+        "operationId": "BE-038_patch__api_admin_coaches_id_",
+        "summary": "BE-038 PATCH /api/admin/coaches/{id}",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/coaches/{id}/photo": {
+      "post": {
+        "tags": [
+          "BE-038"
+        ],
+        "operationId": "BE-038_post__api_admin_coaches_id_photo",
+        "summary": "BE-038 POST /api/admin/coaches/{id}/photo",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "BE-038"
+        ],
+        "operationId": "BE-038_delete__api_admin_coaches_id_photo",
+        "summary": "BE-038 DELETE /api/admin/coaches/{id}/photo",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/sessions": {
+      "get": {
+        "tags": [
+          "BE-038"
+        ],
+        "operationId": "BE-038_get__api_admin_sessions",
+        "summary": "BE-038 GET /api/admin/sessions",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "BE-038"
+        ],
+        "operationId": "BE-038_post__api_admin_sessions",
+        "summary": "BE-038 POST /api/admin/sessions",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/sessions/{id}": {
+      "patch": {
+        "tags": [
+          "BE-038"
+        ],
+        "operationId": "BE-038_patch__api_admin_sessions_id_",
+        "summary": "BE-038 PATCH /api/admin/sessions/{id}",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/sessions/{id}/cancel": {
+      "post": {
+        "tags": [
+          "BE-038"
+        ],
+        "operationId": "BE-038_post__api_admin_sessions_id_cancel",
+        "summary": "BE-038 POST /api/admin/sessions/{id}/cancel",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/cancellation-requests": {
+      "get": {
+        "tags": [
+          "BE-039"
+        ],
+        "operationId": "BE-039_get__api_admin_cancellation_requests",
+        "summary": "BE-039 GET /api/admin/cancellation-requests",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/cancellation-requests/{id}/complete": {
+      "post": {
+        "tags": [
+          "BE-039"
+        ],
+        "operationId": "BE-039_post__api_admin_cancellation_requests_id_complete",
+        "summary": "BE-039 POST /api/admin/cancellation-requests/{id}/complete",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/cancellation-requests/{id}/reject": {
+      "post": {
+        "tags": [
+          "BE-039"
+        ],
+        "operationId": "BE-039_post__api_admin_cancellation_requests_id_reject",
+        "summary": "BE-039 POST /api/admin/cancellation-requests/{id}/reject",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/reschedule-requests": {
+      "get": {
+        "tags": [
+          "BE-039"
+        ],
+        "operationId": "BE-039_get__api_admin_reschedule_requests",
+        "summary": "BE-039 GET /api/admin/reschedule-requests",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/reschedule-requests/{id}/approve": {
+      "post": {
+        "tags": [
+          "BE-039"
+        ],
+        "operationId": "BE-039_post__api_admin_reschedule_requests_id_approve",
+        "summary": "BE-039 POST /api/admin/reschedule-requests/{id}/approve",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/reschedule-requests/{id}/reject": {
+      "post": {
+        "tags": [
+          "BE-039"
+        ],
+        "operationId": "BE-039_post__api_admin_reschedule_requests_id_reject",
+        "summary": "BE-039 POST /api/admin/reschedule-requests/{id}/reject",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/sessions/{id}/roster": {
+      "get": {
+        "tags": [
+          "BE-040"
+        ],
+        "operationId": "BE-040_get__api_admin_sessions_id_roster",
+        "summary": "BE-040 GET /api/admin/sessions/{id}/roster",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/sessions/{id}/check-in": {
+      "post": {
+        "tags": [
+          "BE-040"
+        ],
+        "operationId": "BE-040_post__api_admin_sessions_id_check_in",
+        "summary": "BE-040 POST /api/admin/sessions/{id}/check-in",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/sessions/{id}/no-show": {
+      "post": {
+        "tags": [
+          "BE-040"
+        ],
+        "operationId": "BE-040_post__api_admin_sessions_id_no_show",
+        "summary": "BE-040 POST /api/admin/sessions/{id}/no-show",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/reports/sales-overview": {
+      "get": {
+        "tags": [
+          "BE-041"
+        ],
+        "operationId": "BE-041_get__api_admin_reports_sales_overview",
+        "summary": "BE-041 GET /api/admin/reports/sales-overview",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/reports/class-performance": {
+      "get": {
+        "tags": [
+          "BE-041"
+        ],
+        "operationId": "BE-041_get__api_admin_reports_class_performance",
+        "summary": "BE-041 GET /api/admin/reports/class-performance",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/reports/coach-costs": {
+      "get": {
+        "tags": [
+          "BE-041"
+        ],
+        "operationId": "BE-041_get__api_admin_reports_coach_costs",
+        "summary": "BE-041 GET /api/admin/reports/coach-costs",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/reports/session-performance": {
+      "get": {
+        "tags": [
+          "BE-041"
+        ],
+        "operationId": "BE-041_get__api_admin_reports_session_performance",
+        "summary": "BE-041 GET /api/admin/reports/session-performance",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/reports/sessions/{id}": {
+      "get": {
+        "tags": [
+          "BE-041"
+        ],
+        "operationId": "BE-041_get__api_admin_reports_sessions_id_",
+        "summary": "BE-041 GET /api/admin/reports/sessions/{id}",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/staff": {
+      "get": {
+        "tags": [
+          "BE-042"
+        ],
+        "operationId": "BE-042_get__api_admin_staff",
+        "summary": "BE-042 GET /api/admin/staff",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "BE-042"
+        ],
+        "operationId": "BE-042_post__api_admin_staff",
+        "summary": "BE-042 POST /api/admin/staff",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/staff/{id}": {
+      "patch": {
+        "tags": [
+          "BE-042"
+        ],
+        "operationId": "BE-042_patch__api_admin_staff_id_",
+        "summary": "BE-042 PATCH /api/admin/staff/{id}",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/staff/{id}/disable": {
+      "post": {
+        "tags": [
+          "BE-042"
+        ],
+        "operationId": "BE-042_post__api_admin_staff_id_disable",
+        "summary": "BE-042 POST /api/admin/staff/{id}/disable",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/customers": {
+      "get": {
+        "tags": [
+          "BE-042"
+        ],
+        "operationId": "BE-042_get__api_admin_customers",
+        "summary": "BE-042 GET /api/admin/customers",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/customers/{id}": {
+      "get": {
+        "tags": [
+          "BE-042"
+        ],
+        "operationId": "BE-042_get__api_admin_customers_id_",
+        "summary": "BE-042 GET /api/admin/customers/{id}",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/settings": {
+      "get": {
+        "tags": [
+          "BE-043"
+        ],
+        "operationId": "BE-043_get__api_admin_settings",
+        "summary": "BE-043 GET /api/admin/settings",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "BE-043"
+        ],
+        "operationId": "BE-043_patch__api_admin_settings",
+        "summary": "BE-043 PATCH /api/admin/settings",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or rule error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BookingStatus": {
+        "type": "string",
+        "enum": [
+          "WAITLISTED",
+          "HELD_AWAITING_PAYMENT",
+          "PAYMENT_SUBMITTED",
+          "CONFIRMED",
+          "CANCELLATION_REQUESTED",
+          "RESCHEDULE_REQUESTED",
+          "CANCELLED",
+          "REJECTED",
+          "EXPIRED",
+          "CHECKED_IN",
+          "COMPLETED",
+          "NO_SHOW"
+        ]
+      },
+      "PaymentMethod": {
+        "type": "string",
+        "enum": [
+          "GCASH",
+          "PAY_AT_COUNTER"
+        ]
+      },
+      "PaymentStatus": {
+        "type": "string",
+        "enum": [
+          "NONE",
+          "PROOF_SUBMITTED",
+          "CASH_RECEIVED",
+          "VERIFIED",
+          "REJECTED"
+        ]
+      },
+      "RefundStatus": {
+        "type": "string",
+        "enum": [
+          "NOT_APPLICABLE",
+          "REFUND_PENDING",
+          "REFUNDED"
+        ]
+      },
+      "SessionStatus": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "PUBLISHED",
+          "CANCELLED"
+        ]
+      },
+      "CoachRateType": {
+        "type": "string",
+        "enum": [
+          "PER_SESSION",
+          "PER_HOUR"
+        ]
+      },
+      "StaffRole": {
+        "type": "string",
+        "enum": [
+          "ADMIN"
+        ]
+      },
+      "GenericSuccess": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "ApiError": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "booking_cutoff_reached",
+              "duplicate_active_reservation",
+              "missing_required_policy_acceptance",
+              "session_not_reservable",
+              "capacity_exceeded",
+              "target_session_full",
+              "check_in_requires_confirmed",
+              "completed_blocked_oq10",
+              "illegal_booking_transition"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

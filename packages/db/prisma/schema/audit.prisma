@@ -1,0 +1,21 @@
+/// BE-016 — append-only audit log. No admin UI in this phase.
+model AuditEvent {
+  id          String         @id @default(cuid())
+  entityType  String
+  entityId    String
+  action      String
+  actorType   AuditActorType
+  actorId     String?
+  beforeStatus String?
+  afterStatus  String?
+  metadata    Json           @default("{}")
+  occurredAt  DateTime       @default(now()) @db.Timestamptz
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  actor StaffMember? @relation(fields: [actorId], references: [id])
+
+  @@index([entityType, entityId, occurredAt])
+  @@index([actorId, occurredAt])
+  @@map("audit_events")
+}

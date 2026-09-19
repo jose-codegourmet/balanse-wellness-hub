@@ -1,15 +1,13 @@
 # `@balanse/db`
 
-Prisma package for the Balanse Wellness Hub Supabase project (`xydundrayuusqizssgby`).
-The INF baseline is `AppMeta` (`app_meta`). Business models land in BE-001+.
+Prisma package for Balanse Wellness Hub (`xydundrayuusqizssgby`).
+Business schema: BE-001–BE-024 (enums, identities, catalogue, reservations, RLS, jobs, reports).
 
 ```bash
 cp .env.example .env
-# fill DATABASE_URL (6543, pgbouncer=true) and DIRECT_URL (5432)
 pnpm db:generate
-pnpm db:smoke
-pnpm db:migrate:create -- --name be001_add_enums
-pnpm db:deploy
+pnpm db:deploy          # hosted or local, after DIRECT_URL is set
+BALANSE_ALLOW_DB_SEED=1 pnpm db:seed
 ```
 
-See `docs/backend/migrations.md`.
+See `docs/backend/` (migrations, RLS, jobs, seed, contracts, human-only steps).

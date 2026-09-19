@@ -6,7 +6,7 @@ Local agent instructions for the shared database package. Read `/AGENTS.md` firs
 
 ## Scope
 
-`packages/db` (`@balanse/db`) is the shared Prisma 6 client, schema, migrations, and seed data for the monorepo. It connects to Supabase Postgres. It is consumed by `apps/admin` and by the API routes in `apps/web`.
+`packages/db` (`@balanse/db`) is the shared Prisma 6 client, schema, migrations, SQL rules/jobs, and seed data. It connects to Supabase Postgres. HTTP route handlers are out of scope until BE-030+.
 
 - **Workspace name**: `@balanse/db`
 - **Filter**: `pnpm --filter @balanse/db`
@@ -65,7 +65,7 @@ Both apps consume `@balanse/db` at runtime. No other workspace *package* (`packa
 - Preserve the public API (`prisma` and re-exported Prisma types). Do not remove `export * from "@prisma/client"` without a plan.
 - Do not add app-specific logic to this package. Keep it a generic database client and schema.
 - Migrations must be applied in the correct order. Do not edit existing migration files after they have been applied to a shared environment.
-- `Profile.id` has a required FK to Supabase `auth.users` (`20260727060109_add_profiles_table`). Do not drop that FK to support plain Postgres. Do not rewrite that migration SQL (checksums on the live Supabase project). Local/CI databases must be Supabase (`supabase start` or hosted).
+- `profiles.id` has a required FK to `auth.users`. CI creates a stub `auth.users` via `scripts/prepare-plain-postgres.sql` before migrate. Do not drop the FK on the hosted project.
 - Use the pooled URL for `DATABASE_URL` in production/serverless; use the direct URL for `DIRECT_URL` always.
 
 ---
