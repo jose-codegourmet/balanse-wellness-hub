@@ -36,13 +36,11 @@ ASSET-020–023 used desert/hooded-wanderer mood plate `0dad9831-2091-4538-b892-
 - calisthenics / pilates / dance **NEW**
 - ASSET-015 group hero still **skipped** (Alec/Sofia/Kate)
 
-## Binary pack
-```bash
-bash docs/assets/marketing/_pack/decode.sh
-```
-Or run workflow `expand-marketing-pack.yml`.
-
-Workspace for parent squash: `/tmp/cta-webready-clean.tar.gz`, `/workspace/balanse-mkt-refresh/webready/`
+## Binaries
+Committed directly on this branch as jpg + webp (long edge ≤1600, jpg q78 / webp q72)
+plus a 480px `-thumb` pair per slot. The earlier base64 `_pack` + `expand-marketing-pack.yml`
+decode workaround is removed — it existed only because the generating agent could not
+push blobs, and it never carried `part-*` payload files.
 
 ## Storage
 `marketing-assets` anon upload blocked by RLS — skip without service-role. Parent ASSET-030 uploads.
