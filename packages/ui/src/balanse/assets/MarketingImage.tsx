@@ -23,6 +23,7 @@ export function MarketingImage({
   frameCaption,
   imgClassName,
   loading = "lazy",
+  sizes = "(max-width: 640px) 100vw, 960px",
 }: {
   assetId: string;
   className?: string;
@@ -34,6 +35,7 @@ export function MarketingImage({
   frameCaption?: string;
   imgClassName?: string;
   loading?: "lazy" | "eager";
+  sizes?: string;
 }) {
   const asset = getAssetById(assetId);
   const ratio = asset?.aspect_ratio ?? "16:9";
@@ -71,40 +73,40 @@ export function MarketingImage({
       ) : fromCoach && !fromCoach.isPlaceholder ? (
         <CoachPicture sources={fromCoach} alt={alt} onError={() => setFailed(true)} />
       ) : (
-        <>
-          {/* 480px blur-up plate behind the full-size art (FE-PATHS.md thumbs). */}
-          {bundled.thumbWebp ? (
-            <picture>
-              <source type="image/webp" srcSet={bundled.thumbWebp} />
-              {bundled.thumbJpeg ? <source type="image/jpeg" srcSet={bundled.thumbJpeg} /> : null}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={bundled.thumbJpeg ?? bundled.thumbWebp}
-                alt=""
-                aria-hidden="true"
-                loading={loading}
-                decoding="async"
-                className="absolute inset-0 size-full scale-105 object-cover blur-lg"
-              />
-            </picture>
-          ) : null}
-          <picture>
-            <source type="image/webp" srcSet={bundled.webp} />
-            {bundled.jpeg ? <source type="image/jpeg" srcSet={bundled.jpeg} /> : null}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={bundled.jpeg ?? bundled.webp}
-              alt={alt}
-              loading={loading}
-              decoding="async"
-              className={cn("relative size-full object-cover", imgClassName)}
-              onError={() => setFailed(true)}
+        <picture>
+          <source
+            type="image/webp"
+            srcSet={srcSetFor(bundled.webp, bundled.thumbWebp)}
+            sizes={sizes}
+          />
+          {bundled.jpeg ? (
+            <source
+              type="image/jpeg"
+              srcSet={srcSetFor(bundled.jpeg, bundled.thumbJpeg)}
+              sizes={sizes}
             />
-          </picture>
-        </>
+          ) : null}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={bundled.jpeg ?? bundled.webp}
+            alt={alt}
+            loading={loading}
+            decoding="async"
+            className={cn("size-full object-cover", imgClassName)}
+            onError={() => setFailed(true)}
+          />
+        </picture>
       )}
     </AspectRatio>
   );
+}
+
+/**
+ * Offers the 480px `-thumb` delivery as a real srcset candidate so narrow and
+ * low-bandwidth viewports fetch it instead of the 1600px master.
+ */
+function srcSetFor(full: string, thumb?: string): string {
+  return thumb ? `${thumb} 480w, ${full} 1600w` : full;
 }
 
 function CoachPicture({

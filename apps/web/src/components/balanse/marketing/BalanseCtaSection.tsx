@@ -46,12 +46,13 @@ export function BalanseCtaSection({
       />
 
       {rest.length > 0 ? (
-        <div className="mx-auto -mt-6 flex max-w-[90rem] flex-wrap items-center gap-3 px-5 pb-12 sm:px-8 sm:pb-16 lg:px-10">
+        <div className="mx-auto -mt-8 flex max-w-[90rem] flex-wrap items-center justify-center gap-x-4 gap-y-2 px-5 pb-12 text-sm sm:px-8 sm:pb-16 lg:px-10">
+          <span className="text-muted-foreground">Not ready to book?</span>
           {rest.map((action) => (
             <a
               key={action.id}
               href={action.href}
-              className="inline-flex h-11 items-center rounded-full border border-[var(--balanse-tan)] bg-card px-6 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="rounded-sm font-semibold text-foreground underline decoration-[var(--balanse-tan)] underline-offset-4 transition-colors hover:text-[var(--balanse-gold-deep)] hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {action.label}
             </a>

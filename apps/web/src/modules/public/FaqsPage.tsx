@@ -27,7 +27,8 @@ export function FaqsPage({ initialQuery = "" }: { initialQuery?: string }) {
         align="compact"
       />
 
-      <div className="mx-auto max-w-3xl px-4 pt-12 md:pt-16">
+      {/* Matches the Jabkit faq12 container so the field lines up with the rail. */}
+      <div className="mx-auto max-w-6xl px-5 pt-12 sm:px-8 md:pt-16 lg:px-10">
         <label className="block text-sm font-medium" htmlFor="faq-search">
           Search
         </label>
@@ -35,14 +36,14 @@ export function FaqsPage({ initialQuery = "" }: { initialQuery?: string }) {
           id="faq-search"
           type="search"
           value={query}
-          className="mt-2"
+          className="mt-2 max-w-md"
           placeholder="Search questions"
           onChange={(event) => setQuery(event.target.value)}
         />
       </div>
 
       {visibleGroups.length === 0 ? (
-        <div className="mx-auto max-w-3xl px-4 py-16">
+        <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 lg:px-10">
           <Empty className="border border-dashed border-border bg-card">
             <EmptyHeader>
               <EmptyTitle>No matching questions</EmptyTitle>

@@ -62,6 +62,8 @@ export function BalanseHero({
         backgroundAlt={image?.alt ?? ""}
         className={cn(
           "min-h-[auto] bg-[var(--balanse-navy)]",
+          // The kit sets no face on its headline; Fraunces is the brand display.
+          "[&_h1]:font-display [&_h1]:tracking-[-0.02em]",
           "[&_nav:first-of-type]:hidden",
           "[&_.lucide-plane-takeoff]:hidden",
           "[&>div]:min-h-[auto] [&>div]:px-6 md:[&>div]:px-12 lg:[&>div]:px-20",

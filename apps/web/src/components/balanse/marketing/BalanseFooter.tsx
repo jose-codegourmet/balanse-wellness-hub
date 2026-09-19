@@ -10,6 +10,7 @@ import {
 } from "@balanse/domain";
 import { Footer16 } from "@/components/jabkit/footer-16";
 import type { Footer16SocialLink } from "@/components/jabkit/footer-16/Footer16.types";
+import { cn } from "@/lib/utils";
 import { marketingSlotSrc } from "./asset-src";
 
 const SOCIAL_KIND: Partial<Record<PublicSocialLink["id"], Footer16SocialLink["kind"]>> = {
@@ -84,7 +85,15 @@ export function BalanseFooter({ year = publicFooterYear() }: { year?: number }) 
       socialLinks={socialLinks}
       copyright={`© ${year} Balansé Wellness Hub · Cebu City`}
       backgroundImage={marketingSlotSrc("about-c")}
-      className="mt-auto [&_.jk-footer16-word_svg]:opacity-90"
+      className={cn(
+        "mt-auto bg-[var(--balanse-navy)]",
+        // The kit puts its photo layer at z-10, above its own veil and content,
+        // which leaves the link columns unreadable. Drop it behind both and
+        // scrim it with navy so cream text keeps contrast over any art.
+        "[&>div:first-of-type]:z-0 [&>div:first-of-type]:opacity-45",
+        "[&_.jk-footer16-veil]:bg-[linear-gradient(180deg,color-mix(in_oklab,var(--balanse-navy)_70%,transparent)_0%,color-mix(in_oklab,var(--balanse-navy)_88%,transparent)_50%,var(--balanse-navy)_100%)]",
+        "[&_.jk-footer16-word_svg]:opacity-70",
+      )}
     />
   );
 }
