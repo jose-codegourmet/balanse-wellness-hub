@@ -125,4 +125,6 @@ jobs:
       - name: Apply migrations
         run: pnpm --filter @balanse/db exec prisma migrate deploy
       - name: Integration tests
-        run: pnpm --filter @balanse/db test:integration
+        run: |
+          pnpm --filter @balanse/db test:integration
+          pnpm --filter @balanse/api test:integration

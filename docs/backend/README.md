@@ -18,4 +18,5 @@
 | [reporting.md](./reporting.md) | BE-022 |
 | [seed.md](./seed.md) | BE-023 |
 | [api-contracts.md](./api-contracts.md) | BE-024 |
+| [api-routes.md](./api-routes.md) | BE-030–BE-043 |
 | [human-steps.md](./human-steps.md) | dashboard-only |

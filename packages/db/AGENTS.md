@@ -26,7 +26,7 @@ Local agent instructions for the shared database package. Read `/AGENTS.md` firs
 ## Consumers
 
 - `apps/admin` — Server Components, Server Actions, and auth profile upserts.
-- `apps/web` — API routes (`src/app/api/{blog,pricing,testimonials}/route.ts`).
+- `apps/web` — API routes via `@balanse/api` (`src/app/api/[[...path]]/route.ts`).
 
 Both apps consume `@balanse/db` at runtime. No other workspace *package* (`packages/ui`, `packages/config`) depends on it.
 

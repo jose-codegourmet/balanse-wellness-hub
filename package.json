@@ -21,7 +21,7 @@
     "assets:upload": "node scripts/upload-approved-assets.mjs",
     "assets:validate": "node scripts/validate-asset-manifest.mjs",
     "prepare": "husky",
-    "test": "turbo run test --filter=@balanse/domain --filter=@balanse/mock --filter=@balanse/db",
+    "test": "turbo run test --filter=@balanse/domain --filter=@balanse/mock --filter=@balanse/db --filter=@balanse/api",
     "guard:brand": "node scripts/guard-brand.mjs"
   },
   "lint-staged": {

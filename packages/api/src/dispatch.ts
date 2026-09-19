@@ -1,0 +1,37 @@
+import { resolveActor } from "./auth";
+import { type ApiDeps, createDefaultDeps } from "./deps";
+import { ApiError } from "./errors";
+import { errorResponse, json } from "./http";
+import { matchRoute } from "./router";
+
+export async function dispatch(
+  req: Request,
+  deps: ApiDeps = createDefaultDeps(),
+): Promise<Response> {
+  try {
+    const url = new URL(req.url);
+    const matched = matchRoute(req.method, url.pathname);
+    if (!matched) {
+      if (url.pathname.startsWith("/api/")) {
+        if (req.method !== "GET" && url.pathname.includes("/api/public/")) {
+          throw new ApiError(405, "method_not_allowed", "Public catalogue is read-only.");
+        }
+        return json(404, { code: "not_found", message: "No API route matches this path." });
+      }
+      return json(404, { code: "not_found", message: "Not found." });
+    }
+    if (matched.route.path.startsWith("/api/admin")) {
+      const actor = await resolveActor(deps, req);
+      if (actor.kind !== "admin") {
+        throw new ApiError(
+          actor.kind === "anon" ? 401 : 403,
+          actor.kind === "anon" ? "unauthenticated" : "forbidden",
+          actor.kind === "anon" ? "Sign in required." : "Admin authorisation required.",
+        );
+      }
+    }
+    return await matched.route.handler(deps, req, matched.params);
+  } catch (error) {
+    return errorResponse(error);
+  }
+}

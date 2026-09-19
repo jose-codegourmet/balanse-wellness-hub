@@ -1,4 +1,8 @@
-import { BOOKING_CUTOFF_MINUTES_BEFORE_START, BOOKING_HOLD_DURATION_HOURS } from "@balanse/domain";
+import {
+  BOOKING_CUTOFF_MINUTES_BEFORE_START,
+  BOOKING_HOLD_DURATION_HOURS,
+  CONTACT_DETAILS,
+} from "@balanse/domain";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -288,6 +292,33 @@ async function main(): Promise<void> {
       });
     }
   }
+
+  await prisma.appMeta.upsert({
+    where: { key: "public_settings" },
+    create: {
+      key: "public_settings",
+      value: JSON.stringify({
+        business: {
+          name: "Balanse Wellness Hub",
+          phone: CONTACT_DETAILS.phone,
+          email: CONTACT_DETAILS.email,
+          address: CONTACT_DETAILS.address,
+          instagram: CONTACT_DETAILS.instagram,
+          tiktok: CONTACT_DETAILS.tiktok,
+          whatsapp: CONTACT_DETAILS.whatsapp,
+          openingHours: "",
+        },
+        payment: {
+          gcashAccountName: "",
+          gcashNumber: "",
+          gcashQrObjectKey: "",
+          gcashQrPublicUrl: "",
+        },
+        content: { about: "", contact: "", faqs: [] },
+      }),
+    },
+    update: {},
+  });
 
   await prisma.appMeta.upsert({
     where: { key: "schema_note" },

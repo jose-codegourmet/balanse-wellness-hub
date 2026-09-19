@@ -12,7 +12,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@balanse/api": "workspace:*",
     "@balanse/config": "workspace:*",
+    "@balanse/db": "workspace:*",
     "@balanse/domain": "workspace:*",
     "@balanse/mock": "workspace:*",
     "@balanse/ui": "workspace:*",
