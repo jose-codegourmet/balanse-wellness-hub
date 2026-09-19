@@ -72,3 +72,38 @@ Support patterns such as:
 If a session can no longer proceed, admin may cancel it.
 
 Affected customer bookings must remain visible as historical records and enter the appropriate cancellation/refund workflow rather than disappearing.
+
+## Coach compensation
+
+Each coach may have an internal default compensation rate.
+
+Conceptual fields:
+
+- `defaultRate`
+- `rateType`
+
+Possible rate types for planning:
+
+- `per_session`
+- `per_hour`
+
+The actual implementation may support only the rate types Balanse uses.
+
+Coach compensation is internal admin-only information.
+
+## Session financial snapshot
+
+A scheduled session should store snapshots of the financial values required for historical reporting:
+
+- customer/session price,
+- coach rate,
+- coach rate type.
+
+Historical reports must use the session snapshot rather than the coach's current profile.
+
+Example:
+
+- September coach rate: ₱500/session
+- October coach rate changes to ₱700/session
+
+A September session must continue reporting ₱500 as its coach cost.

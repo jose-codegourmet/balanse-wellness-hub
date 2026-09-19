@@ -115,3 +115,19 @@ This file is the concise business source of truth for implementation agents.
 64. Do not invent reschedule price-difference rules.
 65. Do not invent legal waiver text.
 66. Do not add automated payments, memberships, or coach self-service to MVP without a deliberate scope change.
+
+## Financial and inventory canonical rules
+
+67. Coach compensation/rates are internal admin-only data.
+68. Coach compensation must not appear on public coach pages or customer-facing booking screens.
+69. A coach may have an internal default rate and rate type such as per-session or per-hour.
+70. Scheduled sessions must snapshot customer price and coach-rate data needed for historical reporting.
+71. Changing a coach's current default rate must not rewrite historical session costs.
+72. For Balanse reporting, class capacity is the primary sellable inventory.
+73. Basic admin reporting should support gross sales, refunds, net sales, coach costs, and capacity/occupancy utilization.
+74. Waitlisted customers must not be counted as sales.
+75. Unpaid held reservations must not be counted as revenue.
+76. Refunded bookings remain in history and must not be erased from reports.
+77. Session contribution may be calculated as gross session revenue minus coach cost.
+78. Session contribution must not be labeled as profit unless all relevant business costs are included.
+79. These reports are operational and do not replace formal accounting records.

@@ -55,3 +55,16 @@ These items are intentionally not required for the first proof-of-concept MVP.
 - more granular cancellation policy engine
 
 The MVP should not be delayed to implement these unless a newly discovered business dependency makes one essential.
+
+## Reporting scope clarification
+
+Basic operational sales, coach-cost, and capacity-utilization reporting is now considered part of the MVP.
+
+Still future scope:
+
+- advanced BI dashboards,
+- forecasting,
+- formal accounting statements,
+- tax reporting,
+- payroll,
+- accounting-software integrations.

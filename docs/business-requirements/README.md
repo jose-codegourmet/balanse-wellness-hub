@@ -65,3 +65,17 @@ Balanse is a calendar-first class booking system for a wellness gym where custom
 - **OPEN** — business decision still required.
 
 When two documents appear to conflict, `21-canonical-rules.md` should be treated as the highest-level business reference, then the more specific rule document.
+
+## Financial reporting update
+
+The MVP business logic now also includes:
+
+- internal coach compensation/rates,
+- session-level financial snapshots,
+- basic sales reporting,
+- coach-cost reporting,
+- class-capacity / occupancy reporting.
+
+See `22-inventory-and-sales-reporting.md` for the canonical reporting rules.
+
+Coach compensation is internal admin-only data and must never appear on public or customer-facing screens.

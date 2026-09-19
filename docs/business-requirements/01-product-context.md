@@ -93,3 +93,15 @@ A successful MVP should provide:
 - a simple customer account history,
 - a manageable admin workflow for Rex and his wife,
 - enough operational structure to later add automated payments and recurring schedules.
+
+## Financial visibility
+
+Balanse should also provide basic internal operational visibility into:
+
+- sales,
+- refunds,
+- coach costs,
+- class-capacity utilization,
+- attendance/no-shows.
+
+These are operational reports for Coach Rex/admin and are not intended to replace formal accounting software.

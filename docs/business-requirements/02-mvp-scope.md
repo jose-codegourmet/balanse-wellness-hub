@@ -75,3 +75,16 @@ The MVP centers on:
 > availability → account → reserve → payment intent/evidence → admin approval → check-in
 
 Anything not necessary to validate that loop should be considered carefully before inclusion.
+
+## Added MVP scope — financial and inventory reporting
+
+The MVP should also support:
+
+- storing internal coach compensation/rate information,
+- snapshotting coach rate and customer session price onto scheduled sessions,
+- basic gross sales reporting,
+- refund and net-sales visibility,
+- coach-cost reporting,
+- class/session capacity and occupancy reporting.
+
+Advanced accounting, payroll, tax reporting, forecasting, and formal financial statements remain out of scope.

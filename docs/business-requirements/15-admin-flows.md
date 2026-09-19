@@ -98,3 +98,22 @@ After class/admin reconciliation:
 3. Admin handles affected customer bookings/refunds as needed.
 
 Coaches do not directly edit their schedules in MVP.
+
+## Flow — Review sales and inventory reports
+
+1. Admin opens reporting.
+2. Admin chooses a date range.
+3. Optional filters may include class, coach, or session status.
+4. Admin reviews:
+   - gross sales,
+   - refunds,
+   - net sales,
+   - paid/confirmed bookings,
+   - coach costs,
+   - class/session capacity,
+   - confirmed/held/available slots,
+   - waitlist totals,
+   - occupancy/utilization.
+5. Admin may drill into a class, coach, or session for more detail.
+
+These reports are operational and should not be presented as a replacement for accounting software.

@@ -116,3 +116,27 @@ A coach-facing role may later gain:
 - class roster access.
 
 This is not part of the current MVP.
+
+## Financial permissions update
+
+### Admin
+
+Authorized admins may:
+
+- manage internal coach rates,
+- view sales reports,
+- view coach-cost reports,
+- view class-capacity / occupancy reports.
+
+### Coach-rate privacy
+
+Coach compensation/rate information is internal business data.
+
+It must not be visible on:
+
+- the public Coaches page,
+- the public calendar,
+- customer booking screens,
+- customer booking confirmations.
+
+Only authorized admin users should have access.

@@ -113,7 +113,6 @@ For example:
 
 Then after manual transfer:
 
-- booking = CANCELLED
 - refund = REFUNDED
 
 ## State-history principle
