@@ -1,0 +1,29 @@
+name: Seed MVP roadmap issues
+
+on:
+  push:
+    branches: [chore/seed-mvp-issues]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create issues from MVP roadmap
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 scripts/seed-mvp-issues/create.py
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seed-results
+          path: seed-results.json
