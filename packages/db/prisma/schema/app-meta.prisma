@@ -1,0 +1,11 @@
+/// Placeholder table so `prisma generate` succeeds before INF-003 / BE-001 land.
+/// Business tables are out of scope for the FE foundation track.
+model AppMeta {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}

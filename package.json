@@ -1,0 +1,36 @@
+{
+  "name": "balanse-wellness-hub",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.0.8",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "lint": "biome check .",
+    "lint:apps": "turbo run lint",
+    "format": "biome format --write .",
+    "typecheck": "turbo run typecheck",
+    "storybook": "turbo run storybook",
+    "build-storybook": "turbo run build-storybook",
+    "lint:fix": "biome check --write .",
+    "lint:fix:unsafe": "biome check --write --unsafe .",
+    "db:generate": "turbo run db:generate",
+    "prepare": "husky",
+    "test": "turbo run test --filter=@balanse/domain --filter=@balanse/mock",
+    "guard:brand": "node scripts/guard-brand.mjs"
+  },
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx,json,md,css}": [
+      "biome check --write --no-errors-on-unmatched"
+    ]
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.4",
+    "@commitlint/cli": "^21.2.1",
+    "@commitlint/config-conventional": "^21.2.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
+    "turbo": "^2.10.6"
+  }
+}

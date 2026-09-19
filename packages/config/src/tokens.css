@@ -1,0 +1,94 @@
+/* Balansé brand tokens — single source for both apps (FE-FND-004).
+   Palette from docs/facebook-findings/findings.md §5.
+   Screen code must use these custom properties, not raw hex. */
+
+:root {
+  --balanse-cream: #f7f1e8;
+  --balanse-warm-white: #fffaf3;
+  --balanse-beige: #e6d5b8;
+  --balanse-tan: #c9b48a;
+  --balanse-muted-brown: #6b5344;
+  --balanse-navy: #1c2331;
+  --balanse-charcoal: #2a241f;
+  --balanse-gold: #c4a35a;
+  --balanse-gold-deep: #9a7b32;
+
+  --background: var(--balanse-cream);
+  --foreground: var(--balanse-navy);
+  --card: var(--balanse-warm-white);
+  --card-foreground: var(--balanse-navy);
+  --popover: var(--balanse-warm-white);
+  --popover-foreground: var(--balanse-navy);
+  --primary: var(--balanse-navy);
+  --primary-foreground: var(--balanse-warm-white);
+  --secondary: var(--balanse-beige);
+  --secondary-foreground: var(--balanse-navy);
+  --muted: var(--balanse-beige);
+  --muted-foreground: var(--balanse-muted-brown);
+  --accent: var(--balanse-gold);
+  --accent-foreground: var(--balanse-navy);
+  --destructive: #8b2e2e;
+  --border: color-mix(in oklab, var(--balanse-tan) 55%, var(--balanse-cream));
+  --input: color-mix(in oklab, var(--balanse-tan) 45%, var(--balanse-warm-white));
+  --ring: var(--balanse-gold-deep);
+  --chart-1: var(--balanse-gold);
+  --chart-2: var(--balanse-muted-brown);
+  --chart-3: var(--balanse-navy);
+  --chart-4: var(--balanse-tan);
+  --chart-5: var(--balanse-beige);
+  --radius: 0.75rem;
+  --sidebar: var(--balanse-navy);
+  --sidebar-foreground: var(--balanse-warm-white);
+  --sidebar-primary: var(--balanse-gold);
+  --sidebar-primary-foreground: var(--balanse-navy);
+  --sidebar-accent: color-mix(in oklab, var(--balanse-navy) 80%, var(--balanse-gold));
+  --sidebar-accent-foreground: var(--balanse-warm-white);
+  --sidebar-border: color-mix(in oklab, var(--balanse-navy) 70%, var(--balanse-gold));
+  --sidebar-ring: var(--balanse-gold);
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+}
+
+.dark {
+  --background: var(--balanse-navy);
+  --foreground: var(--balanse-warm-white);
+  --card: var(--balanse-charcoal);
+  --card-foreground: var(--balanse-warm-white);
+  --popover: var(--balanse-charcoal);
+  --popover-foreground: var(--balanse-warm-white);
+  --primary: var(--balanse-gold);
+  --primary-foreground: var(--balanse-navy);
+  --secondary: color-mix(in oklab, var(--balanse-navy) 70%, var(--balanse-beige));
+  --secondary-foreground: var(--balanse-warm-white);
+  --muted: color-mix(in oklab, var(--balanse-navy) 75%, var(--balanse-beige));
+  --muted-foreground: var(--balanse-beige);
+  --accent: var(--balanse-gold);
+  --accent-foreground: var(--balanse-navy);
+  --destructive: #e07a7a;
+  --border: color-mix(in oklab, var(--balanse-gold) 25%, var(--balanse-navy));
+  --input: color-mix(in oklab, var(--balanse-gold) 20%, var(--balanse-navy));
+  --ring: var(--balanse-gold);
+  --sidebar: #121722;
+  --sidebar-foreground: var(--balanse-warm-white);
+  --sidebar-primary: var(--balanse-gold);
+  --sidebar-primary-foreground: var(--balanse-navy);
+  --sidebar-accent: color-mix(in oklab, #121722 70%, var(--balanse-gold));
+  --sidebar-accent-foreground: var(--balanse-warm-white);
+  --sidebar-border: color-mix(in oklab, var(--balanse-gold) 25%, #121722);
+  --sidebar-ring: var(--balanse-gold);
+}

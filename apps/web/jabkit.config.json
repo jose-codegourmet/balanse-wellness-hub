@@ -1,0 +1,10 @@
+{
+  "componentsDir": "src/components/jabkit",
+  "alias": "@/components/jabkit",
+  "registry": "https://jabkit.joseadrianbuctuanon.dev",
+  "formatter": "biome",
+  "theme": {
+    "mode": "class",
+    "provider": "next-themes"
+  }
+}
