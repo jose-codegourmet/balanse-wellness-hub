@@ -5,7 +5,7 @@
 # consent_recorded: yes for generate coaches (catalogued source photos).
 # Standing Jose auto-approve of all Assets, 2026-09-19.
 # Placeholder-only coaches stay consent_recorded: no until a source lands.
-# last_reviewed: 2026-09-19 (ASSET-011 lockup)
+# last_reviewed: 2026-09-19 (ASSET-012 roster headshots)
 
 coaches:
   - slug: rex-francis-regis
@@ -20,7 +20,7 @@ coaches:
     consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Jose auto-approve 2026-09-19. ASSET-011 consistency wave pending (same headshot-v1 recipe). Do not invent a final here.
+    notes: Jose auto-approve 2026-09-19. ASSET-012 headshot generated (headshot-v1 / nano_banana_2_shots). Master docs/assets/headshots/rex-francis-regis/headshot-4x5.jpg.
 
   - slug: ephraim-bacaltos
     display_name: Ephraim Bacaltos
@@ -34,7 +34,7 @@ coaches:
     consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Jose auto-approve 2026-09-19. ASSET-011 pilot approved. Master docs/assets/headshots/ephraim-bacaltos/headshot-4x5.jpg.
+    notes: Jose auto-approve 2026-09-19. ASSET-011 pilot + ASSET-012 roster set. Master docs/assets/headshots/ephraim-bacaltos/headshot-4x5.jpg.
 
   - slug: rachelle-tobiano
     display_name: Rachelle Tobiano
@@ -48,7 +48,7 @@ coaches:
     consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Jose auto-approve 2026-09-19 (source photo catalogued).
+    notes: Jose auto-approve 2026-09-19. ASSET-012 headshot generated. Master docs/assets/headshots/rachelle-tobiano/headshot-4x5.jpg.
 
   - slug: alec-james-co
     display_name: Alec James Co
@@ -76,7 +76,7 @@ coaches:
     consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Jose auto-approve 2026-09-19 (source photo catalogued). Four web-ready frames.
+    notes: Jose auto-approve 2026-09-19. ASSET-012 headshot generated. Master docs/assets/headshots/jodi-tio/headshot-4x5.jpg.
 
   - slug: wolf
     display_name: Wolf
@@ -90,7 +90,7 @@ coaches:
     consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Jose auto-approve 2026-09-19 (source photo catalogued). Intro docx + three frames.
+    notes: Jose auto-approve 2026-09-19. ASSET-012 headshot generated. Master docs/assets/headshots/wolf/headshot-4x5.jpg.
 
   - slug: kate-go
     display_name: Kate Go
@@ -132,7 +132,7 @@ coaches:
     consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Jose auto-approve 2026-09-19 (source photo catalogued). Facebook timetable used “Mikala”; roster name is Mikaela Danielle.
+    notes: Jose auto-approve 2026-09-19. ASSET-012 headshot generated. Master docs/assets/headshots/mikaela-danielle/headshot-4x5.jpg. Facebook timetable used “Mikala”; roster name is Mikaela Danielle.
 
   - slug: maris-cabrera
     display_name: Maris Cabrera
@@ -146,7 +146,7 @@ coaches:
     consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Jose auto-approve 2026-09-19 (source photo catalogued).
+    notes: Jose auto-approve 2026-09-19. ASSET-012 headshot generated. Master docs/assets/headshots/maris-cabrera/headshot-4x5.jpg.
 
   - slug: francis-acido
     display_name: Francis Acido
@@ -160,4 +160,4 @@ coaches:
     consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Jose auto-approve 2026-09-19 (source photo catalogued). Distinct from Rex Francis Regis.
+    notes: Jose auto-approve 2026-09-19. ASSET-012 headshot generated. Master docs/assets/headshots/francis-acido/headshot-4x5.jpg. Distinct from Rex Francis Regis.
