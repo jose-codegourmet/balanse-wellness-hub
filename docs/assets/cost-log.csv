@@ -8,3 +8,8 @@ date,asset_id,prompt_key,model,resolution,aspect_ratio,credits,job_id,outcome,no
 2026-09-19,coach-headshot-mikaela-danielle,coaches-A,nano_banana_2_shots,1k,4:5,~4,,approved,ASSET-012 roster wave. Source src-coach-mikaela-01. Jose auto-approve.
 2026-09-19,coach-headshot-maris-cabrera,coaches-A,nano_banana_2_shots,1k,4:5,~4,,approved,ASSET-012 roster wave. Source src-coach-maris-01. Jose auto-approve.
 2026-09-19,coach-headshot-francis-acido,coaches-A,nano_banana_2_shots,1k,4:5,~4,,approved,ASSET-012 roster wave. Source src-coach-francis-01. Jose auto-approve.
+2026-09-19,coaches-c,coaches-C,nano_banana_2_shots,1k,1:1,0,,rejected,Text-only 422: image_references must contain exactly one image. Yoga/boxing/capoeira accents deferred to image-assets agent.
+2026-09-19,landing-a,landing-A,nano_banana_2_shots,1k,16:9,0,,rejected,Same 422 text-only. ASSET-020 deferred to image-assets agent.
+2026-09-19,landing-b,landing-B,nano_banana_2_shots,1k,3:2,0,,rejected,Same 422 text-only.
+2026-09-19,landing-c,landing-C,nano_banana_2_shots,1k,1:1,0,,rejected,Same 422 text-only.
+2026-09-19,landing-d,landing-D,nano_banana_2_shots,1k,21:9,0,,rejected,Same 422 text-only.

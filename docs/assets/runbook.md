@@ -212,7 +212,7 @@ Available after generate (do not re-generate derivatives from scratch):
 - `outpaint_image` — last resort for negative space; re-review
 - `generate_image_batch` + `jobs_wait` — independent slots, not variants of one prompt
 
-Delivery crops for headshots (`ASSET-013`): 4:5 card, 1:1 avatar, responsive web sizes — all from the approved master.
+Delivery crops for headshots (`ASSET-013`): extract a reviewed hero cell from the ASSET-012 3×3 master with ImageMagick (`scripts/derive-headshot-delivery-set.sh`), then 4:5 card, 1:1 center avatar, WebP q82 + JPEG q85 fallbacks, and `w400`/`w200` sizes. Lossless PNG of the master lives in `archive/`. Never re-generate a face for a derivative.
 
 ---
 
