@@ -18,6 +18,51 @@ export const LOCAL_PLACEHOLDER_PATHS = {
   coach1x1: "/assets/placeholders/coach-placeholder-1x1.svg",
 } as const;
 
+/** Eight ASSET-012 coaches with local delivery crops. Alec / Sofia / Kate stay on ASSET-014. */
+export const COACHES_WITH_HEADSHOTS = [
+  "ephraim-bacaltos",
+  "rex-francis-regis",
+  "rachelle-tobiano",
+  "jodi-tio",
+  "wolf",
+  "mikaela-danielle",
+  "maris-cabrera",
+  "francis-acido",
+] as const;
+
+export const COACHES_ON_PLACEHOLDER = ["alec-james-co", "sofia-ocampo", "kate-go"] as const;
+
+export function coachPhotoKey(slug: string): string {
+  return `coach-photos/${slug}`;
+}
+
+export function localCoachPhotoPath(slug: string, ratio: "1:1" | "4:5"): string {
+  if (ratio === "1:1") return `/assets/headshots/${slug}/headshot-1x1.webp`;
+  return `/assets/headshots/${slug}/headshot-card-4x5.webp`;
+}
+
+/**
+ * Maps a coach fixture `photoKey` (storage-style prefix or public path) to a
+ * bundled FE path. Never returns a Storage URL.
+ */
+export function resolveCoachPhotoSrc(
+  photoKey: string | null,
+  ratio: "1:1" | "4:5" = "4:5",
+): string {
+  if (!photoKey) {
+    return ratio === "1:1" ? LOCAL_PLACEHOLDER_PATHS.coach1x1 : LOCAL_PLACEHOLDER_PATHS.coach4x5;
+  }
+  if (photoKey.startsWith("/")) return photoKey;
+  if (photoKey.startsWith("http://") || photoKey.startsWith("https://")) {
+    return ratio === "1:1" ? LOCAL_PLACEHOLDER_PATHS.coach1x1 : LOCAL_PLACEHOLDER_PATHS.coach4x5;
+  }
+  const slug = photoKey.replace(/^coach-photos\//, "").split("/")[0] ?? "";
+  if ((COACHES_WITH_HEADSHOTS as readonly string[]).includes(slug)) {
+    return localCoachPhotoPath(slug, ratio);
+  }
+  return ratio === "1:1" ? LOCAL_PLACEHOLDER_PATHS.coach1x1 : LOCAL_PLACEHOLDER_PATHS.coach4x5;
+}
+
 export function isMarketingAspectRatio(value: string): value is MarketingAspectRatio {
   return (MARKETING_ASPECT_RATIOS as readonly string[]).includes(value);
 }

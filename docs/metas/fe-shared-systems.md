@@ -10,4 +10,6 @@ Delivered this phase:
 - Marketing asset integration consuming the ASSET manifest and ASSET-014 placeholders
 - Responsive mock calendar on the public landing hero and customer schedule
 
-Not delivered: production logo/wreath file (text lockup remains), generated marketing photography (frames + placeholders only), live APIs, FE-PUB/CUS/ADM screen copy.
+Coach portraits: eight ASSET-012 delivery crops are bundled under `/assets/headshots/` and wired via fixture `photoKey`. Alec / Sofia / Kate Go stay on ASSET-014 placeholders.
+
+Not delivered: production logo/wreath file (text lockup remains), generated marketing photography for lettered public slots (frames only), live APIs, FE-PUB/CUS/ADM screen copy.

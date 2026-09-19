@@ -38,16 +38,17 @@ export const AspectRatioFrames: StoryObj = {
   ),
 };
 
-export const CoachWithPlaceholder: StoryObj = {
+export const CoachHeadshots: StoryObj = {
   render: () => (
-    <div className="flex gap-4 p-4">
+    <div className="flex flex-wrap gap-4 p-4">
       <CoachPhoto photoKey={null} name="Alec James Co" ratio="4:5" className="w-40" />
       <CoachPhoto
-        photoKey="/assets/placeholders/coach-placeholder-1x1.svg"
+        photoKey="coach-photos/ephraim-bacaltos"
         name="Ephraim Bacaltos"
-        ratio="1:1"
-        className="w-32"
+        ratio="4:5"
+        className="w-40"
       />
+      <CoachPhoto photoKey="coach-photos/wolf" name="Wolf" ratio="1:1" className="w-32" />
       <CoachPhoto
         photoKey="/missing-on-purpose.png"
         name="Broken path"

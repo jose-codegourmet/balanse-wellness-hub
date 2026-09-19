@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { ASSET_MANIFEST, publicPageSlotIds } from "./asset-manifest";
+import { ASSET_MANIFEST, bundledAssetSrc, publicPageSlotIds } from "./asset-manifest";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -14,6 +14,16 @@ describe("FE-SHR-004 asset manifest", () => {
     const packaged = JSON.parse(readFileSync(resolve(here, "./asset-manifest.json"), "utf8"));
     expect(packaged).toEqual(docs);
     expect(ASSET_MANIFEST.schema_version).toBe("1.0.0");
+  });
+
+  it("resolves approved ASSET-012 headshots to bundled public paths", () => {
+    const rex = ASSET_MANIFEST.assets.find(
+      (asset) => asset.id === "coach-headshot-rex-francis-regis",
+    );
+    expect(rex).toBeDefined();
+    if (!rex) return;
+    expect(bundledAssetSrc(rex)).toBe("/assets/headshots/rex-francis-regis/headshot-card-4x5.webp");
+    expect(bundledAssetSrc(rex)).not.toMatch(/^https?:/);
   });
 
   it("covers every public-page lettered slot", () => {

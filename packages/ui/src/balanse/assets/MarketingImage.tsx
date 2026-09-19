@@ -2,18 +2,15 @@
 
 import {
   aspectRatioNumber,
+  bundledAssetSrc,
   getAssetById,
   LOCAL_PLACEHOLDER_PATHS,
   type MarketingAspectRatio,
+  resolveCoachPhotoSrc,
 } from "@balanse/domain";
 import { useState } from "react";
 import { AspectRatio } from "../../components/aspect-ratio/AspectRatio";
 import { cn } from "../../lib/utils";
-
-const BUNDLED_SRC: Record<string, string> = {
-  "coach-placeholder": LOCAL_PLACEHOLDER_PATHS.coach4x5,
-  "coach-placeholder-1x1": LOCAL_PLACEHOLDER_PATHS.coach1x1,
-};
 
 export function MarketingImage({
   assetId,
@@ -26,7 +23,7 @@ export function MarketingImage({
 }) {
   const asset = getAssetById(assetId);
   const ratio = asset?.aspect_ratio ?? "16:9";
-  const bundled = asset ? BUNDLED_SRC[asset.id] : undefined;
+  const bundled = asset ? bundledAssetSrc(asset) : undefined;
   const [failed, setFailed] = useState(false);
   const showPlaceholder = !bundled || failed;
   const alt = decorative || !asset?.alt_text ? "" : asset.alt_text;
@@ -77,8 +74,8 @@ export function CoachPhoto({
 }) {
   const fallback =
     ratio === "4:5" ? LOCAL_PLACEHOLDER_PATHS.coach4x5 : LOCAL_PLACEHOLDER_PATHS.coach1x1;
-  const src = photoKey && !photoKey.startsWith("http") ? photoKey : photoKey || fallback;
-  const [failed, setFailed] = useState(!photoKey);
+  const src = resolveCoachPhotoSrc(photoKey, ratio);
+  const [failed, setFailed] = useState(false);
 
   return (
     <AspectRatio

@@ -1,4 +1,5 @@
 import raw from "./asset-manifest.json";
+import { COACHES_WITH_HEADSHOTS, LOCAL_PLACEHOLDER_PATHS, localCoachPhotoPath } from "./assets";
 
 export type AssetManifestRecord = {
   id: string;
@@ -36,4 +37,24 @@ export function publicPageSlotIds(page: AssetManifestRecord["page"]): string[] {
   return getAssetsForPage(page)
     .filter((asset) => asset.slot_letter)
     .map((asset) => asset.id);
+}
+
+/** Local/bundled path for this phase. Never a Storage URL. */
+export function bundledAssetSrc(asset: AssetManifestRecord): string | undefined {
+  const usesPlaceholder =
+    asset.generation_policy === "placeholder" ||
+    Boolean(asset.working_path?.includes("placeholders/"));
+  if (usesPlaceholder) {
+    return asset.aspect_ratio === "1:1" || asset.id.endsWith("-1x1")
+      ? LOCAL_PLACEHOLDER_PATHS.coach1x1
+      : LOCAL_PLACEHOLDER_PATHS.coach4x5;
+  }
+  if (
+    asset.coach_slug &&
+    asset.approval_status === "approved" &&
+    (COACHES_WITH_HEADSHOTS as readonly string[]).includes(asset.coach_slug)
+  ) {
+    return localCoachPhotoPath(asset.coach_slug, asset.aspect_ratio === "1:1" ? "1:1" : "4:5");
+  }
+  return undefined;
 }
