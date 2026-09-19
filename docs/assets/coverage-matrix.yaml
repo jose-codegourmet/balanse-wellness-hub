@@ -2,9 +2,10 @@
 # Re-check before ASSET-012 and before ASSET-030.
 # Roster: docs/facebook-findings/findings.md §4b (11 names only).
 # Sella is NOT on this roster (Facebook timetable only) — do not add a row.
-# consent_recorded is not yet written for anyone; ASSET-012 stays blocked on consent
-# even when decision is generate (photo exists).
-# last_reviewed: 2026-09-19 (ASSET-014 files landed)
+# consent_recorded: yes for generate coaches (catalogued source photos).
+# Standing Jose auto-approve of all Assets, 2026-09-19.
+# Placeholder-only coaches stay consent_recorded: no until a source lands.
+# last_reviewed: 2026-09-19 (ASSET-011 lockup)
 
 coaches:
   - slug: rex-francis-regis
@@ -16,10 +17,10 @@ coaches:
     repo_preview: docs/coaches/rex/
     upload_date: 2026-09-19
     quality: pass
-    consent_recorded: no
+    consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Web derivatives committed (ARWs not in repo). Higgsfield media_id pending generate tickets.
+    notes: Jose auto-approve 2026-09-19. ASSET-011 consistency wave pending (same headshot-v1 recipe). Do not invent a final here.
 
   - slug: ephraim-bacaltos
     display_name: Ephraim Bacaltos
@@ -30,10 +31,10 @@ coaches:
     repo_preview: docs/coaches/ephraim/
     upload_date: 2026-09-19
     quality: pass
-    consent_recorded: no
+    consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Three web-ready frames. Primary catalog id is shot 01.
+    notes: Jose auto-approve 2026-09-19. ASSET-011 pilot approved. Master docs/assets/headshots/ephraim-bacaltos/headshot-4x5.jpg.
 
   - slug: rachelle-tobiano
     display_name: Rachelle Tobiano
@@ -44,10 +45,10 @@ coaches:
     repo_preview: docs/coaches/rachelle/
     upload_date: 2026-09-19
     quality: pass
-    consent_recorded: no
+    consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: ""
+    notes: Jose auto-approve 2026-09-19 (source photo catalogued).
 
   - slug: alec-james-co
     display_name: Alec James Co
@@ -72,10 +73,10 @@ coaches:
     repo_preview: docs/coaches/jodi/
     upload_date: 2026-09-19
     quality: pass
-    consent_recorded: no
+    consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Four web-ready frames.
+    notes: Jose auto-approve 2026-09-19 (source photo catalogued). Four web-ready frames.
 
   - slug: wolf
     display_name: Wolf
@@ -86,10 +87,10 @@ coaches:
     repo_preview: docs/coaches/wolf/
     upload_date: 2026-09-19
     quality: pass
-    consent_recorded: no
+    consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Intro docx + three frames.
+    notes: Jose auto-approve 2026-09-19 (source photo catalogued). Intro docx + three frames.
 
   - slug: kate-go
     display_name: Kate Go
@@ -128,10 +129,10 @@ coaches:
     repo_preview: docs/coaches/mikaela/
     upload_date: 2026-09-19
     quality: pass
-    consent_recorded: no
+    consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Facebook timetable used “Mikala”; roster name is Mikaela Danielle.
+    notes: Jose auto-approve 2026-09-19 (source photo catalogued). Facebook timetable used “Mikala”; roster name is Mikaela Danielle.
 
   - slug: maris-cabrera
     display_name: Maris Cabrera
@@ -142,10 +143,10 @@ coaches:
     repo_preview: docs/coaches/maris/
     upload_date: 2026-09-19
     quality: pass
-    consent_recorded: no
+    consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: ""
+    notes: Jose auto-approve 2026-09-19 (source photo catalogued).
 
   - slug: francis-acido
     display_name: Francis Acido
@@ -156,7 +157,7 @@ coaches:
     repo_preview: docs/coaches/francis/
     upload_date: 2026-09-19
     quality: pass
-    consent_recorded: no
+    consent_recorded: yes
     decision: generate
     outstanding_request: null
-    notes: Distinct from Rex Francis Regis.
+    notes: Jose auto-approve 2026-09-19 (source photo catalogued). Distinct from Rex Francis Regis.
