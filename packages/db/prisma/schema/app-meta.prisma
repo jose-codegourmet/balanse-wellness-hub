@@ -1,5 +1,4 @@
-/// Placeholder table so `prisma generate` succeeds before INF-003 / BE-001 land.
-/// Business tables are out of scope for the FE foundation track.
+/// INF-003 baseline. Business tables land in BE-001+ as sibling schema files.
 model AppMeta {
   id        String   @id @default(cuid())
   key       String   @unique
@@ -8,4 +7,5 @@ model AppMeta {
   updatedAt DateTime @updatedAt
 
   @@index([key])
+  @@map("app_meta")
 }

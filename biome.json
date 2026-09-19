@@ -4,7 +4,9 @@
     "includes": [
       "apps/**/*.{js,ts,jsx,tsx,json}",
       "packages/**/*.{js,ts,jsx,tsx,json}",
+      "scripts/secrets-scan.mjs",
       "*.{js,ts,json}",
+      "!!scripts/validate-asset-manifest.mjs",
       "!!**/node_modules",
       "!!**/.next",
       "!!**/dist",

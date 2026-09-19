@@ -14,17 +14,22 @@
     "db:migrate:create": "prisma migrate dev --create-only",
     "db:deploy": "tsx scripts/assert-supabase-auth.ts && prisma migrate deploy",
     "db:studio": "prisma studio",
+    "db:status": "prisma migrate status",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "db:smoke": "tsx scripts/smoke-connection.ts",
+    "db:ensure-buckets": "tsx scripts/ensure-storage-buckets.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@prisma/client": "^6.3.0"
+    "@prisma/client": "^6.19.0",
+    "pg": "^8.16.3"
   },
   "devDependencies": {
     "@types/node": "^22",
+    "@types/pg": "^8.15.5",
     "dotenv": "^17.4.2",
-    "prisma": "^6.3.0",
+    "prisma": "^6.19.0",
     "tsx": "^4.19.2",
     "typescript": "^5"
   }
