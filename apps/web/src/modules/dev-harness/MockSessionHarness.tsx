@@ -7,8 +7,9 @@ import { useState } from "react";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 const CUSTOMERS = [
-  { id: "cust-ana", label: "Ana Delgado" },
-  { id: "cust-ben", label: "Ben Santos" },
+  { id: "cust-ana", label: "Ana Delgado (Google)" },
+  { id: "cust-ben", label: "Ben Santos (email)" },
+  { id: "cust-empty", label: "Empty Inbox" },
 ];
 
 const BOOKINGS = [
@@ -16,9 +17,14 @@ const BOOKINGS = [
   "booking-held_awaiting_payment",
   "booking-payment_submitted",
   "booking-confirmed",
+  "booking-cancellation_requested",
+  "booking-reschedule_requested",
+  "booking-cancelled",
+  "booking-expired",
+  "booking-hold-capped",
 ];
 
-type Scenario = "normal" | "schedule-failed" | "session-became-full";
+type Scenario = "normal" | "schedule-failed" | "session-became-full" | "proof-upload-failed";
 
 export function MockSessionHarness() {
   const enabled = isMockHarnessEnabled();
@@ -99,12 +105,16 @@ export function MockSessionHarness() {
               if (next === "session-became-full") {
                 setMockRuntime({ sessionBecameFullId: "session-wed-open" });
               }
+              if (next === "proof-upload-failed") {
+                setMockRuntime({ failProofUpload: true });
+              }
               router.refresh();
             }}
           >
             <option value="normal">Normal</option>
             <option value="schedule-failed">Schedule failed to load</option>
             <option value="session-became-full">Session became full while viewed</option>
+            <option value="proof-upload-failed">GCash proof upload failed</option>
           </select>
         </label>
         <span className="sr-only">

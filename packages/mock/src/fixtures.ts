@@ -335,6 +335,19 @@ export const publicSessions: PublicSession[] = [
     availability: "open",
     status: "PUBLISHED",
   }),
+  session({
+    id: "session-thu-early",
+    classId: "class-yoga",
+    coachId: "coach-wolf",
+    startsAt: "2026-09-17T00:00:00.000Z",
+    endsAt: "2026-09-17T01:30:00.000Z",
+    pricePhp: 500,
+    capacity: 12,
+    remainingSlots: 6,
+    reservable: true,
+    availability: "open",
+    status: "PUBLISHED",
+  }),
 ];
 
 export const customers: CustomerProfile[] = [
@@ -350,6 +363,13 @@ export const customers: CustomerProfile[] = [
     fullName: "Ben Santos",
     email: "ben@example.com",
     contactNumber: "+63 917 000 0002",
+    authMethod: "email",
+  },
+  {
+    id: "cust-empty",
+    fullName: "Empty Inbox",
+    email: "empty@example.com",
+    contactNumber: "+63 917 000 0003",
     authMethod: "email",
   },
 ];
@@ -418,6 +438,12 @@ export const bookings: CustomerBooking[] = BOOKING_STATUSES.map((status, index) 
     paymentMethod: "GCASH",
     paymentStatus: "VERIFIED",
     customerId: "cust-ben",
+  }),
+  booking("booking-hold-capped", "HELD_AWAITING_PAYMENT", "session-thu-early", {
+    id: "booking-hold-capped",
+    customerId: "cust-ana",
+    createdAt: "2026-09-16T17:00:00.000Z",
+    holdExpiresAt: "2026-09-17T01:00:00.000Z",
   }),
 ]);
 

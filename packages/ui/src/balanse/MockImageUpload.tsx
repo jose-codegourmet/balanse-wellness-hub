@@ -8,6 +8,8 @@ const MAX_BYTES = 5 * 1024 * 1024;
 export type MockImageUploadProps = {
   label: string;
   fallbackLabel: string;
+  chooseLabel?: string;
+  submitLabel?: string;
   onMockSubmit?: (file: File | null) => Promise<void> | void;
   forceFailure?: boolean;
   className?: string;
@@ -16,6 +18,8 @@ export type MockImageUploadProps = {
 export function MockImageUpload({
   label,
   fallbackLabel,
+  chooseLabel = "Choose image",
+  submitLabel = "Submit",
   onMockSubmit,
   forceFailure = false,
   className,
@@ -66,8 +70,13 @@ export function MockImageUpload({
       setError("Proof upload failed. Check the file and try again.");
       return;
     }
-    await onMockSubmit?.(null);
-    setStatus("success");
+    try {
+      await onMockSubmit?.(null);
+      setStatus("success");
+    } catch {
+      setStatus("failed");
+      setError("Proof upload failed. Check the file and try again.");
+    }
   }
 
   return (
@@ -114,14 +123,14 @@ export function MockImageUpload({
           disabled={status !== "preview" && status !== "failed"}
           onClick={() => void submit()}
         >
-          Submit
+          {submitLabel}
         </button>
         <button
           type="button"
           className="rounded-md border border-border px-3 py-2 text-sm"
           onClick={() => document.getElementById(inputId)?.click()}
         >
-          Replace
+          {chooseLabel}
         </button>
         <button
           type="button"

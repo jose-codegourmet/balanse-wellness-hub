@@ -1,15 +1,16 @@
-import type { PaymentMethod, PublicSession } from "@balanse/domain";
-import { formatPeso } from "@balanse/domain";
+import type { PaymentMethod, PolicyAcceptance, PublicSession } from "@balanse/domain";
+import { computeHoldExpiresAt, formatPeso } from "@balanse/domain";
 import type { MockDataAdapter } from "./adapter";
 import {
   adminCoaches,
   customers,
+  MOCK_NOW_ISO,
   paymentInstructions,
-  policyAcceptances,
   publicClasses,
   publicCoaches,
   publicContent,
   publicSessions,
+  policyAcceptances as seedAcceptances,
   bookings as seedBookings,
   staff,
   toPublicCoach,
@@ -24,6 +25,7 @@ export function createMemoryAdapter(): MockDataAdapter {
   let bookings = seedBookings.map((b) => clone(b));
   const sessions = publicSessions.map((s) => clone(s));
   const profiles = customers.map((c) => clone(c));
+  const acceptances: Record<string, PolicyAcceptance[]> = clone(seedAcceptances);
 
   const findBooking = (id: string) => bookings.find((b) => b.id === id) ?? null;
 
@@ -74,27 +76,43 @@ export function createMemoryAdapter(): MockDataAdapter {
         return clone(profile);
       }),
     getMePolicyAcceptances: (customerId) =>
-      applyMockEffects(() => clone(policyAcceptances[customerId] ?? [])),
+      applyMockEffects(() => clone(acceptances[customerId] ?? [])),
+    createCustomer: (input) =>
+      applyMockEffects(() => {
+        const profile = {
+          id: `cust-${input.email.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+          fullName: input.fullName,
+          email: input.email,
+          contactNumber: input.contactNumber,
+          authMethod: "email" as const,
+        };
+        profiles.push(profile);
+        acceptances[profile.id] = [];
+        return clone(profile);
+      }),
 
-    createBooking: ({ customerId, sessionId }) =>
+    createBooking: ({ customerId, sessionId, policyAcceptances }) =>
       applyMockEffects(() => {
         const session = sessions.find((s) => s.id === sessionId);
         if (!session) throw new Error("Session not found");
+        const waitlisted = session.remainingSlots <= 0;
         const created = {
           id: `booking-new-${sessionId}`,
           customerId,
           sessionId,
-          status:
-            session.remainingSlots > 0
-              ? ("HELD_AWAITING_PAYMENT" as const)
-              : ("WAITLISTED" as const),
+          status: waitlisted ? ("WAITLISTED" as const) : ("HELD_AWAITING_PAYMENT" as const),
           paymentMethod: null,
           paymentStatus: "NONE" as const,
           refundStatus: "NOT_APPLICABLE" as const,
-          holdExpiresAt: session.startsAt,
-          createdAt: session.startsAt,
+          holdExpiresAt: waitlisted
+            ? null
+            : computeHoldExpiresAt(MOCK_NOW_ISO, session.startsAt).toISOString(),
+          createdAt: MOCK_NOW_ISO,
           session,
         };
+        if (policyAcceptances?.length) {
+          acceptances[customerId] = [...(acceptances[customerId] ?? []), ...policyAcceptances];
+        }
         bookings = [created, ...bookings];
         return clone(created);
       }),
@@ -118,13 +136,16 @@ export function createMemoryAdapter(): MockDataAdapter {
         return clone(booking);
       }),
     uploadPaymentProof: (bookingId) =>
-      applyMockEffects(() => {
-        const booking = findBooking(bookingId);
-        if (!booking) throw new Error("Booking not found");
-        booking.status = "PAYMENT_SUBMITTED";
-        booking.paymentStatus = "PROOF_SUBMITTED";
-        return clone(booking);
-      }),
+      applyMockEffects(
+        () => {
+          const booking = findBooking(bookingId);
+          if (!booking) throw new Error("Booking not found");
+          booking.status = "PAYMENT_SUBMITTED";
+          booking.paymentStatus = "PROOF_SUBMITTED";
+          return clone(booking);
+        },
+        { proofUpload: true },
+      ),
     getPaymentInstructions: () => applyMockEffects(() => clone(paymentInstructions)),
     createCancellationRequest: (bookingId) =>
       applyMockEffects(() => {
