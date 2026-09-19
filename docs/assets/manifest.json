@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "updated": "2026-09-19",
-  "notes": "Closed inventory: landing A–D, about A–C, contact A–B, faqs A, coaches A–C, 11 roster headshots, designed placeholder at 4:5 and 1:1 (ASSET-014). Headshot runtime model is nano_banana_2_shots (not nano_banana_pro). Ephraim pilot approved ASSET-011. storage_key filled by ASSET-030 after INF-004/BE-021. Only approved assets may ship.",
+  "notes": "Closed inventory: landing A–D, about A–C, contact A–B, faqs A, coaches A–C, 11 roster headshots, designed placeholder at 4:5 and 1:1 (ASSET-014). Headshot runtime model is nano_banana_2_shots (not nano_banana_pro). ASSET-012: eight source-backed headshots approved (Jose auto-approve). Alec / Sofia / Kate remain ASSET-014 placeholders — no invented faces. storage_key filled by ASSET-030 after INF-004/BE-021. Only approved assets may ship.",
   "assets": [
     {
       "id": "landing-a",
@@ -349,18 +349,19 @@
         "higgsfield_media_id": null
       },
       "generation_policy": "generate",
-      "do_not_generate_reason": "ASSET-011 consistency wave pending; same headshot-v1 recipe. Do not invent a face.",
+      "do_not_generate_reason": null,
       "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "4:5"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Editorial portrait of Coach Rex Francis Regis.",
       "post_processing": [],
       "storage_key": null,
+      "working_path": "docs/assets/headshots/rex-francis-regis/headshot-4x5.jpg",
       "coach_slug": "rex-francis-regis"
     },
     {
@@ -390,6 +391,7 @@
       "alt_text": "Editorial portrait of Coach Ephraim Bacaltos.",
       "post_processing": [],
       "storage_key": null,
+      "working_path": "docs/assets/headshots/ephraim-bacaltos/headshot-4x5.jpg",
       "coach_slug": "ephraim-bacaltos"
     },
     {
@@ -406,18 +408,19 @@
         "higgsfield_media_id": null
       },
       "generation_policy": "generate",
-      "do_not_generate_reason": "Queued after consent + ASSET-011 look lockup. Do not invent a face.",
-      "model": "nano_banana_pro",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "4:5"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Editorial portrait of Coach Rachelle Tobiano.",
       "post_processing": [],
       "storage_key": null,
+      "working_path": "docs/assets/headshots/rachelle-tobiano/headshot-4x5.jpg",
       "coach_slug": "rachelle-tobiano"
     },
     {
@@ -462,18 +465,19 @@
         "higgsfield_media_id": null
       },
       "generation_policy": "generate",
-      "do_not_generate_reason": "Queued after consent + ASSET-011 look lockup. Do not invent a face.",
-      "model": "nano_banana_pro",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "4:5"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Editorial portrait of Coach Jodi Tio.",
       "post_processing": [],
       "storage_key": null,
+      "working_path": "docs/assets/headshots/jodi-tio/headshot-4x5.jpg",
       "coach_slug": "jodi-tio"
     },
     {
@@ -490,18 +494,19 @@
         "higgsfield_media_id": null
       },
       "generation_policy": "generate",
-      "do_not_generate_reason": "Queued after consent + ASSET-011 look lockup. Do not invent a face.",
-      "model": "nano_banana_pro",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "4:5"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Editorial portrait of Coach Wolf.",
       "post_processing": [],
       "storage_key": null,
+      "working_path": "docs/assets/headshots/wolf/headshot-4x5.jpg",
       "coach_slug": "wolf"
     },
     {
@@ -574,18 +579,19 @@
         "higgsfield_media_id": null
       },
       "generation_policy": "generate",
-      "do_not_generate_reason": "Queued after consent + ASSET-011 look lockup. Do not invent a face.",
-      "model": "nano_banana_pro",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "4:5"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Editorial portrait of Coach Mikaela Danielle.",
       "post_processing": [],
       "storage_key": null,
+      "working_path": "docs/assets/headshots/mikaela-danielle/headshot-4x5.jpg",
       "coach_slug": "mikaela-danielle"
     },
     {
@@ -602,18 +608,19 @@
         "higgsfield_media_id": null
       },
       "generation_policy": "generate",
-      "do_not_generate_reason": "Queued after consent + ASSET-011 look lockup. Do not invent a face.",
-      "model": "nano_banana_pro",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "4:5"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Editorial portrait of Coach Maris Cabrera.",
       "post_processing": [],
       "storage_key": null,
+      "working_path": "docs/assets/headshots/maris-cabrera/headshot-4x5.jpg",
       "coach_slug": "maris-cabrera"
     },
     {
@@ -630,18 +637,19 @@
         "higgsfield_media_id": null
       },
       "generation_policy": "generate",
-      "do_not_generate_reason": "Queued after consent + ASSET-011 look lockup. Do not invent a face.",
-      "model": "nano_banana_pro",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "4:5"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Editorial portrait of Coach Francis Acido.",
       "post_processing": [],
       "storage_key": null,
+      "working_path": "docs/assets/headshots/francis-acido/headshot-4x5.jpg",
       "coach_slug": "francis-acido"
     },
     {

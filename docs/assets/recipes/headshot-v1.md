@@ -3,8 +3,8 @@
 **Ticket:** ASSET-011  
 **Frozen:** 2026-09-19  
 **Pilot:** Coach Ephraim Bacaltos (`coach-headshot-ephraim-bacaltos`)  
-**Consistency coach:** Rex Francis Regis — **same recipe**, generation wave pending (do not invent a final in this lockup)  
-**Approval:** Jose auto-approved all Assets (2026-09-19). Likeness of the Ephraim pilot judged against catalogued source `src-coach-ephraim-01`.
+**Consistency coach:** Rex Francis Regis — **same recipe**; ASSET-012 roster wave approved  
+**Approval:** Jose auto-approved all Assets (2026-09-19). Likeness judged against each coach’s catalogued `intake_item_id`.
 
 Operators must copy this file. Do not paraphrase the prompt. Do not pass `nano_banana_pro` as the Higgsfield `model` id.
 
@@ -51,6 +51,13 @@ Discipline hint for this coach (environmental context only, not costume): {DISCI
 | --- | --- |
 | Ephraim Bacaltos (pilot) | Circuit Training / Groundworks / Calisthenics |
 | Rex Francis Regis (consistency) | Calisthenics / Mat Pilates / Caliyoga |
+| Rachelle Tobiano | Kickboxing / Brazilian Jiu-Jitsu |
+| Jodi Tio | Mat Pilates |
+| Wolf | Yoga |
+| Mikaela Danielle | Dance Fitness |
+| Maris Cabrera | Dance Fitness |
+| Francis Acido | Dance Fitness |
+| Alec James Co / Sofia Ocampo / Kate Go | *Do not generate. ASSET-014 placeholder.* |
 
 Do not add names, class titles as text in the image, invented kit, or a Balansé wordmark.
 
@@ -84,7 +91,7 @@ medias: [{ value: "<higgsfield_media_id>", role: "image_references" }]
 | Job id | `af39341b-0d60-4959-9c60-0ef77aab707f` |
 | Working master | `docs/assets/headshots/ephraim-bacaltos/headshot-4x5.jpg` |
 
-Rex’s `higgsfield_media_id` is filled when that wave runs.
+Rex and the remaining generate-queue coaches were registered for ASSET-012. Placeholder coaches (Alec, Sofia, Kate) are never registered.
 
 ---
 
@@ -161,9 +168,28 @@ Statuses: only `approved` may ship. Alt text is required before `approved`. Iden
 
 ## Consistency proof
 
-| Coach | Source | Output in this PR | Status |
+| Coach | Source | Working master | Status |
 | --- | --- | --- | --- |
-| Ephraim Bacaltos | `src-coach-ephraim-01` | `docs/assets/headshots/ephraim-bacaltos/headshot-4x5.jpg` | Approved (Jose auto-approve 2026-09-19) |
-| Rex Francis Regis | `src-coach-rex-01` | — | Wave pending, **same recipe** |
+| Ephraim Bacaltos | `src-coach-ephraim-01` | `docs/assets/headshots/ephraim-bacaltos/headshot-4x5.jpg` | Approved (ASSET-011; not re-run in ASSET-012) |
+| Rex Francis Regis | `src-coach-rex-01` | `docs/assets/headshots/rex-francis-regis/headshot-4x5.jpg` | Approved ASSET-012 |
+| Rachelle Tobiano | `src-coach-rachelle-01` | `docs/assets/headshots/rachelle-tobiano/headshot-4x5.jpg` | Approved ASSET-012 |
+| Jodi Tio | `src-coach-jodi-01` | `docs/assets/headshots/jodi-tio/headshot-4x5.jpg` | Approved ASSET-012 |
+| Wolf | `src-coach-wolf-01` | `docs/assets/headshots/wolf/headshot-4x5.jpg` | Approved ASSET-012 |
+| Mikaela Danielle | `src-coach-mikaela-01` | `docs/assets/headshots/mikaela-danielle/headshot-4x5.jpg` | Approved ASSET-012 |
+| Maris Cabrera | `src-coach-maris-01` | `docs/assets/headshots/maris-cabrera/headshot-4x5.jpg` | Approved ASSET-012 |
+| Francis Acido | `src-coach-francis-01` | `docs/assets/headshots/francis-acido/headshot-4x5.jpg` | Approved ASSET-012 |
+| Alec / Sofia / Kate | — | `docs/assets/placeholders/coach-placeholder-4x5.svg` | ASSET-014 only — no invented face |
 
-ASSET-012 must not start a third coach until Rex’s wave is reviewed side-by-side with Ephraim for framing, light, and colour.
+---
+
+## Late-arrival procedure (ASSET-012)
+
+Do **not** re-run the whole roster when a new source lands.
+
+1. Catalogue the photo (`intake.md` + `coverage-matrix.yaml` + `source-catalog.yaml`).
+2. Confirm `source_photo_received: yes`, `consent_recorded: yes`, `decision: generate`, quality `pass`.
+3. Register **that coach’s** source as Higgsfield media; run `headshot-v1` once with `nano_banana_2_shots` @ 4:5 / 1k.
+4. Side-by-side check against the existing approved set (Ephraim + Rex first). Approve or reject **that slug only**.
+5. Write `working_path`, `source_asset_id`, model, date, approver, and one cost-log row. Leave other masters untouched.
+
+**Exercised:** ASSET-011 locked Ephraim only. ASSET-012 generated the other seven source-backed coaches without regenerating Ephraim (~4 credits × 7). Alec / Sofia / Kate stay on this same procedure when ARWs arrive.
