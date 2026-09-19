@@ -1,8 +1,20 @@
 "use client";
 
 import type { PublicCoach } from "@balanse/domain";
-import { coachSpecialtyChips, filterPublicCoaches, publicCoachCardFields } from "@balanse/domain";
-import { Button, Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@balanse/ui";
+import {
+  COACH_SPECIALTY_ACCENT_IDS,
+  coachSpecialtyChips,
+  filterPublicCoaches,
+  publicCoachCardFields,
+} from "@balanse/domain";
+import {
+  Button,
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+  MarketingImage,
+} from "@balanse/ui";
 import { useMemo, useState } from "react";
 import { CoachPreviewCard } from "./CoachPreviewCard";
 
@@ -24,6 +36,13 @@ export function CoachesPage({
         Filter by specialty. View Classes opens the public calendar for that coach. Rates are not
         shown.
       </p>
+      <ul className="mt-8 grid grid-cols-3 gap-3 sm:max-w-md" aria-label="Specialty accents">
+        {COACH_SPECIALTY_ACCENT_IDS.map((assetId) => (
+          <li key={assetId}>
+            <MarketingImage assetId={assetId} />
+          </li>
+        ))}
+      </ul>
       <div className="mt-6 flex flex-wrap gap-2" role="toolbar" aria-label="Specialty filters">
         {chips.map((chip) => (
           <Button
