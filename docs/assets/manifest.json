@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "updated": "2026-09-19",
-  "notes": "Closed inventory: landing A–D, about A–C, contact A–B, faqs A, coaches A–C, 11 roster headshots + 1:1 delivery crops (ASSET-013), designed placeholder at 4:5 and 1:1 (ASSET-014). Headshot runtime model is nano_banana_2_shots (not nano_banana_pro). ASSET-012: eight source-backed 4:5 masters approved. ASSET-013: ImageMagick hero-tile card + avatar + responsive WebP/JPEG from those masters (no face re-generation); lossless PNG archive of each sheet. ASSET-015 group hero skipped (Alec / Sofia / Kate lack sources). Specialty accents and landing A–D not generated here: Higgsfield nano_banana_2_shots requires exactly one image_references and rejected text-only submits — hand off to Balanse image assets agent. storage_key filled by ASSET-030. Only approved assets may ship.",
+  "notes": "Closed inventory: landing A–D, about A–C, contact A–B, faqs A, coaches A–C, 11 roster headshots + 1:1 delivery crops (ASSET-013), designed placeholder at 4:5 and 1:1 (ASSET-014). Headshot and marketing runtime model is nano_banana_2_shots (not nano_banana_pro). ASSET-012/013: eight source-backed headshot sets approved. ASSET-015 group hero skipped (Alec / Sofia / Kate lack sources). ASSET-015 specialty accents + ASSET-020–023 marketing slots generated 2026-09-19 with mood plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 (source_free / non-identity). Jose auto-approve. Working files in docs/assets/marketing/{page}/. storage_key filled by ASSET-030 (still blocked on Storage buckets). Only approved assets may ship.",
   "assets": [
     {
       "id": "landing-a",
@@ -18,20 +18,34 @@
       "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
-        "aspect_ratio": "16:9"
+        "aspect_ratio": "16:9",
+        "image_references": [
+          "0dad9831-2091-4538-b892-f9f96e6d7352"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Soft wellness-studio interior with quiet center for the booking calendar.",
       "post_processing": [
         {
-          "op": "blocked-text-to-image",
-          "notes": "ASSET-020 not generated in this run: nano_banana_2_shots rejected text-only (requires one image_references). Hand off to image-assets agent."
+          "op": "mood-plate-reference",
+          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+        },
+        {
+          "op": "contact-sheet",
+          "notes": "3×3 nano_banana_2_shots sheet, 2400×1340 (~16:9). Quiet abstract plates; no centered faces. Delivery WebP 108 KB."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
       "storage_key": null,
-      "coach_slug": null
+      "coach_slug": null,
+      "working_path": "docs/assets/marketing/landing/hero-accent-16x9.webp"
     },
     {
       "id": "landing-b",
@@ -48,20 +62,35 @@
       "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
-        "aspect_ratio": "3:2"
+        "aspect_ratio": "3:2",
+        "image_references": [
+          "0dad9831-2091-4538-b892-f9f96e6d7352"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity",
+        "native_canvas": "1:1 contact sheet 2400×2400"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Candid small-group movement class in a contemporary studio.",
       "post_processing": [
         {
-          "op": "blocked-text-to-image",
-          "notes": "ASSET-020 not generated in this run: nano_banana_2_shots rejected text-only (requires one image_references). Hand off to image-assets agent."
+          "op": "mood-plate-reference",
+          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+        },
+        {
+          "op": "contact-sheet",
+          "notes": "3×3 sheet 2400×2400 (square canvas). Filename token remains 3x2 per ASSET-002 slot. Single coherent abstract field per cell — not a collage. Delivery WebP 113 KB."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
       "storage_key": null,
-      "coach_slug": null
+      "coach_slug": null,
+      "working_path": "docs/assets/marketing/landing/classes-editorial-3x2.webp"
     },
     {
       "id": "landing-c",
@@ -78,20 +107,34 @@
       "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
-        "aspect_ratio": "1:1"
+        "aspect_ratio": "1:1",
+        "image_references": [
+          "0dad9831-2091-4538-b892-f9f96e6d7352"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Towel, water bottle, hand wraps, yoga strap, and a face-down phone.",
       "post_processing": [
         {
-          "op": "blocked-text-to-image",
-          "notes": "ASSET-020 not generated in this run: nano_banana_2_shots rejected text-only (requires one image_references). Hand off to image-assets agent."
+          "op": "mood-plate-reference",
+          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+        },
+        {
+          "op": "contact-sheet",
+          "notes": "3×3 sheet 2400×2400. No readable text, no phone-screen UI. Delivery WebP 75 KB."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
       "storage_key": null,
-      "coach_slug": null
+      "coach_slug": null,
+      "working_path": "docs/assets/marketing/landing/how-it-works-still-life-1x1.webp"
     },
     {
       "id": "landing-d",
@@ -108,20 +151,35 @@
       "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
-        "aspect_ratio": "21:9"
+        "aspect_ratio": "21:9",
+        "image_references": [
+          "0dad9831-2091-4538-b892-f9f96e6d7352"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity",
+        "native_canvas": "16:9 contact sheet 2400×1340"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Wide golden-hour studio floor with people at the far right.",
       "post_processing": [
         {
-          "op": "blocked-text-to-image",
-          "notes": "ASSET-020 not generated in this run: nano_banana_2_shots rejected text-only (requires one image_references). Hand off to image-assets agent."
+          "op": "mood-plate-reference",
+          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+        },
+        {
+          "op": "contact-sheet",
+          "notes": "3×3 sheet 2400×1340. Filename token 21x9 per slot. Cells keep left-side negative space with figures off-centre. Delivery WebP 60 KB."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
       "storage_key": null,
-      "coach_slug": null
+      "coach_slug": null,
+      "working_path": "docs/assets/marketing/landing/final-cta-21x9.webp"
     },
     {
       "id": "about-a",
@@ -135,18 +193,37 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_pro",
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
-        "aspect_ratio": "16:9"
+        "aspect_ratio": "16:9",
+        "image_references": [
+          "0dad9831-2091-4538-b892-f9f96e6d7352"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Candid post-class moment with people grouped to one side.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "mood-plate-reference",
+          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+        },
+        {
+          "op": "contact-sheet",
+          "notes": "3×3 sheet 2400×1340. Abstract candid field with grouping/negative space, not a corporate lineup. Delivery WebP 42 KB."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+        }
+      ],
       "storage_key": null,
-      "coach_slug": null
+      "coach_slug": null,
+      "working_path": "docs/assets/marketing/about/hero-16x9.webp"
     },
     {
       "id": "about-b",
@@ -160,18 +237,38 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_pro",
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
-        "aspect_ratio": "4:3"
+        "aspect_ratio": "4:3",
+        "image_references": [
+          "0dad9831-2091-4538-b892-f9f96e6d7352"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity",
+        "native_canvas": "1:1 contact sheet 2400×2400"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Studio corner balancing strength, mobility, and recovery props.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "mood-plate-reference",
+          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+        },
+        {
+          "op": "contact-sheet",
+          "notes": "3×3 sheet 2400×2400. Filename token 4x3 per slot. Secondary human presence only. Delivery WebP 84 KB."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+        }
+      ],
       "storage_key": null,
-      "coach_slug": null
+      "coach_slug": null,
+      "working_path": "docs/assets/marketing/about/our-approach-4x3.webp"
     },
     {
       "id": "about-c",
@@ -185,25 +282,39 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_pro",
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
-        "aspect_ratio": "21:9 generate then crop"
+        "aspect_ratio": "21:9 generate then crop to 3:1",
+        "image_references": [
+          "0dad9831-2091-4538-b892-f9f96e6d7352"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Abstract photographic texture of fabric, warm concrete, and soft shadows.",
       "post_processing": [
+        {
+          "op": "mood-plate-reference",
+          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 as image_references. Not a likeness source."
+        },
         {
           "op": "crop",
           "from": "21:9",
           "to": "3:1",
-          "notes": "Native 3:1 unavailable; generate 21:9 then crop."
+          "notes": "Delivered already cropped to 2400×800 (true 3:1). Source generate ratio 21:9 recorded."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null."
         }
       ],
       "storage_key": null,
-      "coach_slug": null
+      "coach_slug": null,
+      "working_path": "docs/assets/marketing/about/brand-texture-3x1.webp"
     },
     {
       "id": "contact-a",
@@ -217,18 +328,37 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_pro",
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
-        "aspect_ratio": "16:9"
+        "aspect_ratio": "16:9",
+        "image_references": [
+          "0dad9831-2091-4538-b892-f9f96e6d7352"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Atmospheric studio arrival threshold; not a real storefront.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "mood-plate-reference",
+          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+        },
+        {
+          "op": "contact-sheet",
+          "notes": "3×3 sheet 2400×1340. Atmospheric threshold only — no storefront, signage, or address. Real location photography, if Coach Rex supplies it, replaces this slot rather than sitting beside it. Delivery WebP 37 KB."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+        }
+      ],
       "storage_key": null,
-      "coach_slug": null
+      "coach_slug": null,
+      "working_path": "docs/assets/marketing/contact/visit-hero-16x9.webp"
     },
     {
       "id": "contact-b",
@@ -242,18 +372,37 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_pro",
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
-        "aspect_ratio": "1:1"
+        "aspect_ratio": "1:1",
+        "image_references": [
+          "0dad9831-2091-4538-b892-f9f96e6d7352"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Phone near an abstract, non-scannable tabletop QR stand.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "mood-plate-reference",
+          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+        },
+        {
+          "op": "contact-sheet",
+          "notes": "3×3 sheet 2400×2400. No scannable QR, no fake app UI. Delivery WebP 137 KB."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+        }
+      ],
       "storage_key": null,
-      "coach_slug": null
+      "coach_slug": null,
+      "working_path": "docs/assets/marketing/contact/walk-in-qr-1x1.webp"
     },
     {
       "id": "faqs-a",
@@ -267,18 +416,38 @@
       "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_pro",
+      "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
-        "aspect_ratio": "3:2"
+        "aspect_ratio": "3:2",
+        "image_references": [
+          "0dad9831-2091-4538-b892-f9f96e6d7352"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity",
+        "native_canvas": "1:1 contact sheet 2400×2400"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
       "alt_text": "Calm after-class studio corner with mat, wraps, towel, and bottle.",
-      "post_processing": [],
+      "post_processing": [
+        {
+          "op": "mood-plate-reference",
+          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+        },
+        {
+          "op": "contact-sheet",
+          "notes": "3×3 sheet 2400×2400. Filename token 3x2 per slot. Quiet accent with offset objects / negative space. Inventory: no further FAQ imagery is to be generated. Delivery WebP 72 KB."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+        }
+      ],
       "storage_key": null,
-      "coach_slug": null
+      "coach_slug": null,
+      "working_path": "docs/assets/marketing/faqs/header-accent-3x2.webp"
     },
     {
       "id": "coaches-a",
@@ -340,24 +509,165 @@
       "identity_bound": false,
       "source_free": true,
       "source_asset_id": null,
+      "generation_policy": "per_coach",
+      "do_not_generate_reason": "Slot rollup. Published files are coaches-c-yoga / coaches-c-boxing / coaches-c-capoeira.",
+      "model": "nano_banana_2_shots",
+      "model_parameters": {
+        "resolution": "1k",
+        "aspect_ratio": "1:1",
+        "image_references": [
+          "0dad9831-2091-4538-b892-f9f96e6d7352"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity"
+      },
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
+      "alt_text": "Close-crop movement detail without a full face.",
+      "post_processing": [
+        {
+          "op": "specialty-variants",
+          "notes": "ASSET-015 specialty accents delivered as three 1:1 source-free variants (yoga, boxing, capoeira). Group hero (coaches-b) remains skipped."
+        }
+      ],
+      "storage_key": null,
+      "coach_slug": null,
+      "working_path": null
+    },
+    {
+      "id": "coaches-c-yoga",
+      "page": "coaches",
+      "slot": "specialty-accent-yoga",
+      "slot_letter": "C",
+      "aspect_ratio": "1:1",
+      "source_prompt_key": "coaches-C",
+      "identity_bound": false,
+      "source_free": true,
+      "source_asset_id": null,
       "generation_policy": "generate",
       "do_not_generate_reason": null,
       "model": "nano_banana_2_shots",
       "model_parameters": {
         "resolution": "1k",
-        "aspect_ratio": "1:1"
+        "aspect_ratio": "1:1",
+        "image_references": [
+          "0dad9831-2091-4538-b892-f9f96e6d7352"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity",
+        "discipline": "yoga"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
-      "alt_text": "Close-crop movement detail without a full face.",
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
+      "alt_text": "Close-crop yoga movement accent without a full face.",
       "post_processing": [
         {
-          "op": "blocked-text-to-image",
-          "notes": "2026-09-19 cloud agent: nano_banana_2_shots 422 — image_references must contain exactly one image. Yoga/boxing/capoeira 1:1 accents still required; generate via Balanse image assets agent (do not invent faces)."
+          "op": "mood-plate-reference",
+          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+        },
+        {
+          "op": "contact-sheet",
+          "notes": "3×3 sheet 2400×2400. No full faces. Discipline token: yoga. Delivery WebP under docs/assets/marketing/coaches/specialty-accent-yoga-1x1.webp."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
         }
       ],
       "storage_key": null,
+      "working_path": "docs/assets/marketing/coaches/specialty-accent-yoga-1x1.webp",
+      "coach_slug": null
+    },
+    {
+      "id": "coaches-c-boxing",
+      "page": "coaches",
+      "slot": "specialty-accent-boxing",
+      "slot_letter": "C",
+      "aspect_ratio": "1:1",
+      "source_prompt_key": "coaches-C",
+      "identity_bound": false,
+      "source_free": true,
+      "source_asset_id": null,
+      "generation_policy": "generate",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
+      "model_parameters": {
+        "resolution": "1k",
+        "aspect_ratio": "1:1",
+        "image_references": [
+          "0dad9831-2091-4538-b892-f9f96e6d7352"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity",
+        "discipline": "boxing"
+      },
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
+      "alt_text": "Close-crop boxing movement accent without a full face.",
+      "post_processing": [
+        {
+          "op": "mood-plate-reference",
+          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+        },
+        {
+          "op": "contact-sheet",
+          "notes": "3×3 sheet 2400×2400. No full faces. Discipline token: boxing. Delivery WebP under docs/assets/marketing/coaches/specialty-accent-boxing-1x1.webp."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+        }
+      ],
+      "storage_key": null,
+      "working_path": "docs/assets/marketing/coaches/specialty-accent-boxing-1x1.webp",
+      "coach_slug": null
+    },
+    {
+      "id": "coaches-c-capoeira",
+      "page": "coaches",
+      "slot": "specialty-accent-capoeira",
+      "slot_letter": "C",
+      "aspect_ratio": "1:1",
+      "source_prompt_key": "coaches-C",
+      "identity_bound": false,
+      "source_free": true,
+      "source_asset_id": null,
+      "generation_policy": "generate",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2_shots",
+      "model_parameters": {
+        "resolution": "1k",
+        "aspect_ratio": "1:1",
+        "image_references": [
+          "0dad9831-2091-4538-b892-f9f96e6d7352"
+        ],
+        "image_references_role": "mood_plate",
+        "source_kind": "source_free_non_identity",
+        "discipline": "capoeira"
+      },
+      "generation_date": "2026-09-19",
+      "approval_status": "approved",
+      "approver": "Jose (standing auto-approve, 2026-09-19)",
+      "alt_text": "Close-crop capoeira movement accent without a full face.",
+      "post_processing": [
+        {
+          "op": "mood-plate-reference",
+          "notes": "Non-identity. Neutral plate media_id 0dad9831-2091-4538-b892-f9f96e6d7352 passed as the required single image_references so nano_banana_2_shots can run. Plate is source_free / mood only — not a likeness source."
+        },
+        {
+          "op": "contact-sheet",
+          "notes": "3×3 sheet 2400×2400. No full faces. Discipline token: capoeira. Delivery WebP under docs/assets/marketing/coaches/specialty-accent-capoeira-1x1.webp."
+        },
+        {
+          "op": "ready-for-storage",
+          "notes": "ASSET-030 still blocked on Storage buckets. storage_key stays null. Upload WebP delivery + JPEG fallback under marketing-assets/{page}/{slot}-{aspect}.{ext}."
+        }
+      ],
+      "storage_key": null,
+      "working_path": "docs/assets/marketing/coaches/specialty-accent-capoeira-1x1.webp",
       "coach_slug": null
     },
     {

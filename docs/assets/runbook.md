@@ -114,7 +114,7 @@ Brand palette cues (findings §5; art direction only — **not** overlaid logos 
 | All production gens this track | `nano_banana_2_shots` | **1k** | Jose / TL lock. Display name Nano Banana Pro. |
 | Coach headshots (4:5) | `nano_banana_2_shots` | 1k | Native `4:5`. Requires `image_references` media id. Recipe: [headshot-v1.md](recipes/headshot-v1.md) |
 | Group hero (16:9) | `nano_banana_2_shots` | 1k | Identity-bound; skip if roster coverage incomplete |
-| Non-identity scenes / still lifes / textures | `nano_banana_2_shots` | 1k | Text-to-image; `source_free: true` |
+| Non-identity scenes / still lifes / textures | `nano_banana_2_shots` | 1k | `source_free: true`. Model requires exactly one `image_references` — use the neutral mood plate `0dad9831-2091-4538-b892-f9f96e6d7352` (not a likeness). Do **not** set `source_asset_id`. |
 | Placeholder avatar | *not generated as a face* | — | Designed SVG at `docs/assets/placeholders/` (`ASSET-014`) |
 
 `soul_2` supports portraits and `soul_id` but **does not offer 4:5** and is **out of policy** for this work. Do not use it to work around ratio gaps.

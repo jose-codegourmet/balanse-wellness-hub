@@ -5,12 +5,12 @@
 # consent_recorded: yes for generate coaches (catalogued source photos).
 # Standing Jose auto-approve of all Assets, 2026-09-19.
 # Placeholder-only coaches stay consent_recorded: no until a source lands.
-# last_reviewed: 2026-09-19 (ASSET-013 delivery crops; ASSET-015 group hero skipped)
+# last_reviewed: 2026-09-19 (ASSET-020–023 marketing + ASSET-015 specialty accents landed)
 #
-# ASSET-015 inventory skip: coaches-B group hero is do_not_generate until Alec,
+# ASSET-015 inventory skip: coaches-B group hero remains do_not_generate until Alec,
 # Sofia, and Kate have catalogued sources + consent. Specialty 1:1 accents
-# (yoga / boxing / capoeira) remain generate but were not produced in the
-# 2026-09-19 cloud run — nano_banana_2_shots requires image_references.
+# (yoga / boxing / capoeira) delivered 2026-09-19 via nano_banana_2_shots +
+# source_free mood plate 0dad9831-2091-4538-b892-f9f96e6d7352.
 
 coaches:
   - slug: rex-francis-regis
