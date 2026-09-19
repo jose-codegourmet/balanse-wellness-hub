@@ -1,24 +1,13 @@
-import { publicPageSlotIds } from "@balanse/domain";
-import { MarketingImage } from "@balanse/ui";
+import { getMockAdapter } from "@balanse/mock";
 import type { Metadata } from "next";
+import { AboutPage } from "@/modules/public/AboutPage";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "About Balansé Wellness Hub.",
+  description: "About Balansé Wellness Hub — movement, wellness, and community in Cebu.",
 };
 
-export default function Page() {
-  return (
-    <section className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="font-display text-3xl">About</h1>
-      <p className="mt-3 max-w-2xl text-muted-foreground">
-        Page shell only. FE-PUB-002 owns copy. Image slots come from the asset manifest.
-      </p>
-      <div className="mt-8 grid gap-4">
-        {publicPageSlotIds("about").map((id) => (
-          <MarketingImage key={id} assetId={id} />
-        ))}
-      </div>
-    </section>
-  );
+export default async function Page() {
+  const coaches = await getMockAdapter().getPublicCoaches();
+  return <AboutPage coaches={coaches} />;
 }

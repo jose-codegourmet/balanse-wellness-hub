@@ -1,4 +1,4 @@
-import { MOCK_NOW_ISO, publicClasses, publicSessions } from "@balanse/mock";
+import { MOCK_NOW_ISO, publicClasses, publicCoaches, publicSessions } from "@balanse/mock";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { ScheduleCalendar } from "./ScheduleCalendar";
 
@@ -8,6 +8,7 @@ const meta = {
   args: {
     sessions: publicSessions,
     classes: publicClasses,
+    coaches: publicCoaches,
     nowIso: MOCK_NOW_ISO,
     view: "week",
   },
@@ -66,6 +67,10 @@ export const EmptyDay: Story = {
 
 export const FilterEmpty: Story = {
   args: { view: "week", initialClassFilter: "class-bjj" },
+};
+
+export const CoachFilter: Story = {
+  args: { view: "week", initialCoachFilter: "coach-rex" },
 };
 
 export const LoadFailed: Story = {

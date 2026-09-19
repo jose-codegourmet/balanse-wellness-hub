@@ -4,11 +4,13 @@ import { BALANSE_BREAKPOINTS } from "@balanse/config";
 import {
   addManilaDays,
   daysInManilaMonth,
+  filterPublicSessions,
   formatPeso,
   formatSessionDate,
   formatSessionTime,
   manilaYmd,
   type PublicClass,
+  type PublicCoach,
   type PublicSession,
   startOfManilaMonth,
   startOfManilaWeekMonday,
@@ -36,6 +38,8 @@ export type ScheduleCalendarProps = {
   onReserve?: (session: PublicSession) => void;
   onClearFilter?: () => void;
   initialClassFilter?: string;
+  initialCoachFilter?: string;
+  coaches?: PublicCoach[];
 };
 
 const AVAILABILITY_COPY: Record<PublicSession["availability"], string> = {
@@ -74,15 +78,26 @@ export function ScheduleCalendar({
   onReserve,
   onClearFilter,
   initialClassFilter = "all",
+  initialCoachFilter = "all",
+  coaches = [],
 }: ScheduleCalendarProps) {
   const [width, setWidth] = useState<number>(BALANSE_BREAKPOINTS.desktop);
   const [classFilter, setClassFilter] = useState<string>(initialClassFilter);
+  const [coachFilter, setCoachFilter] = useState<string>(initialCoachFilter);
   const [selectedDay, setSelectedDay] = useState(() => manilaYmd(nowIso));
   const [selectedId, setSelectedId] = useState<string | null>(selectedSessionId);
 
   useEffect(() => {
     if (selectedSessionId) setSelectedId(selectedSessionId);
   }, [selectedSessionId]);
+
+  useEffect(() => {
+    setClassFilter(initialClassFilter);
+  }, [initialClassFilter]);
+
+  useEffect(() => {
+    setCoachFilter(initialCoachFilter);
+  }, [initialCoachFilter]);
 
   useEffect(() => {
     if (view !== "auto") return;
@@ -95,10 +110,16 @@ export function ScheduleCalendar({
   const resolvedView: CalendarView = view === "auto" ? detectView(width) : view;
   const today = manilaYmd(nowIso);
 
-  const filtered = useMemo(() => {
-    if (classFilter === "all") return sessions;
-    return sessions.filter((session) => session.classId === classFilter);
-  }, [classFilter, sessions]);
+  const filtered = useMemo(
+    () => filterPublicSessions(sessions, { classId: classFilter, coachId: coachFilter }),
+    [classFilter, coachFilter, sessions],
+  );
+  const coachName =
+    coachFilter !== "all"
+      ? (coaches.find((coach) => coach.id === coachFilter)?.name ??
+        sessions.find((session) => session.coachId === coachFilter)?.coachName ??
+        "Coach")
+      : null;
 
   const days = useMemo(() => {
     const cells: Array<{ key: string; ymd: string | null }> = [];
@@ -141,7 +162,7 @@ export function ScheduleCalendar({
   const selected = preferred;
   const becameFull = selected && sessionBecameFullId === selected.id;
 
-  const filterEmpty = classFilter !== "all" && filtered.length === 0;
+  const filterEmpty = (classFilter !== "all" || coachFilter !== "all") && filtered.length === 0;
   const dayEmpty = !filterEmpty && !loadError && daySessions.length === 0;
 
   function moveDay(delta: number) {
@@ -171,6 +192,19 @@ export function ScheduleCalendar({
         >
           All
         </Button>
+        {coachName ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={() => {
+              setCoachFilter("all");
+              onClearFilter?.();
+            }}
+          >
+            Coach: {coachName}
+          </Button>
+        ) : null}
         {classes.map((item) => (
           <Button
             key={item.id}
@@ -206,6 +240,7 @@ export function ScheduleCalendar({
           id="calendar.filter-empty"
           onAction={() => {
             setClassFilter("all");
+            setCoachFilter("all");
             onClearFilter?.();
           }}
         />
@@ -275,99 +310,108 @@ export function ScheduleCalendar({
 
       {dayEmpty ? <FeedbackState id="calendar.no-sessions" /> : null}
 
-      {!filterEmpty && daySessions.length > 0 ? (
+      {!filterEmpty ? (
         <div className="grid gap-4 md:grid-cols-[1fr_20rem]">
-          <ul className="space-y-2" aria-label="Sessions on selected day">
-            {daySessions.map((session) => {
-              const mine = viewerBookingSessionIds.includes(session.id);
-              const closed = !session.reservable;
-              return (
-                <li key={session.id}>
-                  <button
-                    type="button"
-                    className={cn(
-                      "flex w-full flex-col gap-1 rounded-md border px-3 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      selected?.id === session.id ? "border-primary bg-secondary" : "border-border",
-                      closed && "opacity-80",
-                    )}
-                    onClick={() => setSelectedId(session.id)}
-                  >
-                    <span className="font-medium">{session.className}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {formatSessionTime(session.startsAt)} · {session.coachName}
-                    </span>
-                    <span className="text-xs uppercase tracking-wide">
-                      {AVAILABILITY_COPY[session.availability]}
-                      {mine ? " · Your booking" : ""}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          {daySessions.length > 0 ? (
+            <ul className="space-y-2" aria-label="Sessions on selected day">
+              {daySessions.map((session) => {
+                const mine = viewerBookingSessionIds.includes(session.id);
+                const closed = !session.reservable;
+                return (
+                  <li key={session.id}>
+                    <button
+                      type="button"
+                      className={cn(
+                        "flex w-full flex-col gap-1 rounded-md border px-3 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        selected?.id === session.id
+                          ? "border-primary bg-secondary"
+                          : "border-border",
+                        closed && "opacity-80",
+                      )}
+                      onClick={() => setSelectedId(session.id)}
+                    >
+                      <span className="font-medium">{session.className}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {formatSessionTime(session.startsAt)} · {session.coachName}
+                      </span>
+                      <span className="text-xs uppercase tracking-wide">
+                        {AVAILABILITY_COPY[session.availability]}
+                        {mine ? " · Your booking" : ""}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div />
+          )}
 
-          {selected ? (
-            <aside
-              className="rounded-xl border border-border bg-card p-4"
-              aria-label="Selected session"
-            >
-              {becameFull ? (
-                <FeedbackState
-                  id="calendar.session-became-full"
-                  onAction={() => onReserve?.(selected)}
-                />
-              ) : (
-                <>
-                  <h2 className="font-display text-xl">{selected.className}</h2>
-                  <dl className="mt-3 space-y-1 text-sm">
-                    <div className="flex justify-between gap-3">
-                      <dt>Time</dt>
-                      <dd>
-                        {formatSessionTime(selected.startsAt)}–{formatSessionTime(selected.endsAt)}
-                      </dd>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <dt>Coach</dt>
-                      <dd>{selected.coachName}</dd>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <dt>Price</dt>
-                      <dd>{formatPeso(selected.pricePhp)}</dd>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <dt>Slots</dt>
-                      <dd>{remainingCopy(selected)}</dd>
-                    </div>
-                  </dl>
-                  <p className="mt-2 text-xs uppercase tracking-wide text-muted-foreground">
+          <aside
+            className="rounded-xl border border-border bg-card p-4"
+            aria-label="Selected session"
+            data-section="session-panel"
+          >
+            {selected && becameFull ? (
+              <FeedbackState
+                id="calendar.session-became-full"
+                onAction={() => onReserve?.(selected)}
+              />
+            ) : selected ? (
+              <>
+                <h2 className="font-display text-xl">{selected.className}</h2>
+                <dl className="mt-3 space-y-1 text-sm">
+                  <div className="flex justify-between gap-3">
+                    <dt>Time</dt>
+                    <dd>
+                      {formatSessionTime(selected.startsAt)}–{formatSessionTime(selected.endsAt)}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt>Coach</dt>
+                    <dd>{selected.coachName}</dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt>Price</dt>
+                    <dd>{formatPeso(selected.pricePhp)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt>Slots</dt>
+                    <dd>{remainingCopy(selected)}</dd>
+                  </div>
+                </dl>
+                <p className="mt-2 text-xs uppercase tracking-wide text-muted-foreground">
+                  {AVAILABILITY_COPY[selected.availability]}
+                </p>
+                {selected.reservable ? (
+                  <Button
+                    type="button"
+                    className="mt-4 w-full"
+                    onClick={() => onReserve?.(selected)}
+                  >
+                    Reserve
+                  </Button>
+                ) : selected.availability === "full_with_waitlist" ? (
+                  <Button
+                    type="button"
+                    className="mt-4 w-full"
+                    onClick={() => onReserve?.(selected)}
+                  >
+                    Join Waitlist
+                  </Button>
+                ) : (
+                  <Button type="button" className="mt-4 w-full" disabled>
                     {AVAILABILITY_COPY[selected.availability]}
-                  </p>
-                  {selected.reservable ? (
-                    <Button
-                      type="button"
-                      className="mt-4 w-full"
-                      onClick={() => onReserve?.(selected)}
-                    >
-                      Reserve
-                    </Button>
-                  ) : selected.availability === "full_with_waitlist" ? (
-                    <Button
-                      type="button"
-                      className="mt-4 w-full"
-                      onClick={() => onReserve?.(selected)}
-                    >
-                      Join Waitlist
-                    </Button>
-                  ) : (
-                    <Button type="button" className="mt-4 w-full" disabled>
-                      {AVAILABILITY_COPY[selected.availability]}
-                    </Button>
-                  )}
-                  <p className="sr-only">Audience {audience}. Coach rates are never shown.</p>
-                </>
-              )}
-            </aside>
-          ) : null}
+                  </Button>
+                )}
+                <p className="sr-only">Audience {audience}. Coach rates are never shown.</p>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Select a day and session to see class, time, coach, price, and remaining slots.
+              </p>
+            )}
+          </aside>
         </div>
       ) : null}
     </section>

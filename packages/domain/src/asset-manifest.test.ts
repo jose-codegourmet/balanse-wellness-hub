@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -6,7 +6,9 @@ import {
   ASSET_MANIFEST,
   bundledAssetSrc,
   bundledMasterSrc,
+  COACH_SPECIALTY_ACCENT_IDS,
   publicPageSlotIds,
+  publishedMarketingSlotIds,
 } from "./asset-manifest";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -32,6 +34,51 @@ describe("FE-SHR-004 asset manifest", () => {
     expect(bundledAssetSrc(rex)).not.toMatch(/^https?:/);
   });
 
+  it("resolves approved marketing working files to bundled public paths", () => {
+    const expected: Record<string, string> = {
+      "landing-a": "/assets/marketing/landing/hero-accent-16x9.webp",
+      "landing-b": "/assets/marketing/landing/classes-editorial-3x2.webp",
+      "landing-c": "/assets/marketing/landing/how-it-works-still-life-1x1.webp",
+      "landing-d": "/assets/marketing/landing/final-cta-21x9.webp",
+      "about-a": "/assets/marketing/about/hero-16x9.webp",
+      "about-b": "/assets/marketing/about/our-approach-4x3.webp",
+      "about-c": "/assets/marketing/about/brand-texture-3x1.webp",
+      "contact-a": "/assets/marketing/contact/visit-hero-16x9.webp",
+      "contact-b": "/assets/marketing/contact/walk-in-qr-1x1.webp",
+      "faqs-a": "/assets/marketing/faqs/header-accent-3x2.webp",
+      "coaches-c-yoga": "/assets/marketing/coaches/specialty-accent-yoga-1x1.webp",
+      "coaches-c-boxing": "/assets/marketing/coaches/specialty-accent-boxing-1x1.webp",
+      "coaches-c-capoeira": "/assets/marketing/coaches/specialty-accent-capoeira-1x1.webp",
+    };
+    expect(publishedMarketingSlotIds("landing")).toEqual([
+      "landing-a",
+      "landing-b",
+      "landing-c",
+      "landing-d",
+    ]);
+    expect(publishedMarketingSlotIds("about")).toEqual(["about-a", "about-b", "about-c"]);
+    expect(publishedMarketingSlotIds("contact")).toEqual(["contact-a", "contact-b"]);
+    expect(publishedMarketingSlotIds("faqs")).toEqual(["faqs-a"]);
+    expect(publishedMarketingSlotIds("coaches")).toEqual([...COACH_SPECIALTY_ACCENT_IDS]);
+    expect(COACH_SPECIALTY_ACCENT_IDS).toEqual([
+      "coaches-c-yoga",
+      "coaches-c-boxing",
+      "coaches-c-capoeira",
+    ]);
+    for (const [id, src] of Object.entries(expected)) {
+      const asset = ASSET_MANIFEST.assets.find((item) => item.id === id);
+      expect(asset, id).toBeDefined();
+      if (!asset) continue;
+      expect(bundledAssetSrc(asset)).toBe(src);
+      expect(bundledAssetSrc(asset)).not.toMatch(/placeholder/);
+      const relative = src.replace(/^\//, "");
+      expect(existsSync(resolve(here, "../../../apps/web/public", relative))).toBe(true);
+    }
+    const groupHero = ASSET_MANIFEST.assets.find((asset) => asset.id === "coaches-b");
+    expect(groupHero?.generation_policy).toBe("do_not_generate");
+    expect(bundledAssetSrc(groupHero as NonNullable<typeof groupHero>)).toBeUndefined();
+  });
+
   it("covers every public-page lettered slot", () => {
     expect(publicPageSlotIds("landing")).toEqual([
       "landing-a",
@@ -42,6 +89,13 @@ describe("FE-SHR-004 asset manifest", () => {
     expect(publicPageSlotIds("about")).toEqual(["about-a", "about-b", "about-c"]);
     expect(publicPageSlotIds("contact")).toEqual(["contact-a", "contact-b"]);
     expect(publicPageSlotIds("faqs")).toEqual(["faqs-a"]);
-    expect(publicPageSlotIds("coaches")).toEqual(["coaches-a", "coaches-b", "coaches-c"]);
+    expect(publicPageSlotIds("coaches")).toEqual([
+      "coaches-a",
+      "coaches-b",
+      "coaches-c",
+      "coaches-c-yoga",
+      "coaches-c-boxing",
+      "coaches-c-capoeira",
+    ]);
   });
 });

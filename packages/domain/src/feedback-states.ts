@@ -43,8 +43,8 @@ export const FEEDBACK_STATE_DEFAULTS: Record<FeedbackStateId, FeedbackStateCopy>
     id: "calendar.filter-empty",
     kind: "empty",
     title: "No classes match this filter",
-    description: "Clear the class filter or pick another type to see sessions again.",
-    actionLabel: "Show all classes",
+    description: "Clear the class or coach filter, or pick another type to see sessions again.",
+    actionLabel: "Show all sessions",
   },
   "calendar.load-failed": {
     id: "calendar.load-failed",

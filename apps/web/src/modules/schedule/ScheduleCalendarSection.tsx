@@ -1,9 +1,9 @@
 "use client";
 
-import type { PublicClass, PublicSession } from "@balanse/domain";
+import type { PublicClass, PublicCoach, PublicSession } from "@balanse/domain";
 import { getMockAdapter, getMockRuntime, MOCK_NOW_ISO } from "@balanse/mock";
 import { ScheduleCalendar } from "@balanse/ui";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
@@ -11,14 +11,21 @@ export function ScheduleCalendarSection({
   audience,
   initialSessions,
   initialClasses,
+  initialCoaches = [],
   initialLoadError = false,
+  initialClassFilter = "all",
+  initialCoachFilter = "all",
 }: {
   audience: "guest" | "customer";
   initialSessions: PublicSession[];
   initialClasses: PublicClass[];
+  initialCoaches?: PublicCoach[];
   initialLoadError?: boolean;
+  initialClassFilter?: string;
+  initialCoachFilter?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { principal } = useMockPrincipal();
   const [sessions, setSessions] = useState(initialSessions);
   const [classes, setClasses] = useState(initialClasses);
@@ -63,6 +70,7 @@ export function ScheduleCalendarSection({
     <ScheduleCalendar
       sessions={sessions}
       classes={classes}
+      coaches={initialCoaches}
       nowIso={MOCK_NOW_ISO}
       audience={audience}
       loading={loading}
@@ -70,6 +78,13 @@ export function ScheduleCalendarSection({
       sessionBecameFullId={fullId}
       viewerBookingSessionIds={bookingSessionIds}
       onRetry={() => void load()}
+      initialClassFilter={initialClassFilter}
+      initialCoachFilter={initialCoachFilter}
+      onClearFilter={() => {
+        if (pathname === "/") {
+          router.replace("/#schedule");
+        }
+      }}
       onReserve={(session) => {
         const bookingPath = `/portal/bookings/new?sessionId=${session.id}`;
         if (audience === "guest" || principal.role === "guest") {

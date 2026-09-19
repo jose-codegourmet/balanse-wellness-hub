@@ -39,6 +39,25 @@ export function publicPageSlotIds(page: AssetManifestRecord["page"]): string[] {
     .map((asset) => asset.id);
 }
 
+/** ASSET-015 specialty accents. Group hero (coaches-b) is skipped. */
+export const COACH_SPECIALTY_ACCENT_IDS = [
+  "coaches-c-yoga",
+  "coaches-c-boxing",
+  "coaches-c-capoeira",
+] as const;
+
+/** Lettered slots that have approved, bundled marketing art (not templates or skipped heroes). */
+export function publishedMarketingSlotIds(page: AssetManifestRecord["page"]): string[] {
+  return getAssetsForPage(page)
+    .filter((asset) => {
+      if (asset.approval_status !== "approved") return false;
+      if (asset.id === "coaches-c") return false;
+      if (asset.coach_slug || asset.generation_policy === "placeholder") return false;
+      return Boolean(bundledAssetSrc(asset));
+    })
+    .map((asset) => asset.id);
+}
+
 /** Local/bundled path for this phase. Never a Storage URL. */
 export function bundledAssetSrc(asset: AssetManifestRecord): string | undefined {
   const usesPlaceholder =
@@ -55,6 +74,12 @@ export function bundledAssetSrc(asset: AssetManifestRecord): string | undefined 
     (COACHES_WITH_HEADSHOTS as readonly string[]).includes(asset.coach_slug)
   ) {
     return localCoachPhotoPath(asset.coach_slug, asset.aspect_ratio === "1:1" ? "1:1" : "4:5");
+  }
+  if (
+    asset.approval_status === "approved" &&
+    asset.working_path?.startsWith("docs/assets/marketing/")
+  ) {
+    return `/${asset.working_path.replace(/^docs\//, "")}`;
   }
   return undefined;
 }
