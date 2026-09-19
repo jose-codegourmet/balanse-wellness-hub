@@ -126,6 +126,30 @@ describe("FE-SHR-004 asset manifest", () => {
     }
   });
 
+  it("never resolves a slot to a Storage URL, even though ASSET-030 recorded them", () => {
+    const withStorage = ASSET_MANIFEST.assets.filter((asset) => asset.public_url);
+    // Guard is only meaningful while the manifest actually carries Storage rows.
+    expect(withStorage.length).toBeGreaterThan(0);
+
+    for (const asset of ASSET_MANIFEST.assets) {
+      const sources = bundledAssetSources(asset);
+      const emitted = [
+        bundledAssetSrc(asset),
+        bundledMasterSrc(asset),
+        sources?.webp,
+        sources?.jpeg,
+        sources?.thumbWebp,
+        sources?.thumbJpeg,
+      ].filter((src): src is string => typeof src === "string");
+
+      for (const src of emitted) {
+        expect(src, `${asset.id} -> ${src}`).toMatch(/^\/assets\//);
+        expect(src, `${asset.id} -> ${src}`).not.toMatch(/^https?:/);
+        expect(src, `${asset.id} -> ${src}`).not.toContain("supabase.co");
+      }
+    }
+  });
+
   it("covers every public-page lettered slot", () => {
     expect(publicPageSlotIds("landing")).toEqual([
       "landing-a",

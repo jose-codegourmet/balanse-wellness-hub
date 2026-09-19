@@ -108,7 +108,7 @@ export type BundledAssetSources = {
   webp: string;
   /** JPEG sibling delivered alongside every approved marketing file. */
   jpeg?: string;
-  /** 480px long-edge pair from the pass-2 refresh, used for blur-up. */
+  /** 480px long-edge pair from the pass-2 refresh, offered as a srcset candidate. */
   thumbWebp?: string;
   thumbJpeg?: string;
 };
@@ -116,7 +116,12 @@ export type BundledAssetSources = {
 /**
  * Bundled `<picture>` sources for a marketing slot. Approved Higgsfield
  * deliveries ship `.webp` + `.jpg` side by side, plus a `-thumb` pair on every
- * refreshed slot. Thumbs are local-only (ASSET-030 uploads full sizes only).
+ * refreshed slot.
+ *
+ * Every returned value is a repo-bundled `/assets/...` path. `storage_objects`
+ * is consulted only for its repo-relative `working_path`; the `storage_key` and
+ * `public_url` that ASSET-030 recorded are never read here, so rendering has no
+ * runtime dependency on Supabase Storage. Serving from Storage is `WIRE-012`.
  */
 export function bundledAssetSources(asset: AssetManifestRecord): BundledAssetSources | undefined {
   const webp = bundledAssetSrc(asset);
