@@ -9,6 +9,7 @@ import {
 } from "@balanse/domain";
 import { MarketingImage, SectionHeading } from "@balanse/ui";
 import Link from "next/link";
+import { BalanseCtaBand } from "@/components/balanse/marketing/BalanseCtaBand";
 import { BalanseCtaSection } from "@/components/balanse/marketing/BalanseCtaSection";
 import { BalanseHero } from "@/components/balanse/marketing/BalanseHero";
 import { ScheduleCalendarSection } from "@/modules/schedule/ScheduleCalendarSection";
@@ -131,7 +132,16 @@ export function LandingPage({
             </ul>
           </div>
         </section>
+      </div>
 
+      <BalanseCtaBand
+        blockId="landing-mid"
+        sectionName="mid-cta"
+        supportingTitle="Every discipline, one room"
+        className="mt-16 md:mt-20"
+      />
+
+      <div className="mx-auto max-w-6xl px-4">
         <section id="coaches" data-section="coaches" className="mt-16 scroll-mt-24 md:mt-20">
           <SectionHeading
             eyebrow="Your coaches"

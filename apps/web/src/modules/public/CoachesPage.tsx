@@ -20,6 +20,15 @@ import { BalanseCtaSection } from "@/components/balanse/marketing/BalanseCtaSect
 import { BalanseHero } from "@/components/balanse/marketing/BalanseHero";
 import { CoachPreviewCard } from "./CoachPreviewCard";
 
+const SPECIALTY_ACCENT_LABELS: Record<(typeof COACH_SPECIALTY_ACCENT_IDS)[number], string> = {
+  "coaches-c-yoga": "Yoga",
+  "coaches-c-boxing": "Kickboxing",
+  "coaches-c-capoeira": "Capoeira",
+  "coaches-c-calisthenics": "Calisthenics",
+  "coaches-c-pilates": "Mat Pilates",
+  "coaches-c-dance": "Dance Fitness",
+};
+
 export function CoachesPage({
   coaches,
   initialSpecialty = "All",
@@ -56,10 +65,13 @@ export function CoachesPage({
           description="Rates are not shown on public pages. Pick a specialty, then open the calendar for that coach."
         />
 
-        <ul className="mt-8 grid grid-cols-3 gap-3 sm:max-w-lg" aria-label="Specialty accents">
+        <ul className="mt-8 grid grid-cols-3 gap-3 sm:grid-cols-6" aria-label="Specialty accents">
           {COACH_SPECIALTY_ACCENT_IDS.map((assetId) => (
             <li key={assetId}>
               <MarketingImage assetId={assetId} className="rounded-2xl" />
+              <p className="mt-2 text-center text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                {SPECIALTY_ACCENT_LABELS[assetId]}
+              </p>
             </li>
           ))}
         </ul>

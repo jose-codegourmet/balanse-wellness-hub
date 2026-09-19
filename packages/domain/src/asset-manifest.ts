@@ -46,12 +46,25 @@ export function publicPageSlotIds(page: AssetManifestRecord["page"]): string[] {
     .map((asset) => asset.id);
 }
 
-/** ASSET-015 specialty accents. Group hero (coaches-b) is skipped. */
+/**
+ * ASSET-015 specialty accents, in the order the coaches page shows them.
+ * Group hero (coaches-b) is skipped — Alec / Sofia / Kate have no source photo.
+ */
 export const COACH_SPECIALTY_ACCENT_IDS = [
   "coaches-c-yoga",
   "coaches-c-boxing",
   "coaches-c-capoeira",
+  "coaches-c-calisthenics",
+  "coaches-c-pilates",
+  "coaches-c-dance",
 ] as const;
+
+/** Wide CTA-band slots from the pass-2 refresh (`docs/assets/marketing/FE-PATHS.md`). */
+export const CTA_BAND_ASSET_IDS = {
+  landingMid: "landing-e",
+  landingFinal: "landing-d",
+  aboutBand: "about-d",
+} as const;
 
 /** Lettered slots that have approved, bundled marketing art (not templates or skipped heroes). */
 export function publishedMarketingSlotIds(page: AssetManifestRecord["page"]): string[] {
@@ -93,26 +106,61 @@ export function bundledAssetSrc(asset: AssetManifestRecord): string | undefined 
 
 export type BundledAssetSources = {
   webp: string;
-  /** JPEG sibling delivered alongside every approved ASSET-020–023 marketing file. */
+  /** JPEG sibling delivered alongside every approved marketing file. */
   jpeg?: string;
+  /** 480px long-edge pair from the pass-2 refresh, used for blur-up. */
+  thumbWebp?: string;
+  thumbJpeg?: string;
 };
 
 /**
  * Bundled `<picture>` sources for a marketing slot. Approved Higgsfield
- * deliveries ship `.webp` + `.jpg` side by side, so both are wired.
+ * deliveries ship `.webp` + `.jpg` side by side, plus a `-thumb` pair on every
+ * refreshed slot. Thumbs are local-only (ASSET-030 uploads full sizes only).
  */
 export function bundledAssetSources(asset: AssetManifestRecord): BundledAssetSources | undefined {
   const webp = bundledAssetSrc(asset);
   if (!webp) return undefined;
   if (!webp.endsWith(".webp")) return { webp };
-  const jpeg = webp.replace(/\.webp$/, ".jpg");
+
+  const isMarketing = Boolean(asset.working_path?.startsWith("docs/assets/marketing/"));
   const hasJpegSibling = asset.storage_objects?.some((object) =>
     object.working_path.endsWith(".jpg"),
   );
-  return hasJpegSibling || asset.working_path?.startsWith("docs/assets/marketing/")
-    ? { webp, jpeg }
-    : { webp };
+  if (!hasJpegSibling && !isMarketing) return { webp };
+
+  const base = webp.replace(/\.webp$/, "");
+  return {
+    webp,
+    jpeg: `${base}.jpg`,
+    ...(isMarketing && MARKETING_SLOTS_WITH_THUMBS.has(asset.id)
+      ? { thumbWebp: `${base}-thumb.webp`, thumbJpeg: `${base}-thumb.jpg` }
+      : {}),
+  };
 }
+
+/**
+ * Slots that shipped a `-thumb` pair in the pass-2 refresh. `about-c` and
+ * `contact-b` were left unchanged and have no thumb (see FE-PATHS.md).
+ */
+const MARKETING_SLOTS_WITH_THUMBS = new Set([
+  "landing-a",
+  "landing-b",
+  "landing-c",
+  "landing-d",
+  "landing-e",
+  "about-a",
+  "about-b",
+  "about-d",
+  "contact-a",
+  "faqs-a",
+  "coaches-c-yoga",
+  "coaches-c-boxing",
+  "coaches-c-capoeira",
+  "coaches-c-calisthenics",
+  "coaches-c-pilates",
+  "coaches-c-dance",
+]);
 
 /** Master contact-sheet path when the map needs the ASSET-012 original. */
 export function bundledMasterSrc(asset: AssetManifestRecord): string | undefined {

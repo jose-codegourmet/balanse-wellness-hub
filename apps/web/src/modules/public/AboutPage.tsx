@@ -1,6 +1,7 @@
 import type { PublicCoach } from "@balanse/domain";
 import { ABOUT_APPROACH_PILLARS, ABOUT_CLASS_FAMILIES, BOOKING_STEPS } from "@balanse/domain";
 import { MarketingImage, SectionHeading } from "@balanse/ui";
+import { BalanseCtaBand } from "@/components/balanse/marketing/BalanseCtaBand";
 import { BalanseCtaSection } from "@/components/balanse/marketing/BalanseCtaSection";
 import { BalanseHero } from "@/components/balanse/marketing/BalanseHero";
 import { CoachPreviewCard } from "./CoachPreviewCard";
@@ -61,8 +62,6 @@ export function AboutPage({ coaches }: { coaches: PublicCoach[] }) {
           </div>
         </section>
 
-        <MarketingImage assetId="about-c" className="mt-14" decorative />
-
         <section data-about-block="what-you-can-do" className="mt-14 md:mt-20">
           <SectionHeading
             eyebrow="Class families"
@@ -80,7 +79,17 @@ export function AboutPage({ coaches }: { coaches: PublicCoach[] }) {
             ))}
           </ul>
         </section>
+      </div>
 
+      <BalanseCtaBand
+        blockId="about-band"
+        sectionName="about-band"
+        supportingTitle="One space, every session"
+        icon="armchair"
+        className="mt-14 md:mt-20"
+      />
+
+      <div className="mx-auto max-w-6xl px-4">
         <section data-about-block="meet-the-team" className="mt-14 md:mt-20">
           <SectionHeading
             eyebrow="The roster"

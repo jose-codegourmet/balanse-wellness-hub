@@ -29,7 +29,13 @@ export type PublicCtaBlock = {
   assetId?: string;
 };
 
-export type PublicCtaBlockId = "landing-final" | "about-final" | "faqs-final" | "coaches-final";
+export type PublicCtaBlockId =
+  | "landing-mid"
+  | "landing-final"
+  | "about-band"
+  | "about-final"
+  | "faqs-final"
+  | "coaches-final";
 
 export const SCHEDULE_HREF = landingScheduleHref();
 export const CLASSES_HREF = "/#classes";
@@ -71,6 +77,14 @@ export const COACHES_ACTION: PublicCtaAction = {
 };
 
 export const PUBLIC_CTA_BLOCKS: Readonly<Record<PublicCtaBlockId, PublicCtaBlock>> = {
+  "landing-mid": {
+    id: "landing-mid",
+    eyebrow: "Come train with us",
+    title: "One studio, every kind of movement.",
+    body: "Yoga, pilates, calisthenics, kickboxing, capoeira, and dance run out of the same room in Cebu City.",
+    actions: [PRIMARY_SCHEDULE_ACTION, COACHES_ACTION],
+    assetId: "landing-e",
+  },
   "landing-final": {
     id: "landing-final",
     eyebrow: "Ready when you are",
@@ -78,6 +92,14 @@ export const PUBLIC_CTA_BLOCKS: Readonly<Record<PublicCtaBlockId, PublicCtaBlock
     body: "Browse the week, reserve a spot, then pay by GCash or at the counter. An admin confirms every booking.",
     actions: [PRIMARY_SCHEDULE_ACTION, CREATE_ACCOUNT_ACTION],
     assetId: "landing-d",
+  },
+  "about-band": {
+    id: "about-band",
+    eyebrow: "Movement · Wellness · Community",
+    title: "A room built for the long haul.",
+    body: "Training, recovery, and community share one space, so the habit is easier to keep than to start over.",
+    actions: [PRIMARY_SCHEDULE_ACTION, CONTACT_ACTION],
+    assetId: "about-d",
   },
   "about-final": {
     id: "about-final",
