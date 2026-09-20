@@ -266,7 +266,6 @@ function PaymentQueueCard({
                       () => confirm.mutateAsync(row.id),
                       "payment.confirmed",
                       "payment.action-failed",
-                      true,
                     )
                   }
                 />
@@ -414,18 +413,7 @@ export function PaymentReviewPage({
     const reduced =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timeout = window.setTimeout(
-      () => {
-        setExiting((current) => {
-          const next = new Map(current);
-          for (const id of current.keys()) {
-            if (!queried.some((row) => row.id === id)) next.delete(id);
-          }
-          return next;
-        });
-      },
-      reduced ? 0 : EXIT_MS,
-    );
+    const timeout = window.setTimeout(() => setExiting(new Map()), reduced ? 0 : EXIT_MS);
     return () => window.clearTimeout(timeout);
   }, [exiting, queried]);
 
