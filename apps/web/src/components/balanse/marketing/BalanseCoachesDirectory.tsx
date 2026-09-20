@@ -8,12 +8,23 @@ import {
   resolveCoachPhotoSources,
 } from "@balanse/domain";
 import { CoachPhoto, MarketingImage } from "@balanse/ui";
-import { ArrowDown, ArrowUpRight, SlidersHorizontal } from "lucide-react";
+import { ArrowUpRight, CircleArrowDown, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/jabkit/button";
 import { BalanseCtaSection } from "./BalanseCtaSection";
 import "./coaches-directory.css";
+
+/** The one place the group hero points at, so ASSET-015's replacement is a single edit. */
+const HERO_ASSET_ID = "coaches-b";
+
+/**
+ * The 16:9 delivery carries a wide band of empty studio wall above the heads so
+ * a layout can set heading copy over it. This one sets the heading above the
+ * image instead, so the band is cropped away (anchored to the bottom in CSS)
+ * and the hero reads as the banner the reference asks for.
+ */
+const HERO_FRAME_RATIO = "2:1";
 
 function Portrait({ coach }: { coach: PublicCoach }) {
   const hasPhoto = !resolveCoachPhotoSources(coach.photoKey).isPlaceholder;
@@ -56,26 +67,39 @@ export function BalanseCoachesDirectory({
   return (
     <article className="coaches-directory">
       <header className="coaches-intro marketing-container">
-        <div className="coaches-intro-copy">
-          <p className="marketing-eyebrow">The people behind your practice</p>
-          <h1>
-            Good movement.
-            <br />
-            <em>Great company.</em>
-          </h1>
-          <p className="coaches-intro-description">
-            Meet the coaches who bring Balansé to life. Find your rhythm, build your strength, and
-            discover a practice that feels like you.
+        <div className="coaches-intro-headline">
+          <div>
+            <p className="marketing-eyebrow">The people behind your practice</p>
+            <h1>
+              Good movement. <em>Great company.</em>
+            </h1>
+          </div>
+          <Button asChild size="sm" className="coaches-intro-cta">
+            <a href="#coaching-team">
+              <CircleArrowDown size={16} strokeWidth={1.5} aria-hidden="true" />
+              Meet your coaches
+            </a>
+          </Button>
+        </div>
+        <div className="coaches-intro-columns">
+          <p>
+            Meet the coaches who bring Balansé to life. Some arrived from competitive sport, some
+            from years of teaching, some from their own recovery. What they share is a way of
+            running a room where the person at the back is looked after as carefully as the person
+            at the front.
           </p>
-          <a className="coaches-intro-link" href="#coaching-team">
-            Meet your coaches <ArrowDown size={17} strokeWidth={1.5} aria-hidden="true" />
-          </a>
+          <p>
+            Every coach here teaches sessions you can book this week. Filter the roster by the
+            practice you already know, or start with one you have never tried — each card links
+            straight to that coach&apos;s published classes.
+          </p>
         </div>
         <figure className="coaches-hero-group">
           <MarketingImage
-            assetId="coaches-b"
+            assetId={HERO_ASSET_ID}
             loading="eager"
-            sizes="(max-width: 767px) 100vw, 640px"
+            sizes="(min-width: 1280px) 1216px, 100vw"
+            frameRatio={HERO_FRAME_RATIO}
             className="coaches-hero-group-media"
             frameLabel="The coaching team"
             frameCaption="Group portrait coming soon."
@@ -95,9 +119,9 @@ export function BalanseCoachesDirectory({
             <h2 id="coaches-team-title">Our coaching team</h2>
           </div>
           <p>
-            Start with a familiar practice.
-            <br />
-            Or try something new.
+            Coaches you will see every week, not a rotating cast. Start with a familiar practice or
+            let someone introduce you to a new one — every name below is teaching on the public
+            calendar.
           </p>
         </div>
         <div className="coaches-filter-section">
