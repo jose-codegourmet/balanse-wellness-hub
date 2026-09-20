@@ -1,14 +1,8 @@
 "use client";
 
 import { BALANSE_BREAKPOINTS } from "@balanse/config";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@balanse/ui";
+import { Button } from "@balanse/ui";
+import { XIcon } from "lucide-react";
 import {
   Children,
   isValidElement,
@@ -17,6 +11,7 @@ import {
   useEffect,
   useId,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
@@ -91,6 +86,8 @@ export function AdminWizard({
 }: AdminWizardProps) {
   const headingId = useId();
   const statusId = useId();
+  const titleId = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
   const mdUp = useMinWidth(BALANSE_BREAKPOINTS.tablet);
   const layout: AdminWizardLayout = layoutProp ?? (mdUp ? "step" : "stack");
   const overlayIsDialog = surface === "overlay" && mdUp;
@@ -191,27 +188,84 @@ export function AdminWizard({
     </div>
   );
 
+  useEffect(() => {
+    if (!overlayIsDialog) return;
+    const previous = document.activeElement;
+    panelRef.current?.focus();
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onRequestClose?.();
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      if (previous instanceof HTMLElement) previous.focus();
+    };
+  }, [overlayIsDialog, onRequestClose]);
+
   if (overlayIsDialog) {
     return (
-      <Dialog
-        open
-        onOpenChange={(open) => {
-          if (!open) onRequestClose?.();
-        }}
-      >
-        <DialogContent
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <button
+          type="button"
+          aria-label="Dismiss dialog"
+          className="absolute inset-0 bg-foreground/10 supports-backdrop-filter:backdrop-blur-xs"
+          onClick={() => onRequestClose?.()}
+        />
+        <div
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
           aria-describedby={description ? undefined : statusId}
-          className="flex max-h-[min(100dvh-2rem,44rem)] w-full max-w-[calc(100%-2rem)] flex-col gap-4 overflow-hidden sm:max-w-2xl"
-          showCloseButton
+          tabIndex={-1}
+          className="relative flex max-h-[min(100dvh-2rem,44rem)] w-full max-w-2xl flex-col gap-4 overflow-hidden rounded-xl bg-popover p-4 text-popover-foreground ring-1 ring-foreground/10"
+          onKeyDown={(event) => {
+            if (event.key !== "Tab" || !panelRef.current) return;
+            const nodes = [
+              ...panelRef.current.querySelectorAll<HTMLElement>(
+                'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
+              ),
+            ].filter((node) => !node.hasAttribute("disabled") && node.tabIndex !== -1);
+            if (nodes.length === 0) return;
+            const first = nodes[0];
+            const last = nodes[nodes.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+              event.preventDefault();
+              last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+              event.preventDefault();
+              first.focus();
+            }
+          }}
         >
-          <DialogHeader>
-            <DialogTitle>{title}</DialogTitle>
-            {description ? <DialogDescription>{description}</DialogDescription> : null}
-          </DialogHeader>
+          <div className="flex items-start justify-between gap-4">
+            <div className="grid gap-1">
+              <h2 id={titleId} className="font-heading text-base font-medium">
+                {title}
+              </h2>
+              {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Close"
+              onClick={() => onRequestClose?.()}
+            >
+              <XIcon />
+            </Button>
+          </div>
           <div className="min-h-0 flex-1 overflow-y-auto pr-1">{chrome}</div>
-          {footer ? <DialogFooter className="shrink-0">{footer}</DialogFooter> : null}
-        </DialogContent>
-      </Dialog>
+          {footer ? (
+            <div className="-mx-4 -mb-4 shrink-0 border-t border-border bg-muted/50 p-4">
+              {footer}
+            </div>
+          ) : null}
+        </div>
+      </div>
     );
   }
 

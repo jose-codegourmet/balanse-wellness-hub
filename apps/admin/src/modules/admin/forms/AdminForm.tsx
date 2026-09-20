@@ -88,9 +88,15 @@ export function AdminForm<TValues extends FieldValues>({
 
   const getFieldId = useCallback((name: string) => metaRef.current[name]?.id, []);
 
+  const submitRef = useRef<() => void>(() => {});
+
+  const requestSubmit = useCallback(() => {
+    submitRef.current();
+  }, []);
+
   const kit = useMemo(
-    () => ({ registerField, unregisterField, getLabel, getFieldId }),
-    [getFieldId, getLabel, registerField, unregisterField],
+    () => ({ registerField, unregisterField, getLabel, getFieldId, requestSubmit }),
+    [getFieldId, getLabel, registerField, requestSubmit, unregisterField],
   );
 
   const childArray = Children.toArray(children);
@@ -120,6 +126,10 @@ export function AdminForm<TValues extends FieldValues>({
       if (fieldId) document.getElementById(fieldId)?.focus();
     });
   }
+
+  submitRef.current = () => {
+    void form.handleSubmit(handleValid as Parameters<typeof form.handleSubmit>[0], handleInvalid)();
+  };
 
   return (
     <FormProvider {...form}>
@@ -265,7 +275,7 @@ export function FormActions({
   guard: guardProp,
   formId,
 }: FormActionsProps) {
-  const { formState } = useFormContext();
+  const { formState, requestSubmit } = useAdminFormContext();
   const ownedGuard = useUnsavedChangesGuard(formState.isDirty);
   const guard: UnsavedChangesGuard = guardProp ?? ownedGuard;
 
@@ -277,15 +287,10 @@ export function FormActions({
       {children}
       {hideSubmit ? null : (
         <Button
-          type="submit"
+          type="button"
           form={formId}
           loading={formState.isSubmitting}
-          onClick={(event) => {
-            if (event.currentTarget.form || !formId) return;
-            event.preventDefault();
-            const node = document.getElementById(formId);
-            if (node instanceof HTMLFormElement) node.requestSubmit();
-          }}
+          onClick={() => requestSubmit()}
         >
           {submitLabel}
         </Button>
