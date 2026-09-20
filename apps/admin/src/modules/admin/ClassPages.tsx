@@ -1,14 +1,18 @@
 "use client";
 
-import { getMockAdapter } from "@balanse/mock";
-import { Button, Input, Label } from "@balanse/ui";
+import { Button } from "@balanse/ui";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { useUpsertAdminClass } from "@/lib/query/mutations";
 import { adminClassesQuery, adminCoachesQuery } from "@/lib/query/queries";
+import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { AdminForm, FormActions, FormField } from "./forms/AdminForm";
+import { BooleanBinding, CheckboxGroupBinding, TextBinding } from "./forms/bindings";
+import { classFormDefaultValues } from "./forms/class/class-form.defaults";
+import { classFormSchema } from "./forms/class/class-form.schema";
 
 export function ClassListPage({ empty }: { empty?: boolean }) {
   const { principal } = useMockPrincipal();
@@ -57,32 +61,19 @@ export function ClassFormPage({ classId }: { classId: string }) {
   const classesQuery = useQuery(adminClassesQuery(principal.role));
   const coachesQuery = useQuery(adminCoachesQuery(principal.role));
   const coaches = coachesQuery.data ?? [];
-  const [form, setForm] = useState({
-    name: "",
-    shortDescription: "",
-    defaultDurationMinutes: "",
-    defaultPricePhp: "",
-    active: true,
-    associatedCoachIds: [] as string[],
-  });
+  const existing = isNew ? undefined : classesQuery.data?.find((row) => row.id === classId);
+  const upsert = useUpsertAdminClass();
 
-  useEffect(() => {
-    const classes = classesQuery.data;
-    if (!classes || isNew) return;
-    const existing = classes.find((row) => row.id === classId);
-    if (existing) {
-      setForm({
+  const defaultValues = existing
+    ? {
         name: existing.name,
         shortDescription: existing.shortDescription,
-        defaultDurationMinutes: existing.defaultDurationMinutes
-          ? String(existing.defaultDurationMinutes)
-          : "",
-        defaultPricePhp: existing.defaultPricePhp ? String(existing.defaultPricePhp) : "",
+        defaultDurationMinutes: existing.defaultDurationMinutes,
+        defaultPricePhp: existing.defaultPricePhp,
         active: existing.active,
         associatedCoachIds: existing.associatedCoachIds,
-      });
-    }
-  }, [classId, classesQuery.data, isNew]);
+      }
+    : classFormDefaultValues;
 
   return (
     <AdminPageShell
@@ -101,93 +92,50 @@ export function ClassFormPage({ classId }: { classId: string }) {
         Session values override class defaults. Do not store coach compensation as class
         information.
       </p>
-      <form
-        className="mt-6 grid gap-4"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void getMockAdapter()
-            .upsertAdminClass({
+      <AdminForm
+        key={existing?.id ?? (isNew ? "new" : `pending-${classId}`)}
+        className="mt-6"
+        schema={classFormSchema}
+        defaultValues={defaultValues}
+        onSubmit={async (values) => {
+          try {
+            await upsert.mutateAsync({
               id: isNew ? undefined : classId,
-              name: form.name,
-              shortDescription: form.shortDescription,
-              defaultDurationMinutes: form.defaultDurationMinutes
-                ? Number(form.defaultDurationMinutes)
-                : null,
-              defaultPricePhp: form.defaultPricePhp ? Number(form.defaultPricePhp) : null,
-              active: form.active,
-              associatedCoachIds: form.associatedCoachIds,
-            })
-            .then(() => router.push("/classes"));
+              ...values,
+            });
+            notify.admin("class.saved");
+            router.push("/classes");
+          } catch (error) {
+            notify.admin("class.save-failed");
+            throw error;
+          }
         }}
       >
-        <div className="grid gap-1.5">
-          <Label htmlFor="class-name">Name</Label>
-          <Input
-            id="class-name"
-            required
-            value={form.name}
-            onChange={(event) => setForm({ ...form, name: event.target.value })}
-          />
-        </div>
-        <div className="grid gap-1.5">
-          <Label htmlFor="class-desc">Short description</Label>
-          <Input
-            id="class-desc"
-            required
-            value={form.shortDescription}
-            onChange={(event) => setForm({ ...form, shortDescription: event.target.value })}
-          />
-        </div>
-        <div className="grid gap-1.5">
-          <Label htmlFor="class-duration">Default duration (optional)</Label>
-          <Input
-            id="class-duration"
-            type="number"
-            value={form.defaultDurationMinutes}
-            onChange={(event) => setForm({ ...form, defaultDurationMinutes: event.target.value })}
-          />
-        </div>
-        <div className="grid gap-1.5">
-          <Label htmlFor="class-price">Default price (optional)</Label>
-          <Input
-            id="class-price"
-            type="number"
-            value={form.defaultPricePhp}
-            onChange={(event) => setForm({ ...form, defaultPricePhp: event.target.value })}
-          />
-        </div>
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={form.active}
-            onChange={(event) => setForm({ ...form, active: event.target.checked })}
-          />
-          Active
-        </label>
-        <fieldset>
-          <legend className="text-sm font-medium">Associated coaches (optional)</legend>
-          <div className="mt-2 grid gap-2">
-            {coaches.map((coach) => (
-              <label key={coach.id} className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={form.associatedCoachIds.includes(coach.id)}
-                  onChange={(event) => {
-                    setForm({
-                      ...form,
-                      associatedCoachIds: event.target.checked
-                        ? [...form.associatedCoachIds, coach.id]
-                        : form.associatedCoachIds.filter((id) => id !== coach.id),
-                    });
-                  }}
-                />
-                {coach.name}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-        <Button type="submit">Save</Button>
-      </form>
+        <FormField name="name" label="Name">
+          {(field) => <TextBinding {...field} />}
+        </FormField>
+        <FormField name="shortDescription" label="Short description">
+          {(field) => <TextBinding {...field} />}
+        </FormField>
+        <FormField name="defaultDurationMinutes" label="Default duration (optional)">
+          {(field) => <TextBinding {...field} type="number" />}
+        </FormField>
+        <FormField name="defaultPricePhp" label="Default price (optional)">
+          {(field) => <TextBinding {...field} type="number" />}
+        </FormField>
+        <FormField name="active" label="Active" orientation="horizontal">
+          {(field) => <BooleanBinding {...field} as="switch" />}
+        </FormField>
+        <FormField name="associatedCoachIds" label="Associated coaches (optional)">
+          {(field) => (
+            <CheckboxGroupBinding
+              {...field}
+              options={coaches.map((coach) => ({ value: coach.id, label: coach.name }))}
+            />
+          )}
+        </FormField>
+        <FormActions submitLabel="Save" />
+      </AdminForm>
     </AdminPageShell>
   );
 }

@@ -2,9 +2,9 @@
 
 import type { AdminSettings } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Button, Input, Label, Textarea } from "@balanse/ui";
+import { Button, Field, FieldDescription, FieldLabel, Input, Textarea } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { type ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ImageUpload } from "@/components/balanse/ImageUpload";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { adminSettingsQuery } from "@/lib/query/queries";
@@ -38,14 +38,16 @@ export function SettingsPage() {
         <section>
           <h2 className="font-display text-2xl">Business Profile</h2>
           <div className="mt-4 grid gap-4">
-            <Field label="Name" id="biz-name">
+            <Field>
+              <FieldLabel htmlFor="biz-name">Name</FieldLabel>
               <Input
                 id="biz-name"
                 value={settings.businessName}
                 onChange={(event) => setSettings({ ...settings, businessName: event.target.value })}
               />
             </Field>
-            <Field label="Contact" id="biz-phone">
+            <Field>
+              <FieldLabel htmlFor="biz-phone">Contact</FieldLabel>
               <Input
                 id="biz-phone"
                 value={settings.contact.phone}
@@ -57,7 +59,8 @@ export function SettingsPage() {
                 }
               />
             </Field>
-            <Field label="Address" id="biz-address">
+            <Field>
+              <FieldLabel htmlFor="biz-address">Address</FieldLabel>
               <Input
                 id="biz-address"
                 value={settings.contact.address}
@@ -69,12 +72,10 @@ export function SettingsPage() {
                 }
               />
             </Field>
-            <Field
-              label="Opening hours"
-              id="biz-hours"
-              hint="Left blank. Facebook did not expose daily hours."
-            >
+            <Field>
+              <FieldLabel htmlFor="biz-hours">Opening hours</FieldLabel>
               <Input id="biz-hours" value={settings.openingHours} readOnly />
+              <FieldDescription>Left blank. Facebook did not expose daily hours.</FieldDescription>
             </Field>
           </div>
         </section>
@@ -82,14 +83,16 @@ export function SettingsPage() {
         <section>
           <h2 className="font-display text-2xl">Payment Info</h2>
           <div className="mt-4 grid gap-4">
-            <Field label="GCash name" id="gcash-name">
+            <Field>
+              <FieldLabel htmlFor="gcash-name">GCash name</FieldLabel>
               <Input
                 id="gcash-name"
                 value={settings.gcashName}
                 onChange={(event) => setSettings({ ...settings, gcashName: event.target.value })}
               />
             </Field>
-            <Field label="GCash number" id="gcash-number">
+            <Field>
+              <FieldLabel htmlFor="gcash-number">GCash number</FieldLabel>
               <Input
                 id="gcash-number"
                 value={settings.gcashNumber}
@@ -111,14 +114,16 @@ export function SettingsPage() {
         <section>
           <h2 className="font-display text-2xl">Public Content</h2>
           <div className="mt-4 grid gap-4">
-            <Field label="About" id="pub-about">
+            <Field>
+              <FieldLabel htmlFor="pub-about">About</FieldLabel>
               <Textarea
                 id="pub-about"
                 value={settings.about}
                 onChange={(event) => setSettings({ ...settings, about: event.target.value })}
               />
             </Field>
-            <Field label="Contact" id="pub-contact">
+            <Field>
+              <FieldLabel htmlFor="pub-contact">Contact</FieldLabel>
               <Input
                 id="pub-contact"
                 value={settings.contact.email}
@@ -130,7 +135,8 @@ export function SettingsPage() {
                 }
               />
             </Field>
-            <Field label="FAQs" id="pub-faq">
+            <Field>
+              <FieldLabel htmlFor="pub-faq">FAQs</FieldLabel>
               <Textarea
                 id="pub-faq"
                 value={settings.faqs.map((faq) => `${faq.question}\n${faq.answer}`).join("\n\n")}
@@ -163,7 +169,8 @@ export function SettingsPage() {
             ))}
           </ul>
           <div className="mt-4 flex flex-wrap items-end gap-2">
-            <Field label="Promote new version" id="policy-version">
+            <Field>
+              <FieldLabel htmlFor="policy-version">Promote new version</FieldLabel>
               <Input
                 id="policy-version"
                 value={newVersion}
@@ -186,25 +193,5 @@ export function SettingsPage() {
         {saved ? <p className="text-sm">Saved in this mock.</p> : null}
       </form>
     </AdminPageShell>
-  );
-}
-
-function Field({
-  id,
-  label,
-  hint,
-  children,
-}: {
-  id: string;
-  label: string;
-  hint?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="grid gap-1.5">
-      <Label htmlFor={id}>{label}</Label>
-      {children}
-      {hint ? <p className="text-sm text-muted-foreground">{hint}</p> : null}
-    </div>
   );
 }

@@ -19,6 +19,7 @@ import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { ConfirmAction } from "@/components/balanse/ConfirmAction";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { FullscreenCalendar } from "@/components/jabkit/fullscreen-calendar";
 import type { FullscreenCalendarDay } from "@/components/jabkit/fullscreen-calendar/FullscreenCalendar.types";
@@ -29,7 +30,6 @@ import {
   adminSessionsQuery,
 } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import { ConfirmAction } from "./shared";
 
 const MOCK_TODAY = new Date(2026, 8, 16);
 

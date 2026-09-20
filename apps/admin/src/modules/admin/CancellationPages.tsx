@@ -9,10 +9,10 @@ import {
 import { getMockAdapter } from "@balanse/mock";
 import { FeedbackState } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { ConfirmAction } from "@/components/balanse/ConfirmAction";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { adminCancellationsQuery, adminCustomersQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import { ConfirmAction } from "./shared";
 
 export function CancellationQueuePage({ empty }: { empty?: boolean }) {
   const { principal } = useMockPrincipal();

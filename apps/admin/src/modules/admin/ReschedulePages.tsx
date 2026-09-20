@@ -11,6 +11,7 @@ import { getMockAdapter } from "@balanse/mock";
 import { FeedbackState } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { ConfirmAction } from "@/components/balanse/ConfirmAction";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import {
   adminBookingsQuery,
@@ -18,7 +19,6 @@ import {
   adminReschedulesQuery,
 } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import { ConfirmAction } from "./shared";
 
 export function RescheduleQueuePage({ empty }: { empty?: boolean }) {
   const { principal } = useMockPrincipal();
