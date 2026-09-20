@@ -5,12 +5,12 @@
 # consent_recorded: yes for generate coaches (catalogued source photos).
 # Standing Jose auto-approve of all Assets, 2026-09-19.
 # Placeholder-only coaches stay consent_recorded: no until a source lands.
-# last_reviewed: 2026-09-19 (ASSET-020–023 marketing + ASSET-015 specialty accents landed)
+# last_reviewed: 2026-09-20 (ASSET-015 coaches-b group hero approved — 8-coach cast)
 #
-# ASSET-015 inventory skip: coaches-B group hero remains do_not_generate until Alec,
-# Sofia, and Kate have catalogued sources + consent. Specialty 1:1 accents
-# (yoga / boxing / capoeira) delivered 2026-09-19 via nano_banana_2_shots +
-# source_free mood plate 0dad9831-2091-4538-b892-f9f96e6d7352.
+# ASSET-015 group hero (coaches-b): UNBLOCKED 2026-09-20 for the 8 source-backed coaches
+# (ephraim-bacaltos · rex-francis-regis · rachelle-tobiano · jodi-tio · wolf ·
+# mikaela-danielle · maris-cabrera · francis-acido). Alec / Sofia / Kate remain
+# placeholder-only (no faces in the hero). Specialty 1:1 accents unchanged.
 
 coaches:
   - slug: rex-francis-regis
