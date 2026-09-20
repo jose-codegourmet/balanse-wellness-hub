@@ -245,3 +245,85 @@ export function safeAppPath(returnTo: string | null | undefined, fallback = "/po
 export function customerAuthMethodLabel(method: CustomerProfile["authMethod"]): string {
   return method === "google" ? "Google" : "Email and password";
 }
+
+/** Up to two initials for the avatar treatment shared by the profile and the sidebar. */
+export function customerInitials(fullName: string): string {
+  return fullName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+export type CustomerAuthMethodCopy = {
+  /** Provider identity for the connected-account row. */
+  provider: string;
+  /** What the connection currently gives the customer. */
+  summary: string;
+  /** Why the manage/disconnect control does nothing (FE-CUS-017 mock phase). */
+  mockNote: string;
+  /** How password changes behave for this sign-in method. */
+  passwordNote: string;
+};
+
+/**
+ * Account and password copy for the profile settings sections. Kept beside the
+ * label so the mock-phase wording stays reviewable in one place and never
+ * claims a credential or a linked account actually changed.
+ */
+export const CUSTOMER_AUTH_METHOD_COPY: Record<
+  CustomerProfile["authMethod"],
+  CustomerAuthMethodCopy
+> = {
+  google: {
+    provider: "Google",
+    summary: "You sign in with your Google account.",
+    mockNote: "Mock only — nothing is linked or disconnected in this preview.",
+    passwordNote:
+      "Your password lives in your Google account, so there is nothing to change here. Update it from Google if you need to.",
+  },
+  email: {
+    provider: "Email and password",
+    summary: "You sign in with your email address and a password.",
+    mockNote: "Mock only — sign-in methods are not connected in this preview.",
+    passwordNote: "Choose a new password. Nothing real is stored in this preview.",
+  },
+};
+
+export function customerAuthMethodCopy(
+  method: CustomerProfile["authMethod"],
+): CustomerAuthMethodCopy {
+  return CUSTOMER_AUTH_METHOD_COPY[method];
+}
+
+export const PASSWORD_MIN_LENGTH = 8;
+
+export type PasswordChangeInput = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
+
+/**
+ * Client-side rules for the mock change-password form. There is no credential
+ * to check the current password against, so it is only required, never verified.
+ */
+export function validateMockPasswordChange(
+  input: PasswordChangeInput,
+): { ok: false; errors: FieldErrors<keyof PasswordChangeInput> } | { ok: true } {
+  const errors: FieldErrors<keyof PasswordChangeInput> = {};
+  if (!input.currentPassword) errors.currentPassword = "Enter your current password.";
+  if (!input.newPassword) errors.newPassword = "New password is required.";
+  else if (input.newPassword.length < PASSWORD_MIN_LENGTH) {
+    errors.newPassword = `Use at least ${PASSWORD_MIN_LENGTH} characters.`;
+  } else if (input.newPassword === input.currentPassword) {
+    errors.newPassword = "Choose a password you are not already using.";
+  }
+  if (!input.confirmPassword) errors.confirmPassword = "Confirm your new password.";
+  else if (input.newPassword !== input.confirmPassword) {
+    errors.confirmPassword = "Passwords do not match.";
+  }
+  if (Object.keys(errors).length > 0) return { ok: false, errors };
+  return { ok: true };
+}
