@@ -2,6 +2,7 @@
 
 **Slot:** `coaches-b` · `group-hero` · `16:9`  
 **Working files:** `docs/assets/marketing/coaches/group-hero-16x9.{webp,jpg}` (+ `-thumb`)  
+**4k archive:** `docs/assets/marketing/coaches/group-hero-16x9-4k.png` (via materialize)  
 **Approved:** 2026-09-20 · Jose standing auto-approve Assets · Asia/Manila
 
 ## Cast (identity-bound — do not invent faces)
@@ -37,7 +38,9 @@
 4. Re-register panel → media `f5a7c898-ea39-4b95-aa39-d1fa1c7b3436`.
 5. Parallel refine: shots again (`7ff0556a-02c9-4d65-a9e1-89a8bc72c8b7`, still a grid) + **`nano_banana_2` @ 2k** (`df7f126e-4031-492a-8930-b3f751999063`) → **single coherent hero** (chosen).
 6. `upscale_image` 4k → job `1e7174f8-7587-4a79-a817-d69084b04be6`.
-7. Webready: long edge ≤1600, jpg q78 / webp q72; thumbs 480px long edge.
+7. Materialize webready via `scripts/materialize-coaches-hero-group.sh` (CDN → long edge ≤1600 jpg q78 / webp q72; thumbs 480px).
+
+CDN 4k: see `docs/assets/marketing/coaches/group-hero-jobs.json`.
 
 ## Prompt (locked art direction)
 
