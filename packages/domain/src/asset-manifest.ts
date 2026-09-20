@@ -48,7 +48,8 @@ export function publicPageSlotIds(page: AssetManifestRecord["page"]): string[] {
 
 /**
  * ASSET-015 specialty accents, in the order the coaches page shows them.
- * Group hero (coaches-b) is skipped — Alec / Sofia / Kate have no source photo.
+ * The group hero (coaches-b) shipped 2026-09-20 for the eight source-backed
+ * coaches; Alec / Sofia / Kate stay out of it until their sources land.
  */
 export const COACH_SPECIALTY_ACCENT_IDS = [
   "coaches-c-yoga",
@@ -161,6 +162,7 @@ const MARKETING_SLOTS_WITH_THUMBS = new Set([
   "contact-a",
   "contact-b",
   "faqs-a",
+  "coaches-b",
   "coaches-c-yoga",
   "coaches-c-boxing",
   "coaches-c-capoeira",

@@ -19,5 +19,5 @@ export const EmailPrincipal: Story = {
   args: { initialProfile: customers[1], initialAcceptances: [] },
 };
 export const Saving: Story = { args: { forcedStatus: "saving" } };
-export const Saved: Story = { args: { forcedStatus: "saved" } };
+/** A successful save is announced by the portal toast — see `Portal/BalanseToaster`. */
 export const Failed: Story = { args: { forcedStatus: "failed" } };
