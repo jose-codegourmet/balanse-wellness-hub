@@ -77,7 +77,8 @@ export function useAdminDataTableUrlState(tableId: string): AdminDataTableUrlSta
 
   const query = searchParams.get(qKey) ?? "";
   const sorting = useMemo(() => parseSort(searchParams.get(sortKey)), [searchParams, sortKey]);
-  const pageIndex = Math.max(0, Number(searchParams.get(pageKey) ?? "1") - 1);
+  const parsedPage = Number(searchParams.get(pageKey) ?? "1");
+  const pageIndex = Number.isFinite(parsedPage) && parsedPage > 0 ? Math.floor(parsedPage) - 1 : 0;
   const columnFilters = useMemo(
     () => parseFacets(searchParams.get(facetsKey)),
     [facetsKey, searchParams],

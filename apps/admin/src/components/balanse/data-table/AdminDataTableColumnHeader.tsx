@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@balanse/ui";
+import { Button, cn } from "@balanse/ui";
 import type { Header } from "@tanstack/react-table";
 import { flexRender } from "@tanstack/react-table";
 import { ArrowDownIcon, ArrowUpIcon, ChevronsUpDownIcon } from "lucide-react";
@@ -11,7 +11,13 @@ function SortIcon({ sorted }: { sorted: false | "asc" | "desc" }) {
   return <ChevronsUpDownIcon className="size-3" aria-hidden />;
 }
 
-export function AdminDataTableColumnHeader<TData>({ header }: { header: Header<TData, unknown> }) {
+export function AdminDataTableColumnHeader<TData>({
+  header,
+  sticky,
+}: {
+  header: Header<TData, unknown>;
+  sticky?: boolean;
+}) {
   const canSort = header.column.getCanSort();
   const sorted = header.column.getIsSorted();
   const ariaSort = sorted === "asc" ? "ascending" : sorted === "desc" ? "descending" : "none";
@@ -20,7 +26,7 @@ export function AdminDataTableColumnHeader<TData>({ header }: { header: Header<T
     <th
       scope="col"
       aria-sort={canSort ? ariaSort : undefined}
-      className="h-9 bg-muted/40 px-2 first:pl-4 last:pr-4"
+      className={cn("h-9 bg-muted/40 px-2 first:pl-4 last:pr-4", sticky && "sticky top-0 z-10")}
     >
       {header.isPlaceholder ? null : canSort ? (
         <Button

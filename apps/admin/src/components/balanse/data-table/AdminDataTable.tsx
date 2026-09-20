@@ -393,13 +393,17 @@ function AdminDataTableInner<TData>({
                   stickyHeader && "max-h-[min(32rem,70vh)] overflow-y-auto",
                 )}
               >
-                <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
+                <table className="w-full min-w-[36rem] border-separate border-spacing-0 text-left text-sm">
                   {title ? <caption className="sr-only">{title}</caption> : null}
-                  <thead className={stickyHeader ? "sticky top-0 z-10" : undefined}>
+                  <thead>
                     {table.getHeaderGroups().map((headerGroup) => (
                       <tr key={headerGroup.id}>
                         {headerGroup.headers.map((header) => (
-                          <AdminDataTableColumnHeader key={header.id} header={header} />
+                          <AdminDataTableColumnHeader
+                            key={header.id}
+                            header={header}
+                            sticky={stickyHeader}
+                          />
                         ))}
                       </tr>
                     ))}
@@ -476,7 +480,10 @@ function DataRow<TData>({
   onRowClick?: (row: TData) => void;
 }) {
   const selected = row.getIsSelected();
-  const interactive = Boolean(onRowClick);
+  const hasPrimaryLink = row
+    .getVisibleCells()
+    .some((cell) => Boolean(cell.column.columnDef.meta?.primaryLink?.(cell.row.original)));
+  const interactive = Boolean(onRowClick) && !hasPrimaryLink;
 
   return (
     <tr

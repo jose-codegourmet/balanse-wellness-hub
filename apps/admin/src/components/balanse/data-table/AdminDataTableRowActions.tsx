@@ -46,10 +46,9 @@ export function AdminDataTableRowActions<TData>({
             <DropdownMenuItem
               key={action.id}
               variant={action.destructive ? "destructive" : "default"}
+              render={<Link href={action.href} />}
             >
-              <Link href={action.href} className="w-full">
-                {action.label}
-              </Link>
+              {action.label}
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem
