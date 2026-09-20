@@ -2,6 +2,7 @@
 
 import type { CustomerProfile, PublicSession } from "@balanse/domain";
 import {
+  bookingCreatedToastId,
   formatPeso,
   formatSessionDate,
   formatSessionRange,
@@ -11,6 +12,7 @@ import { getMockAdapter, MOCK_NOW_ISO } from "@balanse/mock";
 import { Button, Input, Label, LocalizedSkeleton } from "@balanse/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { notify } from "@/modules/notifications/notify";
 
 export function BookingForm({
   session,
@@ -155,6 +157,7 @@ export function BookingForm({
               })),
             })
             .then((booking) => {
+              notify.portal(bookingCreatedToastId(booking.status));
               if (waitlist || booking.status === "WAITLISTED") {
                 router.push(`/portal/bookings/${booking.id}`);
                 return;

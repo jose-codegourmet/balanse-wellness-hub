@@ -6,6 +6,7 @@ import { getMockAdapter, MOCK_NOW_ISO } from "@balanse/mock";
 import { Button, FeedbackState, LocalizedSkeleton } from "@balanse/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { notify } from "@/modules/notifications/notify";
 
 export function PaymentMethodPage({
   booking,
@@ -87,9 +88,11 @@ export function PaymentMethodPage({
             .setPaymentMethod(booking.id, method)
             .then(() => {
               if (method === "GCASH") {
+                notify.portal("payment.gcash-selected");
                 router.push(`/portal/bookings/${booking.id}/payment/gcash`);
                 return;
               }
+              notify.portal("payment.counter-selected");
               router.push(`/portal/bookings/${booking.id}`);
             });
         }}

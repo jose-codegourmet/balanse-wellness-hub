@@ -6,6 +6,7 @@ import { getMockAdapter } from "@balanse/mock";
 import { Button, Label, LocalizedSkeleton, Textarea } from "@balanse/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { notify } from "@/modules/notifications/notify";
 
 export function CancellationRequest({
   booking,
@@ -56,9 +57,13 @@ export function CancellationRequest({
             .createCancellationRequest(booking.id, reason || undefined)
             .then(() => {
               setStatus("success");
+              notify.portal("cancellation.submitted");
               router.push(`/portal/bookings/${booking.id}`);
             })
-            .catch(() => setStatus("failed"));
+            .catch(() => {
+              setStatus("failed");
+              notify.portal("cancellation.failed");
+            });
         }}
       >
         <div className="grid gap-1.5">

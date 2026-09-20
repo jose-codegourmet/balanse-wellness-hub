@@ -22,6 +22,7 @@ import {
 import { useState } from "react";
 import { Button } from "@/components/jabkit/button";
 import { ProfileLogoutButton } from "@/modules/customer/ProfileLogoutButton";
+import { notify } from "@/modules/notifications/notify";
 import "@/components/balanse/portal/portal.css";
 
 export function ProfilePage({
@@ -31,7 +32,7 @@ export function ProfilePage({
 }: {
   initialProfile: CustomerProfile;
   initialAcceptances: PolicyAcceptance[];
-  forcedStatus?: "saving" | "saved" | "failed";
+  forcedStatus?: "saving" | "failed";
 }) {
   const [savedProfile, setSavedProfile] = useState(initialProfile);
   const [fullName, setFullName] = useState(initialProfile.fullName);
@@ -41,7 +42,7 @@ export function ProfilePage({
     Partial<Record<"fullName" | "email" | "contactNumber", string>>
   >({});
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "failed">(
-    forcedStatus === "saving" ? "saving" : (forcedStatus ?? "idle"),
+    forcedStatus ?? "idle",
   );
 
   const initials = savedProfile.fullName
@@ -96,8 +97,12 @@ export function ProfilePage({
                 .then(() => {
                   setSavedProfile({ ...initialProfile, fullName, email, contactNumber });
                   setStatus("saved");
+                  notify.portal("profile.saved");
                 })
-                .catch(() => setStatus("failed"));
+                .catch(() => {
+                  setStatus("failed");
+                  notify.portal("profile.save-failed");
+                });
             }}
           >
             <div className="grid gap-1.5">
@@ -154,14 +159,11 @@ export function ProfilePage({
                 </p>
               ) : null}
             </div>
-            {status === "saved" ? (
-              <p role="status" className="profile-save-status">
-                <Check size={17} aria-hidden="true" />
-                Profile saved in this mock. Booking forms will use these details.
-              </p>
-            ) : null}
+            {/* A successful save is announced by the toast. Failures keep a
+                form-level live region so the message stays next to the fields
+                after the toast has auto-dismissed. */}
             {status === "failed" ? (
-              <p role="alert" className="text-sm text-destructive">
+              <p role="alert" aria-live="assertive" className="text-sm text-destructive">
                 The mock profile could not be saved. Try again.
               </p>
             ) : null}

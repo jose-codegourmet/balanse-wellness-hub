@@ -37,8 +37,6 @@
 .profile-form-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; align-items: center; padding-top: .75rem; }
 .profile-form-actions > span { color: var(--muted-foreground); font-size: .7rem; }
 .profile-save-button { min-height: 2.9rem; padding-inline: 1.25rem; border-radius: 999px; gap: 1rem; }
-.profile-save-status { display: flex; gap: .5rem; align-items: start; font-size: .8rem; color: var(--muted-foreground); }
-.profile-save-status svg { flex-shrink: 0; }
 .profile-secondary { display: grid; gap: 1.5rem; }
 .profile-logout { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); display: grid; gap: .85rem; }
 .profile-logout-button { width: 100%; min-height: 2.9rem; border-radius: 999px; gap: .6rem; }
