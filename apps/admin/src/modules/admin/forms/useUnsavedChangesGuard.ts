@@ -9,9 +9,10 @@ import { useEffect, useState } from "react";
  * and tab closes. Sidebar and breadcrumb `router.push` / `<Link>` clicks are
  * not intercepted.
  */
-export function useUnsavedChangesGuard(isDirty: boolean) {
+export function useUnsavedChangesGuard(isDirty: boolean, navigate?: (href: string) => void) {
   const router = useRouter();
   const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const go = navigate ?? ((href: string) => router.push(href));
 
   useEffect(() => {
     if (!isDirty) return;
@@ -25,7 +26,7 @@ export function useUnsavedChangesGuard(isDirty: boolean) {
 
   function requestLeave(href: string) {
     if (!isDirty) {
-      router.push(href);
+      go(href);
       return;
     }
     setPendingHref(href);
@@ -35,7 +36,7 @@ export function useUnsavedChangesGuard(isDirty: boolean) {
     if (!pendingHref) return;
     const href = pendingHref;
     setPendingHref(null);
-    router.push(href);
+    go(href);
   }
 
   function dismiss() {
@@ -44,3 +45,5 @@ export function useUnsavedChangesGuard(isDirty: boolean) {
 
   return { pendingHref, requestLeave, confirmLeave, dismiss };
 }
+
+export type UnsavedChangesGuard = ReturnType<typeof useUnsavedChangesGuard>;

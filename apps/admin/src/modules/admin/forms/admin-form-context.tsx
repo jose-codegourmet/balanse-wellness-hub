@@ -10,6 +10,8 @@ export type AdminFormKitValue = {
   unregisterField: (name: string) => void;
   getLabel: (name: string) => string;
   getFieldId: (name: string) => string | undefined;
+  /** Works when actions are portaled out of the `<form>` (dialog wizard). */
+  requestSubmit: () => void;
 };
 
 const AdminFormKitContext = createContext<AdminFormKitValue | null>(null);

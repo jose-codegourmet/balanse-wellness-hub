@@ -16,7 +16,7 @@ Wave 2 pages should be thin. Data goes through this directory only.
 
 3. **Write through `mutations.ts`.** Each hook invalidates the keys in the table below. Do not hand-roll a `refresh()` that re-fetches the page.
 
-4. **Never call `getMockAdapter()` from a component** once that screen’s Wave 2 ticket lands. This directory is the only place in `apps/admin` that may call it. (`ClassFormPage` and other unmigrated modules still do until their tickets.)
+4. **Never call `getMockAdapter()` from a component** once that screen’s Wave 2 ticket lands. This directory is the only place in `apps/admin` that may call it.
 
 ## Query keys
 

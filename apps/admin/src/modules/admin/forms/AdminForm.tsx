@@ -50,7 +50,7 @@ import {
 } from "./admin-form-context";
 import { FormErrorSummary } from "./FormErrorSummary";
 import { applyMappedErrors, mapValidationErrors } from "./map-validation-errors";
-import { useUnsavedChangesGuard } from "./useUnsavedChangesGuard";
+import { type UnsavedChangesGuard, useUnsavedChangesGuard } from "./useUnsavedChangesGuard";
 
 export { useAdminFormContext } from "./admin-form-context";
 
@@ -88,9 +88,15 @@ export function AdminForm<TValues extends FieldValues>({
 
   const getFieldId = useCallback((name: string) => metaRef.current[name]?.id, []);
 
+  const submitRef = useRef<() => void>(() => {});
+
+  const requestSubmit = useCallback(() => {
+    submitRef.current();
+  }, []);
+
   const kit = useMemo(
-    () => ({ registerField, unregisterField, getLabel, getFieldId }),
-    [getFieldId, getLabel, registerField, unregisterField],
+    () => ({ registerField, unregisterField, getLabel, getFieldId, requestSubmit }),
+    [getFieldId, getLabel, registerField, requestSubmit, unregisterField],
   );
 
   const childArray = Children.toArray(children);
@@ -120,6 +126,10 @@ export function AdminForm<TValues extends FieldValues>({
       if (fieldId) document.getElementById(fieldId)?.focus();
     });
   }
+
+  submitRef.current = () => {
+    void form.handleSubmit(handleValid as Parameters<typeof form.handleSubmit>[0], handleInvalid)();
+  };
 
   return (
     <FormProvider {...form}>
@@ -257,28 +267,39 @@ export function FormSection({ title, description, children }: FormSectionProps) 
 
 export function FormActions({
   submitLabel,
+  hideSubmit = false,
   cancelHref,
   cancelLabel = "Cancel",
   className,
   children,
+  guard: guardProp,
+  formId,
 }: FormActionsProps) {
-  const { formState } = useFormContext();
-  const guard = useUnsavedChangesGuard(formState.isDirty);
+  const { formState, requestSubmit } = useAdminFormContext();
+  const ownedGuard = useUnsavedChangesGuard(formState.isDirty);
+  const guard: UnsavedChangesGuard = guardProp ?? ownedGuard;
 
   return (
     <div
       data-slot="form-actions"
       className={["flex flex-wrap items-center gap-2", className].filter(Boolean).join(" ")}
     >
-      <Button type="submit" loading={formState.isSubmitting}>
-        {submitLabel}
-      </Button>
+      {children}
+      {hideSubmit ? null : (
+        <Button
+          type="button"
+          form={formId}
+          loading={formState.isSubmitting}
+          onClick={() => requestSubmit()}
+        >
+          {submitLabel}
+        </Button>
+      )}
       {cancelHref ? (
         <Button type="button" variant="outline" onClick={() => guard.requestLeave(cancelHref)}>
           {cancelLabel}
         </Button>
       ) : null}
-      {children}
       <AlertDialog
         open={guard.pendingHref !== null}
         onOpenChange={(open) => !open && guard.dismiss()}

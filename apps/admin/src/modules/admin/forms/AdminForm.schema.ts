@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { DefaultValues, FieldValues, Path } from "react-hook-form";
 import type { ZodType } from "zod";
+import type { UnsavedChangesGuard } from "./useUnsavedChangesGuard";
 
 export type AdminFormProps<TValues extends FieldValues = FieldValues> = {
   schema: ZodType<TValues>;
@@ -46,8 +47,17 @@ export type FormSectionProps = {
 
 export type FormActionsProps = {
   submitLabel: string;
+  /** When true, keep cancel + the unsaved-leave dialog without a submit control. */
+  hideSubmit?: boolean;
   cancelHref?: string;
   cancelLabel?: string;
   className?: string;
   children?: ReactNode;
+  /** Share one guard with a wizard shell so Escape / close use the same confirm. */
+  guard?: UnsavedChangesGuard;
+  /**
+   * Associates the submit control with a portaled footer (dialog). Matches
+   * `AdminForm`'s `id`.
+   */
+  formId?: string;
 };
