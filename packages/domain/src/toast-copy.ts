@@ -162,6 +162,12 @@ export const ADMIN_TOAST_IDS = [
   "cancellation.action-failed",
   "refund.status-updated",
   "refund.action-failed",
+  "payment.confirmed",
+  "payment.rejected",
+  "payment.cash-recorded",
+  "payment.action-failed",
+  "booking.checked-in",
+  "booking.check-in-failed",
 ] as const;
 
 export type AdminToastId = (typeof ADMIN_TOAST_IDS)[number];
@@ -235,6 +241,42 @@ export const ADMIN_TOAST_COPY = {
     tone: "error",
     title: "Refund status not saved",
     description: "The refund status could not be recorded. Try again.",
+  },
+  "payment.confirmed": {
+    id: "payment.confirmed",
+    tone: "success",
+    title: "Payment confirmed",
+    description: "The booking is confirmed. The customer can see the updated status.",
+  },
+  "payment.rejected": {
+    id: "payment.rejected",
+    tone: "success",
+    title: "Payment rejected",
+    description: "The hold is released. The customer can see your reason.",
+  },
+  "payment.cash-recorded": {
+    id: "payment.cash-recorded",
+    tone: "success",
+    title: "Cash recorded",
+    description: "Payment is marked received. Confirm the booking when you are ready.",
+  },
+  "payment.action-failed": {
+    id: "payment.action-failed",
+    tone: "error",
+    title: "Payment not updated",
+    description: "That payment could not be updated. Try again.",
+  },
+  "booking.checked-in": {
+    id: "booking.checked-in",
+    tone: "success",
+    title: "Guest checked in",
+    description: "Attendance is recorded for this booking.",
+  },
+  "booking.check-in-failed": {
+    id: "booking.check-in-failed",
+    tone: "error",
+    title: "Check-in not saved",
+    description: "The guest could not be checked in. Try again.",
   },
 } as const satisfies ExhaustiveAdminToastCopy;
 
