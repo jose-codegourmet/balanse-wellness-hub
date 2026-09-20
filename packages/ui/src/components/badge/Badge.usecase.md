@@ -52,4 +52,4 @@ Use `render` to polymorph the default `span` into an anchor or button.
 
 - Default element is `span` — use `render` to polymorph into `a` / `button` when interactive
 - `success`, `warning`, and `info` have no dedicated tokens in `@balanse/config`; they are `color-mix` derivations from navy, tan, gold, and primary. `danger` uses `--destructive`. `accent` uses `--accent`.
-- Admin table cells still wrap the vendored Jabkit badge via `AdminStatusBadge` in `AdminDataTable.tsx` — retire that in #207 (`FE-ADM-017`).
+- Admin staff and session chips use `Badge` with an explicit variant map (`dot`, `appearance="solid"`, `size="sm"`). Booking statuses use `StatusBadge surface="admin"`. Do not pass staff or session enums to `StatusBadge`.

@@ -13,7 +13,7 @@ import { FeedbackState, LocalizedSkeleton, StatusBadge } from "@balanse/ui";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { AdminDataTable } from "@/components/balanse/AdminDataTable";
+import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
 import { PageHeader } from "./shared";
 
 export function CustomerListPage({ empty }: { empty?: boolean }) {
@@ -28,7 +28,11 @@ export function CustomerListPage({ empty }: { empty?: boolean }) {
 
   const columns = useMemo<ColumnDef<AdminCustomer, unknown>[]>(
     () => [
-      { accessorKey: "fullName", header: "Name" },
+      {
+        accessorKey: "fullName",
+        header: "Name",
+        meta: { primaryLink: (row) => `/customers/${row.id}` },
+      },
       {
         id: "contact",
         header: "Contact",
@@ -89,11 +93,12 @@ export function CustomerListPage({ empty }: { empty?: boolean }) {
       ) : (
         <div className="mt-4">
           <AdminDataTable
+            tableId="customers"
             data={rows}
             columns={columns}
             getRowId={(row) => row.id}
             searchPlaceholder="Search customers"
-            emptyLabel="No customers match your filter."
+            emptyFilterLabel="No customers match your filter."
           />
         </div>
       )}

@@ -13,7 +13,7 @@ import { getMockAdapter } from "@balanse/mock";
 import { Button, FeedbackState, Input, Label, LocalizedSkeleton, StatusBadge } from "@balanse/ui";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useEffect, useMemo, useState } from "react";
-import { AdminDataTable } from "@/components/balanse/AdminDataTable";
+import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
 import { ConfirmAction, PageHeader } from "./shared";
 
 const TABS: { id: AdminPaymentTab; label: string }[] = [
@@ -101,11 +101,12 @@ export function PaymentReviewPage({ empty }: { empty?: boolean }) {
       ) : (
         <div className="mt-6">
           <AdminDataTable
+            tableId="payments"
             data={queue}
             columns={columns}
             getRowId={(row) => row.id}
             searchPlaceholder="Search payments"
-            emptyLabel="No payments in this queue."
+            emptyFilterLabel="No payments in this queue."
             onRowClick={(row) => setSelectedId(row.id)}
           />
         </div>

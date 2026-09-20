@@ -123,22 +123,3 @@ export function ConfirmAction({
     </AlertDialog>
   );
 }
-
-export function DataTable({ columns, children }: { columns: string[]; children: ReactNode }) {
-  return (
-    <div className="mt-4 overflow-x-auto rounded-xl border border-border">
-      <table className="w-full min-w-[36rem] text-left text-sm">
-        <thead className="bg-muted/50">
-          <tr>
-            {columns.map((column) => (
-              <th key={column} className="px-3 py-2 font-medium">
-                {column}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>{children}</tbody>
-      </table>
-    </div>
-  );
-}

@@ -16,7 +16,7 @@ Domain-aware booking and refund status chip. Labels come from `@balanse/domain` 
 
 - Generic category chips → use **Badge**
 - Numeric pills → use **CountBadge**
-- Admin dashboard table cells still owned by `AdminStatusBadge` until #207
+- Staff (`active` / `disabled`) and session (`PUBLISHED` / `DRAFT` / cancelled) chips → use **Badge** with an explicit variant map. `StatusBadge` only accepts booking statuses
 
 ## Examples
 

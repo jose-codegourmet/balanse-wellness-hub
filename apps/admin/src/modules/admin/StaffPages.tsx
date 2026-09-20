@@ -2,12 +2,12 @@
 
 import { ADMIN_ROLE_CAPABILITY_NOTE, type AdminStaff, staffStatusLabel } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Button, FeedbackState, LocalizedSkeleton, NativeSelect } from "@balanse/ui";
+import { Badge, Button, FeedbackState, LocalizedSkeleton, NativeSelect } from "@balanse/ui";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { AdminDataTable, AdminStatusBadge } from "@/components/balanse/AdminDataTable";
+import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
 import { ConfirmAction, PageHeader, TextField } from "./shared";
 
 export function StaffListPage({ empty }: { empty?: boolean }) {
@@ -21,20 +21,31 @@ export function StaffListPage({ empty }: { empty?: boolean }) {
 
   const columns = useMemo<ColumnDef<AdminStaff, unknown>[]>(
     () => [
-      { accessorKey: "name", header: "Name" },
+      {
+        accessorKey: "name",
+        header: "Name",
+        meta: { primaryLink: (row) => `/staff/${row.id}` },
+      },
       {
         id: "role",
         header: "Role",
         accessorFn: () => "Admin",
       },
       {
-        accessorKey: "status",
+        id: "status",
         header: "Status",
+        accessorFn: (row) => staffStatusLabel(row.status),
+        enableColumnFilter: true,
+        meta: { enableFaceting: true, facetLabel: "Status" },
         cell: ({ row }) => (
-          <AdminStatusBadge
-            label={staffStatusLabel(row.original.status)}
-            tone={row.original.status === "disabled" ? "destructive" : "primary"}
-          />
+          <Badge
+            variant={row.original.status === "disabled" ? "danger" : "success"}
+            appearance="solid"
+            size="sm"
+            dot
+          >
+            {staffStatusLabel(row.original.status)}
+          </Badge>
         ),
       },
       {
@@ -69,6 +80,7 @@ export function StaffListPage({ empty }: { empty?: boolean }) {
       ) : (
         <div className="mt-4">
           <AdminDataTable
+            tableId="staff"
             data={rows}
             columns={columns}
             getRowId={(row) => row.id}
