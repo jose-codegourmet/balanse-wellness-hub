@@ -1,6 +1,7 @@
 import { FEEDBACK_STATE_IDS } from "@balanse/domain";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { CalendarSkeleton, FeedbackState, LocalizedSkeleton } from "./FeedbackState";
+import { FeedbackState, LocalizedSkeleton } from "./FeedbackState";
+import { CalendarSkeleton } from "./skeletons";
 
 const meta = {
   title: "Shared/FeedbackStates",

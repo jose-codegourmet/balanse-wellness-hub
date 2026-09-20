@@ -18,7 +18,8 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "../../components/button/Button";
 import { cn } from "../../lib/utils";
-import { CalendarSkeleton, FeedbackState } from "../feedback/FeedbackState";
+import { FeedbackState } from "../feedback/FeedbackState";
+import { CalendarSkeleton } from "../feedback/skeletons";
 
 export type CalendarView = "day" | "week" | "month";
 export type CalendarAudience = "guest" | "customer";

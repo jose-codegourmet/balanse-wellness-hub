@@ -2,6 +2,7 @@ export * from "./balanse/assets/MarketingImage";
 export * from "./balanse/brand/BrandFrame";
 export * from "./balanse/calendar/ScheduleCalendar";
 export * from "./balanse/feedback/FeedbackState";
+export * from "./balanse/feedback/skeletons";
 export * from "./balanse/MockImageUpload";
 export * from "./balanse/marketing/CtaBand";
 export * from "./balanse/marketing/SectionHeading";

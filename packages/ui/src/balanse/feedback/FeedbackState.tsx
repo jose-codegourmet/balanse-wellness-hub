@@ -64,7 +64,11 @@ export function FeedbackState({
   );
 }
 
-/** Localized skeleton — never a full-page spinner. */
+/**
+ * Localized skeleton — never a full-page spinner.
+ * Prefer a page shell (`TablePageSkeleton`, `CardListSkeleton`, …) for whole-page
+ * loading. This helper is for genuinely inline stacks. `lines` silently caps at 8.
+ */
 export function LocalizedSkeleton({
   lines = 3,
   className,
@@ -82,14 +86,6 @@ export function LocalizedSkeleton({
         .map((lineKey) => (
           <Skeleton key={lineKey} className="h-10 w-full" />
         ))}
-    </div>
-  );
-}
-
-export function CalendarSkeleton({ className }: { className?: string }) {
-  return (
-    <div className={cn("rounded-xl border border-border bg-card p-4", className)}>
-      <LocalizedSkeleton lines={6} label="Loading schedule" />
     </div>
   );
 }
