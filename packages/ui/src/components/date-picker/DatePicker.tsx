@@ -151,7 +151,8 @@ function DatePicker({
   onBlur,
   ...inputProps
 }: DatePickerProps) {
-  const isControlled = valueProp !== undefined;
+  const startedControlled = React.useRef(valueProp !== undefined);
+  const isControlled = startedControlled.current || valueProp !== undefined;
   const [uncontrolled, setUncontrolled] = React.useState(defaultValue);
   const value = isControlled ? valueProp : uncontrolled;
   const setValue = React.useCallback(
@@ -333,7 +334,8 @@ function DateRangePicker({
   onBlur,
   ...inputProps
 }: DateRangePickerProps) {
-  const isControlled = valueProp !== undefined;
+  const startedControlled = React.useRef(valueProp !== undefined);
+  const isControlled = startedControlled.current || valueProp !== undefined;
   const [uncontrolled, setUncontrolled] = React.useState(defaultValue);
   const value = isControlled ? valueProp : uncontrolled;
   const setValue = React.useCallback(
@@ -410,7 +412,7 @@ function DateRangePicker({
   const presets = React.useMemo(() => {
     const weekStart = startOfManilaWeekMonday(today);
     const monthStart = startOfManilaMonth(today);
-    const monthEnd = `${monthStart.slice(0, 7)}-${String(daysInManilaMonth(today)).padStart(2, "0")}`;
+    const monthEnd = addManilaDays(monthStart, daysInManilaMonth(today) - 1);
     return [
       { key: "today", label: "Today", range: { from: today, to: today } },
       {

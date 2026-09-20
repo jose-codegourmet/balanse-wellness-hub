@@ -40,3 +40,4 @@
 - Option labels go through `formatSessionTime` with a fixed Manila offset (`2026-09-16T${HH:mm}:00+08:00`). That composition is display-only; the stored value stays `HH:mm`. Do not call `toLocaleTimeString`.
 - Partial typed input never reaches `onValueChange`. On blur, an unparseable draft reverts to the last valid value.
 - Pair `invalid` / `disabled` / `readOnly` with `Field` and `aria-describedby` → `FieldError`.
+- Enter / Space on the **clock icon** opens the list. Enter in the text field commits a typed `HH:mm` and does not open the list.

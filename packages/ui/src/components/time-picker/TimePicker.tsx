@@ -76,7 +76,8 @@ function TimePicker({
   onBlur,
   ...inputProps
 }: TimePickerProps) {
-  const isControlled = valueProp !== undefined;
+  const startedControlled = React.useRef(valueProp !== undefined);
+  const isControlled = startedControlled.current || valueProp !== undefined;
   const [uncontrolled, setUncontrolled] = React.useState(defaultValue);
   const value = isControlled ? valueProp : uncontrolled;
   const setValue = React.useCallback(
@@ -93,6 +94,7 @@ function TimePicker({
   const [focused, setFocused] = React.useState(false);
   const [draft, setDraft] = React.useState(value ?? "");
   const [activeIndex, setActiveIndex] = React.useState(0);
+  const listId = React.useId();
   const listRef = React.useRef<HTMLDivElement>(null);
   const optionRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
 
@@ -165,6 +167,22 @@ function TimePicker({
     setOpen(false);
   };
 
+  const activateIndex = (next: number) => {
+    setActiveIndex(next);
+    optionRefs.current[next]?.scrollIntoView({ block: "nearest" });
+  };
+
+  const firstEnabledIndex = () => slots.findIndex((slot) => canCommit(slot));
+  const lastEnabledIndex = () => {
+    for (let index = slots.length - 1; index >= 0; index -= 1) {
+      const slot = slots[index];
+      if (slot && canCommit(slot)) {
+        return index;
+      }
+    }
+    return -1;
+  };
+
   const moveActive = (delta: number) => {
     if (slots.length === 0) {
       return;
@@ -174,8 +192,7 @@ function TimePicker({
       next = (next + delta + slots.length) % slots.length;
       const candidate = slots[next];
       if (candidate && canCommit(candidate)) {
-        setActiveIndex(next);
-        optionRefs.current[next]?.scrollIntoView({ block: "nearest" });
+        activateIndex(next);
         return;
       }
     }
@@ -259,9 +276,13 @@ function TimePicker({
             <PopoverTitle className="sr-only">Choose time</PopoverTitle>
             <div
               ref={listRef}
+              id={listId}
               role="listbox"
               tabIndex={0}
               aria-label="Available times"
+              aria-activedescendant={
+                slots[activeIndex] ? `${listId}-${slots[activeIndex]}` : undefined
+              }
               className="max-h-64 overflow-y-auto outline-none"
               onKeyDown={(event) => {
                 if (event.key === "ArrowDown") {
@@ -272,10 +293,16 @@ function TimePicker({
                   moveActive(-1);
                 } else if (event.key === "Home") {
                   event.preventDefault();
-                  setActiveIndex(0);
+                  const next = firstEnabledIndex();
+                  if (next >= 0) {
+                    activateIndex(next);
+                  }
                 } else if (event.key === "End") {
                   event.preventDefault();
-                  setActiveIndex(slots.length - 1);
+                  const next = lastEnabledIndex();
+                  if (next >= 0) {
+                    activateIndex(next);
+                  }
                 } else if (event.key === "Enter") {
                   event.preventDefault();
                   const slot = slots[activeIndex];
@@ -290,6 +317,7 @@ function TimePicker({
                 return (
                   <button
                     key={slot}
+                    id={`${listId}-${slot}`}
                     ref={(node) => {
                       optionRefs.current[index] = node;
                     }}
