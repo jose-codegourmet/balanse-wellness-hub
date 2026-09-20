@@ -1,4 +1,4 @@
-import type { AdminReportFilters, BookingStatus } from "@balanse/domain";
+import type { AdminPaymentTab, AdminReportFilters, BookingStatus } from "@balanse/domain";
 import type { MockRole } from "@balanse/mock/session";
 
 export type AdminBookingListFilters = {
@@ -57,8 +57,12 @@ export const adminKeys = {
       [...adminKeys.reports.all(role), "session", sessionId] as const,
   },
 
-  /** Landing spot for FE-ADM-020 (#210) infinite queue keys. Do not reshape. */
+  /** Infinite queue keys for FE-ADM-020 (#210). Prefix stays `queues`. */
   queues: {
     all: (role: MockRole) => [...adminKeys.all(role), "queues"] as const,
+    payments: (role: MockRole, tab: AdminPaymentTab) =>
+      [...adminKeys.queues.all(role), "payments", tab] as const,
+    cancellations: (role: MockRole) => [...adminKeys.queues.all(role), "cancellations"] as const,
+    reschedules: (role: MockRole) => [...adminKeys.queues.all(role), "reschedules"] as const,
   },
 } as const;

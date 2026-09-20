@@ -30,16 +30,16 @@ Hierarchical prefixes work with `invalidateQueries`:
 queryClient.invalidateQueries({ queryKey: adminKeys.bookings.all(role) });
 ```
 
-`adminKeys.queues` is reserved for FE-ADM-020 (#210) infinite queue keys. Reserved query factory names (do not take them): `adminPaymentsQueueInfiniteQuery`, `adminCancellationsInfiniteQuery`, `adminReschedulesInfiniteQuery`.
+`adminKeys.queues` holds infinite queue keys (`payments(tab)`, `cancellations`, `reschedules`). Factories: `adminPaymentsQueueInfiniteQuery`, `adminCancellationsInfiniteQuery`, `adminReschedulesInfiniteQuery`.
 
 ## Invalidation map
 
 | Mutation | Invalidates |
 | --- | --- |
-| `confirmAdminBooking`, `rejectAdminBooking` | `bookings.all`, `payments.all`, `dashboard` |
-| `recordCash`, `markRefundPending`, `markRefunded` | `payments.all`, `bookings.all`, `dashboard` |
-| `completeAdminCancellation`, `rejectAdminCancellation` | `cancellations.all`, `bookings.all`, `dashboard` |
-| `approveAdminReschedule`, `rejectAdminReschedule` | `reschedules.all`, `bookings.all`, `sessions.all`, `dashboard` |
+| `confirmAdminBooking`, `rejectAdminBooking` | `bookings.all`, `payments.all`, `dashboard`, `queues.all` |
+| `recordCash`, `markRefundPending`, `markRefunded` | `payments.all`, `bookings.all`, `dashboard`, `queues.all` |
+| `completeAdminCancellation`, `rejectAdminCancellation` | `cancellations.all`, `bookings.all`, `dashboard`, `queues.all` |
+| `approveAdminReschedule`, `rejectAdminReschedule` | `reschedules.all`, `bookings.all`, `sessions.all`, `dashboard`, `queues.all` |
 | `checkIn`, `markNoShow` | `bookings.all`, `roster` (prefix), `dashboard`, `reports.all` |
 | `upsertAdminClass` | `classes.all` |
 | `upsertAdminCoach` | `coaches.all` |

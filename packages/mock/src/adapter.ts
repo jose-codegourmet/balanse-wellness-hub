@@ -4,12 +4,14 @@ import type {
   AdminCustomer,
   AdminCustomerDetail,
   AdminDashboardSnapshot,
+  AdminPaymentTab,
   AdminReportFilters,
   AdminReports,
   AdminSession,
   AdminSettings,
   AdminStaff,
   BookingStatus,
+  CursorPage,
   CustomerBooking,
   CustomerProfile,
   PaymentInstructions,
@@ -22,6 +24,17 @@ import type {
   SessionReportDrilldown,
   SessionStatus,
 } from "@balanse/domain";
+
+export type AdminPaymentQueueQuery = {
+  tab?: AdminPaymentTab;
+  limit?: number;
+  cursor?: string;
+};
+
+export type AdminRequestQueueQuery = {
+  limit?: number;
+  cursor?: string;
+};
 
 /**
  * Method names mirror §4.3 API route inventory so WIRE-001 is a mechanical swap.
@@ -68,7 +81,10 @@ export type MockDataAdapter = {
   }) => Promise<CustomerBooking[]>;
   confirmAdminBooking: (id: string) => Promise<CustomerBooking>;
   rejectAdminBooking: (id: string, reason: string) => Promise<CustomerBooking>;
-  getAdminPayments: () => Promise<CustomerBooking[]>;
+  getAdminPayments: {
+    (): Promise<CustomerBooking[]>;
+    (query: AdminPaymentQueueQuery): Promise<CursorPage<CustomerBooking>>;
+  };
   recordCash: (bookingId: string) => Promise<CustomerBooking>;
   markRefundPending: (bookingId: string) => Promise<CustomerBooking>;
   markRefunded: (bookingId: string) => Promise<CustomerBooking>;
@@ -109,10 +125,16 @@ export type MockDataAdapter = {
     coachRateType: AdminSession["coachRateType"];
   }) => Promise<AdminSession>;
   cancelAdminSession: (id: string) => Promise<AdminSession>;
-  getAdminCancellationRequests: () => Promise<CustomerBooking[]>;
+  getAdminCancellationRequests: {
+    (): Promise<CustomerBooking[]>;
+    (query: AdminRequestQueueQuery): Promise<CursorPage<CustomerBooking>>;
+  };
   completeAdminCancellation: (bookingId: string) => Promise<CustomerBooking>;
   rejectAdminCancellation: (bookingId: string, reason: string) => Promise<CustomerBooking>;
-  getAdminRescheduleRequests: () => Promise<CustomerBooking[]>;
+  getAdminRescheduleRequests: {
+    (): Promise<CustomerBooking[]>;
+    (query: AdminRequestQueueQuery): Promise<CursorPage<CustomerBooking>>;
+  };
   approveAdminReschedule: (bookingId: string) => Promise<CustomerBooking>;
   rejectAdminReschedule: (bookingId: string, reason: string) => Promise<CustomerBooking>;
   getAdminSessionRoster: (sessionId: string) => Promise<{

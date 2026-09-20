@@ -1,12 +1,18 @@
 import type {
   AdminClass,
   AdminCoach,
+  AdminPaymentTab,
   AdminSession,
+  CursorPage,
+  CustomerBooking,
   PaymentMethod,
   PolicyAcceptance,
   PublicSession,
 } from "@balanse/domain";
 import {
+  ADMIN_PAYMENT_HOLD_SORT,
+  ADMIN_PAYMENT_REFUND_SORT,
+  ADMIN_REQUEST_QUEUE_SORT,
   bookingListTab,
   buildAdminCustomerRow,
   buildAdminDashboard,
@@ -15,12 +21,14 @@ import {
   computeHoldExpiresAt,
   computeSessionDrilldown,
   computeSessionInventory,
+  filterPaymentQueue,
   formatPeso,
   manilaYmd,
+  sliceCursorPage,
   toPublicSession,
   validateSessionCapacity,
 } from "@balanse/domain";
-import type { MockDataAdapter } from "./adapter";
+import type { AdminPaymentQueueQuery, AdminRequestQueueQuery, MockDataAdapter } from "./adapter";
 import {
   customers,
   MOCK_NOW_ISO,
@@ -43,6 +51,49 @@ import { applyMockEffects, getMockRuntime } from "./runtime";
 function clone<T>(value: T): T {
   return structuredClone(value);
 }
+
+function requestQueueKey(row: CustomerBooking): string {
+  return row.requestCreatedAt ?? row.createdAt;
+}
+
+function sortRequestQueue(rows: CustomerBooking[]): CustomerBooking[] {
+  return [...rows].sort((a, b) => {
+    const keyCmp = requestQueueKey(b).localeCompare(requestQueueKey(a));
+    return keyCmp !== 0 ? keyCmp : b.id.localeCompare(a.id);
+  });
+}
+
+function sortPaymentHoldQueue(rows: CustomerBooking[]): CustomerBooking[] {
+  return [...rows].sort((a, b) => {
+    const keyCmp = (a.holdExpiresAt ?? "").localeCompare(b.holdExpiresAt ?? "");
+    return keyCmp !== 0 ? keyCmp : a.id.localeCompare(b.id);
+  });
+}
+
+function sortPaymentRefundQueue(rows: CustomerBooking[]): CustomerBooking[] {
+  return [...rows].sort((a, b) => {
+    const keyCmp = b.createdAt.localeCompare(a.createdAt);
+    return keyCmp !== 0 ? keyCmp : b.id.localeCompare(a.id);
+  });
+}
+
+function paymentQueueSort(tab: AdminPaymentTab): string {
+  return tab === "refunds" ? ADMIN_PAYMENT_REFUND_SORT : ADMIN_PAYMENT_HOLD_SORT;
+}
+
+function paymentQueueKeyOf(tab: AdminPaymentTab) {
+  return (row: CustomerBooking) => (tab === "refunds" ? row.createdAt : row.holdExpiresAt);
+}
+
+function sortPaymentTab(rows: CustomerBooking[], tab: AdminPaymentTab): CustomerBooking[] {
+  return tab === "refunds" ? sortPaymentRefundQueue(rows) : sortPaymentHoldQueue(rows);
+}
+
+const EMPTY_CURSOR_PAGE: CursorPage<CustomerBooking> = {
+  items: [],
+  nextCursor: null,
+  totalCount: 0,
+};
 
 export function createMemoryAdapter(): MockDataAdapter {
   let bookings = seedBookings.map((b) => clone(b));
@@ -235,8 +286,21 @@ export function createMemoryAdapter(): MockDataAdapter {
         booking.rejectReason = reason;
         return clone(booking);
       }),
-    getAdminPayments: () =>
-      applyMockEffects(() => (emptyQueues() ? [] : bookings.map((b) => clone(b)))),
+    getAdminPayments: ((query?: AdminPaymentQueueQuery) =>
+      applyMockEffects(() => {
+        if (query === undefined) {
+          return emptyQueues() ? [] : bookings.map((b) => clone(b));
+        }
+        if (emptyQueues()) return EMPTY_CURSOR_PAGE;
+        const tab = query.tab ?? "gcash";
+        const sorted = sortPaymentTab(filterPaymentQueue(bookings, tab), tab).map((b) => clone(b));
+        return sliceCursorPage(sorted, {
+          sort: paymentQueueSort(tab),
+          limit: query.limit,
+          cursor: query.cursor,
+          keyOf: paymentQueueKeyOf(tab),
+        });
+      })) as MockDataAdapter["getAdminPayments"],
     recordCash: (bookingId) =>
       applyMockEffects(() => {
         const booking = findBooking(bookingId);
@@ -372,10 +436,22 @@ export function createMemoryAdapter(): MockDataAdapter {
         session.bookable = false;
         return clone(session);
       }),
-    getAdminCancellationRequests: () =>
-      applyMockEffects(() =>
-        emptyQueues() ? [] : bookings.filter((b) => b.status === "CANCELLATION_REQUESTED"),
-      ),
+    getAdminCancellationRequests: ((query?: AdminRequestQueueQuery) =>
+      applyMockEffects(() => {
+        if (query === undefined) {
+          return emptyQueues() ? [] : bookings.filter((b) => b.status === "CANCELLATION_REQUESTED");
+        }
+        if (emptyQueues()) return EMPTY_CURSOR_PAGE;
+        const sorted = sortRequestQueue(
+          bookings.filter((b) => b.status === "CANCELLATION_REQUESTED"),
+        ).map((b) => clone(b));
+        return sliceCursorPage(sorted, {
+          sort: ADMIN_REQUEST_QUEUE_SORT,
+          limit: query.limit,
+          cursor: query.cursor,
+          keyOf: requestQueueKey,
+        });
+      })) as MockDataAdapter["getAdminCancellationRequests"],
     completeAdminCancellation: (bookingId) =>
       applyMockEffects(() => {
         const booking = findBooking(bookingId);
@@ -393,10 +469,22 @@ export function createMemoryAdapter(): MockDataAdapter {
         booking.rejectReason = reason;
         return clone(booking);
       }),
-    getAdminRescheduleRequests: () =>
-      applyMockEffects(() =>
-        emptyQueues() ? [] : bookings.filter((b) => b.status === "RESCHEDULE_REQUESTED"),
-      ),
+    getAdminRescheduleRequests: ((query?: AdminRequestQueueQuery) =>
+      applyMockEffects(() => {
+        if (query === undefined) {
+          return emptyQueues() ? [] : bookings.filter((b) => b.status === "RESCHEDULE_REQUESTED");
+        }
+        if (emptyQueues()) return EMPTY_CURSOR_PAGE;
+        const sorted = sortRequestQueue(
+          bookings.filter((b) => b.status === "RESCHEDULE_REQUESTED"),
+        ).map((b) => clone(b));
+        return sliceCursorPage(sorted, {
+          sort: ADMIN_REQUEST_QUEUE_SORT,
+          limit: query.limit,
+          cursor: query.cursor,
+          keyOf: requestQueueKey,
+        });
+      })) as MockDataAdapter["getAdminRescheduleRequests"],
     approveAdminReschedule: (bookingId) =>
       applyMockEffects(() => {
         const booking = findBooking(bookingId);

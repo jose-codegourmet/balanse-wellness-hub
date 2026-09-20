@@ -1,3 +1,4 @@
+import { ADMIN_CURSOR_LIMIT_DEFAULT, ADMIN_CURSOR_LIMIT_MAX, type CursorPage } from "./contracts";
 import type { FieldErrors, LoginInput } from "./customer-portal";
 import { HOLD_DURATION_HOURS } from "./customer-portal";
 import type { CoachRateType, PaymentStatus, SessionStatus } from "./enums";
@@ -240,6 +241,106 @@ export function paginateRows<T>(rows: T[], page: number, pageSize = ADMIN_BOOKIN
   const safePage = Math.max(1, page);
   const start = (safePage - 1) * pageSize;
   return rows.slice(start, start + pageSize);
+}
+
+/** BE-050 sort ids — mock queues must use these, not invented names. */
+export const ADMIN_REQUEST_QUEUE_SORT = "requestedAt_desc_id_desc";
+export const ADMIN_PAYMENT_HOLD_SORT = "holdExpiresAt_asc_id_asc";
+export const ADMIN_PAYMENT_REFUND_SORT = "createdAt_desc_id_desc";
+
+type CursorPayload = { v: 1; s: string; k: string | null; i: string };
+
+/**
+ * Opaque keyset cursor. Shape is mirrored from `packages/api/src/cursor.ts`
+ * so BE-050 and the mock stay byte-compatible. Do not import `@balanse/api`.
+ */
+function encodeCursor(sort: string, key: string | null, id: string): string {
+  const payload: CursorPayload = { v: 1, s: sort, k: key, i: id };
+  return Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+}
+
+/**
+ * Decode + validate. A mismatched `s` or malformed payload throws
+ * `invalid_cursor` — never silently restart at page 1.
+ * Mirrored from `packages/api/src/cursor.ts`.
+ */
+function decodeCursor(
+  raw: string | null | undefined,
+  expectedSort: string,
+): { key: string | null; id: string } | null {
+  if (raw == null || raw === "") return null;
+  try {
+    const parsed = JSON.parse(Buffer.from(raw, "base64url").toString("utf8")) as CursorPayload;
+    if (parsed.v !== 1 || parsed.s !== expectedSort || typeof parsed.i !== "string") {
+      throw new Error("shape");
+    }
+    return { key: parsed.k ?? null, id: parsed.i };
+  } catch {
+    throw Object.assign(new Error("Cursor is malformed or does not match this list."), {
+      code: "invalid_cursor",
+    });
+  }
+}
+
+function parseSortDirections(sort: string): { keyDir: "asc" | "desc"; idDir: "asc" | "desc" } {
+  const match = sort.match(/_(asc|desc)_id_(asc|desc)$/);
+  if (!match || (match[1] !== "asc" && match[1] !== "desc")) {
+    throw Object.assign(new Error("Cursor is malformed or does not match this list."), {
+      code: "invalid_cursor",
+    });
+  }
+  const idDir = match[2] === "asc" || match[2] === "desc" ? match[2] : "desc";
+  return { keyDir: match[1], idDir };
+}
+
+function compareNullable(a: string | null, b: string | null): number {
+  return (a ?? "").localeCompare(b ?? "");
+}
+
+function isAfterCursor(
+  key: string | null,
+  id: string,
+  cursorKey: string | null,
+  cursorId: string,
+  keyDir: "asc" | "desc",
+  idDir: "asc" | "desc",
+): boolean {
+  const keyCmp = compareNullable(key, cursorKey);
+  if (keyCmp !== 0) {
+    return keyDir === "asc" ? keyCmp > 0 : keyCmp < 0;
+  }
+  const idCmp = id.localeCompare(cursorId);
+  return idDir === "asc" ? idCmp > 0 : idCmp < 0;
+}
+
+/**
+ * Keyset page over an already-sorted array. Mirrors packages/api/src/cursor.ts so
+ * BE-050 and the mock agree on cursor shape and sort ids.
+ */
+export function sliceCursorPage<T extends { id: string }>(
+  sorted: T[],
+  opts: { sort: string; limit?: number; cursor?: string | null; keyOf: (row: T) => string | null },
+): CursorPage<T> {
+  const rawLimit = opts.limit ?? ADMIN_CURSOR_LIMIT_DEFAULT;
+  const limit = Math.min(
+    ADMIN_CURSOR_LIMIT_MAX,
+    Math.max(1, Number.isFinite(rawLimit) ? Math.floor(rawLimit) : ADMIN_CURSOR_LIMIT_DEFAULT),
+  );
+  const decoded = decodeCursor(opts.cursor, opts.sort);
+  const { keyDir, idDir } = parseSortDirections(opts.sort);
+  const remaining = decoded
+    ? sorted.filter((row) =>
+        isAfterCursor(opts.keyOf(row), row.id, decoded.key, decoded.id, keyDir, idDir),
+      )
+    : sorted;
+  const hasMore = remaining.length > limit;
+  const items = hasMore ? remaining.slice(0, limit) : remaining;
+  const last = items[items.length - 1];
+  return {
+    items,
+    nextCursor: hasMore && last ? encodeCursor(opts.sort, opts.keyOf(last), last.id) : null,
+    totalCount: sorted.length,
+  };
 }
 
 export function countsTowardGrossSales(booking: CustomerBooking): boolean {
