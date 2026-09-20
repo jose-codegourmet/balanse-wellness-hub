@@ -21,11 +21,7 @@ export function CancellationQueuePage({ empty }: { empty?: boolean }) {
   const customersQuery = useSuspenseQuery(adminCustomersQuery(principal.role));
   const rows = empty ? [] : rowsQuery.data;
   const customers = customersQuery.data;
-  const stamp = auditConfirmationCopy(
-    "This cancellation action",
-    "Admin",
-    adminNowIso(),
-  );
+  const stamp = auditConfirmationCopy("This cancellation action", "Admin", adminNowIso());
 
   return (
     <AdminPageShell title="Cancellation Requests">

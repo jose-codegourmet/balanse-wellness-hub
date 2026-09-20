@@ -164,11 +164,7 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
   const [reason, setReason] = useState("");
   const [proofOpen, setProofOpen] = useState(false);
   const [policies, setPolicies] = useState<string | null>(null);
-  const actorStamp = auditConfirmationCopy(
-    "This booking action",
-    "Admin",
-    adminNowIso(),
-  );
+  const actorStamp = auditConfirmationCopy("This booking action", "Admin", adminNowIso());
 
   if (!booking) return null;
   const name =
