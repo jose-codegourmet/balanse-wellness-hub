@@ -421,7 +421,7 @@ export function ReportsOverview({
         <article className="flex min-h-80 flex-col rounded-[--radius] border border-border bg-card p-5 lg:col-span-8">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h3 className="text-sm font-medium">Gross Sales</h3>
+              <h2 className="text-sm font-medium">Gross Sales</h2>
               <p className="mt-1 text-xs text-muted-foreground">
                 Daily take across the selected range
               </p>
@@ -469,7 +469,7 @@ export function ReportsOverview({
 
         <article className="flex min-h-80 flex-col rounded-[--radius] border border-border bg-card p-5 lg:col-span-4">
           <div>
-            <h3 className="text-sm font-medium">Class mix</h3>
+            <h2 className="text-sm font-medium">Class mix</h2>
             <p className="mt-1 text-xs text-muted-foreground">Revenue share for this window</p>
           </div>
           {classMix.length === 0 ? (

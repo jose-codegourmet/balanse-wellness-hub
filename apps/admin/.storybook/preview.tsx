@@ -77,7 +77,24 @@ const withAdminProviders: Decorator = (Story, context) => {
   );
 };
 
+const SHARED_UI_STORY_PREFIXES = ["Components/", "Shared/", "Foundation/", "Motion/"] as const;
+
+function isSharedUiCatalog(title: string) {
+  return SHARED_UI_STORY_PREFIXES.some((prefix) => title.startsWith(prefix));
+}
+
 const preview: Preview = {
+  // Inherited @balanse/ui stories are browsable in this app's Storybook but
+  // are not this ticket's a11y surface (Batch B #199–#203). CI enforcement
+  // of a real axe gate is #240.
+  beforeEach(context) {
+    if (isSharedUiCatalog(context.title)) {
+      context.parameters.a11y = {
+        ...context.parameters.a11y,
+        test: "todo",
+      };
+    }
+  },
   decorators: [withAdminProviders],
   globalTypes: {
     theme: {

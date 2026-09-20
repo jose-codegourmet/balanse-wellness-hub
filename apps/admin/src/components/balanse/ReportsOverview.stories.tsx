@@ -20,6 +20,12 @@ const meta = {
   title: "Admin/Components/ReportsOverview",
   component: ReportsOverview,
   tags: ["autodocs"],
+  args: {
+    reports: seeded,
+    from: "2026-09-01",
+    to: "2026-09-30",
+    onRangeChange: () => undefined,
+  },
   render: () => <ReportsOverviewHarness />,
 } satisfies Meta<typeof ReportsOverview>;
 
