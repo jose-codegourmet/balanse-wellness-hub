@@ -121,10 +121,12 @@ function CoachPicture({
   sources,
   alt,
   onError,
+  loading = "lazy",
 }: {
   sources: ReturnType<typeof resolveCoachPhotoSources>;
   alt: string;
   onError: () => void;
+  loading?: "lazy" | "eager";
 }) {
   return (
     <picture>
@@ -143,6 +145,8 @@ function CoachPicture({
         src={sources.jpeg}
         alt={alt}
         sizes={sources.sizes}
+        loading={loading}
+        decoding="async"
         className="size-full object-cover"
         onError={onError}
       />
@@ -155,11 +159,13 @@ export function CoachPhoto({
   name,
   ratio = "1:1",
   className,
+  loading = "lazy",
 }: {
   photoKey: string | null;
   name: string;
   ratio?: Extract<MarketingAspectRatio, "1:1" | "4:5">;
   className?: string;
+  loading?: "lazy" | "eager";
 }) {
   const crest =
     ratio === "4:5" ? LOCAL_PLACEHOLDER_PATHS.coach4x5 : LOCAL_PLACEHOLDER_PATHS.coach1x1;
@@ -182,11 +188,18 @@ export function CoachPhoto({
         <img
           src={failed ? crest : sources.webp}
           alt={`Balansé crest artwork shown for ${name}`}
+          loading={loading}
+          decoding="async"
           className="size-full object-cover"
           onError={() => setFailed(true)}
         />
       ) : (
-        <CoachPicture sources={sources} alt={`Coach ${name}`} onError={() => setFailed(true)} />
+        <CoachPicture
+          sources={sources}
+          alt={`Coach ${name}`}
+          loading={loading}
+          onError={() => setFailed(true)}
+        />
       )}
     </AspectRatio>
   );

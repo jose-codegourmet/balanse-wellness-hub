@@ -78,6 +78,15 @@ export const ReducedMotion: Story = {
   ),
 };
 
+export const PhotoRoster: Story = {
+  args: {
+    label: "Loading coaches",
+    rows: 6,
+    columns: 6,
+    leadingCell: "avatar",
+  },
+};
+
 export const VersusReal: Story = {
   render: (args) => (
     <div className="grid gap-8 lg:grid-cols-2">

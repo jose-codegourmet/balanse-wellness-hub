@@ -18,7 +18,7 @@ Layout-accurate loading shell for admin list pages that render `AdminDataTable`:
 
 ## Shape props
 
-`label` (required), `rows` (default 4, above-the-fold at 360), `columns` (default 5). No data props. Do not import `@balanse/mock`.
+`label` (required), `rows` (default 4, above-the-fold at 360), `columns` (default 5), `leadingCell` (`bar` default, or `avatar` for circular photo placeholders on `/coaches`). No data props. Do not import `@balanse/mock`.
 
 ## Accessibility
 
