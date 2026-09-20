@@ -594,48 +594,64 @@
       ],
       "generation_policy": "generate",
       "do_not_generate_reason": null,
-      "model": "nano_banana_2_shots",
+      "model": "nano_banana_2",
       "model_parameters": {
         "resolution": "2k",
         "aspect_ratio": "16:9",
-        "production_model": "nano_banana_2 (resolved nano_banana_flash)",
-        "job_id": "df7f126e-4031-492a-8930-b3f751999063",
-        "upscale_job_id": "1e7174f8-7587-4a79-a817-d69084b04be6",
+        "revision": "v2-wordmark-free",
+        "native_dimensions": "2752x1536",
+        "production_model": "nano_banana_2",
+        "share_url": "https://higgsfield.ai/s/OnoKJ3_HjCc",
+        "job_id": "a5a6ee9c-ae50-40bd-8529-5f2facd0f6ba",
+        "job_set_id": "587f8386-de50-48c8-a9dc-1613ef7073ac",
+        "upscale_job_id": "2fd64b9f-2a94-40fc-91a5-5de7dcea573d",
+        "prompt": "please remove the word balanse from the photo other details remain",
         "image_references": [
-          "f5a7c898-ea39-4b95-aa39-d1fa1c7b3436"
+          "06b83517-9b1f-4eef-a63a-529f83ba8b25"
         ],
-        "image_references_role": "coach_contact_panel",
-        "source_kind": "identity_bound_coach_sources"
+        "image_references_role": "parent_lineup_with_wall_wordmark",
+        "source_kind": "identity_bound_coach_sources",
+        "superseded_job_id": "df7f126e-4031-492a-8930-b3f751999063",
+        "superseded_upscale_job_id": "1e7174f8-7587-4a79-a817-d69084b04be6"
       },
       "generation_date": "2026-09-20",
       "approval_status": "approved",
       "approver": "Jose (standing auto-approve Assets, 2026-09-20)",
-      "alt_text": "The eight Balansé coaches together in the studio, standing in a relaxed row in natural daylight.",
+      "alt_text": "The eight Balansé coaches standing together in a relaxed row against a plain warm cream studio wall.",
       "post_processing": [
         {
           "op": "cast-lock",
-          "notes": "Eight source-backed coaches only. Alec James Co, Sofia Ocampo, and Kate Go stay out of this hero until catalogued sources land."
+          "notes": "Eight source-backed coaches only. Alec James Co, Sofia Ocampo, and Kate Go stay out of this hero until catalogued sources land. v2 cast verified by eye against docs/coaches/{slug}/coach-{slug}-01.jpg; no invented or excluded faces. Per-face left-to-right mapping is not asserted."
         },
         {
-          "op": "contact-sheet-panel-crop",
-          "notes": "2×4 panel of the eight coach stills uploaded as media 332ac995-6d17-44ed-add5-3801d0ed8041; nano_banana_2_shots job eb0ce475-c298-48fe-9c3b-ad78b8e9cebc returned a 3×3 grid, top-left panel re-registered as media f5a7c898-ea39-4b95-aa39-d1fa1c7b3436."
+          "op": "external-share-intake",
+          "notes": "v2 banner was produced by Jose outside the repo pipeline and handed over as Higgsfield share https://higgsfield.ai/s/OnoKJ3_HjCc. Assets resolved the share, archived the CDN masters, and materialized the webready set; Assets did not author the image."
         },
         {
-          "op": "single-hero-master",
-          "notes": "nano_banana_2 @ 2k job df7f126e-4031-492a-8930-b3f751999063 chosen over the shots refine 7ff0556a-02c9-4d65-a9e1-89a8bc72c8b7, which was another grid."
+          "op": "wordmark-removal",
+          "notes": "Parent job 06b83517-9b1f-4eef-a63a-529f83ba8b25 carried a painted BALANSE wordmark on the back wall. nano_banana_2 job a5a6ee9c-ae50-40bd-8529-5f2facd0f6ba removed it with the single instruction 'please remove the word balanse from the photo other details remain'. Upstream parentage of 06b83517 is not exposed by the share payload and is recorded as-is."
         },
         {
           "op": "ai-upscale-4k",
           "to": "docs/assets/marketing/coaches/group-hero-16x9-4k.png",
-          "notes": "upscale_image job 1e7174f8-7587-4a79-a817-d69084b04be6, 4096×2294 archive master."
+          "notes": "upscale_image bytedance job 2fd64b9f-2a94-40fc-91a5-5de7dcea573d, 2752×1536 → 4096×2294 archive master, 2 credits exact."
         },
         {
           "op": "webready",
           "notes": "jpg q78 + webp q72, long-edge<=1600, plus 480px thumbs. See scripts/materialize-coaches-hero-group.sh."
         },
         {
+          "op": "fe-bundle-sync",
+          "to": "apps/web/public/assets/marketing/coaches/group-hero-16x9.{webp,jpg}",
+          "notes": "Served bytes refreshed in place. Paths unchanged, so no FE wiring churn; FE still owns the /coaches layout restyle."
+        },
+        {
+          "op": "supersede-v1",
+          "notes": "v1 (jobs df7f126e-4031-492a-8930-b3f751999063 + upscale 1e7174f8-7587-4a79-a817-d69084b04be6) is retired. Its CDN master stays recorded under superseded.* in docs/assets/marketing/coaches/group-hero-jobs.json. Stale docs/assets/marketing/_pack_group_hero base64 transport removed — it held a truncated v1 fragment that would clobber the live banner."
+        },
+        {
           "op": "ready-for-storage",
-          "notes": "ASSET-030: BE service-role upload to marketing-assets. Anon upload blocked by RLS. storage_key intended; public_url provisional. Thumbs stay git-only."
+          "notes": "ASSET-030: BE service-role upload to marketing-assets must re-run after this merge so Storage stops serving v1 bytes. Anon upload blocked by RLS. storage_key intended; public_url provisional. Thumbs stay git-only. Do not invent SUPABASE_SERVICE_ROLE_KEY."
         }
       ],
       "storage_key": "marketing-assets/coaches/group-hero-16x9.webp",

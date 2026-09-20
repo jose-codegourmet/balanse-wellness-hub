@@ -1,9 +1,11 @@
 {
-  "generated_at": "2026-09-20T17:40:00+08:00",
+  "generated_at": "2026-09-20T23:20:00+08:00",
   "slot": "coaches-b",
+  "revision": "v2 (wordmark-free relight)",
   "intent_model": "nano_banana_2_shots",
-  "production_model": "nano_banana_2 (resolved nano_banana_flash) @ 2k then upscale_image 4k",
-  "reason": "nano_banana_2_shots accepts exactly one image_reference and emits 3x3 sheets; production master used nano_banana_2 @ 2k from 8-coach contact panel, then bytedance upscale to ~4k",
+  "production_model": "nano_banana_2 @ 2k (2752x1536) then upscale_image bytedance 4k",
+  "reason": "v2 supersedes the v1 studio lineup. Jose supplied a Higgsfield share as the approved banner; it is a nano_banana_2 edit of an earlier 8-coach lineup whose only instruction was to remove the painted BALANSE wall wordmark. Text-free backdrop keeps the brand guard clean and leaves the left/centre wall open for FE heading copy.",
+  "share_url": "https://higgsfield.ai/s/OnoKJ3_HjCc",
   "cast": [
     "ephraim-bacaltos",
     "rex-francis-regis",
@@ -20,11 +22,27 @@
     "kate-go"
   ],
   "jobs": {
-    "master_2k": "df7f126e-4031-492a-8930-b3f751999063",
-    "upscale_4k": "1e7174f8-7587-4a79-a817-d69084b04be6"
+    "parent_with_wordmark": "06b83517-9b1f-4eef-a63a-529f83ba8b25",
+    "master_2k": "a5a6ee9c-ae50-40bd-8529-5f2facd0f6ba",
+    "master_2k_job_set": "587f8386-de50-48c8-a9dc-1613ef7073ac",
+    "upscale_4k": "2fd64b9f-2a94-40fc-91a5-5de7dcea573d"
+  },
+  "prompt": {
+    "master_2k": "please remove the word balanse from the photo other details remain"
+  },
+  "superseded": {
+    "v1_master_2k": "df7f126e-4031-492a-8930-b3f751999063",
+    "v1_upscale_4k": "1e7174f8-7587-4a79-a817-d69084b04be6",
+    "v1_cdn_master_4k_png": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260920_094024_1e7174f8-7587-4a79-a817-d69084b04be6.png"
   },
   "cdn": {
-    "master_4k_png": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260920_094024_1e7174f8-7587-4a79-a817-d69084b04be6.png"
+    "master_4k_png": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260920_151349_2fd64b9f-2a94-40fc-91a5-5de7dcea573d.png",
+    "master_2k_png": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260920_150009_a5a6ee9c-ae50-40bd-8529-5f2facd0f6ba.png",
+    "parent_with_wordmark_png": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260920_145457_06b83517-9b1f-4eef-a63a-529f83ba8b25.png"
+  },
+  "checksums_sha256": {
+    "master_2k_png": "bce507f909b2df360adcb9b1d2e2d69d8ca2c7b7d6b7d831d8ac14a8f2175207",
+    "master_4k_png": "d8f2ea40c44e4595557f6b8d2f5894792a35d014b05f33eb15ac2e25744a7b5b"
   },
   "outputs": {
     "working": [
