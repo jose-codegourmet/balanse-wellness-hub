@@ -1,4 +1,5 @@
-2026-09-20,coaches-b,coaches-B,nano_banana_2_shots,1k,16:9,~4,eb0ce475-c298-48fe-9c3b-ad78b8e9cebc,rejected,ASSET-015. Single contact-sheet ref 332ac995-6d17-44ed-add5-3801d0ed8041. Returned 3x3 grid (shots behaviour). Panel cropped for refine.
-2026-09-20,coaches-b,coaches-B,nano_banana_2_shots,1k,16:9,~4,7ff0556a-02c9-4d65-a9e1-89a8bc72c8b7,rejected,ASSET-015 refine from panel f5a7c898-ea39-4b95-aa39-d1fa1c7b3436. Still a contact grid — not shippable as hero.
-2026-09-20,coaches-b,coaches-B,nano_banana_2,2k,16:9,metered,df7f126e-4031-492a-8930-b3f751999063,approved,ASSET-015 group hero master (8-coach cast). Resolved nano_banana_flash. Working docs/assets/marketing/coaches/group-hero-16x9.webp. Jose auto-approve.
-2026-09-20,coaches-b,coaches-B,upscale_image,4k,16:9,metered,1e7174f8-7587-4a79-a817-d69084b04be6,approved,ASSET-015 4k master from 2752x1536. Webready derived from upscale.
+date,slot,ticket,model,res,aspect,credits,job_id,status,notes
+2026-09-20,coaches-b,ASSET-015,nano_banana_2_shots,1k,16:9,~4,eb0ce475-c298-48fe-9c3b-ad78b8e9cebc,rejected,ASSET-015 contact-sheet v1 (3x3). Panel cropped for refine.
+2026-09-20,coaches-b,ASSET-015,nano_banana_2_shots,1k,16:9,~4,7ff0556a-02c9-4d65-a9e1-89a8bc72c8b7,rejected,ASSET-015 refine still a contact grid.
+2026-09-20,coaches-b,ASSET-015,nano_banana_2->nano_banana_flash,2k,16:9,metered,df7f126e-4031-492a-8930-b3f751999063,approved,ASSET-015 chosen single hero master. Working docs/assets/marketing/coaches/group-hero-16x9.webp. Jose auto-approve.
+2026-09-20,coaches-b,ASSET-015,upscale_image,4k,16:9,metered,1e7174f8-7587-4a79-a817-d69084b04be6,approved,ASSET-015 4k archive CDN materialize.
