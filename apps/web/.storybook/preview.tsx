@@ -17,6 +17,11 @@ const preview: Preview = {
     a11y: {
       test: "error",
     },
+    // `Providers` and several portal screens call `useRouter` from
+    // `next/navigation`, which throws unless the App Router mock is on.
+    nextjs: {
+      appDirectory: true,
+    },
   },
 };
 
