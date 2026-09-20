@@ -28,8 +28,8 @@ export function isRecentlyActive(
   const then = new Date(lastVisitAt).getTime();
   const now = new Date(nowIso).getTime();
   if (!Number.isFinite(then) || !Number.isFinite(now)) return false;
-  const ageMs = now - then;
-  return ageMs >= 0 && ageMs <= windowDays * DAY_MS;
+  // Inclusive of later-today session starts: lastVisitAt is the session clock, not Date.now().
+  return then >= now - windowDays * DAY_MS;
 }
 
 export function customerUpcomingFacet(row: AdminCustomer): string {
