@@ -51,9 +51,18 @@ export function coachPhotoKey(slug: string): string {
   return `coach-photos/${slug}`;
 }
 
+/** Admin-uploaded object: `coach-photos/<coachId>/<uuid>.<ext>` (BE-052). */
+export const ADMIN_COACH_PHOTO_KEY_RE =
+  /^coach-photos\/[^/]+\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\.[a-zA-Z0-9]+$/;
+
+export function isAdminUploadPhotoKey(photoKey: string | null): boolean {
+  return Boolean(photoKey && ADMIN_COACH_PHOTO_KEY_RE.test(photoKey));
+}
+
 export function coachSlugFromPhotoKey(photoKey: string | null): string | null {
   if (!photoKey || photoKey.startsWith("http://") || photoKey.startsWith("https://")) return null;
   if (photoKey.startsWith("/")) return null;
+  if (isAdminUploadPhotoKey(photoKey)) return null;
   const slug = photoKey.replace(/^coach-photos\//, "").split("/")[0] ?? "";
   return slug.length > 0 ? slug : null;
 }

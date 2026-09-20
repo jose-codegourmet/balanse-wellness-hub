@@ -18,5 +18,10 @@
 | [reporting.md](./reporting.md) | BE-022 |
 | [seed.md](./seed.md) | BE-023 |
 | [api-contracts.md](./api-contracts.md) | BE-024 |
-| [api-routes.md](./api-routes.md) | BE-030–BE-043 |
+| [admin-pagination.md](./admin-pagination.md) | BE-050 |
+| [validation-contracts.md](./validation-contracts.md) | BE-051 |
+| [uploads.md](./uploads.md) | BE-052 |
+| [settings-write.md](./settings-write.md) | BE-053 |
+| [dashboard-metrics.md](./dashboard-metrics.md) | BE-054 |
+| [api-routes.md](./api-routes.md) | BE-030–BE-043 + BE-050–054 |
 | [human-steps.md](./human-steps.md) | dashboard-only |

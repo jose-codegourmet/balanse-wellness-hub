@@ -17,6 +17,7 @@ model Coach {
   sessions   GymSession[]
 
   @@index([active])
+  @@index([photoKey])
   @@map("coaches")
 }
 
@@ -82,4 +83,36 @@ model GymSession {
   @@index([classId])
   @@index([coachId])
   @@map("sessions")
+}
+
+/// BE-053 — public FAQ rows. Display order is `sortOrder`, not document position.
+model FaqItem {
+  id         String   @id @default(cuid())
+  question   String
+  answer     String
+  sortOrder  Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@map("faqs")
+}
+
+/// BE-052 — signed-upload intents that must be confirmed or reaped.
+model PendingUpload {
+  id          String    @id @default(cuid())
+  bucket      String
+  objectKey   String    @unique
+  purpose     String
+  entityId    String?
+  actorId     String?
+  confirmedAt DateTime? @db.Timestamptz
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  actor StaffMember? @relation(fields: [actorId], references: [id])
+
+  @@index([confirmedAt, createdAt])
+  @@index([actorId])
+  @@map("pending_uploads")
 }

@@ -41,4 +41,20 @@ Field names match `docs/screen-specs/admin/14-sales-inventory-reports.md` (Gross
 
 ## Settings
 
-Four blocks: business profile, payment (GCash + QR on `marketing-assets`), public content, policy versions. Hold duration and booking cutoff are **absent**. New policy versions are inserted; prior versions stay immutable (`isCurrent` flips).
+Four independently saveable sections (BE-053): business profile, payment, public content, policy promote. Hold duration and booking cutoff are **absent**. Nested `contact.phone`/`address` vs `contact.email` are partial-safe. FAQs are rows in `faqs` with `sortOrder`. New policy versions are inserted; prior versions stay immutable (`isCurrent` flips; partial unique index). See [settings-write.md](./settings-write.md).
+
+## Admin lists (BE-050)
+
+`GET /api/admin/bookings`, `/payments`, `/cancellation-requests`, `/reschedule-requests` return `CursorPage` (`items`, `nextCursor`, `totalCount`). See [admin-pagination.md](./admin-pagination.md).
+
+## Uploads (BE-052)
+
+Signed upload + confirm on coach photo and GCash QR. See [uploads.md](./uploads.md).
+
+## Dashboard (BE-054)
+
+`GET /api/admin/dashboard` and `/api/admin/dashboard/metrics` — operational scalars + 14-day Manila series. Not a substitute for `/api/admin/reports/*`. See [dashboard-metrics.md](./dashboard-metrics.md).
+
+## Validation (BE-051)
+
+Admin writes return **422** `ValidationFailed` (`fieldErrors` / `formErrors`). See [validation-contracts.md](./validation-contracts.md).

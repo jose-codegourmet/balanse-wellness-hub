@@ -17,3 +17,5 @@ Definitions:
 - Coach cost = **session snapshot** `coachRate`, never `coaches.defaultRate`.
 - Occupancy = confirmed / capacity; attendance utilisation = checked_in / capacity.
 - No field named `profit`.
+
+Dashboard tiles (BE-054) are a separate narrow read — see [dashboard-metrics.md](./dashboard-metrics.md). Gross-sales series uses payment `VERIFIED` / `CASH_RECEIVED` to match `countsTowardGrossSales()`.

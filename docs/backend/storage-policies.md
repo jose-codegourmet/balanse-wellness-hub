@@ -16,7 +16,9 @@ MIME/size limits stay on `storage.buckets` (server-enforced). Upsert of payment 
 
 Admin review signed URLs are **not** minted in this schema PR; the SQL policy allows admin SELECT so a later service-role signer can work.
 
-Replacing a coach photo: one `photoKey` column. Application (BE-038) must delete the old object and update the column together. Schema cannot multi-statement storage+row atomically across APIs — document that the API uses one handler.
+Replacing a coach photo: one `photoKey` column. Application (BE-038 / BE-052) deletes the previous **admin-upload** object and updates the column in one handler. Curated `coach-photos/<slug>` Assets-track keys are never deleted by replace/remove. Schema cannot multi-statement storage+row atomically across APIs.
+
+Admin-uploaded keys are `coach-photos/<coachId>/<uuid>.ext`. Public reads need no signed URL. Writes are admin-only. GCash QR lives in `marketing-assets` (same public-read / admin-write). Payment proofs stay private. See [uploads.md](./uploads.md).
 
 ## Human-only
 

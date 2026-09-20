@@ -15,6 +15,7 @@ import {
   postCancelSession,
   postCoachPhoto,
 } from "./handlers/admin-catalogue";
+import { getAdminDashboard, getAdminDashboardMetrics } from "./handlers/admin-dashboard";
 import {
   getAdminPayments,
   getPaymentProofSignedUrl,
@@ -46,7 +47,17 @@ import {
   rejectReschedule,
 } from "./handlers/admin-requests";
 import { getSessionRoster, postCheckIn, postNoShow } from "./handlers/admin-roster";
-import { getAdminSettings, patchAdminSettings } from "./handlers/admin-settings";
+import {
+  deleteFaq,
+  deleteSettingsQr,
+  getAdminSettings,
+  patchAdminSettings,
+  patchFaq,
+  postFaq,
+  postSettingsQr,
+  promotePolicy,
+  reorderFaqs,
+} from "./handlers/admin-settings";
 import {
   getBooking,
   getBookings,
@@ -176,6 +187,16 @@ const handlers: Record<string, RouteHandler> = {
   "GET /api/admin/customers/{id}": (deps, req, params) => getCustomer(deps, req, params.id),
   "GET /api/admin/settings": (deps, req) => getAdminSettings(deps, req),
   "PATCH /api/admin/settings": (deps, req) => patchAdminSettings(deps, req),
+  "POST /api/admin/settings/qr": (deps, req) => postSettingsQr(deps, req),
+  "DELETE /api/admin/settings/qr": (deps, req) => deleteSettingsQr(deps, req),
+  "POST /api/admin/settings/faqs": (deps, req) => postFaq(deps, req),
+  "PATCH /api/admin/settings/faqs/{id}": (deps, req, params) => patchFaq(deps, req, params.id),
+  "DELETE /api/admin/settings/faqs/{id}": (deps, req, params) => deleteFaq(deps, req, params.id),
+  "POST /api/admin/settings/faqs/reorder": (deps, req) => reorderFaqs(deps, req),
+  "POST /api/admin/settings/policies/{id}/promote": (deps, req, params) =>
+    promotePolicy(deps, req, params.id),
+  "GET /api/admin/dashboard": (deps, req) => getAdminDashboard(deps, req),
+  "GET /api/admin/dashboard/metrics": (deps, req) => getAdminDashboardMetrics(deps, req),
 };
 
 export function compiledRoutes(): CompiledRoute[] {

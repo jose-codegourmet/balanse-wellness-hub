@@ -1,8 +1,9 @@
 import type { BookingStatus } from "@balanse/db";
 import { requireAdmin, resolveActor } from "../auth";
+import { bookingsLimit, cursorPage, decodeCursor } from "../cursor";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
-import { asString, ok, pagination, readJson, searchParams } from "../http";
+import { asString, ok, readJson, searchParams } from "../http";
 import { bookingStatusPayload } from "../presenters";
 import { confirmBooking, rejectBooking, sessionConsumedCapacity } from "../sql";
 
@@ -29,8 +30,10 @@ export async function getAdminBookings(deps: ApiDeps, req: Request): Promise<Res
   const q = params.get("q") ?? params.get("customer");
   const classId = params.get("classId") ?? params.get("class");
   const date = params.get("date");
-  const { page, pageSize, skip } = pagination(params);
-  const where = {
+  const sort = "reservedAt_desc_id_desc";
+  const limit = bookingsLimit(params.get("limit"));
+  const cursor = decodeCursor(params.get("cursor"), sort);
+  const filters = {
     status: { in: statuses },
     ...(classId ? { session: { classId } } : {}),
     ...(date
@@ -56,13 +59,27 @@ export async function getAdminBookings(deps: ApiDeps, req: Request): Promise<Res
         }
       : {}),
   };
-  const [total, rows] = await Promise.all([
-    deps.prisma.booking.count({ where }),
+  const where = {
+    ...filters,
+    ...(cursor
+      ? {
+          AND: [
+            {
+              OR: [
+                { reservedAt: { lt: new Date(cursor.key as string) } },
+                { reservedAt: new Date(cursor.key as string), id: { lt: cursor.id } },
+              ],
+            },
+          ],
+        }
+      : {}),
+  };
+  const [totalCount, rows] = await Promise.all([
+    deps.prisma.booking.count({ where: filters }),
     deps.prisma.booking.findMany({
       where,
-      skip,
-      take: pageSize,
-      orderBy: { reservedAt: "desc" },
+      take: limit + 1,
+      orderBy: [{ reservedAt: "desc" }, { id: "desc" }],
       include: {
         profile: true,
         session: { include: { gymClass: true } },
@@ -70,22 +87,21 @@ export async function getAdminBookings(deps: ApiDeps, req: Request): Promise<Res
       },
     }),
   ]);
+  const mapped = rows.map((row) => ({
+    id: row.id,
+    customerName: row.profile.fullName,
+    className: row.session.gymClass.name,
+    startsAt: row.session.startsAt.toISOString(),
+    reservedAt: row.reservedAt.toISOString(),
+    payment: row.payments[0]
+      ? { method: row.payments[0].method, status: row.payments[0].status }
+      : { method: row.paymentMethod, status: null },
+    ...bookingStatusPayload(row.status),
+  }));
   return ok({
     tab,
-    page,
-    pageSize,
-    total,
-    items: rows.map((row) => ({
-      id: row.id,
-      customerName: row.profile.fullName,
-      customerContact: row.profile.contactNumber,
-      className: row.session.gymClass.name,
-      startsAt: row.session.startsAt.toISOString(),
-      payment: row.payments[0]
-        ? { method: row.payments[0].method, status: row.payments[0].status }
-        : { method: row.paymentMethod, status: null },
-      ...bookingStatusPayload(row.status),
-    })),
+    sort,
+    ...cursorPage(mapped, limit, totalCount, sort, (row) => row.reservedAt),
   });
 }
 

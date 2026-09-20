@@ -1,5 +1,18 @@
 import type { ApiDeps } from "./deps";
 
+export async function updateSessionCapacity(
+  deps: ApiDeps,
+  sessionId: string,
+  capacity: number,
+): Promise<number> {
+  const rows = await deps.prisma.$queryRawUnsafe<Array<{ v: number }>>(
+    `SELECT public.update_session_capacity($1, $2) AS v`,
+    sessionId,
+    capacity,
+  );
+  return Number(rows[0]?.v ?? 0);
+}
+
 export async function sessionConsumedCapacity(deps: ApiDeps, sessionId: string): Promise<number> {
   const rows = await deps.prisma.$queryRawUnsafe<Array<{ v: number }>>(
     `SELECT public.session_consumed_capacity($1) AS v`,

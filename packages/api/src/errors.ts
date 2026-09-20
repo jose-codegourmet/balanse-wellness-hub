@@ -1,14 +1,27 @@
+import type {
+  ValidationFailedBody,
+  ValidationFieldError,
+  ValidationFormError,
+} from "@balanse/domain";
+
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
   readonly fields?: Record<string, string>;
   readonly details?: Record<string, unknown>;
+  readonly fieldErrors?: ValidationFieldError[];
+  readonly formErrors?: ValidationFormError[];
 
   constructor(
     status: number,
     code: string,
     message: string,
-    options?: { fields?: Record<string, string>; details?: Record<string, unknown> },
+    options?: {
+      fields?: Record<string, string>;
+      details?: Record<string, unknown>;
+      fieldErrors?: ValidationFieldError[];
+      formErrors?: ValidationFormError[];
+    },
   ) {
     super(message);
     this.name = "ApiError";
@@ -16,6 +29,24 @@ export class ApiError extends Error {
     this.code = code;
     this.fields = options?.fields;
     this.details = options?.details;
+    this.fieldErrors = options?.fieldErrors;
+    this.formErrors = options?.formErrors;
+  }
+
+  toValidationBody(): ValidationFailedBody | null {
+    if (this.code !== "validation_failed" && this.status !== 422) return null;
+    const fieldErrors =
+      this.fieldErrors ??
+      Object.entries(this.fields ?? {}).map(([path, message]) => ({
+        path,
+        code: "required" as const,
+        message,
+      }));
+    return {
+      error: "validation_failed",
+      fieldErrors,
+      formErrors: this.formErrors ?? [],
+    };
   }
 }
 
@@ -42,11 +73,39 @@ const RULE_CODES = new Set([
 
 export function mapUnknownError(error: unknown): ApiError {
   if (error instanceof ApiError) return error;
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    (error as { code?: string }).code === "P2002"
+  ) {
+    return new ApiError(409, "conflict", "A unique value is already in use.", {
+      fieldErrors: [
+        { path: "name", code: "duplicate_value", message: "This name is already used." },
+      ],
+    });
+  }
   const message = error instanceof Error ? error.message : String(error);
   const codeMatch = message.match(/(?:P0001|P0002):\s*([a-z0-9_]+)|([a-z0-9_]+)(?::|\s|$)/i);
   const extracted = (codeMatch?.[1] ?? codeMatch?.[2] ?? "").toLowerCase();
   if (extracted.includes("booking_cutoff_reached") || message.includes("booking_cutoff_reached")) {
     return new ApiError(400, "booking_cutoff_reached", "Bookings are closed for this session.");
+  }
+  if (message.includes("below_confirmed_count")) {
+    return new ApiError(
+      409,
+      "below_confirmed_count",
+      "Capacity cannot drop below consumed bookings.",
+      {
+        fieldErrors: [
+          {
+            path: "capacity",
+            code: "below_confirmed_count",
+            message: "Capacity cannot drop below consumed bookings.",
+          },
+        ],
+      },
+    );
   }
   for (const code of RULE_CODES) {
     if (message.includes(code)) {

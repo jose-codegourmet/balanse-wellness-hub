@@ -42,6 +42,7 @@ model StaffMember {
   checkIns              Booking[]                @relation("BookingCheckedInBy")
   noShows               Booking[]                @relation("BookingNoShowBy")
   auditEvents           AuditEvent[]
+  pendingUploads        PendingUpload[]
 
   @@index([status])
   @@index([email])

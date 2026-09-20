@@ -14,6 +14,15 @@ export function ok(body: JsonBody, headers?: HeadersInit): Response {
 
 export function errorResponse(error: unknown): Response {
   const mapped = mapUnknownError(error);
+  const validation = mapped.toValidationBody();
+  if (validation) {
+    return json(mapped.status, {
+      ...validation,
+      code: mapped.code,
+      message: mapped.message,
+      ...(mapped.details ? { details: mapped.details } : {}),
+    });
+  }
   return json(mapped.status, {
     code: mapped.code,
     message: mapped.message,
