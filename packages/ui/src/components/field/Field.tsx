@@ -206,7 +206,7 @@ function FieldDescription({ className, id, ...props }: React.ComponentProps<"p">
   useLayoutEffect(() => {
     field?.registerDescription();
     return () => field?.unregisterDescription();
-  }, [field]);
+  }, [field?.registerDescription, field?.unregisterDescription]);
 
   return (
     <p
@@ -291,7 +291,7 @@ function FieldError({
     }
     field?.registerError();
     return () => field?.unregisterError();
-  }, [content, field]);
+  }, [content, field?.registerError, field?.unregisterError]);
 
   if (!content) {
     return null;

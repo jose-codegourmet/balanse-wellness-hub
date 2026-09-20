@@ -31,6 +31,16 @@ import { Checkbox, Field, FieldContent, FieldDescription, FieldLabel } from "@ba
     <FieldDescription>We only send one message per class.</FieldDescription>
   </FieldContent>
 </Field>
+
+<FieldLabel>
+  <Field orientation="horizontal">
+    <Checkbox defaultChecked />
+    <FieldContent>
+      <FieldTitle>SMS reminders</FieldTitle>
+      <FieldDescription>Wrap Field in FieldLabel to reach has-data-checked card styles.</FieldDescription>
+    </FieldContent>
+  </Field>
+</FieldLabel>
 ```
 
 ### Indeterminate

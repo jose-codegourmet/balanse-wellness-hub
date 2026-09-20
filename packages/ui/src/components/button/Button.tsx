@@ -66,7 +66,9 @@ function Button({
       {loading ? (
         <Spinner data-icon="inline-start" aria-hidden role="presentation" aria-label={undefined} />
       ) : null}
-      {children}
+      <span className={loading ? "contents [&_[data-icon=inline-start]]:hidden" : "contents"}>
+        {children}
+      </span>
     </ButtonPrimitive>
   );
 }
