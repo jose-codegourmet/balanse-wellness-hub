@@ -417,6 +417,116 @@ function booking(
 const sunDance = publicSessions.find((s) => s.id === "session-sun-dance") ?? null;
 const satFull = publicSessions.find((s) => s.id === "session-sat-full") ?? null;
 
+/** Off today / off `session-wed-open` so dashboard tiles and that roster stay stable. */
+const QUEUE_SESSION_IDS = [
+  "session-past-open",
+  "session-thu-early",
+  "session-fri-cancelled",
+  "session-sat-full",
+  "session-sun-alec",
+  "session-sun-dance",
+] as const;
+
+function pad2(value: number): string {
+  return value.toString().padStart(2, "0");
+}
+
+function queueSessionId(index: number): string {
+  return QUEUE_SESSION_IDS[index % QUEUE_SESSION_IDS.length] ?? "session-thu-early";
+}
+
+function queueTargetSession(index: number): PublicSession | null {
+  const targetId = QUEUE_SESSION_IDS[(index + 1) % QUEUE_SESSION_IDS.length];
+  return publicSessions.find((session) => session.id === targetId) ?? null;
+}
+
+/**
+ * ~120 synthetic queue rows for FE-ADM-020. Distinct sort keys, new customer
+ * ids, existing `booking()` helper only. Showcase rows stay untouched.
+ */
+function buildGeneratedQueueBookings(): CustomerBooking[] {
+  const rows: CustomerBooking[] = [];
+
+  for (let index = 0; index < 40; index += 1) {
+    const sessionId = queueSessionId(index);
+    rows.push(
+      booking(`booking-q-cxl-${pad2(index)}`, "CANCELLATION_REQUESTED", sessionId, {
+        customerId: `cust-q-cxl-${pad2(index)}`,
+        paymentMethod: "GCASH",
+        paymentStatus: "VERIFIED",
+        cancellationReason:
+          index % 5 === 0
+            ? "I need to travel for work this week and cannot make the class after all. Please release the slot."
+            : "Schedule conflict",
+        requestCreatedAt: `2026-09-10T08:${pad2(index)}:00.000Z`,
+        createdAt: `2026-09-09T08:${pad2(index)}:00.000Z`,
+        holdExpiresAt: null,
+      }),
+    );
+  }
+
+  for (let index = 0; index < 40; index += 1) {
+    const sessionId = queueSessionId(index + 2);
+    const target = queueTargetSession(index);
+    rows.push(
+      booking(`booking-q-rs-${pad2(index)}`, "RESCHEDULE_REQUESTED", sessionId, {
+        customerId: `cust-q-rs-${pad2(index)}`,
+        paymentMethod: "GCASH",
+        paymentStatus: "VERIFIED",
+        requestCreatedAt: `2026-09-10T10:${pad2(index)}:00.000Z`,
+        createdAt: `2026-09-09T10:${pad2(index)}:00.000Z`,
+        holdExpiresAt: null,
+        targetSessionId: target?.id ?? "session-sun-dance",
+        targetSession: target,
+      }),
+    );
+  }
+
+  for (let index = 0; index < 14; index += 1) {
+    const sessionId = queueSessionId(index + 1);
+    rows.push(
+      booking(`booking-q-gcash-${pad2(index)}`, "PAYMENT_SUBMITTED", sessionId, {
+        customerId: `cust-q-pay-${pad2(index)}`,
+        paymentMethod: "GCASH",
+        paymentStatus: "PROOF_SUBMITTED",
+        proofPreviewUrl: MOCK_PROOF_PREVIEW_URL,
+        createdAt: `2026-09-10T14:${pad2(index)}:00.000Z`,
+        holdExpiresAt: `2026-09-18T02:${pad2(index)}:00.000Z`,
+      }),
+    );
+  }
+
+  for (let index = 0; index < 13; index += 1) {
+    const sessionId = queueSessionId(index + 3);
+    rows.push(
+      booking(`booking-q-counter-${pad2(index)}`, "HELD_AWAITING_PAYMENT", sessionId, {
+        customerId: `cust-q-pay-${pad2(index + 14)}`,
+        paymentMethod: "PAY_AT_COUNTER",
+        paymentStatus: "NONE",
+        createdAt: `2026-09-10T15:${pad2(index)}:00.000Z`,
+        holdExpiresAt: `2026-09-18T04:${pad2(index)}:00.000Z`,
+      }),
+    );
+  }
+
+  for (let index = 0; index < 13; index += 1) {
+    const sessionId = queueSessionId(index + 4);
+    const refunded = index >= 7;
+    rows.push(
+      booking(`booking-q-refund-${pad2(index)}`, "CANCELLED", sessionId, {
+        customerId: `cust-q-pay-${pad2(index + 27)}`,
+        paymentMethod: "GCASH",
+        paymentStatus: "VERIFIED",
+        refundStatus: refunded ? "REFUNDED" : "REFUND_PENDING",
+        createdAt: `2026-09-10T16:${pad2(index)}:00.000Z`,
+        holdExpiresAt: null,
+      }),
+    );
+  }
+
+  return rows;
+}
+
 export const bookings: CustomerBooking[] = BOOKING_STATUSES.map((status, index) => {
   const extras: Partial<CustomerBooking> = {};
   if (status === "HELD_AWAITING_PAYMENT") {
@@ -488,6 +598,7 @@ export const bookings: CustomerBooking[] = BOOKING_STATUSES.map((status, index) 
     paymentMethod: "PAY_AT_COUNTER",
     paymentStatus: "NONE",
   }),
+  ...buildGeneratedQueueBookings(),
 ]);
 
 export const adminSessions: AdminSession[] = publicSessions.map((row) => {

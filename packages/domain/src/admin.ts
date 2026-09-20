@@ -1,3 +1,4 @@
+import { ADMIN_CURSOR_LIMIT_DEFAULT, ADMIN_CURSOR_LIMIT_MAX, type CursorPage } from "./contracts";
 import type { FieldErrors, LoginInput } from "./customer-portal";
 import { HOLD_DURATION_HOURS } from "./customer-portal";
 import type { CoachRateType, PaymentStatus, SessionStatus } from "./enums";
@@ -240,6 +241,142 @@ export function paginateRows<T>(rows: T[], page: number, pageSize = ADMIN_BOOKIN
   const safePage = Math.max(1, page);
   const start = (safePage - 1) * pageSize;
   return rows.slice(start, start + pageSize);
+}
+
+/** BE-050 sort ids — mock queues must use these, not invented names. */
+export const ADMIN_REQUEST_QUEUE_SORT = "requestedAt_desc_id_desc";
+export const ADMIN_PAYMENT_HOLD_SORT = "holdExpiresAt_asc_id_asc";
+export const ADMIN_PAYMENT_REFUND_SORT = "createdAt_desc_id_desc";
+
+type CursorPayload = { v: 1; s: string; k: string | null; i: string };
+
+/** Same alphabet as Node `Buffer.toString("base64url")` / `packages/api/src/cursor.ts`. */
+const B64URL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+function toBase64Url(value: string): string {
+  const bytes = new TextEncoder().encode(value);
+  let out = "";
+  for (let index = 0; index < bytes.length; index += 3) {
+    const a = bytes[index] ?? 0;
+    const b = bytes[index + 1] ?? 0;
+    const c = bytes[index + 2] ?? 0;
+    const n = (a << 16) | (b << 8) | c;
+    out += B64URL[(n >> 18) & 63];
+    out += B64URL[(n >> 12) & 63];
+    if (index + 1 < bytes.length) out += B64URL[(n >> 6) & 63];
+    if (index + 2 < bytes.length) out += B64URL[n & 63];
+  }
+  return out;
+}
+
+function fromBase64Url(raw: string): string {
+  const clean = raw.replace(/=+$/g, "");
+  const bytes: number[] = [];
+  for (let index = 0; index < clean.length; index += 4) {
+    const a = B64URL.indexOf(clean[index] ?? "");
+    const b = B64URL.indexOf(clean[index + 1] ?? "");
+    const c = B64URL.indexOf(clean[index + 2] ?? "A");
+    const d = B64URL.indexOf(clean[index + 3] ?? "A");
+    if (a < 0 || b < 0 || c < 0 || d < 0) throw new Error("shape");
+    const n = (a << 18) | (b << 12) | (c << 6) | d;
+    bytes.push((n >> 16) & 255);
+    if (index + 2 < clean.length) bytes.push((n >> 8) & 255);
+    if (index + 3 < clean.length) bytes.push(n & 255);
+  }
+  return new TextDecoder().decode(Uint8Array.from(bytes));
+}
+
+/**
+ * Opaque keyset cursor. Shape is mirrored from `packages/api/src/cursor.ts`
+ * so BE-050 and the mock stay byte-compatible. Do not import `@balanse/api`.
+ */
+function encodeCursor(sort: string, key: string | null, id: string): string {
+  const payload: CursorPayload = { v: 1, s: sort, k: key, i: id };
+  return toBase64Url(JSON.stringify(payload));
+}
+
+/**
+ * Decode + validate. A mismatched `s` or malformed payload throws
+ * `invalid_cursor` — never silently restart at page 1.
+ * Mirrored from `packages/api/src/cursor.ts`.
+ */
+function decodeCursor(
+  raw: string | null | undefined,
+  expectedSort: string,
+): { key: string | null; id: string } | null {
+  if (raw == null || raw === "") return null;
+  try {
+    const parsed = JSON.parse(fromBase64Url(raw)) as CursorPayload;
+    if (parsed.v !== 1 || parsed.s !== expectedSort || typeof parsed.i !== "string") {
+      throw new Error("shape");
+    }
+    return { key: parsed.k ?? null, id: parsed.i };
+  } catch {
+    throw Object.assign(new Error("Cursor is malformed or does not match this list."), {
+      code: "invalid_cursor",
+    });
+  }
+}
+
+function parseSortDirections(sort: string): { keyDir: "asc" | "desc"; idDir: "asc" | "desc" } {
+  const match = sort.match(/_(asc|desc)_id_(asc|desc)$/);
+  if (!match || (match[1] !== "asc" && match[1] !== "desc")) {
+    throw Object.assign(new Error("Cursor is malformed or does not match this list."), {
+      code: "invalid_cursor",
+    });
+  }
+  const idDir = match[2] === "asc" || match[2] === "desc" ? match[2] : "desc";
+  return { keyDir: match[1], idDir };
+}
+
+function compareNullable(a: string | null, b: string | null): number {
+  return (a ?? "").localeCompare(b ?? "");
+}
+
+function isAfterCursor(
+  key: string | null,
+  id: string,
+  cursorKey: string | null,
+  cursorId: string,
+  keyDir: "asc" | "desc",
+  idDir: "asc" | "desc",
+): boolean {
+  const keyCmp = compareNullable(key, cursorKey);
+  if (keyCmp !== 0) {
+    return keyDir === "asc" ? keyCmp > 0 : keyCmp < 0;
+  }
+  const idCmp = id.localeCompare(cursorId);
+  return idDir === "asc" ? idCmp > 0 : idCmp < 0;
+}
+
+/**
+ * Keyset page over an already-sorted array. Mirrors packages/api/src/cursor.ts so
+ * BE-050 and the mock agree on cursor shape and sort ids.
+ */
+export function sliceCursorPage<T extends { id: string }>(
+  sorted: T[],
+  opts: { sort: string; limit?: number; cursor?: string | null; keyOf: (row: T) => string | null },
+): CursorPage<T> {
+  const rawLimit = opts.limit ?? ADMIN_CURSOR_LIMIT_DEFAULT;
+  const limit = Math.min(
+    ADMIN_CURSOR_LIMIT_MAX,
+    Math.max(1, Number.isFinite(rawLimit) ? Math.floor(rawLimit) : ADMIN_CURSOR_LIMIT_DEFAULT),
+  );
+  const decoded = decodeCursor(opts.cursor, opts.sort);
+  const { keyDir, idDir } = parseSortDirections(opts.sort);
+  const remaining = decoded
+    ? sorted.filter((row) =>
+        isAfterCursor(opts.keyOf(row), row.id, decoded.key, decoded.id, keyDir, idDir),
+      )
+    : sorted;
+  const hasMore = remaining.length > limit;
+  const items = hasMore ? remaining.slice(0, limit) : remaining;
+  const last = items[items.length - 1];
+  return {
+    items,
+    nextCursor: hasMore && last ? encodeCursor(opts.sort, opts.keyOf(last), last.id) : null,
+    totalCount: sorted.length,
+  };
 }
 
 export function countsTowardGrossSales(booking: CustomerBooking): boolean {

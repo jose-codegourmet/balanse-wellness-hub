@@ -16,7 +16,12 @@ function invalidateForRole(queryClient: ReturnType<typeof useQueryClient>, keys:
 }
 
 function bookingPaymentDashboard(role: MockRole): QueryKey[] {
-  return [adminKeys.bookings.all(role), adminKeys.payments.all(role), adminKeys.dashboard(role)];
+  return [
+    adminKeys.bookings.all(role),
+    adminKeys.payments.all(role),
+    adminKeys.dashboard(role),
+    adminKeys.queues.all(role),
+  ];
 }
 
 export function useConfirmAdminBooking() {
@@ -70,6 +75,7 @@ function cancellationKeys(role: MockRole): QueryKey[] {
     adminKeys.cancellations.all(role),
     adminKeys.bookings.all(role),
     adminKeys.dashboard(role),
+    adminKeys.queues.all(role),
   ];
 }
 
@@ -98,6 +104,7 @@ function rescheduleKeys(role: MockRole): QueryKey[] {
     adminKeys.bookings.all(role),
     adminKeys.sessions.all(role),
     adminKeys.dashboard(role),
+    adminKeys.queues.all(role),
   ];
 }
 

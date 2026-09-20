@@ -1,7 +1,7 @@
-import type { AdminReportFilters } from "@balanse/domain";
+import type { AdminPaymentTab, AdminReportFilters } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import type { MockRole } from "@balanse/mock/session";
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { type AdminBookingListFilters, type AdminCustomerListFilters, adminKeys } from "./keys";
 
 export const adminDashboardQuery = (role: MockRole) =>
@@ -112,7 +112,27 @@ export const adminSessionReportQuery = (role: MockRole, sessionId: string) =>
     queryFn: () => getMockAdapter().getAdminSessionReport(sessionId),
   });
 
-// Reserved for FE-ADM-020 (#210) — do not occupy these names:
-// adminPaymentsQueueInfiniteQuery
-// adminCancellationsInfiniteQuery
-// adminReschedulesInfiniteQuery
+export const adminPaymentsQueueInfiniteQuery = (role: MockRole, tab: AdminPaymentTab) =>
+  infiniteQueryOptions({
+    queryKey: adminKeys.queues.payments(role, tab),
+    queryFn: ({ pageParam }) => getMockAdapter().getAdminPayments({ tab, cursor: pageParam }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+  });
+
+export const adminCancellationsInfiniteQuery = (role: MockRole) =>
+  infiniteQueryOptions({
+    queryKey: adminKeys.queues.cancellations(role),
+    queryFn: ({ pageParam }) =>
+      getMockAdapter().getAdminCancellationRequests({ cursor: pageParam }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+  });
+
+export const adminReschedulesInfiniteQuery = (role: MockRole) =>
+  infiniteQueryOptions({
+    queryKey: adminKeys.queues.reschedules(role),
+    queryFn: ({ pageParam }) => getMockAdapter().getAdminRescheduleRequests({ cursor: pageParam }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+  });
