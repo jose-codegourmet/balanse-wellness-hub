@@ -13,8 +13,8 @@ import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
-import { ReportsOverview } from "@/components/balanse/ReportsOverview";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { ReportsOverview } from "@/components/balanse/ReportsOverview";
 import {
   adminClassesQuery,
   adminCoachesQuery,
