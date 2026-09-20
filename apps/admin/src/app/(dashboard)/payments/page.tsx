@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
-import { adminCustomersQuery, adminPaymentsQuery } from "@/lib/query/queries";
+import { adminPaymentsQueueInfiniteQuery } from "@/lib/query/queries";
 import { PaymentReviewPage } from "@/modules/admin/PaymentPages";
 
 export const metadata: Metadata = {
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default async function Page() {
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [adminPaymentsQuery(principal.role), adminCustomersQuery(principal.role)],
+    [adminPaymentsQueueInfiniteQuery(principal.role, "gcash")],
     <AdminQuerySuspense>
       <PaymentReviewPage />
     </AdminQuerySuspense>,

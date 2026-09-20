@@ -133,6 +133,7 @@ function attendanceKeys(role: MockRole): QueryKey[] {
     adminKeys.rosterAll(role),
     adminKeys.dashboard(role),
     adminKeys.reports.all(role),
+    adminKeys.queues.all(role),
   ];
 }
 
