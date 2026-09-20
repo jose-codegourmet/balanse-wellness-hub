@@ -4,16 +4,23 @@
 
 ## Purpose
 
-Dashboard loading shell. Copies `/dashboard` column spans and band order: header → stat strip (`md:grid-cols-2 xl:grid-cols-5`) → Needs Attention → Today's Schedule table → metric tiles (`md:grid-cols-2 xl:grid-cols-4`).
+Dashboard loading shell. Copies `/dashboard` 12 / 6 / 1 column spans: Needs Attention and Today's Schedule are the large tiles; headline counts, the sales chart, and financial cards are secondary.
 
 ## When to use
 
 - Admin `/dashboard` `loading.tsx` and the dashboard early-return
 
-## Shape props
+## When NOT to use
 
-`label` (required), `tiles` (default 4). No data.
+- Table or form routes — use `TablePageSkeleton` / `FormPageSkeleton`.
 
-## Accessibility
+## Examples
 
-One `role="status"` region. Bars `aria-hidden`.
+```tsx
+<BentoSkeleton label="Loading dashboard" tiles={dashboardBentoSkeletonTiles} />
+```
+
+## Gotchas
+
+- Pass the same `span` classes as the live `DashboardTile`s. A numeric `tiles` value only produces equal metric cells.
+- One `role="status"` region. Inner bars stay `aria-hidden`.
