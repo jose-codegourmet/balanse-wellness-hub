@@ -23,6 +23,6 @@ One honest chart tile: trailing Manila-day gross sales derived from existing boo
 
 ## Gotchas
 
-- Colour is not the only distinction: the adjacent day list is the text alternative.
+- Colour is not the only distinction: the adjacent day list is the text alternative. The heading uses `REPORT_TERMS` (“Gross Sales”), not “Today’s Sales”.
 - No date-range control. The window is the adapter’s 14-day series.
 - Coach cost must never appear in this chart’s accessible name.

@@ -1,6 +1,6 @@
 "use client";
 
-import { formatPeso, manilaYmdToUtcDate } from "@balanse/domain";
+import { formatPeso, manilaYmdToUtcDate, REPORT_TERMS } from "@balanse/domain";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
   type ChartConfig,
@@ -40,15 +40,12 @@ export function SalesSeriesChart({ series }: SalesSeriesChartProps) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 id="gross-sales-heading" className="text-sm font-medium">
-            Today&apos;s Sales — 14 days
+            {REPORT_TERMS[0]}
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
             Paid bookings by Manila session day. Zero is a real empty day, not a placeholder.
           </p>
         </div>
-        <p className="font-mono text-sm tabular-nums text-muted-foreground">
-          {formatPeso(total)} window total
-        </p>
       </div>
       <ChartContainer
         config={chartConfig}
@@ -76,7 +73,6 @@ export function SalesSeriesChart({ series }: SalesSeriesChartProps) {
             fill="var(--color-sales)"
             fillOpacity={0.2}
             strokeWidth={2}
-            strokeDasharray="4 2"
           />
         </AreaChart>
       </ChartContainer>

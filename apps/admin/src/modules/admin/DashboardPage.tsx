@@ -197,6 +197,7 @@ export function DashboardPage({
               columns={columns}
               getRowId={(row) => row.id}
               searchable={false}
+              persistUrl={false}
               toolbar={scheduleLink}
               emptyFilterLabel="No sessions on today's board."
             />

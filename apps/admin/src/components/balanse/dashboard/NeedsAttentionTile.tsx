@@ -9,12 +9,12 @@ export function NeedsAttentionTile({ items }: NeedsAttentionTileProps) {
 
   return (
     <DashboardTile span="attention" aria-labelledby="needs-attention-heading">
-      <p
+      <h2
         id="needs-attention-heading"
         className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase"
       >
         Needs Attention
-      </p>
+      </h2>
       {allClear ? (
         <p className="mt-6 text-lg text-muted-foreground">
           All clear — nothing waiting for review.
