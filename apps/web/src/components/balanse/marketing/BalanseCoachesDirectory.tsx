@@ -7,7 +7,7 @@ import {
   type PublicCoach,
   resolveCoachPhotoSources,
 } from "@balanse/domain";
-import { CoachPhoto } from "@balanse/ui";
+import { CoachPhoto, MarketingImage } from "@balanse/ui";
 import { ArrowDown, ArrowUpRight, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -51,9 +51,6 @@ export function BalanseCoachesDirectory({
   const [specialty, setSpecialty] = useState(initialSpecialty);
   const chips = coachSpecialtyChips(coaches);
   const visible = useMemo(() => filterPublicCoaches(coaches, specialty), [coaches, specialty]);
-  const featured = coaches
-    .filter((coach) => !resolveCoachPhotoSources(coach.photoKey).isPlaceholder)
-    .slice(0, 3);
 
   return (
     <article className="coaches-directory">
@@ -73,17 +70,17 @@ export function BalanseCoachesDirectory({
             Meet your coaches <ArrowDown size={17} strokeWidth={1.5} aria-hidden="true" />
           </a>
         </div>
-        {featured.length ? (
-          <div className="coaches-hero-portraits">
-            {featured.map((coach) => (
-              <figure key={coach.id}>
-                <Portrait coach={coach} />
-                <figcaption>{coach.name.split(" ")[0]}</figcaption>
-              </figure>
-            ))}
-            <p>Different disciplines. A shared love of movement.</p>
-          </div>
-        ) : null}
+        <figure className="coaches-hero-group">
+          <MarketingImage
+            assetId="coaches-b"
+            loading="eager"
+            sizes="(max-width: 767px) 100vw, 640px"
+            className="coaches-hero-group-media"
+            frameLabel="The coaching team"
+            frameCaption="Group portrait coming soon."
+          />
+          <figcaption>Different disciplines. A shared love of movement.</figcaption>
+        </figure>
       </header>
 
       <section
