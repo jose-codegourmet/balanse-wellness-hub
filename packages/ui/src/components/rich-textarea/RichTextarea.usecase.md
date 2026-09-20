@@ -47,4 +47,5 @@ import { renderMarkdownSubset } from "@balanse/ui";
 - Stored format (Markdown vs sanitised HTML vs plain text) for `public_content.about`, `coaches.short_bio`, `classes.short_description`, and FAQ answers is **unresolved** and tracked on BE-053 (#227). Until BE answers, FE treats the value as Markdown.
 - Preview is styled with brand tokens, not Tailwind `prose` (`@tailwindcss/typography` is not registered as a plugin).
 - Out-of-subset Markdown (headings, images, tables, colour) renders as literal text.
-- `Field` context from FE-SHR-008 is not required; pass `invalid` and wrap with `Field` / `FieldError`. Shortcuts bind on the textarea `onKeyDown`, not `window`.
+- `Field` context from FE-SHR-008 is not required; pass `invalid` and wrap with `Field` / `FieldError`. Give the external `FieldError` an `id` and pass it as `aria-describedby` so the message is announced. Shortcuts bind on the textarea `onKeyDown`, not `window`.
+- The component forwards `ref` to the inner textarea so RHF `Controller` / `register` can focus the control.

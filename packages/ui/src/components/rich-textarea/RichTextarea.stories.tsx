@@ -1,13 +1,25 @@
 import { flattenFaqs, teachesBio } from "@balanse/domain";
 import { publicContent } from "@balanse/mock";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { useId } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { Button } from "../button/Button";
 import { Field, FieldError, FieldLabel } from "../field/Field";
 import { RichTextarea } from "./RichTextarea";
 import { richTextareaDefaultValues } from "./RichTextarea.defaults";
+import type { RichTextareaProps } from "./RichTextarea.schema";
 import { richTextareaSchema } from "./RichTextarea.schema";
+
+function LabeledRichTextarea(args: RichTextareaProps) {
+  const id = useId();
+  return (
+    <Field data-invalid={args.invalid || undefined}>
+      <FieldLabel htmlFor={id}>About</FieldLabel>
+      <RichTextarea {...args} id={id} />
+    </Field>
+  );
+}
 
 const fixtureAbout = publicContent.about;
 const fixtureFaq = flattenFaqs()[0];
@@ -35,6 +47,7 @@ const meta: Meta<typeof RichTextarea> = {
   component: RichTextarea,
   tags: ["autodocs"],
   args: { ...richTextareaDefaultValues },
+  render: (args) => <LabeledRichTextarea {...args} />,
 };
 
 export default meta;
@@ -76,8 +89,12 @@ export const Invalid: Story = {
   render: (args) => (
     <Field data-invalid="true">
       <FieldLabel htmlFor="rich-textarea-invalid">About</FieldLabel>
-      <RichTextarea {...args} id="rich-textarea-invalid" />
-      <FieldError>About copy needs a second look.</FieldError>
+      <RichTextarea
+        {...args}
+        id="rich-textarea-invalid"
+        aria-describedby="rich-textarea-invalid-error"
+      />
+      <FieldError id="rich-textarea-invalid-error">About copy needs a second look.</FieldError>
     </Field>
   ),
 };
@@ -109,7 +126,7 @@ export const Mobile: Story = {
   },
   render: (args) => (
     <div className="w-[360px]">
-      <RichTextarea {...args} />
+      <LabeledRichTextarea {...args} />
     </div>
   ),
 };
@@ -138,12 +155,14 @@ export const ReactHookFormBound: Story = {
                 <RichTextarea
                   id="rich-textarea-rhf"
                   name={field.name}
+                  ref={field.ref}
                   value={field.value}
                   onBlur={field.onBlur}
                   onChange={field.onChange}
                   invalid={fieldState.invalid}
+                  aria-describedby={fieldState.error ? "rich-textarea-rhf-error" : undefined}
                 />
-                <FieldError>{fieldState.error?.message}</FieldError>
+                <FieldError id="rich-textarea-rhf-error">{fieldState.error?.message}</FieldError>
               </Field>
             )}
           />

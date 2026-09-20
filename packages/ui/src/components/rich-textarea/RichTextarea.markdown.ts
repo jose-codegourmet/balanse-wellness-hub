@@ -1,6 +1,5 @@
 import { createElement, type ReactNode } from "react";
 
-const ALLOWED_HREF_PREFIXES = ["http:", "https:", "mailto:"] as const;
 const REJECTED_HREF_PREFIXES = ["javascript:", "data:", "vbscript:"] as const;
 
 export function isAllowedHref(href: string): boolean {
@@ -9,12 +8,28 @@ export function isAllowedHref(href: string): boolean {
   if (REJECTED_HREF_PREFIXES.some((prefix) => lower.startsWith(prefix))) {
     return false;
   }
-  return ALLOWED_HREF_PREFIXES.some((prefix) => lower.startsWith(prefix));
+  if (lower.startsWith("mailto:")) {
+    const address = trimmed.slice("mailto:".length).split("?")[0]?.trim() ?? "";
+    return /^[^\s@]+@[^\s@]+$/.test(address);
+  }
+  try {
+    const url = new URL(trimmed);
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      return false;
+    }
+    return Boolean(url.hostname) && /^[a-z0-9.-]+$/i.test(url.hostname);
+  } catch {
+    return false;
+  }
 }
 
 function isExternalHref(href: string): boolean {
-  const lower = href.trim().toLowerCase();
-  return lower.startsWith("http:") || lower.startsWith("https:");
+  try {
+    const url = new URL(href.trim());
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 function linkRel(href: string): string | undefined {
@@ -40,6 +55,14 @@ function parseInline(text: string, keyPrefix: string): ReactNode[] {
 
   while (i < text.length) {
     if (text.startsWith("![", i)) {
+      const closeBracket = text.indexOf("]", i + 2);
+      if (closeBracket !== -1 && text[closeBracket + 1] === "(") {
+        const closeParen = text.indexOf(")", closeBracket + 2);
+        if (closeParen !== -1) {
+          i = closeParen + 1;
+          continue;
+        }
+      }
       i += 2;
       continue;
     }

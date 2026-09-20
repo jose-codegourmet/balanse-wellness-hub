@@ -1,8 +1,16 @@
 "use client";
 
 import { Bold, Italic, Link2, List, ListOrdered, Pilcrow } from "lucide-react";
-import type { ChangeEvent, KeyboardEvent, ReactNode } from "react";
+import type { ChangeEvent, KeyboardEvent, ReactNode, Ref } from "react";
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+
+function assignRef<T>(ref: Ref<T> | undefined, value: T | null) {
+  if (typeof ref === "function") {
+    ref(value);
+  } else if (ref) {
+    ref.current = value;
+  }
+}
 
 import { cn } from "../../lib/utils";
 import { Button } from "../button/Button";
@@ -65,6 +73,7 @@ function RichTextarea({
   onSelect,
   preview = false,
   readOnly,
+  ref,
   value,
   ...props
 }: RichTextareaProps) {
@@ -115,14 +124,37 @@ function RichTextarea({
       target: { value: next },
     } as ChangeEvent<HTMLTextAreaElement>);
     requestAnimationFrame(() => {
-      const field = textareaRef.current;
-      if (!field) {
+      const nextField = textareaRef.current;
+      if (!nextField) {
         return;
       }
-      field.focus();
-      field.setSelectionRange(rangeStart, rangeEnd);
+      nextField.focus();
+      nextField.setSelectionRange(rangeStart, rangeEnd);
       setSelection({ start: rangeStart, end: rangeEnd });
     });
+  };
+
+  const replaceRange = (
+    rangeStart: number,
+    rangeEnd: number,
+    inserted: string,
+    selectionStart: number,
+    selectionEnd: number,
+  ) => {
+    const el = textareaRef.current;
+    if (!el || toolbarLocked) {
+      return;
+    }
+    if (typeof el.setRangeText === "function") {
+      el.setRangeText(inserted, rangeStart, rangeEnd, "select");
+      commitValue(el.value, selectionStart, selectionEnd);
+      return;
+    }
+    commitValue(
+      `${currentValue.slice(0, rangeStart)}${inserted}${currentValue.slice(rangeEnd)}`,
+      selectionStart,
+      selectionEnd,
+    );
   };
 
   const wrapSelection = (before: string, after: string, emptyPlaceholder = "") => {
@@ -133,9 +165,14 @@ function RichTextarea({
     const start = el.selectionStart;
     const end = el.selectionEnd;
     const selected = currentValue.slice(start, end) || emptyPlaceholder;
-    const next = `${currentValue.slice(0, start)}${before}${selected}${after}${currentValue.slice(end)}`;
     const innerStart = start + before.length;
-    commitValue(next, innerStart, innerStart + selected.length);
+    replaceRange(
+      start,
+      end,
+      `${before}${selected}${after}`,
+      innerStart,
+      innerStart + selected.length,
+    );
   };
 
   const insertAtCursor = (inserted: string, cursorOffset = inserted.length) => {
@@ -145,9 +182,8 @@ function RichTextarea({
     }
     const start = el.selectionStart;
     const end = el.selectionEnd;
-    const next = `${currentValue.slice(0, start)}${inserted}${currentValue.slice(end)}`;
     const caret = start + cursorOffset;
-    commitValue(next, caret, caret);
+    replaceRange(start, end, inserted, caret, caret);
   };
 
   const applyList = (kind: "ul" | "ol") => {
@@ -168,8 +204,7 @@ function RichTextarea({
       ? lines.map((line) => line.replace(/^\s*(?:[-*] |\d+\. )/, ""))
       : lines.map((line, index) => (kind === "ul" ? `- ${line}` : `${index + 1}. ${line}`));
     const nextBlock = nextLines.join("\n");
-    const next = `${currentValue.slice(0, lineStart)}${nextBlock}${currentValue.slice(lineEnd)}`;
-    commitValue(next, lineStart, lineStart + nextBlock.length);
+    replaceRange(lineStart, lineEnd, nextBlock, lineStart, lineStart + nextBlock.length);
   };
 
   const runTool = (tool: MarkTool) => {
@@ -237,18 +272,30 @@ function RichTextarea({
   ];
 
   return (
-    <div data-slot="rich-textarea" className={cn("flex w-full flex-col gap-2", className)}>
+    <div
+      data-slot="rich-textarea"
+      data-invalid={isInvalid || undefined}
+      className={cn("flex w-full flex-col gap-2", className)}
+    >
       <div
         role="toolbar"
         aria-label="Text formatting"
         aria-controls={controlId}
         onKeyDown={(event) => {
-          if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") {
+          const last = tools.length - 1;
+          let next = toolbarIndex;
+          if (event.key === "ArrowRight") {
+            next = (toolbarIndex + 1) % tools.length;
+          } else if (event.key === "ArrowLeft") {
+            next = (toolbarIndex - 1 + tools.length) % tools.length;
+          } else if (event.key === "Home") {
+            next = 0;
+          } else if (event.key === "End") {
+            next = last;
+          } else {
             return;
           }
           event.preventDefault();
-          const delta = event.key === "ArrowRight" ? 1 : -1;
-          const next = (toolbarIndex + delta + tools.length) % tools.length;
           setToolbarIndex(next);
           const nextButton =
             event.currentTarget.querySelectorAll<HTMLButtonElement>("button")[next];
@@ -275,7 +322,10 @@ function RichTextarea({
       </div>
       <Textarea
         {...props}
-        ref={textareaRef}
+        ref={(node) => {
+          textareaRef.current = node;
+          assignRef(ref, node);
+        }}
         id={controlId}
         value={currentValue}
         disabled={disabled}
