@@ -22,7 +22,8 @@ export function CardListSkeleton({ label, items = 3, className }: CardListSkelet
               <div className="mt-4 flex flex-wrap gap-2">
                 <Skeleton className="h-8 w-36 rounded-md" />
                 <Skeleton className="h-8 w-28 rounded-md" />
-                <Skeleton className="h-8 w-32 rounded-md" />
+                <Skeleton className="h-8 w-36 rounded-md" />
+                <Skeleton className="h-8 w-28 rounded-md" />
               </div>
             </li>
           ))}

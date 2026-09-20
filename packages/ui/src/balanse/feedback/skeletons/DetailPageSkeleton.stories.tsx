@@ -76,21 +76,19 @@ export const VersusReal: Story = {
       <DetailPageSkeleton {...args} />
       <section>
         <h1 className="font-display text-3xl">Ana Reyes</h1>
-        <div className="mt-6 grid gap-8 md:grid-cols-2">
+        <h2 className="mt-6 font-display text-2xl">Profile</h2>
+        <dl className="mt-3 grid gap-2 text-sm">
           <div>
-            <h2 className="font-display text-2xl">Profile</h2>
-            <dl className="mt-3 grid gap-2 text-sm">
-              <div>
-                <dt className="text-muted-foreground">Email</dt>
-                <dd>ana@example.com</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">Contact</dt>
-                <dd>+63 917 000 0000</dd>
-              </div>
-            </dl>
+            <dt className="text-muted-foreground">Email</dt>
+            <dd>ana@example.com</dd>
           </div>
           <div>
+            <dt className="text-muted-foreground">Contact</dt>
+            <dd>+63 917 000 0000</dd>
+          </div>
+        </dl>
+        <div className="grid gap-8 md:grid-cols-2">
+          <section className="mt-8">
             <h2 className="font-display text-2xl">Upcoming</h2>
             <ul className="mt-3 space-y-2">
               <li className="rounded-xl border border-border p-3 text-sm">
@@ -98,7 +96,16 @@ export const VersusReal: Story = {
                 <p className="text-muted-foreground">Confirmed</p>
               </li>
             </ul>
-          </div>
+          </section>
+          <section className="mt-8">
+            <h2 className="font-display text-2xl">Pending</h2>
+            <ul className="mt-3 space-y-2">
+              <li className="rounded-xl border border-border p-3 text-sm">
+                <p>Tower Basics</p>
+                <p className="text-muted-foreground">Hold</p>
+              </li>
+            </ul>
+          </section>
         </div>
       </section>
     </div>

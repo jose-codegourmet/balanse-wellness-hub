@@ -13,7 +13,7 @@ Month-grid loading shell for `/schedule` and the public/customer `ScheduleCalend
 
 ## Shape props
 
-`className`, optional `weeks` (default 5), optional `label` (default `"Loading schedule"`). Callers that omit `label` stay valid.
+`className`, optional `weeks` (default 5), optional `view` (`day` / `week` / `month`, default `month` — matches `ScheduleCalendar` auto view), optional `label` (default `"Loading schedule"`). Existing callers that pass only `className` stay valid. The shell is `space-y-4` like the loaded calendar, not the old stub card.
 
 ## Accessibility
 

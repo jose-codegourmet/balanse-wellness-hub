@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Dashboard loading shell. Copies `/dashboard` column spans: stat strip `md:grid-cols-2 xl:grid-cols-5`, metric tiles `md:grid-cols-2 xl:grid-cols-4`, plus the Needs Attention list.
+Dashboard loading shell. Copies `/dashboard` column spans and band order: header → stat strip (`md:grid-cols-2 xl:grid-cols-5`) → Needs Attention → Today's Schedule table → metric tiles (`md:grid-cols-2 xl:grid-cols-4`).
 
 ## When to use
 
