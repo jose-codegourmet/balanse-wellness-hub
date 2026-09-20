@@ -1,12 +1,16 @@
 import { CONTACT_DETAILS, PUBLIC_SOCIAL_LINKS } from "@balanse/domain";
 import { MarketingImage, SectionHeading } from "@balanse/ui";
+import { CalendarClock, Mail, MapPin, Phone } from "lucide-react";
 import { BalanseHero } from "@/components/balanse/marketing/BalanseHero";
+import { Button } from "@/components/jabkit/button";
 import { ContactForm } from "./ContactForm";
+import "./contact-page.css";
 
 const DIRECT_CHANNELS = [
   {
     id: "phone",
     label: "Phone",
+    icon: Phone,
     value: CONTACT_DETAILS.phone,
     href: `tel:${CONTACT_DETAILS.phone}`,
     note: "Studio questions during opening hours.",
@@ -14,12 +18,20 @@ const DIRECT_CHANNELS = [
   {
     id: "email",
     label: "Email",
+    icon: Mail,
     value: CONTACT_DETAILS.email,
     href: `mailto:${CONTACT_DETAILS.email}`,
     note: "Workshops, partnerships, and anything longer.",
   },
 ] as const;
 
+/**
+ * Contact (FE-PUB-007). The content contract is fixed by
+ * `docs/screen-specs/public/03-contact.md`: channels, location, socials,
+ * walk-ins, then the optional form. The guardrail — these channels answer
+ * questions and never take a reservation — is repeated at every block on
+ * purpose, because it is the whole point of the page.
+ */
 export function ContactPage() {
   return (
     <article>
@@ -39,93 +51,105 @@ export function ContactPage() {
         ]}
       />
 
-      <div className="mx-auto max-w-6xl px-4 pt-12 md:pt-16">
-        <div className="grid gap-6 md:grid-cols-[1.1fr_1fr]">
-          <section aria-labelledby="contact-channels">
-            <h2 id="contact-channels" className="sr-only">
-              Contact channels
-            </h2>
-            <ul className="grid gap-3 sm:grid-cols-2">
-              {DIRECT_CHANNELS.map((channel) => (
-                <li key={channel.id}>
-                  <a
-                    href={channel.href}
-                    className="flex h-full flex-col rounded-xl border border-[var(--balanse-tan)]/50 bg-card p-5 transition-colors hover:border-accent hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <span className="text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-[var(--balanse-gold-deep)]">
-                      {channel.label}
-                    </span>
-                    <span className="mt-2 font-medium break-words">{channel.value}</span>
-                    <span className="mt-2 text-sm text-muted-foreground">{channel.note}</span>
-                  </a>
-                </li>
-              ))}
+      <div className="contact-page marketing-container">
+        <section className="contact-section" aria-labelledby="contact-channels">
+          <SectionHeading
+            id="contact-channels"
+            eyebrow="Reach the studio"
+            title="Contact details"
+            description="Phone and email for questions about classes, workshops, and the space itself."
+          />
+          <div className="contact-section-body">
+            <ul className="contact-grid">
+              {DIRECT_CHANNELS.map((channel) => {
+                const Icon = channel.icon;
+                return (
+                  <li key={channel.id}>
+                    <a className="contact-card" href={channel.href}>
+                      <span className="contact-card-label">
+                        <Icon size={14} strokeWidth={1.75} aria-hidden="true" /> {channel.label}
+                      </span>
+                      <span className="contact-card-value">{channel.value}</span>
+                      <span className="contact-card-note">{channel.note}</span>
+                    </a>
+                  </li>
+                );
+              })}
+              <li>
+                <div className="contact-card">
+                  <span className="contact-card-label">
+                    <MapPin size={14} strokeWidth={1.75} aria-hidden="true" /> Location
+                  </span>
+                  <span className="contact-card-value">{CONTACT_DETAILS.address}</span>
+                  {/* `CONTACT_DETAILS` carries no opening hours, so the page
+                      says so rather than inventing a schedule. */}
+                  <span className="contact-card-note">
+                    <CalendarClock
+                      size={13}
+                      strokeWidth={1.75}
+                      aria-hidden="true"
+                      className="mr-1.5 inline align-[-2px]"
+                    />
+                    Opening hours are not published yet. Do not treat this page as a reservation
+                    desk.
+                  </span>
+                  <span className="contact-card-action">
+                    <Button asChild variant="secondary">
+                      <a href={CONTACT_DETAILS.mapHref} rel="noreferrer" target="_blank">
+                        Open address in Maps
+                      </a>
+                    </Button>
+                  </span>
+                </div>
+              </li>
             </ul>
 
-            <h3 className="mt-8 text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-[var(--balanse-gold-deep)]">
-              Socials
-            </h3>
-            <ul className="mt-3 flex flex-wrap gap-2">
+            <h3 className="contact-subheading">Socials</h3>
+            <ul className="contact-socials">
               {PUBLIC_SOCIAL_LINKS.map((social) => (
                 <li key={social.id}>
-                  <a
-                    href={social.href}
-                    rel="noreferrer"
-                    target="_blank"
-                    className="inline-flex items-center gap-2 rounded-full border border-[var(--balanse-tan)]/60 bg-card px-4 py-2 text-sm transition-colors hover:border-accent hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
+                  <a className="contact-social" href={social.href} rel="noreferrer" target="_blank">
                     <span className="font-medium">{social.label}</span>
-                    <span className="text-muted-foreground">{social.handle}</span>
+                    <span>{social.handle}</span>
                   </a>
                 </li>
               ))}
             </ul>
-          </section>
+          </div>
+        </section>
 
-          <section
-            aria-labelledby="contact-location"
-            className="rounded-2xl border border-[var(--balanse-tan)]/50 bg-card p-6 md:p-8"
-          >
-            <SectionHeading
-              id="contact-location"
-              eyebrow="Find the studio"
-              title="Location"
-              description={CONTACT_DETAILS.address}
-            />
-            <p className="mt-4 text-sm text-muted-foreground">
-              Opening hours are not published yet. Do not treat this page as a reservation desk.
-            </p>
-            <a
-              className="mt-6 inline-flex h-11 items-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              href={CONTACT_DETAILS.mapHref}
-              rel="noreferrer"
-              target="_blank"
-            >
-              Open address in Maps
-            </a>
-          </section>
-        </div>
-
-        <section className="mt-14 md:mt-20">
-          <div className="grid gap-8 md:grid-cols-[16rem_1fr] md:items-center">
-            <MarketingImage assetId="contact-b" />
-            <div>
+        <section className="contact-section" aria-labelledby="contact-walk-ins">
+          <div className="contact-split">
+            <MarketingImage assetId="contact-b" className="contact-split-media" />
+            <div className="contact-card">
               <SectionHeading
+                id="contact-walk-ins"
                 eyebrow="Walk-ins"
                 title="Walking in?"
-                description="Scan the Balansé QR, sign in or create an account, then reserve through the same booking calendar. Walking in does not open a side channel by phone, WhatsApp, or message."
+                description="Scan the Balansé QR, sign in or create an account, then reserve through the same booking calendar."
               />
+              <p className="contact-guardrail">
+                <MapPin size={15} strokeWidth={1.75} aria-hidden="true" />
+                Walking in does not open a side channel by phone, WhatsApp, or message.
+              </p>
             </div>
           </div>
         </section>
 
-        <section className="mt-14 mb-16 max-w-xl md:mt-20 md:mb-24">
-          <SectionHeading
-            eyebrow="Questions"
-            title="Send a message"
-            description="This form reaches the studio for questions. It does not book a class."
-          />
-          <div className="mt-6">
+        <section className="contact-section" aria-labelledby="contact-message">
+          <div className="contact-card contact-form-card">
+            <div className="contact-form-aside">
+              <SectionHeading
+                id="contact-message"
+                eyebrow="Questions"
+                title="Send a message"
+                description="This form reaches the studio for questions. It does not book a class."
+              />
+              <p>
+                Replies come by email. If you want a spot in a class, use the schedule — it is the
+                only place a reservation is recorded.
+              </p>
+            </div>
             <ContactForm />
           </div>
         </section>

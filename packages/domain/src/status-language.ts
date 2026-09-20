@@ -1,5 +1,6 @@
 import type { BookingStatus, RefundStatus } from "./enums";
 import { BOOKING_STATUSES } from "./enums";
+import type { PublicSession } from "./types";
 
 /**
  * The 14 customer-facing rows from docs/screen-specs/shared/02-status-language.md.
@@ -78,4 +79,21 @@ export function bookingSurfaceLabel(input: {
 
 export function isRawStatusToken(value: string): boolean {
   return (CUSTOMER_STATUS_KEYS as readonly string[]).includes(value);
+}
+
+/**
+ * Session availability, in the same words the public booking calendar uses.
+ * Shared so the reschedule picker cannot drift from the calendar vocabulary.
+ */
+export const SESSION_AVAILABILITY_LABELS: Record<PublicSession["availability"], string> = {
+  open: "Open",
+  nearly_full: "Almost full",
+  full_with_waitlist: "Full · waitlist available",
+  past: "Past",
+  cancelled: "Cancelled",
+  past_cutoff: "Booking closed",
+};
+
+export function sessionAvailabilityLabel(availability: PublicSession["availability"]): string {
+  return SESSION_AVAILABILITY_LABELS[availability];
 }

@@ -35,7 +35,7 @@ export type PublicCtaBlockId =
   | "about-band"
   | "about-final"
   | "faqs-final"
-  | "coaches-final";
+  | "coaches-close";
 
 export const SCHEDULE_HREF = landingScheduleHref();
 export const CLASSES_HREF = "/#classes";
@@ -116,12 +116,16 @@ export const PUBLIC_CTA_BLOCKS: Readonly<Record<PublicCtaBlockId, PublicCtaBlock
     body: "The studio answers questions on the contact page. Reservations always happen on the calendar.",
     actions: [CONTACT_ACTION, PRIMARY_SCHEDULE_ACTION],
   },
-  "coaches-final": {
-    id: "coaches-final",
-    eyebrow: "Train with them",
-    title: "Find your coach on the calendar.",
-    body: "Every coach teaches published sessions. Filter the week by coach and reserve the one that fits.",
-    actions: [PRIMARY_SCHEDULE_ACTION, CONTACT_ACTION],
+  /**
+   * Closing invitation on `/coaches`. Warm and unhurried on purpose: it is the
+   * last thing a visitor reads, and the calendar is still the only way to book.
+   */
+  "coaches-close": {
+    id: "coaches-close",
+    eyebrow: "We’ll meet you on the mat",
+    title: "Your next class starts here.",
+    body: "Choose a time that works for you, and the coach you just read about takes it from there.",
+    actions: [PRIMARY_SCHEDULE_ACTION],
   },
 } as const;
 

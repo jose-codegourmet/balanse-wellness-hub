@@ -1,0 +1,55 @@
+/* Portal home (FE-CUS-014) and the booking cards it lists. Extends the
+   `.portal-*` scaffolding in portal.css in the same declarative style as
+   `.portal-profile`. Brand tokens only. */
+
+.portal-home-greeting { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1.5rem; padding-bottom: 2.25rem; border-bottom: 1px solid var(--border); }
+.portal-home-greeting-copy { min-width: 0; flex: 1 1 22rem; }
+.portal-home-greeting h1 { font-size: clamp(2.1rem, 3.4vw, 3.1rem); letter-spacing: -.045em; line-height: 1.1; margin-top: .75rem; overflow-wrap: anywhere; }
+.portal-home-orient { max-width: 38rem; margin-top: 1rem; font-size: .85rem; line-height: 1.7; color: var(--muted-foreground); }
+.portal-home-browse { flex-shrink: 0; }
+.portal-home-next { margin-top: 1.5rem; }
+.portal-home-clear { margin-top: 1.25rem; }
+
+/* Attention is a distinct region only when it has something in it; an empty
+   one stays a quiet line rather than an urgent-looking empty card. */
+.portal-home-attention { display: grid; gap: .75rem; margin-top: 1.5rem; padding: 1.25rem; border-radius: .85rem; background: color-mix(in oklab, var(--balanse-gold) 12%, var(--card)); }
+.portal-home-attention .booking-card { background: var(--card); }
+
+.portal-home-tabs { margin-top: 1.5rem; gap: 0; }
+.portal-home-tabs [data-slot="tabs-list"] { height: auto; gap: .35rem; padding: 0; border-bottom: 1px solid var(--border); border-radius: 0; }
+.portal-home-tabs [data-slot="tabs-trigger"] { height: auto; padding: .7rem 1rem; border-radius: .5rem .5rem 0 0; font-size: .8rem; color: var(--muted-foreground); }
+.portal-home-tabs [data-slot="tabs-trigger"]:hover { background: color-mix(in oklab, var(--secondary) 35%, transparent); color: var(--foreground); }
+/* Weight plus the Base UI underline rail: the active tab never relies on
+   colour alone. */
+.portal-home-tabs [data-slot="tabs-trigger"][data-active] { font-weight: 600; color: var(--foreground); background: transparent; }
+.portal-home-tabs [data-slot="tabs-trigger"]::after { bottom: -1px; height: 2px; background: var(--foreground); }
+.portal-home-panel { margin-top: 1.5rem; }
+.portal-home-list { display: grid; gap: .75rem; }
+
+/* --- Booking card ------------------------------------------------------ */
+.booking-card { --booking-accent: var(--balanse-tan); min-width: 0; padding: 1.15rem 1.25rem 1.25rem; border: 1px solid var(--border); border-left: 3px solid var(--booking-accent); border-radius: .75rem; background: var(--card); }
+.booking-card[data-mood="urgent"] { --booking-accent: var(--balanse-gold-deep); }
+.booking-card[data-mood="pending"] { --booking-accent: var(--balanse-gold); }
+.booking-card[data-mood="settled"] { --booking-accent: var(--balanse-muted-brown); }
+.booking-card[data-mood="closed"] { --booking-accent: color-mix(in oklab, var(--balanse-tan) 55%, var(--balanse-cream)); background: color-mix(in oklab, var(--secondary) 22%, var(--card)); }
+.booking-card[data-mood="closed"] .booking-card-identity h3 { color: var(--muted-foreground); }
+.booking-card-head { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: .75rem 1rem; }
+.booking-card-identity { min-width: 0; flex: 1 1 14rem; }
+.booking-card-identity h3 { font-size: 1.2rem; font-weight: 400; letter-spacing: -.025em; line-height: 1.25; overflow-wrap: anywhere; }
+.booking-card-when { margin-top: .4rem; font-size: .8rem; line-height: 1.5; }
+.booking-card-meta { margin-top: .3rem; font-size: .72rem; line-height: 1.6; color: var(--muted-foreground); overflow-wrap: anywhere; }
+.booking-card-hold, .booking-card-attention { display: flex; align-items: start; gap: .45rem; margin-top: .85rem; font-size: .78rem; line-height: 1.55; }
+.booking-card-hold { font-weight: 500; }
+.booking-card-hold svg, .booking-card-attention svg { flex-shrink: 0; margin-top: .15rem; color: var(--booking-accent); }
+.booking-card-attention { color: var(--muted-foreground); }
+.booking-card-link { display: inline-flex; align-items: center; gap: .4rem; margin-top: 1rem; padding-top: .9rem; width: 100%; border-top: 1px solid var(--border); font-size: .75rem; font-weight: 500; }
+.booking-card-link:hover { color: var(--muted-foreground); }
+.booking-card a:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+
+@media (max-width: 767px) {
+  .portal-home-greeting { align-items: start; gap: 1.25rem; padding-bottom: 1.75rem; }
+  .portal-home-browse { width: 100%; justify-content: space-between; }
+  .portal-home-attention { padding: 1rem; }
+  .portal-home-tabs [data-slot="tabs-list"] { overflow-x: auto; scrollbar-width: thin; }
+  .portal-home-tabs [data-slot="tabs-trigger"] { flex: 0 0 auto; }
+}

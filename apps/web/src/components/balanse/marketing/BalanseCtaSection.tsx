@@ -1,14 +1,41 @@
 import { type PublicCtaBlockId, publicCtaBlock } from "@balanse/domain";
 import { MarketingImage } from "@balanse/ui";
-import { ArrowUpRight } from "lucide-react";
+import {
+  ArrowUpRight,
+  GaugeIcon,
+  LockIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  UsersIcon,
+  WorkflowIcon,
+} from "lucide-react";
 import { Button } from "@/components/jabkit/button";
-import type { Cta28Feature } from "@/components/jabkit/cta28/Cta28.types";
+import type { Cta28Feature, Cta28FeatureIcon } from "@/components/jabkit/cta28/Cta28.types";
 import { cn } from "@/lib/utils";
+import "./cta-section.css";
 
-/** Quiet closing invitation using Jabkit controls and one full-width photograph. */
+/** Same glyph vocabulary as the vendored Jabkit cta28, kept pristine. */
+const FEATURE_ICONS: Record<Cta28FeatureIcon, typeof ShieldCheckIcon> = {
+  shield: ShieldCheckIcon,
+  workflow: WorkflowIcon,
+  users: UsersIcon,
+  gauge: GaugeIcon,
+  lock: LockIcon,
+  sparkles: SparklesIcon,
+};
+
+/**
+ * Quiet closing invitation shared by every public page.
+ *
+ * Copy comes from `publicCtaBlock()` so it stays versioned with the rest of
+ * the CTA catalog, and the photograph slot is optional: a block without an
+ * asset renders as a composed type-and-action band, which is what lets
+ * `/coaches` ship ahead of its group hero (FE-PUB-006).
+ */
 export function BalanseCtaSection({
   blockId,
   assetIds = [],
+  features = [],
   sectionName = "cta-band",
   className,
 }: {
@@ -20,27 +47,43 @@ export function BalanseCtaSection({
 }) {
   const block = publicCtaBlock(blockId);
   const [primary] = block.actions;
+  const assetId = assetIds[0] ?? block.assetId;
+
   return (
     <section
       data-section={sectionName}
       data-cta-id={block.id}
-      className={cn("marketing-container pb-16 md:pb-24", className)}
+      className={cn("balanse-cta marketing-container pb-16 md:pb-24", className)}
     >
-      {assetIds[0] ? (
-        <MarketingImage assetId={assetIds[0]} className="mb-8 !rounded-sm md:mb-10" />
-      ) : null}
-      <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-        <div>
-          <h2 className="marketing-title">{block.title}</h2>
+      {assetId ? <MarketingImage assetId={assetId} className="mb-8 !rounded-sm md:mb-10" /> : null}
+      <div className="balanse-cta-body">
+        <div className="balanse-cta-copy">
+          <p className="marketing-eyebrow">{block.eyebrow}</p>
+          <h2 className="marketing-title mt-3">{block.title}</h2>
           <p className="marketing-copy max-w-lg">{block.body}</p>
         </div>
-        <Button asChild className="rounded-full px-7">
+        {/* Exactly one primary action. Any secondary action on the block stays
+            in the footer nav rather than competing here. */}
+        <Button asChild className="balanse-cta-action rounded-full px-7">
           <a href={primary.href}>
             {primary.label}
             <ArrowUpRight className="ml-4 size-4" aria-hidden="true" />
           </a>
         </Button>
       </div>
+      {features.length > 0 ? (
+        <ul className="balanse-cta-features">
+          {features.map((feature) => {
+            const Icon = FEATURE_ICONS[feature.icon ?? "sparkles"];
+            return (
+              <li key={feature.label}>
+                <Icon aria-hidden="true" size={16} strokeWidth={1.75} />
+                <span>{feature.label}</span>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
     </section>
   );
 }

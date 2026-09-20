@@ -1,0 +1,136 @@
+/* Booking surfaces: the shared summary, the confirmation ticket (FE-CUS-015),
+   and the reschedule picker (FE-CUS-016). Every colour comes from the brand
+   tokens in @balanse/config — never a raw hex. */
+
+/* --- Shared booking summary ------------------------------------------- */
+.booking-summary {
+  --booking-accent: var(--balanse-tan);
+  position: relative;
+  min-width: 0;
+  padding: 1.35rem 1.4rem 1.5rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--booking-accent);
+  border-radius: .85rem;
+  background: var(--card);
+}
+.booking-summary[data-mood="urgent"] { --booking-accent: var(--balanse-gold-deep); }
+.booking-summary[data-mood="pending"] { --booking-accent: var(--balanse-gold); }
+.booking-summary[data-mood="settled"] { --booking-accent: var(--balanse-muted-brown); }
+.booking-summary[data-mood="closed"] { --booking-accent: color-mix(in oklab, var(--balanse-tan) 55%, var(--balanse-cream)); }
+.booking-summary[data-mood="closed"] { background: color-mix(in oklab, var(--secondary) 22%, var(--card)); }
+.booking-summary[data-mood="closed"] .booking-summary-title { color: var(--muted-foreground); }
+.booking-summary[data-tone="hero"] { padding: clamp(1.5rem, 3vw, 2.25rem); border-radius: 1rem; box-shadow: 0 1.5rem 3rem -2.5rem color-mix(in oklab, var(--balanse-navy) 60%, transparent); }
+.booking-summary[data-tone="ticket"] { border: 0; border-radius: 0; padding: 0; background: transparent; }
+.booking-summary-head { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: .85rem 1rem; }
+.booking-summary-identity { min-width: 0; flex: 1 1 14rem; }
+.booking-summary-title { font-size: 1.5rem; font-weight: 400; letter-spacing: -.03em; line-height: 1.2; margin-top: .4rem; overflow-wrap: anywhere; }
+.booking-summary[data-tone="hero"] .booking-summary-title { font-size: clamp(1.75rem, 3vw, 2.4rem); }
+.booking-summary-when { margin-top: .5rem; font-size: .8rem; line-height: 1.6; color: var(--muted-foreground); }
+.booking-summary-footer { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1.25rem; margin-top: 1.25rem; padding-top: 1.1rem; border-top: 1px solid var(--border); }
+
+/* --- Fact list -------------------------------------------------------- */
+.booking-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 1.5rem; margin-top: 1.4rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+.booking-facts > div { min-width: 0; }
+.booking-facts dt { font-size: .6rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted-foreground); }
+.booking-facts dd { margin-top: .35rem; font-size: .875rem; line-height: 1.5; overflow-wrap: anywhere; }
+.booking-facts-note { display: block; margin-top: .2rem; font-size: .65rem; letter-spacing: .06em; color: var(--muted-foreground); }
+
+/* --- Reference -------------------------------------------------------- */
+.booking-reference { display: flex; flex-wrap: wrap; align-items: baseline; gap: .35rem .75rem; margin-top: 1.25rem; }
+.booking-reference > span { font-size: .6rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted-foreground); }
+.booking-reference strong { font-family: var(--font-mono, ui-monospace), monospace; font-size: 1.05rem; font-weight: 500; letter-spacing: .12em; overflow-wrap: anywhere; }
+.booking-reference[data-size="primary"] { display: grid; gap: .45rem; margin-top: 1rem; }
+.booking-reference[data-size="primary"] strong { font-size: clamp(1.4rem, 4vw, 1.9rem); letter-spacing: .1em; line-height: 1.1; }
+
+/* --- Confirmation ticket (FE-CUS-015) --------------------------------- */
+.booking-ticket { display: grid; grid-template-columns: 17rem minmax(0, 1fr); margin-top: 2rem; overflow: hidden; border: 1px solid var(--border); border-radius: 1.1rem; background: var(--card); }
+.booking-ticket-stub { display: flex; flex-direction: column; gap: .35rem; padding: clamp(1.35rem, 2.5vw, 1.85rem); background: color-mix(in oklab, var(--secondary) 45%, var(--card)); border-right: 1px dashed var(--border); }
+.booking-ticket[data-mood="settled"] .booking-ticket-stub { background: color-mix(in oklab, var(--balanse-beige) 55%, var(--card)); }
+.booking-ticket[data-mood="closed"] .booking-ticket-stub { background: color-mix(in oklab, var(--secondary) 25%, var(--card)); }
+.booking-ticket-stub-note { margin-top: auto; padding-top: 1.25rem; font-size: .7rem; line-height: 1.6; color: var(--muted-foreground); }
+.booking-ticket-body { min-width: 0; padding: clamp(1.35rem, 2.5vw, 1.85rem); }
+.booking-ticket-body .booking-facts { margin-top: 1.1rem; }
+.booking-identity { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem 1.5rem; }
+.booking-identity dt { font-size: .6rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted-foreground); }
+.booking-identity dd { margin-top: .35rem; font-size: .8125rem; overflow-wrap: anywhere; }
+
+/* --- Payment block and advisories ------------------------------------- */
+.booking-advisories { display: grid; gap: .65rem; margin-top: 1.35rem; }
+.booking-advisory[data-slot="alert"] { --advisory-accent: var(--balanse-tan); border-color: var(--border); border-left: 3px solid var(--advisory-accent); padding: .85rem 1rem; background: var(--background); }
+.booking-advisory[data-advisory="instruction"] { --advisory-accent: var(--balanse-gold-deep); }
+.booking-advisory[data-advisory="informational"] { --advisory-accent: var(--balanse-tan); }
+.booking-advisory[data-advisory="held"] { --advisory-accent: var(--balanse-muted-brown); }
+.booking-advisory [data-slot="alert-title"] { font-size: .8rem; }
+.booking-advisory [data-slot="alert-description"] { font-size: .75rem; line-height: 1.65; }
+
+/* --- Actions ---------------------------------------------------------- */
+.booking-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+.booking-actions-note { max-width: 44rem; font-size: .78rem; line-height: 1.7; color: var(--muted-foreground); }
+
+/* --- Reschedule (FE-CUS-016) ------------------------------------------ */
+.reschedule-layout { display: grid; grid-template-columns: 22rem minmax(0, 1fr); align-items: start; gap: 1.5rem; margin-top: 2rem; }
+.reschedule-current { position: sticky; top: 1.5rem; display: grid; gap: 1rem; min-width: 0; }
+.reschedule-choice { display: grid; gap: 1.25rem; min-width: 0; }
+.reschedule-picker { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 1.25rem; }
+.reschedule-picker:disabled { opacity: .6; }
+.reschedule-legend { padding: 0; }
+.reschedule-legend > span { display: block; }
+.reschedule-legend strong { display: block; margin-top: .45rem; font-family: var(--font-display); font-size: 1.45rem; font-weight: 400; letter-spacing: -.03em; }
+.reschedule-days { display: grid; gap: 1.5rem; }
+.reschedule-day-label { display: flex; align-items: center; gap: .75rem; font-size: .7rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-foreground); }
+.reschedule-day-label::after { content: ""; flex: 1; border-top: 1px solid var(--border); }
+.reschedule-day-options { display: grid; gap: .5rem; margin-top: .85rem; }
+.reschedule-option { --event-accent: var(--balanse-gold); display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: .85rem; min-width: 0; padding: .95rem 1.1rem; border: 1px solid var(--border); border-left: 3px solid var(--event-accent); border-radius: .55rem; background: var(--card); cursor: pointer; transition: background 160ms, border-color 160ms; }
+.reschedule-option[data-availability="nearly_full"] { --event-accent: var(--balanse-gold-deep); }
+.reschedule-option[data-availability="full_with_waitlist"],
+.reschedule-option[data-availability="past_cutoff"] { --event-accent: var(--balanse-tan); }
+.reschedule-option[data-availability="past"],
+.reschedule-option[data-availability="cancelled"] { --event-accent: color-mix(in oklab, var(--balanse-muted-brown) 45%, var(--balanse-tan)); }
+.reschedule-option:hover { background: color-mix(in oklab, var(--secondary) 28%, var(--card)); }
+.reschedule-option:has(input:checked) { border-color: var(--foreground); background: color-mix(in oklab, var(--secondary) 45%, var(--card)); }
+.reschedule-option:has(input:focus-visible) { outline: 2px solid var(--ring); outline-offset: 3px; }
+.reschedule-option[data-selectable="false"] { cursor: not-allowed; background: color-mix(in oklab, var(--secondary) 18%, var(--card)); }
+.reschedule-option[data-selectable="false"] .reschedule-option-title { color: var(--muted-foreground); }
+.reschedule-option input { margin-top: .2rem; width: 1.05rem; height: 1.05rem; accent-color: var(--foreground); }
+.reschedule-option-body { display: grid; gap: .3rem; min-width: 0; }
+.reschedule-option-title { font-size: .9375rem; font-weight: 500; overflow-wrap: anywhere; }
+.reschedule-option-meta { font-size: .78rem; color: var(--muted-foreground); overflow-wrap: anywhere; }
+.reschedule-option-capacity { display: inline-flex; align-items: center; align-self: start; gap: .4rem; padding: .18rem .55rem; border: 1px solid color-mix(in oklab, var(--event-accent) 55%, var(--border)); border-radius: 999px; font-size: .6rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); }
+.reschedule-review { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 1rem; padding: 1.1rem 1.25rem; border: 1px solid var(--border); border-radius: .75rem; background: color-mix(in oklab, var(--secondary) 30%, var(--card)); }
+.reschedule-review[data-empty="true"] { display: block; color: var(--muted-foreground); font-size: .78rem; }
+.reschedule-review-leg { min-width: 0; }
+.reschedule-review-leg > span { display: block; font-size: .6rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted-foreground); }
+.reschedule-review-leg strong { display: block; margin-top: .3rem; font-size: .875rem; font-weight: 500; overflow-wrap: anywhere; }
+.reschedule-review-leg small { display: block; margin-top: .2rem; font-size: .72rem; color: var(--muted-foreground); }
+.reschedule-review-arrow { color: var(--muted-foreground); }
+.reschedule-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
+.reschedule-actions > p { max-width: 30rem; font-size: .72rem; line-height: 1.65; color: var(--muted-foreground); }
+
+@media (max-width: 1100px) {
+  .reschedule-layout { grid-template-columns: minmax(0, 1fr); }
+  .reschedule-current { position: static; }
+}
+@media (max-width: 767px) {
+  .booking-ticket { grid-template-columns: minmax(0, 1fr); }
+  .booking-ticket-stub { border-right: 0; border-bottom: 1px dashed var(--border); }
+  .booking-ticket-stub-note { margin-top: .5rem; padding-top: .5rem; }
+  .booking-identity { grid-template-columns: minmax(0, 1fr); gap: .85rem; }
+  .booking-actions > [data-slot="button"] { flex: 1 1 100%; }
+  .reschedule-review { grid-template-columns: minmax(0, 1fr); gap: .65rem; }
+  .reschedule-review-arrow { transform: rotate(90deg); justify-self: start; }
+}
+@media (max-width: 479px) {
+  .booking-facts { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reschedule-option { transition: none; }
+}
+
+/* Front-desk printing: drop the workspace chrome so the confirmation is the
+   only thing on the sheet, and keep every surface light enough to read. */
+@media print {
+  .portal-sidebar, .portal-mobile-header, .portal-footer, .portal-toaster, .booking-actions { display: none !important; }
+  .portal-page { padding: 0; }
+  .booking-ticket, .booking-summary { break-inside: avoid; box-shadow: none; }
+  .booking-ticket-stub { background: transparent; }
+}
