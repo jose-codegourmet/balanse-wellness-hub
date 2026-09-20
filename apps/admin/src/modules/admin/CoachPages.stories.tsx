@@ -1,17 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { AdminGuard } from "@/modules/layout/AdminGuard";
-import { CoachFormPage, CoachListPage } from "./CoachPages";
+import { CoachFormPage } from "./CoachPages";
 
 const meta = {
-  title: "Admin/Screens/Coaches",
-  component: CoachListPage,
+  title: "Admin/Screens/Coach Form",
+  component: CoachFormPage,
   tags: ["autodocs"],
-} satisfies Meta<typeof CoachListPage>;
+} satisfies Meta<typeof CoachFormPage>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
-
-export const List: Story = {};
 
 export const Form: StoryObj<typeof CoachFormPage> = {
   render: () => <CoachFormPage coachId="coach-rex" />,
