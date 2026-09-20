@@ -13,11 +13,9 @@ const meta: Meta<typeof Skeleton> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Skeleton>;
+type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  render: (args) => <Skeleton {...args} className="h-4 w-[240px]" />,
-};
+export const Default: Story = {};
 
 export const Circle: Story = {
   render: (args) => <Skeleton {...args} className="size-12 rounded-full" />,

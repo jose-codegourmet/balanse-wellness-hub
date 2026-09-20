@@ -1,6 +1,8 @@
 import { cn } from "../../lib/utils";
 
-function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
+import type { SkeletonProps } from "./Skeleton.schema";
+
+function Skeleton({ className, ...props }: SkeletonProps) {
   return (
     <div
       data-slot="skeleton"
