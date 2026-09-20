@@ -149,13 +149,17 @@ export function bookingCreatedToastId(status: BookingStatus): PortalToastId {
 
 /**
  * Admin write confirmations (FE-ADM-019). Reuses `PortalToastTone` — do not
- * fork a second tone vocabulary. Keep this list to writes the admin form kit
- * actually performs; later form tickets append their own ids.
+ * fork a second tone vocabulary. Form-kit and queue tickets append their own ids.
  */
 export const ADMIN_TOAST_IDS = [
   "class.saved",
   "class.save-failed",
   "form.validation-failed",
+  "cancellation.completed",
+  "cancellation.rejected",
+  "cancellation.action-failed",
+  "refund.status-updated",
+  "refund.action-failed",
 ] as const;
 
 export type AdminToastId = (typeof ADMIN_TOAST_IDS)[number];
@@ -187,6 +191,36 @@ export const ADMIN_TOAST_COPY = {
     tone: "error",
     title: "Check the form",
     description: "Fix the highlighted fields and try again.",
+  },
+  "cancellation.completed": {
+    id: "cancellation.completed",
+    tone: "success",
+    title: "Cancellation completed",
+    description: "The slot is released. The waitlist may be promoted.",
+  },
+  "cancellation.rejected": {
+    id: "cancellation.rejected",
+    tone: "success",
+    title: "Request rejected",
+    description: "The booking stays in place. The customer can see your reason.",
+  },
+  "cancellation.action-failed": {
+    id: "cancellation.action-failed",
+    tone: "error",
+    title: "Cancellation not updated",
+    description: "That request could not be updated. Try again.",
+  },
+  "refund.status-updated": {
+    id: "refund.status-updated",
+    tone: "success",
+    title: "Refund status recorded",
+    description: "Money still moves outside the app. This only records the status.",
+  },
+  "refund.action-failed": {
+    id: "refund.action-failed",
+    tone: "error",
+    title: "Refund status not saved",
+    description: "The refund status could not be recorded. Try again.",
   },
 } as const satisfies ExhaustiveAdminToastCopy;
 
