@@ -1,4 +1,9 @@
-import { ADMIN_CURSOR_LIMIT_DEFAULT, ADMIN_CURSOR_LIMIT_MAX, type CursorPage } from "./contracts";
+import {
+  ADMIN_CURSOR_LIMIT_DEFAULT,
+  ADMIN_CURSOR_LIMIT_MAX,
+  type CursorPage,
+  type MetricSeries,
+} from "./contracts";
 import type { FieldErrors, LoginInput } from "./customer-portal";
 import { HOLD_DURATION_HOURS } from "./customer-portal";
 import type { CoachRateType, PaymentStatus, SessionStatus } from "./enums";
@@ -173,6 +178,13 @@ export type AdminDashboardSnapshot = {
   pendingRefundsPhp: number;
   todaysOccupancy: number;
   coachCostTodayPhp: number;
+  /**
+   * Optional trailing-window series. The mock adapter may attach a
+   * `gross_sales` series derived from existing bookings. Live HTTP is BE-054.
+   */
+  series?: {
+    gross_sales?: MetricSeries;
+  };
 };
 
 export type AdminBookingTab = "pending" | "confirmed" | "waitlisted" | "expired" | "history";

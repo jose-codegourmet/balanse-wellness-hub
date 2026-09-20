@@ -29,6 +29,7 @@ import {
   validateSessionCapacity,
 } from "@balanse/domain";
 import type { AdminPaymentQueueQuery, AdminRequestQueueQuery, MockDataAdapter } from "./adapter";
+import { deriveGrossSalesSeries } from "./dashboard-series";
 import {
   customers,
   MOCK_NOW_ISO,
@@ -670,7 +671,11 @@ export function createMemoryAdapter(): MockDataAdapter {
       }),
     getAdminDashboard: () =>
       applyMockEffects(() => {
-        const snap = buildAdminDashboard(sessions, bookings, manilaYmd(MOCK_NOW_ISO));
+        const todayYmd = manilaYmd(MOCK_NOW_ISO);
+        const snap = buildAdminDashboard(sessions, bookings, todayYmd);
+        const series = {
+          gross_sales: deriveGrossSalesSeries(sessions, bookings, todayYmd),
+        };
         if (emptyQueues()) {
           return {
             ...snap,
@@ -680,9 +685,10 @@ export function createMemoryAdapter(): MockDataAdapter {
             waitlisted: 0,
             attention: { payments: 0, cancellations: 0, reschedules: 0 },
             todaysSchedule: [],
+            series,
           };
         }
-        return snap;
+        return { ...snap, series };
       }),
   };
 }

@@ -17,7 +17,7 @@ type Story = StoryObj<typeof BentoSkeleton>;
 export const Mobile: Story = {
   render: (args) => (
     <ShellStoryFrame width={SHELL_WIDTH.mobile}>
-      <BentoSkeleton {...args} tiles={2} />
+      <BentoSkeleton {...args} />
     </ShellStoryFrame>
   ),
 };
@@ -41,7 +41,7 @@ export const Desktop: Story = {
 export const MobileDark: Story = {
   render: (args) => (
     <ShellStoryFrame width={SHELL_WIDTH.mobile} dark>
-      <BentoSkeleton {...args} tiles={2} />
+      <BentoSkeleton {...args} />
     </ShellStoryFrame>
   ),
 };
@@ -73,26 +73,19 @@ export const ReducedMotion: Story = {
 export const VersusReal: Story = {
   render: (args) => (
     <div className="grid gap-8 lg:grid-cols-2">
-      <BentoSkeleton {...args} tiles={2} />
+      <BentoSkeleton {...args} />
       <section>
         <h1 className="font-display text-3xl">Dashboard</h1>
-        <div className="mt-6 grid overflow-hidden rounded-xl border border-border bg-card md:grid-cols-2">
-          <div className="p-4 md:p-5">
+        <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-6 xl:grid-cols-12">
+          <article className="min-h-72 rounded-xl border border-border bg-card p-5 md:col-span-6 xl:col-span-7">
+            <p className="text-[10px] font-semibold tracking-widest uppercase">Needs Attention</p>
+            <p className="mt-6 text-sm">Payment proof → Review</p>
+          </article>
+          <article className="rounded-xl border border-border bg-card p-5 md:col-span-2 xl:col-span-5">
             <p className="text-sm">Today&apos;s Classes</p>
             <p className="mt-8 text-3xl font-light">4</p>
-          </div>
-          <div className="border-border/50 border-t p-4 md:border-t-0 md:border-l md:p-5">
-            <p className="text-sm">Pending Payments</p>
-            <p className="mt-8 text-3xl font-light">2</p>
-          </div>
+          </article>
         </div>
-        <h2 className="mt-10 font-display text-2xl">Needs Attention</h2>
-        <ul className="mt-3 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
-          <li className="flex flex-col gap-1 px-4 py-3">
-            <span className="text-sm font-medium">Payment proof → Review</span>
-            <span className="text-sm text-muted-foreground">2 payments waiting</span>
-          </li>
-        </ul>
       </section>
     </div>
   ),

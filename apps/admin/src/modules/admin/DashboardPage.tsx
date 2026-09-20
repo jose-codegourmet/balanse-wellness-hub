@@ -6,13 +6,18 @@ import {
   formatRatioPercent,
   formatSessionTime,
 } from "@balanse/domain";
-import { Badge, BentoSkeleton, FeedbackState } from "@balanse/ui";
+import { Badge, BentoSkeleton, Button, FeedbackState } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { CalendarDays, CreditCard, Repeat, Ticket, UserX } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { AdminStatStrip } from "@/components/balanse/AdminStatStrip";
+import { DashboardBento } from "@/components/balanse/dashboard/DashboardBento";
+import { dashboardSkeletonTilesForRole } from "@/components/balanse/dashboard/DashboardBento.defaults";
+import { DashboardTile } from "@/components/balanse/dashboard/DashboardTile";
+import { NeedsAttentionTile } from "@/components/balanse/dashboard/NeedsAttentionTile";
+import { SalesSeriesChart } from "@/components/balanse/dashboard/SalesSeriesChart";
 import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { adminDashboardQuery } from "@/lib/query/queries";
@@ -28,6 +33,7 @@ export function DashboardPage({
   loading?: boolean;
 }) {
   const { principal } = useMockPrincipal();
+  const canViewCoachCost = principal.role === "admin";
   const query = useQuery({
     ...adminDashboardQuery(principal.role),
     ...(initial ? { initialData: initial } : {}),
@@ -43,26 +49,14 @@ export function DashboardPage({
         header: "Time",
         cell: ({ row }) => formatSessionTime(row.original.startsAt),
       },
-      {
-        accessorKey: "className",
-        header: "Class",
-        enableColumnFilter: true,
-        meta: { enableFaceting: true, facetLabel: "Class" },
-      },
-      {
-        accessorKey: "coachName",
-        header: "Coach",
-        enableColumnFilter: true,
-        meta: { enableFaceting: true, facetLabel: "Coach" },
-      },
+      { accessorKey: "className", header: "Class" },
+      { accessorKey: "coachName", header: "Coach" },
       { accessorKey: "capacity", header: "Capacity" },
       {
         id: "status",
         header: "Status",
         accessorFn: (row) =>
           row.status === "PUBLISHED" ? "Published" : row.status === "DRAFT" ? "Draft" : "Cancelled",
-        enableColumnFilter: true,
-        meta: { enableFaceting: true, facetLabel: "Status" },
         cell: ({ row }) => {
           const status = row.original.status;
           const label =
@@ -70,7 +64,7 @@ export function DashboardPage({
           const variant =
             status === "PUBLISHED" ? "success" : status === "DRAFT" ? "neutral" : "danger";
           return (
-            <Badge variant={variant} appearance="solid" size="sm" dot>
+            <Badge variant={variant} appearance="solid" size="sm">
               {label}
             </Badge>
           );
@@ -83,7 +77,10 @@ export function DashboardPage({
   if (forcedLoading) {
     return (
       <AdminPageShell title="Dashboard">
-        <BentoSkeleton label="Loading dashboard" tiles={4} />
+        <BentoSkeleton
+          label="Loading dashboard"
+          tiles={dashboardSkeletonTilesForRole(canViewCoachCost)}
+        />
       </AdminPageShell>
     );
   }
@@ -113,7 +110,6 @@ export function DashboardPage({
       value: String(data.todaysClasses),
       href: "/schedule",
       icon: CalendarDays,
-      trend: "stable" as const,
     },
     {
       id: "payments",
@@ -121,8 +117,6 @@ export function DashboardPage({
       value: String(data.pendingPayments),
       href: "/payments",
       icon: CreditCard,
-      trend: data.pendingPayments > 0 ? ("up" as const) : ("stable" as const),
-      delta: data.pendingPayments > 0 ? "Needs review" : "Clear",
     },
     {
       id: "cancellations",
@@ -130,7 +124,6 @@ export function DashboardPage({
       value: String(data.cancellations),
       href: "/cancellations",
       icon: UserX,
-      trend: data.cancellations > 0 ? ("up" as const) : ("stable" as const),
     },
     {
       id: "reschedules",
@@ -138,7 +131,6 @@ export function DashboardPage({
       value: String(data.reschedules),
       href: "/reschedules",
       icon: Repeat,
-      trend: data.reschedules > 0 ? ("up" as const) : ("stable" as const),
     },
     {
       id: "waitlisted",
@@ -146,7 +138,6 @@ export function DashboardPage({
       value: String(data.waitlisted),
       href: "/bookings?tab=waitlisted",
       icon: Ticket,
-      trend: "stable" as const,
     },
   ];
 
@@ -155,89 +146,95 @@ export function DashboardPage({
       id: "payments",
       href: "/payments",
       title: "Payment proof → Review",
-      detail:
-        data.attention.payments === 0
-          ? "No pending payments"
-          : `${data.attention.payments} payment${data.attention.payments === 1 ? "" : "s"} waiting`,
+      count: data.attention.payments,
+      waitingLabel: `${data.attention.payments} payment${data.attention.payments === 1 ? "" : "s"} waiting`,
+      clearLabel: "No pending payments",
     },
     {
       id: "cancellations",
       href: "/cancellations",
       title: "Cancellation → Review",
-      detail:
-        data.attention.cancellations === 0
-          ? "No cancellation requests"
-          : `${data.attention.cancellations} request${data.attention.cancellations === 1 ? "" : "s"} waiting`,
+      count: data.attention.cancellations,
+      waitingLabel: `${data.attention.cancellations} request${data.attention.cancellations === 1 ? "" : "s"} waiting`,
+      clearLabel: "No cancellation requests",
     },
     {
       id: "reschedules",
       href: "/reschedules",
       title: "Reschedule → Review",
-      detail:
-        data.attention.reschedules === 0
-          ? "No reschedule requests"
-          : `${data.attention.reschedules} request${data.attention.reschedules === 1 ? "" : "s"} waiting`,
+      count: data.attention.reschedules,
+      waitingLabel: `${data.attention.reschedules} request${data.attention.reschedules === 1 ? "" : "s"} waiting`,
+      clearLabel: "No reschedule requests",
     },
   ];
 
+  const scheduleLink = (
+    <Button nativeButton={false} variant="outline" size="sm" render={<Link href="/schedule" />}>
+      Open schedule
+    </Button>
+  );
+
   return (
-    <AdminPageShell title="Dashboard" stats={<AdminStatStrip stats={stats} />}>
-      <h2 className="font-display text-2xl">Needs Attention</h2>
-      <ul className="mt-3 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
-        {attention.map((item) => (
-          <li key={item.id}>
-            <Link
-              href={item.href}
-              className="flex flex-col gap-1 px-4 py-3 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <span className="text-sm font-medium">{item.title}</span>
-              <span className="text-sm text-muted-foreground">{item.detail}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+    <AdminPageShell title="Dashboard" description="Operations first. Analytics stay secondary.">
+      <DashboardBento>
+        <NeedsAttentionTile items={attention} />
 
-      <div className="mt-10">
-        {data.todaysSchedule.length === 0 ? (
-          <>
-            <h2 className="font-display text-2xl">Today&apos;s Schedule</h2>
-            <FeedbackState id="admin.no-sessions" className="mt-3" />
-          </>
-        ) : (
-          <AdminDataTable
-            tableId="dashboard-sessions"
-            title="Today's Schedule"
-            description="Published and draft sessions for today."
-            data={data.todaysSchedule}
-            columns={columns}
-            getRowId={(row) => row.id}
-            searchable
-            searchPlaceholder="Search class or coach"
-            emptyFilterLabel="No sessions on today's board."
-          />
-        )}
-      </div>
+        <DashboardTile span="schedule" className="p-4 md:p-5">
+          {data.todaysSchedule.length === 0 ? (
+            <>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <h2 className="font-display text-2xl">Today&apos;s Schedule</h2>
+                {scheduleLink}
+              </div>
+              <FeedbackState id="admin.no-sessions" className="mt-3" />
+            </>
+          ) : (
+            <AdminDataTable
+              tableId="dashboard-sessions"
+              title="Today's Schedule"
+              description="Published and draft sessions for today."
+              data={data.todaysSchedule}
+              columns={columns}
+              getRowId={(row) => row.id}
+              searchable={false}
+              persistUrl={false}
+              toolbar={scheduleLink}
+              emptyFilterLabel="No sessions on today's board."
+            />
+          )}
+        </DashboardTile>
 
-      <section className="mt-10 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-xl border border-border bg-muted/30 p-4">
+        <AdminStatStrip stats={stats} />
+
+        {data.series?.gross_sales ? <SalesSeriesChart series={data.series.gross_sales} /> : null}
+
+        <DashboardTile span="metric">
           <p className="text-sm text-muted-foreground">Today&apos;s Sales</p>
-          <p className="mt-2 font-display text-2xl">{formatPeso(data.todaysSalesPhp)}</p>
-        </article>
-        <article className="rounded-xl border border-border bg-muted/30 p-4">
+          <p className="mt-2 font-display text-2xl tabular-nums">
+            {formatPeso(data.todaysSalesPhp)}
+          </p>
+        </DashboardTile>
+        <DashboardTile span="metric">
           <p className="text-sm text-muted-foreground">Pending Refunds</p>
-          <p className="mt-2 font-display text-2xl">{formatPeso(data.pendingRefundsPhp)}</p>
-        </article>
-        <article className="rounded-xl border border-border bg-muted/30 p-4">
+          <p className="mt-2 font-display text-2xl tabular-nums">
+            {formatPeso(data.pendingRefundsPhp)}
+          </p>
+        </DashboardTile>
+        <DashboardTile span="metric">
           <p className="text-sm text-muted-foreground">Today&apos;s Occupancy</p>
-          <p className="mt-2 font-display text-2xl">{formatRatioPercent(data.todaysOccupancy)}</p>
-        </article>
-        {principal.role === "admin" ? (
-          <article className="rounded-xl border border-border bg-muted/30 p-4">
+          <p className="mt-2 font-display text-2xl tabular-nums">
+            {formatRatioPercent(data.todaysOccupancy)}
+          </p>
+        </DashboardTile>
+        {canViewCoachCost ? (
+          <DashboardTile span="metric">
             <p className="text-sm text-muted-foreground">Coach Cost Today</p>
-            <p className="mt-2 font-display text-2xl">{formatPeso(data.coachCostTodayPhp)}</p>
-          </article>
+            <p className="mt-2 font-display text-2xl tabular-nums">
+              {formatPeso(data.coachCostTodayPhp)}
+            </p>
+          </DashboardTile>
         ) : null}
-      </section>
+      </DashboardBento>
     </AdminPageShell>
   );
 }

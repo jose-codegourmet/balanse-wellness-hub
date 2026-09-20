@@ -1,88 +1,101 @@
 import { Skeleton } from "../../../components/skeleton/Skeleton";
 import { cn } from "../../../lib/utils";
-import type { BentoSkeletonProps } from "./BentoSkeleton.schema";
+import { bentoSkeletonDashboardTiles } from "./BentoSkeleton.defaults";
+import type { BentoSkeletonProps, BentoSkeletonTileSpec } from "./BentoSkeleton.schema";
 import { countKeys } from "./count-keys";
 
-export function BentoSkeleton({ label, tiles = 4, className }: BentoSkeletonProps) {
+function resolveTiles(tiles: BentoSkeletonProps["tiles"]): BentoSkeletonTileSpec[] {
+  if (Array.isArray(tiles)) return tiles;
+  if (typeof tiles === "number") {
+    return countKeys("tile", tiles).map((id) => ({
+      id,
+      span: "col-span-1 md:col-span-3 xl:col-span-3",
+      variant: "stat" as const,
+    }));
+  }
+  return bentoSkeletonDashboardTiles;
+}
+
+function TileBody({ variant }: { variant: BentoSkeletonTileSpec["variant"] }) {
+  if (variant === "table") {
+    return (
+      <>
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="mt-3 h-3 w-56" />
+        <div className="mt-6 overflow-hidden rounded-lg border border-border">
+          {countKeys("row", 4).map((rowKey) => (
+            <div
+              key={rowKey}
+              className="flex gap-3 border-b border-border/60 px-3 py-2 last:border-b-0"
+            >
+              {countKeys("cell", 5).map((cellKey) => (
+                <Skeleton key={cellKey} className="h-4 flex-1" />
+              ))}
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  }
+  if (variant === "chart") {
+    return (
+      <>
+        <Skeleton className="h-4 w-48" />
+        <Skeleton className="mt-6 h-36 w-full" />
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          {countKeys("legend", 4).map((legendKey) => (
+            <Skeleton key={legendKey} className="h-3 w-full" />
+          ))}
+        </div>
+      </>
+    );
+  }
+  if (variant === "block") {
+    return (
+      <>
+        <Skeleton className="h-3 w-32" />
+        <div className="mt-6 space-y-4">
+          {countKeys("item", 3).map((itemKey) => (
+            <div key={itemKey} className="flex items-start justify-between gap-3">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-44" />
+                <Skeleton className="h-3 w-36" />
+              </div>
+              <Skeleton className="h-5 w-8 rounded-full" />
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  }
+  return (
+    <>
+      <Skeleton className="h-4 w-28" />
+      <Skeleton className="mt-8 h-8 w-16" />
+    </>
+  );
+}
+
+export function BentoSkeleton({
+  label,
+  tiles = bentoSkeletonDashboardTiles,
+  className,
+}: BentoSkeletonProps) {
+  const resolved = resolveTiles(tiles);
   return (
     <div role="status" aria-busy="true" aria-label={label} className={cn("w-full", className)}>
       <div aria-hidden="true">
         <Skeleton className="h-9 w-40" />
-        <div className="mt-6 grid overflow-hidden rounded-xl border border-border bg-card md:grid-cols-2 xl:grid-cols-5">
-          {countKeys("stat", 5).map((statKey, index) => (
+        <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-6 md:grid-flow-row-dense xl:grid-cols-12">
+          {resolved.map((tile) => (
             <div
-              key={statKey}
-              className={cn(
-                "block p-4 md:p-5",
-                index ? "border-border/50 border-t md:border-t-0 md:border-l" : null,
-              )}
+              key={tile.id}
+              className={cn("rounded-xl border border-border bg-card p-4 md:p-5", tile.span)}
             >
-              <Skeleton className="h-4 w-28" />
-              <div className="mt-8 flex items-end justify-between">
-                <Skeleton className="h-8 w-16" />
-                <div className="flex items-end gap-1">
-                  {countKeys("bar", 7).map((barKey) => (
-                    <Skeleton key={barKey} className="h-6 w-1.5 rounded-full" />
-                  ))}
-                </div>
-              </div>
+              <TileBody variant={tile.variant} />
             </div>
           ))}
         </div>
-        <Skeleton className="mt-10 h-8 w-48" />
-        <ul className="mt-3 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
-          {countKeys("attention", 3).map((attentionKey) => (
-            <li key={attentionKey} className="flex flex-col gap-1 px-4 py-3">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-4 w-56" />
-            </li>
-          ))}
-        </ul>
-        <div className="mt-10 w-full text-foreground">
-          <div className="flex flex-col gap-1">
-            <Skeleton className="h-7 w-48" />
-            <Skeleton className="h-4 w-64" />
-          </div>
-          <hr className="my-5 h-px border-0 bg-border" />
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-            <Skeleton className="h-8 w-52 rounded-md" />
-            <Skeleton className="h-3 w-16" />
-          </div>
-          <div className="overflow-hidden rounded-xl border border-border bg-card">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
-                <thead>
-                  <tr className="bg-muted/40">
-                    {countKeys("sched-col", 5).map((columnKey) => (
-                      <th key={columnKey} className="h-9 px-2 first:pl-4 last:pr-4">
-                        <Skeleton className="h-3 w-16" />
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {countKeys("sched-row", 4).map((rowKey) => (
-                    <tr key={rowKey} className="border-b border-border/60 last:border-b-0">
-                      {countKeys("sched-cell", 5).map((cellKey) => (
-                        <td key={cellKey} className="px-2 py-2 align-middle first:pl-4 last:pr-4">
-                          <Skeleton className="h-4 w-full" />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <section className="mt-10 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {countKeys("tile", tiles).map((tileKey) => (
-            <article key={tileKey} className="rounded-xl border border-border bg-muted/30 p-4">
-              <Skeleton className="h-4 w-28" />
-              <Skeleton className="mt-2 h-8 w-24" />
-            </article>
-          ))}
-        </section>
       </div>
     </div>
   );

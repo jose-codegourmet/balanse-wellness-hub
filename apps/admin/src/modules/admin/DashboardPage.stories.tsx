@@ -1,9 +1,12 @@
 import { buildAdminDashboard } from "@balanse/domain";
-import { adminSessions, bookings } from "@balanse/mock";
+import { adminSessions, bookings, deriveGrossSalesSeries } from "@balanse/mock";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { DashboardPage } from "./DashboardPage";
 
-const seeded = buildAdminDashboard(adminSessions, bookings, "2026-09-16");
+const seeded = {
+  ...buildAdminDashboard(adminSessions, bookings, "2026-09-16"),
+  series: { gross_sales: deriveGrossSalesSeries(adminSessions, bookings, "2026-09-16") },
+};
 
 const meta = {
   title: "Admin/Screens/Dashboard",
@@ -28,4 +31,21 @@ export const SlowLoad: Story = {
   parameters: {
     mockRuntime: { latencyMs: 800 },
   },
+};
+
+export const EmptyQueues: Story = {
+  parameters: {
+    mockRuntime: { emptyAdminQueues: true },
+  },
+};
+
+export const LoadFailed: Story = {
+  parameters: {
+    mockRuntime: { failNext: true },
+  },
+};
+
+export const NonAdminPrincipal: Story = {
+  globals: { principal: "customer" },
+  args: { initial: seeded },
 };
