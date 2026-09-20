@@ -30,3 +30,11 @@ Per-coach files:
 | `headshot-1x1-w400` / `-w200` | Avatar srcset. |
 
 Recipe: `docs/assets/recipes/headshot-v1.md`. Delivery set is uploaded by `ASSET-030` (`scripts/upload-approved-assets.mjs`).
+
+## headshot-v2 (locked pose, 4K)
+
+`headshot-4x5.{jpg,webp}` is now a **single** locked-pose portrait at 3712×4608, not
+a 3×3 sheet — see `recipes/headshot-v2.md` and `headshot-v2-jobs.json`. The bundled
+FE set under `apps/*/public/assets/headshots/` is derived from it by
+`scripts/derive-headshot-v2-fe-bundle.sh`; the per-coach files listed above are
+still the v1 tile crops. Details and the parity follow-up: `../HEADSHOT-V2-FE-BE.md`.

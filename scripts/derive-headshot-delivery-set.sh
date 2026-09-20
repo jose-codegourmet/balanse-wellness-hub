@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # ASSET-013 — ImageMagick derivatives from approved 4:5 masters.
 # Masters are 3×3 contact sheets. Extract one reviewed hero tile (no re-generation).
+# v1 only: headshot-v2 masters are single portraits, so this crops nine ways into
+# one face. Use scripts/derive-headshot-v2-fe-bundle.sh for those.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)/docs/assets/headshots"
