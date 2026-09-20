@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
-  "updated": "2026-09-19",
-  "notes": "Warm quiet luxury refresh: six independent 2K Higgsfield generations, twelve marketing slots. Nano Banana Pro requested; provider reports nano_banana_2. Coach portraits preserved. Local mock delivery only; existing storage URLs remain intended handoff destinations, not updated uploads.",
+  "updated": "2026-09-20",
+  "notes": "Warm quiet luxury refresh: six independent 2K Higgsfield generations, twelve marketing slots. Nano Banana Pro requested; provider reports nano_banana_2. Coach portraits preserved. Local mock delivery only; existing storage URLs remain intended handoff destinations, not updated uploads. coaches-b group hero approved 2026-09-20 (8-coach cast).",
   "assets": [
     {
       "id": "landing-a",
@@ -558,22 +558,125 @@
       "source_prompt_key": "coaches-B",
       "identity_bound": true,
       "source_free": false,
-      "source_asset_id": null,
-      "generation_policy": "do_not_generate",
-      "do_not_generate_reason": "ASSET-015 skip: identity-bound group hero (Alec/Sofia/Kate). Do not invent faces.",
-      "model": "nano_banana_2_shots",
+      "source_asset_id": [
+        {
+          "intake_item_id": "src-coach-ephraim-01",
+          "higgsfield_media_id": "1e2d2abe-ba25-4967-9861-a96dbd45f7b9"
+        },
+        {
+          "intake_item_id": "src-coach-rex-01",
+          "higgsfield_media_id": "c8cd8c6f-0292-41e6-ac04-bb938ad74072"
+        },
+        {
+          "intake_item_id": "src-coach-rachelle-01",
+          "higgsfield_media_id": "3c6439c2-7d55-4f93-bded-480891081819"
+        },
+        {
+          "intake_item_id": "src-coach-jodi-01",
+          "higgsfield_media_id": "306d918d-947b-4878-a6e9-84a078d27bda"
+        },
+        {
+          "intake_item_id": "src-coach-wolf-01",
+          "higgsfield_media_id": "1096a1c8-4d42-4200-9ee3-009d79ceabed"
+        },
+        {
+          "intake_item_id": "src-coach-mikaela-01",
+          "higgsfield_media_id": "62be0e00-fa9f-45b8-ae6c-596b33aa9860"
+        },
+        {
+          "intake_item_id": "src-coach-maris-01",
+          "higgsfield_media_id": "8839d104-07b9-430d-8f18-ad7c3800bf79"
+        },
+        {
+          "intake_item_id": "src-coach-francis-01",
+          "higgsfield_media_id": "6e301446-b351-4271-bf4e-7bfbbce1d6b8"
+        }
+      ],
+      "generation_policy": "generate",
+      "do_not_generate_reason": null,
+      "model": "nano_banana_2",
       "model_parameters": {
-        "resolution": "1k",
-        "aspect_ratio": "16:9"
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "image_references": [
+          "f5a7c898-ea39-4b95-aa39-d1fa1c7b3436"
+        ],
+        "image_references_role": "image_references",
+        "source_kind": "identity_bound_eight_coach_cast",
+        "cast_intake_ids": {
+          "ephraim-bacaltos": "src-coach-ephraim-01",
+          "rex-francis-regis": "src-coach-rex-01",
+          "rachelle-tobiano": "src-coach-rachelle-01",
+          "jodi-tio": "src-coach-jodi-01",
+          "wolf": "src-coach-wolf-01",
+          "mikaela-danielle": "src-coach-mikaela-01",
+          "maris-cabrera": "src-coach-maris-01",
+          "francis-acido": "src-coach-francis-01"
+        },
+        "cast_media_ids": {
+          "ephraim-bacaltos": "1e2d2abe-ba25-4967-9861-a96dbd45f7b9",
+          "rex-francis-regis": "c8cd8c6f-0292-41e6-ac04-bb938ad74072",
+          "rachelle-tobiano": "3c6439c2-7d55-4f93-bded-480891081819",
+          "jodi-tio": "306d918d-947b-4878-a6e9-84a078d27bda",
+          "wolf": "1096a1c8-4d42-4200-9ee3-009d79ceabed",
+          "mikaela-danielle": "62be0e00-fa9f-45b8-ae6c-596b33aa9860",
+          "maris-cabrera": "8839d104-07b9-430d-8f18-ad7c3800bf79",
+          "francis-acido": "6e301446-b351-4271-bf4e-7bfbbce1d6b8"
+        },
+        "excluded_slugs": [
+          "alec-james-co",
+          "sofia-ocampo",
+          "kate-go"
+        ],
+        "primary_recipe_model": "nano_banana_2_shots",
+        "pipeline_notes": "nano_banana_2_shots (single ref → 3x3 sheets) → nano_banana_2@2k single hero → upscale_image ~4k. Eight catalogued coaches only; Alec/Sofia/Kate excluded.",
+        "job_ids": {
+          "shots_contact_v1": "eb0ce475-c298-48fe-9c3b-ad78b8e9cebc",
+          "shots_refine_v2": "7ff0556a-02c9-4d65-a9e1-89a8bc72c8b7",
+          "master_nano_banana_2": "df7f126e-4031-492a-8930-b3f751999063",
+          "upscale_4k": "1e7174f8-7587-4a79-a817-d69084b04be6"
+        },
+        "composite_media_id": "f5a7c898-ea39-4b95-aa39-d1fa1c7b3436",
+        "contact_sheet_media_id": "332ac995-6d17-44ed-add5-3801d0ed8041"
       },
-      "generation_date": null,
-      "approval_status": "draft",
-      "approver": null,
-      "alt_text": "Candid coaching team in studio (only if full source coverage).",
-      "post_processing": [],
-      "storage_key": null,
+      "generation_date": "2026-09-20",
+      "approval_status": "approved",
+      "approver": "Jose standing Assets auto-approve + ASSET-015 group hero #191 (8 source-backed coaches; Alec/Sofia/Kate excluded), 2026-09-20",
+      "alt_text": "Eight Balansé coaches standing together in a warm cream studio, navy and charcoal athletic wear, soft natural light.",
+      "post_processing": [
+        {
+          "op": "contact-sheet-compose",
+          "notes": "2x4 identity board from 8 catalogued sources; media 332ac995-6d17-44ed-add5-3801d0ed8041."
+        },
+        {
+          "op": "select-single-frame",
+          "notes": "Rejected nano_banana_2_shots contact grids; locked nano_banana_2 single 16:9."
+        },
+        {
+          "op": "upscale_image",
+          "notes": "bytedance 4k job 1e7174f8-7587-4a79-a817-d69084b04be6 (4096x2294)."
+        },
+        {
+          "op": "webready",
+          "notes": "Long edge 1600 jpg q78 / webp q72 + 480px -thumb pair."
+        }
+      ],
+      "storage_key": "marketing-assets/coaches/group-hero-16x9.webp",
       "coach_slug": null,
-      "public_url": null
+      "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/group-hero-16x9.webp",
+      "working_path": "docs/assets/marketing/coaches/group-hero-16x9.webp",
+      "storage_objects": [
+        {
+          "working_path": "docs/assets/marketing/coaches/group-hero-16x9.webp",
+          "storage_key": "marketing-assets/coaches/group-hero-16x9.webp",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/group-hero-16x9.webp"
+        },
+        {
+          "working_path": "docs/assets/marketing/coaches/group-hero-16x9.jpg",
+          "storage_key": "marketing-assets/coaches/group-hero-16x9.jpg",
+          "public_url": "https://xydundrayuusqizssgby.supabase.co/storage/v1/object/public/marketing-assets/coaches/group-hero-16x9.jpg"
+        }
+      ]
     },
     {
       "id": "coaches-c",
@@ -591,7 +694,9 @@
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "1:1",
-        "image_references": ["0dad9831-2091-4538-b892-f9f96e6d7352"],
+        "image_references": [
+          "0dad9831-2091-4538-b892-f9f96e6d7352"
+        ],
         "image_references_role": "mood_plate",
         "source_kind": "source_free_non_identity"
       },
@@ -630,7 +735,9 @@
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "1:1",
-        "image_references": ["d8a483d7-a892-4161-b14f-58d96b5f14da"],
+        "image_references": [
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
+        ],
         "image_references_role": "mood_plate",
         "source_kind": "source_free_non_identity"
       },
@@ -689,7 +796,9 @@
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "1:1",
-        "image_references": ["d8a483d7-a892-4161-b14f-58d96b5f14da"],
+        "image_references": [
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
+        ],
         "image_references_role": "mood_plate",
         "source_kind": "source_free_non_identity"
       },
@@ -748,7 +857,9 @@
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "1:1",
-        "image_references": ["d8a483d7-a892-4161-b14f-58d96b5f14da"],
+        "image_references": [
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
+        ],
         "image_references_role": "mood_plate",
         "source_kind": "source_free_non_identity"
       },
@@ -2362,7 +2473,9 @@
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "1:1",
-        "image_references": ["d8a483d7-a892-4161-b14f-58d96b5f14da"],
+        "image_references": [
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
+        ],
         "image_references_role": "mood_plate",
         "source_kind": "source_free_non_identity"
       },
@@ -2421,7 +2534,9 @@
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "1:1",
-        "image_references": ["d8a483d7-a892-4161-b14f-58d96b5f14da"],
+        "image_references": [
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
+        ],
         "image_references_role": "mood_plate",
         "source_kind": "source_free_non_identity"
       },
@@ -2480,7 +2595,9 @@
       "model_parameters": {
         "resolution": "1k",
         "aspect_ratio": "1:1",
-        "image_references": ["d8a483d7-a892-4161-b14f-58d96b5f14da"],
+        "image_references": [
+          "d8a483d7-a892-4161-b14f-58d96b5f14da"
+        ],
         "image_references_role": "mood_plate",
         "source_kind": "source_free_non_identity"
       },
