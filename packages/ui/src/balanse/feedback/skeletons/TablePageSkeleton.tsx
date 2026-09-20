@@ -8,6 +8,7 @@ export function TablePageSkeleton({
   rows = 4,
   columns = 5,
   className,
+  leadingCell = "bar",
 }: TablePageSkeletonProps) {
   return (
     <div
@@ -44,9 +45,13 @@ export function TablePageSkeleton({
               <tbody>
                 {countKeys("row", rows).map((rowKey) => (
                   <tr key={rowKey} className="border-b border-border/60 last:border-b-0">
-                    {countKeys("cell", columns).map((cellKey) => (
+                    {countKeys("cell", columns).map((cellKey, cellIndex) => (
                       <td key={cellKey} className="px-2 py-2 align-middle first:pl-4 last:pr-4">
-                        <Skeleton className="h-4 w-full" />
+                        {leadingCell === "avatar" && cellIndex === 0 ? (
+                          <Skeleton className="size-10 rounded-full" />
+                        ) : (
+                          <Skeleton className="h-4 w-full" />
+                        )}
                       </td>
                     ))}
                   </tr>
