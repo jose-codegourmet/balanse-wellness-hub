@@ -1,0 +1,38 @@
+{
+  "generated_at": "2026-09-20T17:40:00+08:00",
+  "slot": "coaches-b",
+  "intent_model": "nano_banana_2_shots",
+  "production_model": "nano_banana_2 (resolved nano_banana_flash) @ 2k then upscale_image 4k",
+  "reason": "nano_banana_2_shots accepts exactly one image_reference and emits 3x3 sheets; production master used nano_banana_2 @ 2k from 8-coach contact panel, then bytedance upscale to ~4k",
+  "cast": [
+    "ephraim-bacaltos",
+    "rex-francis-regis",
+    "rachelle-tobiano",
+    "jodi-tio",
+    "wolf",
+    "mikaela-danielle",
+    "maris-cabrera",
+    "francis-acido"
+  ],
+  "excluded": [
+    "alec-james-co",
+    "sofia-ocampo",
+    "kate-go"
+  ],
+  "jobs": {
+    "master_2k": "df7f126e-4031-492a-8930-b3f751999063",
+    "upscale_4k": "1e7174f8-7587-4a79-a817-d69084b04be6"
+  },
+  "cdn": {
+    "master_4k_png": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260920_094024_1e7174f8-7587-4a79-a817-d69084b04be6.png"
+  },
+  "outputs": {
+    "working": [
+      "docs/assets/marketing/coaches/group-hero-16x9.webp",
+      "docs/assets/marketing/coaches/group-hero-16x9.jpg",
+      "docs/assets/marketing/coaches/group-hero-16x9-thumb.webp",
+      "docs/assets/marketing/coaches/group-hero-16x9-thumb.jpg"
+    ],
+    "master_archive": "docs/assets/marketing/coaches/group-hero-16x9-4k.png"
+  }
+}

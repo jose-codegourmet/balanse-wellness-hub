@@ -1,0 +1,35 @@
+name: Materialize coaches-b group hero
+on:
+  workflow_dispatch:
+  push:
+    branches: [assets/coaches-b-group-hero-8cast]
+    paths:
+      - docs/assets/marketing/coaches/group-hero-jobs.json
+      - scripts/materialize-coaches-hero-group.sh
+      - .github/workflows/materialize-coaches-hero-group.yml
+permissions:
+  contents: write
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: sudo apt-get update && sudo apt-get install -y jq python3-pil
+      - name: Materialize from CDN
+        run: bash scripts/materialize-coaches-hero-group.sh
+      - name: Commit webready + 4k archive
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/assets/marketing/coaches/group-hero-16x9.webp \
+                  docs/assets/marketing/coaches/group-hero-16x9.jpg \
+                  docs/assets/marketing/coaches/group-hero-16x9-thumb.webp \
+                  docs/assets/marketing/coaches/group-hero-16x9-thumb.jpg \
+                  docs/assets/marketing/coaches/group-hero-16x9-4k.png || true
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "assets(coaches-b): materialize ASSET-015 group hero webready from CDN"
+            git push
+          fi
