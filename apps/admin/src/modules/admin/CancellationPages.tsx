@@ -62,8 +62,6 @@ function CancellationRequestCard({
   const busy =
     complete.isPending || reject.isPending || markPending.isPending || markRefunded.isPending;
   const reason = row.cancellationReason?.trim() ?? "";
-  const refundActive = row.refundStatus === "REFUND_PENDING" || row.refundStatus === "REFUNDED";
-
   async function runResolution(
     action: () => Promise<unknown>,
     success: "cancellation.completed" | "cancellation.rejected",
@@ -112,7 +110,9 @@ function CancellationRequestCard({
               <Badge appearance="soft" size="sm">
                 {paymentStatusLabel(row.paymentStatus)}
               </Badge>
-              {refundActive ? <StatusBadge status={row.refundStatus} surface="admin" /> : null}
+              {row.refundStatus === "REFUND_PENDING" || row.refundStatus === "REFUNDED" ? (
+                <StatusBadge status={row.refundStatus} surface="admin" />
+              ) : null}
             </div>
           </div>
         }
@@ -206,7 +206,8 @@ export function CancellationQueuePage({
   useEffect(() => {
     if (exiting.size === 0) return;
     const reduced =
-      typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const timeout = window.setTimeout(
       () => {
         setExiting((current) => {

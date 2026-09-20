@@ -24,7 +24,7 @@ export const LoadingNextPage: Story = {
   args: { fetchingNextPage: true },
 };
 
-export const Error: Story = {
+export const LoadError: Story = {
   args: { error: true },
 };
 
