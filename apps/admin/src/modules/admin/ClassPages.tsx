@@ -1,56 +1,33 @@
 "use client";
 
-import type { AdminCoach } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Button, FeedbackState, Input, Label, LocalizedSkeleton } from "@balanse/ui";
-import { useQuery } from "@tanstack/react-query";
+import { Button, Input, Label } from "@balanse/ui";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { adminClassesQuery } from "@/lib/query/queries";
+import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { adminClassesQuery, adminCoachesQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import { PageHeader } from "./shared";
 
 export function ClassListPage({ empty }: { empty?: boolean }) {
   const { principal } = useMockPrincipal();
-  const query = useQuery(adminClassesQuery(principal.role));
-  const rows = empty ? [] : (query.data ?? null);
-
-  if (!empty && query.isPending && !rows) {
-    return <LocalizedSkeleton lines={5} label="Loading classes" />;
-  }
-
-  if (!empty && query.isError) {
-    return (
-      <FeedbackState
-        id="calendar.load-failed"
-        className="mt-6"
-        title="Classes could not load"
-        description="The class catalog did not load. Retry the request."
-        actionLabel="Retry"
-        onAction={() => {
-          void query.refetch();
-        }}
-      />
-    );
-  }
-
-  if (!rows) return <LocalizedSkeleton lines={5} label="Loading classes" />;
+  const query = useSuspenseQuery(adminClassesQuery(principal.role));
+  const rows = empty ? [] : query.data;
 
   return (
-    <section>
-      <PageHeader title="Classes">
-        <Link
-          href="/classes/new"
-          className="inline-flex h-8 items-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground"
-        >
+    <AdminPageShell
+      title="Classes"
+      actions={
+        <Button nativeButton={false} render={<Link href="/classes/new" />}>
           Add Class
-        </Link>
-      </PageHeader>
+        </Button>
+      }
+    >
       {rows.length === 0 ? (
-        <p className="mt-6 text-sm text-muted-foreground">No classes yet.</p>
+        <p className="text-sm text-muted-foreground">No classes yet.</p>
       ) : (
-        <ul className="mt-6 space-y-2">
+        <ul className="space-y-2">
           {rows.map((row) => (
             <li
               key={row.id}
@@ -69,14 +46,17 @@ export function ClassListPage({ empty }: { empty?: boolean }) {
           ))}
         </ul>
       )}
-    </section>
+    </AdminPageShell>
   );
 }
 
 export function ClassFormPage({ classId }: { classId: string }) {
   const router = useRouter();
   const isNew = classId === "new";
-  const [coaches, setCoaches] = useState<AdminCoach[]>([]);
+  const { principal } = useMockPrincipal();
+  const classesQuery = useQuery(adminClassesQuery(principal.role));
+  const coachesQuery = useQuery(adminCoachesQuery(principal.role));
+  const coaches = coachesQuery.data ?? [];
   const [form, setForm] = useState({
     name: "",
     shortDescription: "",
@@ -87,32 +67,37 @@ export function ClassFormPage({ classId }: { classId: string }) {
   });
 
   useEffect(() => {
-    void Promise.all([getMockAdapter().getAdminClasses(), getMockAdapter().getAdminCoaches()]).then(
-      ([classes, coachRows]) => {
-        setCoaches(coachRows);
-        if (!isNew) {
-          const existing = classes.find((row) => row.id === classId);
-          if (existing) {
-            setForm({
-              name: existing.name,
-              shortDescription: existing.shortDescription,
-              defaultDurationMinutes: existing.defaultDurationMinutes
-                ? String(existing.defaultDurationMinutes)
-                : "",
-              defaultPricePhp: existing.defaultPricePhp ? String(existing.defaultPricePhp) : "",
-              active: existing.active,
-              associatedCoachIds: existing.associatedCoachIds,
-            });
-          }
-        }
-      },
-    );
-  }, [classId, isNew]);
+    const classes = classesQuery.data;
+    if (!classes || isNew) return;
+    const existing = classes.find((row) => row.id === classId);
+    if (existing) {
+      setForm({
+        name: existing.name,
+        shortDescription: existing.shortDescription,
+        defaultDurationMinutes: existing.defaultDurationMinutes
+          ? String(existing.defaultDurationMinutes)
+          : "",
+        defaultPricePhp: existing.defaultPricePhp ? String(existing.defaultPricePhp) : "",
+        active: existing.active,
+        associatedCoachIds: existing.associatedCoachIds,
+      });
+    }
+  }, [classId, classesQuery.data, isNew]);
 
   return (
-    <section className="max-w-xl">
-      <PageHeader title={isNew ? "Add Class" : "Edit Class"} />
-      <p className="mt-3 text-sm text-muted-foreground">
+    <AdminPageShell
+      className="max-w-xl"
+      title={isNew ? "Add Class" : "Edit Class"}
+      breadcrumb={[
+        { label: "Classes", href: "/classes" },
+        {
+          label: isNew
+            ? "Add Class"
+            : (classesQuery.data?.find((row) => row.id === classId)?.name ?? classId),
+        },
+      ]}
+    >
+      <p className="text-sm text-muted-foreground">
         Session values override class defaults. Do not store coach compensation as class
         information.
       </p>
@@ -203,6 +188,6 @@ export function ClassFormPage({ classId }: { classId: string }) {
         </fieldset>
         <Button type="submit">Save</Button>
       </form>
-    </section>
+    </AdminPageShell>
   );
 }

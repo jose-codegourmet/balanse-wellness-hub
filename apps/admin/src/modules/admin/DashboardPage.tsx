@@ -6,7 +6,7 @@ import {
   formatRatioPercent,
   formatSessionTime,
 } from "@balanse/domain";
-import { Badge, FeedbackState, LocalizedSkeleton } from "@balanse/ui";
+import { Badge, BentoSkeleton, FeedbackState } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { CalendarDays, CreditCard, Repeat, Ticket, UserX } from "lucide-react";
@@ -14,9 +14,9 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { AdminStatStrip } from "@/components/balanse/AdminStatStrip";
 import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
+import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { adminDashboardQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import { PageHeader } from "./shared";
 
 type ScheduleRow = AdminDashboardSnapshot["todaysSchedule"][number];
 
@@ -80,22 +80,29 @@ export function DashboardPage({
     [],
   );
 
-  if (forcedLoading || loading) {
-    return <LocalizedSkeleton lines={8} label="Loading dashboard" />;
+  if (forcedLoading) {
+    return (
+      <AdminPageShell title="Dashboard">
+        <BentoSkeleton label="Loading dashboard" tiles={4} />
+      </AdminPageShell>
+    );
   }
+
+  if (loading && !data) return null;
 
   if (query.isError || !data) {
     return (
-      <FeedbackState
-        id="calendar.load-failed"
-        className="mt-6"
-        title="Dashboard could not load"
-        description="The operations snapshot did not load. Retry the request."
-        actionLabel="Retry"
-        onAction={() => {
-          void query.refetch();
-        }}
-      />
+      <AdminPageShell title="Dashboard">
+        <FeedbackState
+          id="calendar.load-failed"
+          title="Dashboard could not load"
+          description="The operations snapshot did not load. Retry the request."
+          actionLabel="Retry"
+          onAction={() => {
+            void query.refetch();
+          }}
+        />
+      </AdminPageShell>
     );
   }
 
@@ -174,13 +181,8 @@ export function DashboardPage({
   ];
 
   return (
-    <section>
-      <PageHeader title="Dashboard" />
-      <div className="mt-6">
-        <AdminStatStrip stats={stats} />
-      </div>
-
-      <h2 className="mt-10 font-display text-2xl">Needs Attention</h2>
+    <AdminPageShell title="Dashboard" stats={<AdminStatStrip stats={stats} />}>
+      <h2 className="font-display text-2xl">Needs Attention</h2>
       <ul className="mt-3 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
         {attention.map((item) => (
           <li key={item.id}>
@@ -236,6 +238,6 @@ export function DashboardPage({
           </article>
         ) : null}
       </section>
-    </section>
+    </AdminPageShell>
   );
 }

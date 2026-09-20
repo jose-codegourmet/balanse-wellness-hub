@@ -1,59 +1,56 @@
 "use client";
 
 import {
-  type AdminClass,
-  type AdminCoach,
   type AdminReports,
   formatPeso,
   formatRatioPercent,
   formatSessionDate,
   formatSessionTime,
-  type SessionReportDrilldown,
 } from "@balanse/domain";
-import { getMockAdapter } from "@balanse/mock";
-import { Label, LocalizedSkeleton, NativeSelect } from "@balanse/ui";
+import { Label, NativeSelect } from "@balanse/ui";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
+import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { ReportsOverview } from "@/components/balanse/ReportsOverview";
-import { PageHeader } from "./shared";
+import {
+  adminClassesQuery,
+  adminCoachesQuery,
+  adminReportsQuery,
+  adminSessionReportQuery,
+} from "@/lib/query/queries";
+import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export function ReportsPage({ empty }: { empty?: boolean }) {
+  const { principal } = useMockPrincipal();
   const [from, setFrom] = useState("2026-09-01");
   const [to, setTo] = useState("2026-09-30");
   const [classId, setClassId] = useState("all");
   const [coachId, setCoachId] = useState("all");
   const [sessionStatus, setSessionStatus] = useState("all");
-  const [classes, setClasses] = useState<AdminClass[]>([]);
-  const [coaches, setCoaches] = useState<AdminCoach[]>([]);
-  const [reports, setReports] = useState<AdminReports | null>(null);
-
-  useEffect(() => {
-    void Promise.all([getMockAdapter().getAdminClasses(), getMockAdapter().getAdminCoaches()]).then(
-      ([classRows, coachRows]) => {
-        setClasses(classRows);
-        setCoaches(coachRows);
-      },
-    );
-  }, []);
-
-  useEffect(() => {
-    if (!from || !to) return;
-    void getMockAdapter()
-      .getAdminReports({
-        from,
-        to,
-        classId,
-        coachId,
-        sessionStatus: sessionStatus === "all" ? "all" : (sessionStatus as "PUBLISHED"),
-      })
-      .then((next) =>
-        setReports(
-          empty ? { ...next, sessionPerformance: [], classPerformance: [], coachCosts: [] } : next,
-        ),
-      );
-  }, [classId, coachId, empty, from, to, sessionStatus]);
+  const classesQuery = useSuspenseQuery(adminClassesQuery(principal.role));
+  const coachesQuery = useSuspenseQuery(adminCoachesQuery(principal.role));
+  const reportsQuery = useSuspenseQuery(
+    adminReportsQuery(principal.role, {
+      from,
+      to,
+      classId,
+      coachId,
+      sessionStatus: sessionStatus === "all" ? "all" : (sessionStatus as "PUBLISHED"),
+    }),
+  );
+  const classes = classesQuery.data ?? [];
+  const coaches = coachesQuery.data ?? [];
+  const reports = empty
+    ? {
+        ...reportsQuery.data,
+        sessionPerformance: [],
+        classPerformance: [],
+        coachCosts: [],
+      }
+    : reportsQuery.data;
 
   const classColumns = useMemo<ColumnDef<AdminReports["classPerformance"][number], unknown>[]>(
     () => [
@@ -127,12 +124,12 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
     [],
   );
 
-  if (!reports) return <LocalizedSkeleton lines={8} label="Loading reports" />;
   const noData = reports.sessionPerformance.length === 0;
 
   return (
-    <section>
+    <AdminPageShell title="Reports">
       <ReportsOverview
+        hideTitle
         reports={reports}
         from={from}
         to={to}
@@ -217,25 +214,25 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
           />
         </div>
       )}
-    </section>
+    </AdminPageShell>
   );
 }
 
 export function ReportDrilldownPage({ sessionId }: { sessionId: string }) {
-  const [row, setRow] = useState<SessionReportDrilldown | null>(null);
+  const { principal } = useMockPrincipal();
+  const query = useSuspenseQuery(adminSessionReportQuery(principal.role, sessionId));
+  const row = query.data;
+  if (!row) return null;
 
-  useEffect(() => {
-    void getMockAdapter().getAdminSessionReport(sessionId).then(setRow);
-  }, [sessionId]);
-
-  if (!row) return <LocalizedSkeleton lines={8} label="Loading session report" />;
+  const title = `${row.className} — ${formatSessionDate(row.startsAt)} — ${formatSessionTime(row.startsAt)}`;
 
   return (
-    <section className="max-w-xl">
-      <PageHeader
-        title={`${row.className} — ${formatSessionDate(row.startsAt)} — ${formatSessionTime(row.startsAt)}`}
-      />
-      <dl className="mt-6 grid gap-2 text-sm">
+    <AdminPageShell
+      className="max-w-xl"
+      title={title}
+      breadcrumb={[{ label: "Reports", href: "/reports" }, { label: title }]}
+    >
+      <dl className="grid gap-2 text-sm">
         <Line label="Capacity" value={row.capacity} />
         <Line label="Confirmed" value={row.confirmed} />
         <Line label="Held" value={row.held} />
@@ -257,7 +254,7 @@ export function ReportDrilldownPage({ sessionId }: { sessionId: string }) {
       <Link className="mt-6 inline-flex text-sm underline underline-offset-4" href="/reports">
         Back to reports
       </Link>
-    </section>
+    </AdminPageShell>
   );
 }
 

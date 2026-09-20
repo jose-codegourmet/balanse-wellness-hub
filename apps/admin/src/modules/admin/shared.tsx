@@ -15,15 +15,6 @@ import {
 } from "@balanse/ui";
 import { type ReactNode, useState } from "react";
 
-export function PageHeader({ title, children }: { title: string; children?: ReactNode }) {
-  return (
-    <div className="flex flex-wrap items-end justify-between gap-4">
-      <h1 className="font-display text-3xl">{title}</h1>
-      {children}
-    </div>
-  );
-}
-
 export function Field({
   id,
   label,

@@ -2,22 +2,22 @@
 
 import { ADMIN_ROLE_CAPABILITY_NOTE, type AdminStaff, staffStatusLabel } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Badge, Button, FeedbackState, LocalizedSkeleton, NativeSelect } from "@balanse/ui";
+import { Badge, Button, FeedbackState, NativeSelect } from "@balanse/ui";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
-import { ConfirmAction, PageHeader, TextField } from "./shared";
+import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { adminStaffQuery } from "@/lib/query/queries";
+import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { ConfirmAction, TextField } from "./shared";
 
 export function StaffListPage({ empty }: { empty?: boolean }) {
-  const [rows, setRows] = useState<AdminStaff[] | null>(null);
-
-  useEffect(() => {
-    void getMockAdapter()
-      .getAdminStaff()
-      .then((staff) => setRows(empty ? [] : staff));
-  }, [empty]);
+  const { principal } = useMockPrincipal();
+  const query = useSuspenseQuery(adminStaffQuery(principal.role));
+  const rows = empty ? [] : query.data;
 
   const columns = useMemo<ColumnDef<AdminStaff, unknown>[]>(
     () => [
@@ -62,19 +62,16 @@ export function StaffListPage({ empty }: { empty?: boolean }) {
     [],
   );
 
-  if (!rows) return <LocalizedSkeleton lines={5} label="Loading staff" />;
-
   return (
-    <section>
-      <PageHeader title="Staff Management">
-        <Link
-          href="/staff/new"
-          className="inline-flex h-8 items-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground"
-        >
+    <AdminPageShell
+      title="Staff Management"
+      actions={
+        <Button nativeButton={false} render={<Link href="/staff/new" />}>
           Add Staff
-        </Link>
-      </PageHeader>
-      <p className="mt-3 max-w-2xl text-sm text-muted-foreground">{ADMIN_ROLE_CAPABILITY_NOTE}</p>
+        </Button>
+      }
+    >
+      <p className="max-w-2xl text-sm text-muted-foreground">{ADMIN_ROLE_CAPABILITY_NOTE}</p>
       {rows.length === 0 ? (
         <FeedbackState id="admin.no-staff" className="mt-6" />
       ) : (
@@ -88,31 +85,39 @@ export function StaffListPage({ empty }: { empty?: boolean }) {
           />
         </div>
       )}
-    </section>
+    </AdminPageShell>
   );
 }
 
 export function StaffDetailPage({ staffId }: { staffId: string }) {
   const router = useRouter();
   const isNew = staffId === "new";
-  const [row, setRow] = useState<AdminStaff | null>(
-    isNew ? { id: "", name: "", email: "", role: "ADMIN", status: "active" } : null,
-  );
+  const { principal } = useMockPrincipal();
+  const query = useSuspenseQuery(adminStaffQuery(principal.role));
+  const loaded = isNew
+    ? { id: "", name: "", email: "", role: "ADMIN" as const, status: "active" as const }
+    : (query.data?.find((s) => s.id === staffId) ?? null);
+  const [row, setRow] = useState<AdminStaff | null>(isNew ? loaded : null);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    if (isNew) return;
-    void getMockAdapter()
-      .getAdminStaff()
-      .then((staff) => setRow(staff.find((s) => s.id === staffId) ?? null));
-  }, [isNew, staffId]);
+    if (isNew || !query.data) return;
+    const next = query.data.find((s) => s.id === staffId) ?? null;
+    setRow(next);
+  }, [isNew, query.data, staffId]);
 
-  if (!row) return <LocalizedSkeleton lines={6} label="Loading staff" />;
+  if (!row) return null;
 
   return (
-    <section className="max-w-xl">
-      <PageHeader title={isNew ? "Add Staff" : "Staff Detail"} />
-      <p className="mt-3 text-sm text-muted-foreground">
+    <AdminPageShell
+      className="max-w-xl"
+      title={isNew ? "Add Staff" : "Staff Detail"}
+      breadcrumb={[
+        { label: "Staff", href: "/staff" },
+        { label: isNew ? "Add Staff" : row.name || staffId },
+      ]}
+    >
+      <p className="text-sm text-muted-foreground">
         Invite or provision a staff account. There is no public admin registration.
       </p>
       <p className="mt-2 text-sm text-muted-foreground">{ADMIN_ROLE_CAPABILITY_NOTE}</p>
@@ -177,6 +182,6 @@ export function StaffDetailPage({ staffId }: { staffId: string }) {
         </div>
         {saved ? <p className="text-sm">Saved in this mock.</p> : null}
       </form>
-    </section>
+    </AdminPageShell>
   );
 }

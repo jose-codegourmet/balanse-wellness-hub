@@ -3,7 +3,6 @@
 import {
   ADMIN_BOOKING_TABS,
   type AdminBookingTab,
-  type AdminClass,
   auditConfirmationCopy,
   type CustomerBooking,
   customerStatusLabel,
@@ -13,13 +12,23 @@ import {
   refundStatusLabel,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Button, Input, Label, LocalizedSkeleton, NativeSelect, StatusBadge } from "@balanse/ui";
+import { Button, Input, Label, NativeSelect, StatusBadge } from "@balanse/ui";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
-import { ConfirmAction, PageHeader } from "./shared";
+import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { AdminPageTabs } from "@/components/balanse/page/AdminPageTabs";
+import {
+  adminBookingDetailQuery,
+  adminBookingsQuery,
+  adminClassesQuery,
+  adminCustomersQuery,
+} from "@/lib/query/queries";
+import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { ConfirmAction } from "./shared";
 
 function customerNameLookup(customers: { id: string; fullName: string }[]) {
   return (id: string) => customers.find((row) => row.id === id)?.fullName ?? id;
@@ -27,26 +36,15 @@ function customerNameLookup(customers: { id: string; fullName: string }[]) {
 
 export function BookingListPage() {
   const params = useSearchParams();
+  const { principal } = useMockPrincipal();
   const [tab, setTab] = useState<AdminBookingTab>(
     (params.get("tab") as AdminBookingTab) || "pending",
   );
   const [classId, setClassId] = useState("all");
   const [date, setDate] = useState("");
-  const [bookings, setBookings] = useState<CustomerBooking[] | null>(null);
-  const [classes, setClasses] = useState<AdminClass[]>([]);
-  const [customers, setCustomers] = useState<{ id: string; fullName: string }[]>([]);
-
-  useEffect(() => {
-    void Promise.all([
-      getMockAdapter().getAdminBookings(),
-      getMockAdapter().getAdminClasses(),
-      getMockAdapter().getAdminCustomers(),
-    ]).then(([rows, classRows, customerRows]) => {
-      setBookings(rows);
-      setClasses(classRows);
-      setCustomers(customerRows);
-    });
-  }, []);
+  const { data: bookings } = useSuspenseQuery(adminBookingsQuery(principal.role));
+  const { data: classes } = useSuspenseQuery(adminClassesQuery(principal.role));
+  const { data: customers } = useSuspenseQuery(adminCustomersQuery(principal.role));
 
   const names = useMemo(() => customerNameLookup(customers), [customers]);
   const filtered = useMemo(
@@ -100,72 +98,68 @@ export function BookingListPage() {
     [names],
   );
 
-  if (!bookings) return <LocalizedSkeleton lines={8} label="Loading bookings" />;
-
   return (
-    <section>
-      <PageHeader title="Bookings" />
-      <div className="mt-4 flex flex-wrap gap-2">
-        {ADMIN_BOOKING_TABS.map((item) => (
-          <Button
-            key={item.id}
-            type="button"
-            variant={tab === item.id ? "default" : "outline"}
-            onClick={() => {
-              setTab(item.id);
-            }}
-          >
-            {item.label}
-          </Button>
-        ))}
-      </div>
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
-        <div className="grid gap-1.5">
-          <Label htmlFor="booking-class">Class</Label>
-          <NativeSelect
-            id="booking-class"
-            value={classId}
-            onChange={(event) => {
-              setClassId(event.target.value);
-            }}
-          >
-            <option value="all">All classes</option>
-            {classes.map((row) => (
-              <option key={row.id} value={row.id}>
-                {row.name}
-              </option>
-            ))}
-          </NativeSelect>
-        </div>
-        <div className="grid gap-1.5">
-          <Label htmlFor="booking-date">Date</Label>
-          <Input
-            id="booking-date"
-            type="date"
-            value={date}
-            onChange={(event) => {
-              setDate(event.target.value);
-            }}
-          />
-        </div>
-      </div>
-      <div className="mt-6">
-        <AdminDataTable
-          tableId="bookings"
-          data={filtered}
-          columns={columns}
-          getRowId={(row) => row.id}
-          searchPlaceholder="Search customer"
-          emptyFilterLabel="No bookings match these filters."
-        />
-      </div>
-    </section>
+    <AdminPageShell
+      title="Bookings"
+      tabs={
+        <AdminPageTabs
+          tabs={ADMIN_BOOKING_TABS}
+          value={tab}
+          onValueChange={(id) => {
+            setTab(id as AdminBookingTab);
+          }}
+        >
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-1.5">
+              <Label htmlFor="booking-class">Class</Label>
+              <NativeSelect
+                id="booking-class"
+                value={classId}
+                onChange={(event) => {
+                  setClassId(event.target.value);
+                }}
+              >
+                <option value="all">All classes</option>
+                {classes.map((row) => (
+                  <option key={row.id} value={row.id}>
+                    {row.name}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="booking-date">Date</Label>
+              <Input
+                id="booking-date"
+                type="date"
+                value={date}
+                onChange={(event) => {
+                  setDate(event.target.value);
+                }}
+              />
+            </div>
+          </div>
+          <div className="mt-6">
+            <AdminDataTable
+              tableId="bookings"
+              data={filtered}
+              columns={columns}
+              getRowId={(row) => row.id}
+              searchPlaceholder="Search customer"
+              emptyFilterLabel="No bookings match these filters."
+            />
+          </div>
+        </AdminPageTabs>
+      }
+    />
   );
 }
 
 export function BookingDetailPage({ bookingId }: { bookingId: string }) {
-  const [booking, setBooking] = useState<CustomerBooking | null>(null);
-  const [customers, setCustomers] = useState<{ id: string; fullName: string }[]>([]);
+  const { principal } = useMockPrincipal();
+  const bookingQuery = useSuspenseQuery(adminBookingDetailQuery(principal.role, bookingId));
+  const { data: customers } = useSuspenseQuery(adminCustomersQuery(principal.role));
+  const booking = bookingQuery.data;
   const [reason, setReason] = useState("");
   const [proofOpen, setProofOpen] = useState(false);
   const [policies, setPolicies] = useState<string | null>(null);
@@ -175,28 +169,21 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
     "2026-09-16T02:50:00.000Z",
   );
 
-  useEffect(() => {
-    void Promise.all([
-      getMockAdapter().getBooking(bookingId),
-      getMockAdapter().getAdminCustomers(),
-    ]).then(([row, customerRows]) => {
-      setBooking(row);
-      setCustomers(customerRows);
-    });
-  }, [bookingId]);
-
-  if (!booking) return <LocalizedSkeleton lines={8} label="Loading booking" />;
+  if (!booking) return null;
   const name =
     customers.find((row) => row.id === booking.customerId)?.fullName ?? booking.customerId;
 
   async function refresh() {
-    setBooking(await getMockAdapter().getBooking(bookingId));
+    await bookingQuery.refetch();
   }
 
   return (
-    <section className="max-w-2xl">
-      <PageHeader title="Booking detail" />
-      <p className="mt-3 font-medium">{name}</p>
+    <AdminPageShell
+      className="max-w-2xl"
+      title="Booking detail"
+      breadcrumb={[{ label: "Bookings", href: "/bookings" }, { label: name }]}
+    >
+      <p className="font-medium">{name}</p>
       <p className="text-sm text-muted-foreground">
         {booking.session.className} ·{" "}
         {formatSessionRange(booking.session.startsAt, booking.session.endsAt)}
@@ -217,7 +204,6 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
           <button type="button" className="mb-2 underline" onClick={() => setProofOpen(false)}>
             Close
           </button>
-          {/* biome-ignore lint/performance/noImgElement: zoomable mock proof from fixture path */}
           <img
             src={booking.proofPreviewUrl}
             alt="Payment proof"
@@ -289,6 +275,6 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
           onConfirm={() => getMockAdapter().markNoShow(booking.id).then(refresh)}
         />
       </div>
-    </section>
+    </AdminPageShell>
   );
 }

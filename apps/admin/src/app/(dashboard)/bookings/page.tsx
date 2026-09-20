@@ -1,5 +1,9 @@
+import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import type { Metadata } from "next";
-import { Suspense } from "react";
+import { cookies } from "next/headers";
+import { AdminQuerySuspense } from "@/components/balanse/page/AdminQuerySuspense";
+import { prefetchAdmin } from "@/lib/query/prefetch";
+import { adminBookingsQuery, adminClassesQuery, adminCustomersQuery } from "@/lib/query/queries";
 import { BookingListPage } from "@/modules/admin/BookingPages";
 
 export const metadata: Metadata = {
@@ -7,10 +11,16 @@ export const metadata: Metadata = {
   description: "Booking management.",
 };
 
-export default function Page() {
-  return (
-    <Suspense>
+export default async function Page() {
+  const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
+  return prefetchAdmin(
+    [
+      adminBookingsQuery(principal.role),
+      adminClassesQuery(principal.role),
+      adminCustomersQuery(principal.role),
+    ],
+    <AdminQuerySuspense>
       <BookingListPage />
-    </Suspense>
+    </AdminQuerySuspense>,
   );
 }

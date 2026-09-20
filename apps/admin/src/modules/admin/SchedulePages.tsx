@@ -4,7 +4,6 @@ import {
   type AdminClass,
   type AdminCoach,
   type AdminSession,
-  type CustomerBooking,
   coachRateTypeLabel,
   computeSessionInventory,
   formatSessionDate,
@@ -15,13 +14,22 @@ import {
   validateSessionCapacity,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Button, FeedbackState, Input, Label, LocalizedSkeleton, NativeSelect } from "@balanse/ui";
+import { Button, DetailPageSkeleton, FeedbackState, Input, Label, NativeSelect } from "@balanse/ui";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { FullscreenCalendar } from "@/components/jabkit/fullscreen-calendar";
 import type { FullscreenCalendarDay } from "@/components/jabkit/fullscreen-calendar/FullscreenCalendar.types";
-import { ConfirmAction, PageHeader } from "./shared";
+import {
+  adminBookingsQuery,
+  adminClassesQuery,
+  adminCoachesQuery,
+  adminSessionsQuery,
+} from "@/lib/query/queries";
+import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { ConfirmAction } from "./shared";
 
 const MOCK_TODAY = new Date(2026, 8, 16);
 
@@ -39,21 +47,14 @@ function localDateFromYmd(ymd: string) {
 
 export function ScheduleListPage({ empty }: { empty?: boolean }) {
   const router = useRouter();
-  const [sessions, setSessions] = useState<AdminSession[] | null>(null);
-  const [bookings, setBookings] = useState<CustomerBooking[]>([]);
+  const { principal } = useMockPrincipal();
+  const sessionsQuery = useSuspenseQuery(adminSessionsQuery(principal.role));
+  const bookingsQuery = useQuery(adminBookingsQuery(principal.role));
+  const sessions = empty ? [] : sessionsQuery.data;
+  const bookings = bookingsQuery.data ?? [];
   const [cursor, setCursor] = useState(() => startOfManilaMonth("2026-09-16"));
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState("2026-09-16");
-
-  useEffect(() => {
-    void Promise.all([
-      getMockAdapter().getAdminSessions(),
-      getMockAdapter().getAdminBookings(),
-    ]).then(([rows, bookingRows]) => {
-      setSessions(empty ? [] : rows);
-      setBookings(bookingRows);
-    });
-  }, [empty]);
 
   const calendarData = useMemo<FullscreenCalendarDay[]>(() => {
     const byDay = new Map<string, FullscreenCalendarDay["events"]>();
@@ -85,12 +86,9 @@ export function ScheduleListPage({ empty }: { empty?: boolean }) {
     daySessions[0] ??
     null;
 
-  if (!sessions) return <LocalizedSkeleton lines={8} label="Loading schedule" />;
-
   return (
-    <section>
-      <PageHeader title="Schedule" />
-      {sessions.length === 0 ? <FeedbackState id="admin.no-sessions" className="mt-6" /> : null}
+    <AdminPageShell title="Schedule">
+      {sessions.length === 0 ? <FeedbackState id="admin.no-sessions" /> : null}
       <div className="mt-4 overflow-hidden rounded-xl border border-border">
         <FullscreenCalendar
           className="min-h-0"
@@ -109,7 +107,11 @@ export function ScheduleListPage({ empty }: { empty?: boolean }) {
           onAddEvent={() => router.push("/schedule/new")}
         />
       </div>
-      {selected ? (
+      {bookingsQuery.isPending && !bookingsQuery.data && selected ? (
+        <div className="mt-8">
+          <DetailPageSkeleton label="Loading schedule" />
+        </div>
+      ) : selected ? (
         <SelectedSessionPanel
           session={selected}
           inventory={computeSessionInventory(
@@ -118,7 +120,7 @@ export function ScheduleListPage({ empty }: { empty?: boolean }) {
           )}
         />
       ) : null}
-    </section>
+    </AdminPageShell>
   );
 }
 
@@ -162,6 +164,10 @@ function SelectedSessionPanel({
 export function SessionFormPage({ sessionId }: { sessionId: string }) {
   const router = useRouter();
   const isNew = sessionId === "new";
+  const { principal } = useMockPrincipal();
+  const classesQuery = useQuery(adminClassesQuery(principal.role));
+  const coachesQuery = useQuery(adminCoachesQuery(principal.role));
+  const sessionsQuery = useQuery(adminSessionsQuery(principal.role));
   const [classes, setClasses] = useState<AdminClass[]>([]);
   const [coaches, setCoaches] = useState<AdminCoach[]>([]);
   const [form, setForm] = useState({
@@ -181,49 +187,53 @@ export function SessionFormPage({ sessionId }: { sessionId: string }) {
   const [consumed, setConsumed] = useState(0);
 
   useEffect(() => {
-    void Promise.all([
-      getMockAdapter().getAdminClasses(),
-      getMockAdapter().getAdminCoaches(),
-      getMockAdapter().getAdminSessions(),
-    ]).then(([classRows, coachRows, sessionRows]) => {
-      setClasses(classRows.filter((row) => row.active));
-      setCoaches(coachRows.filter((row) => row.active));
-      if (!isNew) {
-        const existing = sessionRows.find((row) => row.id === sessionId);
-        if (existing) {
-          setForm({
-            classId: existing.classId,
-            date: manilaYmd(existing.startsAt),
-            start: formatSessionTime(existing.startsAt).includes("PM") ? "15:00" : "08:00",
-            end: "09:30",
-            coachId: existing.coachId,
-            pricePhp: String(existing.pricePhp),
-            capacity: String(existing.capacity),
-            bookable: existing.bookable,
-            status: existing.status,
-            coachRatePhp: String(existing.coachRatePhp),
-            coachRateType: existing.coachRateType,
-          });
-          void getMockAdapter()
-            .getAdminSessionRoster(existing.id)
-            .then((roster) => setConsumed(roster.confirmedCount + roster.heldCount));
-        }
-      } else if (classRows[0] && coachRows[0]) {
-        setForm((current) => ({
-          ...current,
-          classId: classRows.find((row) => row.active)?.id ?? "",
-          coachId: coachRows[0].id,
-          coachRatePhp: String(coachRows[0].defaultRatePhp),
-          coachRateType: coachRows[0].rateType,
-        }));
+    const classRows = classesQuery.data;
+    const coachRows = coachesQuery.data;
+    const sessionRows = sessionsQuery.data;
+    if (!classRows || !coachRows || !sessionRows) return;
+    setClasses(classRows.filter((row) => row.active));
+    setCoaches(coachRows.filter((row) => row.active));
+    if (!isNew) {
+      const existing = sessionRows.find((row) => row.id === sessionId);
+      if (existing) {
+        setForm({
+          classId: existing.classId,
+          date: manilaYmd(existing.startsAt),
+          start: formatSessionTime(existing.startsAt).includes("PM") ? "15:00" : "08:00",
+          end: "09:30",
+          coachId: existing.coachId,
+          pricePhp: String(existing.pricePhp),
+          capacity: String(existing.capacity),
+          bookable: existing.bookable,
+          status: existing.status,
+          coachRatePhp: String(existing.coachRatePhp),
+          coachRateType: existing.coachRateType,
+        });
+        void getMockAdapter()
+          .getAdminSessionRoster(existing.id)
+          .then((roster) => setConsumed(roster.confirmedCount + roster.heldCount));
       }
-    });
-  }, [isNew, sessionId]);
+    } else if (classRows[0] && coachRows[0]) {
+      setForm((current) => ({
+        ...current,
+        classId: classRows.find((row) => row.active)?.id ?? "",
+        coachId: coachRows[0].id,
+        coachRatePhp: String(coachRows[0].defaultRatePhp),
+        coachRateType: coachRows[0].rateType,
+      }));
+    }
+  }, [classesQuery.data, coachesQuery.data, isNew, sessionId, sessionsQuery.data]);
 
   return (
-    <section className="max-w-xl">
-      <PageHeader title={isNew ? "Create Session" : "Edit Session"} />
-      <p className="mt-3 text-sm text-muted-foreground">{SESSION_RATE_SNAPSHOT_NOTE}</p>
+    <AdminPageShell
+      className="max-w-xl"
+      title={isNew ? "Create Session" : "Edit Session"}
+      breadcrumb={[
+        { label: "Schedule", href: "/schedule" },
+        { label: isNew ? "Create Session" : sessionId },
+      ]}
+    >
+      <p className="text-sm text-muted-foreground">{SESSION_RATE_SNAPSHOT_NOTE}</p>
       <form
         className="mt-6 grid gap-4"
         onSubmit={(event) => {
@@ -372,6 +382,6 @@ export function SessionFormPage({ sessionId }: { sessionId: string }) {
         ) : null}
         <Button type="submit">Save session</Button>
       </form>
-    </section>
+    </AdminPageShell>
   );
 }

@@ -2,21 +2,32 @@
 
 import {
   auditConfirmationCopy,
-  type CustomerBooking,
   canApproveReschedule,
   computeSessionInventory,
   formatSessionRange,
   RESCHEDULE_HISTORY_NOTE,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { FeedbackState, LocalizedSkeleton } from "@balanse/ui";
-import { useEffect, useState } from "react";
-import { ConfirmAction, PageHeader } from "./shared";
+import { FeedbackState } from "@balanse/ui";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import {
+  adminBookingsQuery,
+  adminCustomersQuery,
+  adminReschedulesQuery,
+} from "@/lib/query/queries";
+import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { ConfirmAction } from "./shared";
 
 export function RescheduleQueuePage({ empty }: { empty?: boolean }) {
-  const [rows, setRows] = useState<CustomerBooking[] | null>(null);
-  const [customers, setCustomers] = useState<{ id: string; fullName: string }[]>([]);
-  const [bookings, setBookings] = useState<CustomerBooking[]>([]);
+  const { principal } = useMockPrincipal();
+  const rowsQuery = useSuspenseQuery(adminReschedulesQuery(principal.role));
+  const customersQuery = useSuspenseQuery(adminCustomersQuery(principal.role));
+  const bookingsQuery = useSuspenseQuery(adminBookingsQuery(principal.role));
+  const rows = empty ? [] : rowsQuery.data;
+  const customers = customersQuery.data;
+  const bookings = bookingsQuery.data;
   const [message, setMessage] = useState<string | null>(null);
   const stamp = auditConfirmationCopy(
     "This reschedule action",
@@ -24,24 +35,9 @@ export function RescheduleQueuePage({ empty }: { empty?: boolean }) {
     "2026-09-16T02:50:00.000Z",
   );
 
-  useEffect(() => {
-    void Promise.all([
-      getMockAdapter().getAdminRescheduleRequests(),
-      getMockAdapter().getAdminCustomers(),
-      getMockAdapter().getAdminBookings(),
-    ]).then(([list, people, all]) => {
-      setRows(empty ? [] : list);
-      setCustomers(people);
-      setBookings(all);
-    });
-  }, [empty]);
-
-  if (!rows) return <LocalizedSkeleton lines={6} label="Loading reschedule requests" />;
-
   return (
-    <section>
-      <PageHeader title="Reschedule Requests" />
-      <p className="mt-3 max-w-2xl text-sm text-muted-foreground">{RESCHEDULE_HISTORY_NOTE}</p>
+    <AdminPageShell title="Reschedule Requests">
+      <p className="max-w-2xl text-sm text-muted-foreground">{RESCHEDULE_HISTORY_NOTE}</p>
       {message ? (
         <p role="alert" className="mt-3 text-sm text-destructive">
           {message}
@@ -106,7 +102,7 @@ export function RescheduleQueuePage({ empty }: { empty?: boolean }) {
                       }
                       try {
                         await getMockAdapter().approveAdminReschedule(row.id);
-                        setRows(await getMockAdapter().getAdminRescheduleRequests());
+                        await rowsQuery.refetch();
                         setMessage(null);
                       } catch (error) {
                         setMessage(error instanceof Error ? error.message : "Could not approve.");
@@ -121,9 +117,9 @@ export function RescheduleQueuePage({ empty }: { empty?: boolean }) {
                     onConfirm={() =>
                       getMockAdapter()
                         .rejectAdminReschedule(row.id, "Request rejected")
-                        .then(async () =>
-                          setRows(await getMockAdapter().getAdminRescheduleRequests()),
-                        )
+                        .then(async () => {
+                          await rowsQuery.refetch();
+                        })
                     }
                   />
                 </div>
@@ -132,6 +128,6 @@ export function RescheduleQueuePage({ empty }: { empty?: boolean }) {
           })}
         </ul>
       )}
-    </section>
+    </AdminPageShell>
   );
 }
