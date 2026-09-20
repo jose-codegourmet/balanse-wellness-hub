@@ -4,33 +4,37 @@
 
 ## Purpose
 
-Compact pill label for status, category, or count.
+Compact semantic chip with a real surface, fixed height, and optional dot or icon. Colour is never the only signal — pair a variant with appearance, a dot, or an icon.
 
 ## When to use
 
-- Status chips (New, Error, Beta)
-- Category labels
-- Inline counts
+- Status chips that are not domain statuses (use **StatusBadge** for booking/refund vocabulary)
+- Category or environment labels
+- Inline counts via **CountBadge**
 
 ## When NOT to use
 
 - Primary clickable actions → use **Button** instead
+- Booking or refund status vocabulary → use **StatusBadge** instead
+- Numeric nav pills → use **CountBadge** instead
 - Multi-line notices → use **Alert** instead
 
 ## Examples
 
-### Status variants
+### Semantic variants
 
-`variant` covers `default | secondary | destructive | outline | ghost | link`.
+`variant` is `neutral | info | success | warning | danger | accent`. Each has `solid` and `soft` appearances, and `sm | md` sizes.
 
 ```tsx
 import { Badge } from "@balanse/ui";
 
 <div className="flex items-center gap-2">
-  <Badge>New</Badge>
-  <Badge variant="secondary">Secondary</Badge>
-  <Badge variant="destructive">Error</Badge>
-  <Badge variant="outline">Outline</Badge>
+  <Badge variant="success" appearance="soft">
+    Confirmed
+  </Badge>
+  <Badge variant="warning" appearance="solid" size="sm" dot>
+    Reserved — Payment Needed
+  </Badge>
 </div>;
 ```
 
@@ -39,7 +43,7 @@ import { Badge } from "@balanse/ui";
 Use `render` to polymorph the default `span` into an anchor or button.
 
 ```tsx
-<Badge variant="outline" render={<a href="/changelog" />}>
+<Badge variant="info" appearance="soft" render={<a href="/changelog" />}>
   Changelog
 </Badge>
 ```
@@ -47,3 +51,5 @@ Use `render` to polymorph the default `span` into an anchor or button.
 ## Gotchas
 
 - Default element is `span` — use `render` to polymorph into `a` / `button` when interactive
+- `success`, `warning`, and `info` have no dedicated tokens in `@balanse/config`; they are `color-mix` derivations from navy, tan, gold, and primary. `danger` uses `--destructive`. `accent` uses `--accent`.
+- Admin table cells still wrap the vendored Jabkit badge via `AdminStatusBadge` in `AdminDataTable.tsx` — retire that in #207 (`FE-ADM-017`).

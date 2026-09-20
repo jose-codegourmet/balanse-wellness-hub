@@ -18,6 +18,7 @@ export * from "./components/aspect-ratio/AspectRatio";
 export * from "./components/attachment/Attachment";
 export * from "./components/avatar/Avatar";
 export * from "./components/badge/Badge";
+export * from "./components/badge/CountBadge";
 export * from "./components/breadcrumb/Breadcrumb";
 export * from "./components/bubble/Bubble";
 export * from "./components/button/Button";
