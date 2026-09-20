@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback } from "@/components/jabkit/avatar/Avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -98,9 +99,10 @@ export function AdminSidebarFooter({
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => onSettings?.()}>Settings</DropdownMenuItem>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => onSettings?.()}>Settings</DropdownMenuItem>
+          </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setConfirmOpen(true)} variant="destructive">
             Log out

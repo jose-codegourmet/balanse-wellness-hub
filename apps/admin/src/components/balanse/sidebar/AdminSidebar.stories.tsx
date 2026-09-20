@@ -1,8 +1,18 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { useEffect } from "react";
+import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 import { AdminSidebar } from "./AdminSidebar";
 import { adminSidebarDefaultValues } from "./AdminSidebar.defaults";
 import { sidebarSnapshotEmpty, sidebarSnapshotOverflow } from "./AdminSidebarNav.defaults";
+
+function SeedAdmin({ children }: { children: React.ReactNode }) {
+  const { principal, setPrincipal } = useMockPrincipal();
+  useEffect(() => {
+    if (principal.role !== "admin") setPrincipal({ role: "admin" });
+  }, [principal.role, setPrincipal]);
+  return children;
+}
 
 const meta: Meta<typeof AdminSidebar> = {
   title: "Admin/Components/AdminSidebar",
@@ -11,9 +21,11 @@ const meta: Meta<typeof AdminSidebar> = {
   args: { ...adminSidebarDefaultValues },
   decorators: [
     (Story) => (
-      <div className="flex min-h-[32rem] bg-background">
-        <Story />
-      </div>
+      <SeedAdmin>
+        <div className="flex min-h-[32rem] bg-background">
+          <Story />
+        </div>
+      </SeedAdmin>
     ),
   ],
 };

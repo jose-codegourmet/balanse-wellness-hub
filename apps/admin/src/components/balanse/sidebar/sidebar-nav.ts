@@ -13,8 +13,6 @@ import {
   UserX,
 } from "lucide-react";
 
-export const ADMIN_SIDEBAR_COOKIE = "balanse-admin-sidebar";
-
 export const NAV_ICONS: Record<AdminNavItem["id"], typeof LayoutDashboard> = {
   dashboard: LayoutDashboard,
   schedule: CalendarDays,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ADMIN_SIDEBAR_COOKIE } from "./sidebar-nav";
+import { ADMIN_SIDEBAR_COOKIE } from "./sidebar-cookie";
 
 function writeSidebarCookie(collapsed: boolean) {
   // biome-ignore lint/suspicious/noDocumentCookie: persist collapse choice across reloads
@@ -10,8 +10,12 @@ function writeSidebarCookie(collapsed: boolean) {
 
 function isTypingTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false;
-  if (target.isContentEditable) return true;
-  return Boolean(target.closest("input, textarea, select, [contenteditable='true']"));
+  if (target.isContentEditable || target.getAttribute("contenteditable") === "true") return true;
+  const tag = target.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
+  return Boolean(
+    target.closest("input, textarea, select, [contenteditable='true'], [role='textbox']"),
+  );
 }
 
 export function useSidebarCollapsed({
@@ -41,6 +45,7 @@ export function useSidebarCollapsed({
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
+      if (event.repeat) return;
       if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== "b") return;
       if (isTypingTarget(event.target)) return;
       event.preventDefault();

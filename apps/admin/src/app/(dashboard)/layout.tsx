@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { ADMIN_SIDEBAR_COOKIE } from "@/components/balanse/sidebar/sidebar-nav";
+import { ADMIN_SIDEBAR_COOKIE } from "@/components/balanse/sidebar/sidebar-cookie";
 import { AdminGuard } from "@/modules/layout/AdminGuard";
 import { AdminShell } from "@/modules/layout/AdminShell";
 
