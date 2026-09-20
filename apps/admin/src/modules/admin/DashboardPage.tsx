@@ -8,10 +8,16 @@ import {
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { FeedbackState, LocalizedSkeleton } from "@balanse/ui";
+import type { ColumnDef } from "@tanstack/react-table";
+import { CalendarDays, CreditCard, Repeat, Ticket, UserX } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { AdminDataTable, AdminStatusBadge } from "@/components/balanse/AdminDataTable";
+import { AdminStatStrip } from "@/components/balanse/AdminStatStrip";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import { DataTable, PageHeader } from "./shared";
+import { PageHeader } from "./shared";
+
+type ScheduleRow = AdminDashboardSnapshot["todaysSchedule"][number];
 
 export function DashboardPage({
   initial,
@@ -32,84 +38,152 @@ export function DashboardPage({
       .finally(() => setLoading(false));
   }, [initial]);
 
+  const columns = useMemo<ColumnDef<ScheduleRow, unknown>[]>(
+    () => [
+      {
+        accessorFn: (row) => formatSessionTime(row.startsAt),
+        id: "time",
+        header: "Time",
+        cell: ({ row }) => formatSessionTime(row.original.startsAt),
+      },
+      { accessorKey: "className", header: "Class" },
+      { accessorKey: "coachName", header: "Coach" },
+      { accessorKey: "capacity", header: "Capacity" },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => {
+          const status = row.original.status;
+          const label =
+            status === "PUBLISHED" ? "Published" : status === "DRAFT" ? "Draft" : "Cancelled";
+          const tone =
+            status === "PUBLISHED" ? "primary" : status === "DRAFT" ? "secondary" : "destructive";
+          return <AdminStatusBadge label={label} tone={tone} />;
+        },
+      },
+    ],
+    [],
+  );
+
   if (forcedLoading || loading || !data) {
     return <LocalizedSkeleton lines={8} label="Loading dashboard" />;
   }
 
-  const tiles = [
-    { label: "Today's Classes", value: data.todaysClasses, href: "/schedule" },
-    { label: "Pending Payments", value: data.pendingPayments, href: "/payments" },
-    { label: "Cancellations", value: data.cancellations, href: "/cancellations" },
-    { label: "Reschedules", value: data.reschedules, href: "/reschedules" },
-    { label: "Waitlisted", value: data.waitlisted, href: "/bookings?tab=waitlisted" },
+  const stats = [
+    {
+      id: "classes",
+      label: "Today's Classes",
+      value: String(data.todaysClasses),
+      href: "/schedule",
+      icon: CalendarDays,
+      trend: "stable" as const,
+    },
+    {
+      id: "payments",
+      label: "Pending Payments",
+      value: String(data.pendingPayments),
+      href: "/payments",
+      icon: CreditCard,
+      trend: data.pendingPayments > 0 ? ("up" as const) : ("stable" as const),
+      delta: data.pendingPayments > 0 ? "Needs review" : "Clear",
+    },
+    {
+      id: "cancellations",
+      label: "Cancellations",
+      value: String(data.cancellations),
+      href: "/cancellations",
+      icon: UserX,
+      trend: data.cancellations > 0 ? ("up" as const) : ("stable" as const),
+    },
+    {
+      id: "reschedules",
+      label: "Reschedules",
+      value: String(data.reschedules),
+      href: "/reschedules",
+      icon: Repeat,
+      trend: data.reschedules > 0 ? ("up" as const) : ("stable" as const),
+    },
+    {
+      id: "waitlisted",
+      label: "Waitlisted",
+      value: String(data.waitlisted),
+      href: "/bookings?tab=waitlisted",
+      icon: Ticket,
+      trend: "stable" as const,
+    },
+  ];
+
+  const attention = [
+    {
+      id: "payments",
+      href: "/payments",
+      title: "Payment proof → Review",
+      detail:
+        data.attention.payments === 0
+          ? "No pending payments"
+          : `${data.attention.payments} payment${data.attention.payments === 1 ? "" : "s"} waiting`,
+    },
+    {
+      id: "cancellations",
+      href: "/cancellations",
+      title: "Cancellation → Review",
+      detail:
+        data.attention.cancellations === 0
+          ? "No cancellation requests"
+          : `${data.attention.cancellations} request${data.attention.cancellations === 1 ? "" : "s"} waiting`,
+    },
+    {
+      id: "reschedules",
+      href: "/reschedules",
+      title: "Reschedule → Review",
+      detail:
+        data.attention.reschedules === 0
+          ? "No reschedule requests"
+          : `${data.attention.reschedules} request${data.attention.reschedules === 1 ? "" : "s"} waiting`,
+    },
   ];
 
   return (
     <section>
       <PageHeader title="Dashboard" />
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        {tiles.map((tile) => (
-          <Link
-            key={tile.label}
-            href={tile.href}
-            className="rounded-xl border border-border bg-card p-4"
-          >
-            <p className="text-sm text-muted-foreground">{tile.label}</p>
-            <p className="mt-2 font-display text-3xl">{tile.value}</p>
-          </Link>
-        ))}
+      <div className="mt-6">
+        <AdminStatStrip stats={stats} />
       </div>
 
       <h2 className="mt-10 font-display text-2xl">Needs Attention</h2>
-      <ul className="mt-3 space-y-2">
-        <li>
-          <Link className="underline underline-offset-4" href="/payments">
-            Payment proof → Review
-          </Link>
-          {data.attention.payments === 0 ? (
-            <span className="ml-2 text-sm text-muted-foreground">No pending payments</span>
-          ) : null}
-        </li>
-        <li>
-          <Link className="underline underline-offset-4" href="/cancellations">
-            Cancellation → Review
-          </Link>
-          {data.attention.cancellations === 0 ? (
-            <span className="ml-2 text-sm text-muted-foreground">No cancellation requests</span>
-          ) : null}
-        </li>
-        <li>
-          <Link className="underline underline-offset-4" href="/reschedules">
-            Reschedule → Review
-          </Link>
-          {data.attention.reschedules === 0 ? (
-            <span className="ml-2 text-sm text-muted-foreground">No reschedule requests</span>
-          ) : null}
-        </li>
+      <ul className="mt-3 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+        {attention.map((item) => (
+          <li key={item.id}>
+            <Link
+              href={item.href}
+              className="flex flex-col gap-1 px-4 py-3 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <span className="text-sm font-medium">{item.title}</span>
+              <span className="text-sm text-muted-foreground">{item.detail}</span>
+            </Link>
+          </li>
+        ))}
       </ul>
 
-      <h2 className="mt-10 font-display text-2xl">Today&apos;s Schedule</h2>
-      {data.todaysSchedule.length === 0 ? (
-        <FeedbackState id="admin.no-sessions" className="mt-3" />
-      ) : (
-        <DataTable columns={["Time", "Class", "Coach", "Capacity", "Status"]}>
-          {data.todaysSchedule.map((session) => (
-            <tr key={session.id} className="border-t border-border">
-              <td className="px-3 py-2">{formatSessionTime(session.startsAt)}</td>
-              <td className="px-3 py-2">{session.className}</td>
-              <td className="px-3 py-2">{session.coachName}</td>
-              <td className="px-3 py-2">{session.capacity}</td>
-              <td className="px-3 py-2">
-                {session.status === "PUBLISHED"
-                  ? "Published"
-                  : session.status === "DRAFT"
-                    ? "Draft"
-                    : "Cancelled"}
-              </td>
-            </tr>
-          ))}
-        </DataTable>
-      )}
+      <div className="mt-10">
+        {data.todaysSchedule.length === 0 ? (
+          <>
+            <h2 className="font-display text-2xl">Today&apos;s Schedule</h2>
+            <FeedbackState id="admin.no-sessions" className="mt-3" />
+          </>
+        ) : (
+          <AdminDataTable
+            title="Today's Schedule"
+            description="Published and draft sessions for today."
+            data={data.todaysSchedule}
+            columns={columns}
+            getRowId={(row) => row.id}
+            searchable
+            searchPlaceholder="Search class or coach"
+            emptyLabel="No sessions on today's board."
+          />
+        )}
+      </div>
 
       <section className="mt-10 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <article className="rounded-xl border border-border bg-muted/30 p-4">

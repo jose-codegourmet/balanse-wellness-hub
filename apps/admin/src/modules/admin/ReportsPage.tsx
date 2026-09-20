@@ -11,10 +11,13 @@ import {
   type SessionReportDrilldown,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Input, Label, LocalizedSkeleton, NativeSelect } from "@balanse/ui";
+import { Label, LocalizedSkeleton, NativeSelect } from "@balanse/ui";
+import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { DataTable, PageHeader } from "./shared";
+import { useEffect, useMemo, useState } from "react";
+import { AdminDataTable } from "@/components/balanse/AdminDataTable";
+import { ReportsOverview } from "@/components/balanse/ReportsOverview";
+import { PageHeader } from "./shared";
 
 export function ReportsPage({ empty }: { empty?: boolean }) {
   const [from, setFrom] = useState("2026-09-01");
@@ -52,30 +55,88 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
       );
   }, [classId, coachId, empty, from, to, sessionStatus]);
 
+  const classColumns = useMemo<ColumnDef<AdminReports["classPerformance"][number], unknown>[]>(
+    () => [
+      { accessorKey: "className", header: "Class" },
+      { accessorKey: "sessions", header: "Sessions" },
+      {
+        accessorKey: "revenuePhp",
+        header: "Revenue",
+        cell: ({ row }) => formatPeso(row.original.revenuePhp),
+      },
+      {
+        accessorKey: "occupancy",
+        header: "Occupancy",
+        cell: ({ row }) => formatRatioPercent(row.original.occupancy),
+      },
+      { accessorKey: "noShows", header: "No-shows" },
+    ],
+    [],
+  );
+  const coachColumns = useMemo<ColumnDef<AdminReports["coachCosts"][number], unknown>[]>(
+    () => [
+      { accessorKey: "coachName", header: "Coach" },
+      { accessorKey: "sessions", header: "Sessions" },
+      {
+        accessorKey: "coachCostPhp",
+        header: "Coach Cost",
+        cell: ({ row }) => formatPeso(row.original.coachCostPhp),
+      },
+      {
+        accessorKey: "relatedRevenuePhp",
+        header: "Related Revenue",
+        cell: ({ row }) => formatPeso(row.original.relatedRevenuePhp),
+      },
+    ],
+    [],
+  );
+  const sessionColumns = useMemo<ColumnDef<AdminReports["sessionPerformance"][number], unknown>[]>(
+    () => [
+      {
+        id: "when",
+        header: "Date/Time",
+        accessorFn: (row) => `${row.startsAt}`,
+        cell: ({ row }) => (
+          <Link
+            className="underline underline-offset-4"
+            href={`/reports/${row.original.sessionId}`}
+          >
+            {formatSessionDate(row.original.startsAt)} {formatSessionTime(row.original.startsAt)}
+          </Link>
+        ),
+      },
+      { accessorKey: "className", header: "Class" },
+      { accessorKey: "capacity", header: "Capacity" },
+      { accessorKey: "confirmed", header: "Confirmed" },
+      {
+        accessorKey: "revenuePhp",
+        header: "Revenue",
+        cell: ({ row }) => formatPeso(row.original.revenuePhp),
+      },
+      {
+        accessorKey: "coachCostPhp",
+        header: "Cost",
+        cell: ({ row }) => formatPeso(row.original.coachCostPhp),
+      },
+    ],
+    [],
+  );
+
   if (!reports) return <LocalizedSkeleton lines={8} label="Loading reports" />;
   const noData = reports.sessionPerformance.length === 0;
 
   return (
     <section>
-      <PageHeader title="Reports" />
-      <form className="mt-4 grid gap-3 md:grid-cols-4">
-        <div className="grid gap-1.5">
-          <Label htmlFor="report-from">Date Range</Label>
-          <Input
-            id="report-from"
-            type="date"
-            required
-            value={from}
-            onChange={(event) => setFrom(event.target.value)}
-          />
-          <Input
-            id="report-to"
-            type="date"
-            required
-            value={to}
-            onChange={(event) => setTo(event.target.value)}
-          />
-        </div>
+      <ReportsOverview
+        reports={reports}
+        from={from}
+        to={to}
+        onRangeChange={(next) => {
+          setFrom(next.from);
+          setTo(next.to);
+        }}
+      />
+      <form className="mt-8 grid gap-3 md:grid-cols-3">
         <div className="grid gap-1.5">
           <Label htmlFor="report-class">Class</Label>
           <NativeSelect
@@ -124,69 +185,31 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
       {noData ? (
         <p className="mt-8 text-sm text-muted-foreground">No data for the selected range.</p>
       ) : (
-        <>
-          <h2 className="mt-10 font-display text-2xl">Sales Overview</h2>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <Card label="Gross Sales" value={formatPeso(reports.overview.grossSalesPhp)} />
-            <Card label="Refunds" value={formatPeso(reports.overview.refundsPhp)} />
-            <Card label="Net Sales" value={formatPeso(reports.overview.netSalesPhp)} />
-            <Card label="Paid Bookings" value={String(reports.overview.paidBookings)} />
-          </div>
-
-          <h2 className="mt-10 font-display text-2xl">Class Performance</h2>
-          <DataTable columns={["Class", "Sessions", "Revenue", "Occupancy", "No-shows"]}>
-            {reports.classPerformance.map((row) => (
-              <tr key={row.classId} className="border-t border-border">
-                <td className="px-3 py-2">{row.className}</td>
-                <td className="px-3 py-2">{row.sessions}</td>
-                <td className="px-3 py-2">{formatPeso(row.revenuePhp)}</td>
-                <td className="px-3 py-2">{formatRatioPercent(row.occupancy)}</td>
-                <td className="px-3 py-2">{row.noShows}</td>
-              </tr>
-            ))}
-          </DataTable>
-
-          <h2 className="mt-10 font-display text-2xl">Coach Costs</h2>
-          <DataTable columns={["Coach", "Sessions", "Coach Cost", "Related Revenue"]}>
-            {reports.coachCosts.map((row) => (
-              <tr key={row.coachId} className="border-t border-border">
-                <td className="px-3 py-2">{row.coachName}</td>
-                <td className="px-3 py-2">{row.sessions}</td>
-                <td className="px-3 py-2">{formatPeso(row.coachCostPhp)}</td>
-                <td className="px-3 py-2">{formatPeso(row.relatedRevenuePhp)}</td>
-              </tr>
-            ))}
-          </DataTable>
-
-          <h2 className="mt-10 font-display text-2xl">Session Performance</h2>
-          <DataTable columns={["Date/Time", "Class", "Capacity", "Confirmed", "Revenue", "Cost"]}>
-            {reports.sessionPerformance.map((row) => (
-              <tr key={row.sessionId} className="border-t border-border">
-                <td className="px-3 py-2">
-                  <Link className="underline underline-offset-4" href={`/reports/${row.sessionId}`}>
-                    {formatSessionDate(row.startsAt)} {formatSessionTime(row.startsAt)}
-                  </Link>
-                </td>
-                <td className="px-3 py-2">{row.className}</td>
-                <td className="px-3 py-2">{row.capacity}</td>
-                <td className="px-3 py-2">{row.confirmed}</td>
-                <td className="px-3 py-2">{formatPeso(row.revenuePhp)}</td>
-                <td className="px-3 py-2">{formatPeso(row.coachCostPhp)}</td>
-              </tr>
-            ))}
-          </DataTable>
-        </>
+        <div className="mt-10 grid gap-10">
+          <AdminDataTable
+            title="Class Performance"
+            data={reports.classPerformance}
+            columns={classColumns}
+            getRowId={(row) => row.classId}
+            searchPlaceholder="Search classes"
+          />
+          <AdminDataTable
+            title="Coach Costs"
+            data={reports.coachCosts}
+            columns={coachColumns}
+            getRowId={(row) => row.coachId}
+            searchPlaceholder="Search coaches"
+          />
+          <AdminDataTable
+            title="Session Performance"
+            data={reports.sessionPerformance}
+            columns={sessionColumns}
+            getRowId={(row) => row.sessionId}
+            searchPlaceholder="Search sessions"
+          />
+        </div>
       )}
     </section>
-  );
-}
-
-function Card({ label, value }: { label: string; value: string }) {
-  return (
-    <article className="rounded-xl border border-border p-4">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="mt-2 font-display text-2xl">{value}</p>
-    </article>
   );
 }
 

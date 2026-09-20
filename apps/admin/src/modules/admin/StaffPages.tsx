@@ -3,10 +3,12 @@
 import { ADMIN_ROLE_CAPABILITY_NOTE, type AdminStaff, staffStatusLabel } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { Button, FeedbackState, LocalizedSkeleton, NativeSelect } from "@balanse/ui";
+import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { ConfirmAction, DataTable, PageHeader, TextField } from "./shared";
+import { useEffect, useMemo, useState } from "react";
+import { AdminDataTable, AdminStatusBadge } from "@/components/balanse/AdminDataTable";
+import { ConfirmAction, PageHeader, TextField } from "./shared";
 
 export function StaffListPage({ empty }: { empty?: boolean }) {
   const [rows, setRows] = useState<AdminStaff[] | null>(null);
@@ -16,6 +18,38 @@ export function StaffListPage({ empty }: { empty?: boolean }) {
       .getAdminStaff()
       .then((staff) => setRows(empty ? [] : staff));
   }, [empty]);
+
+  const columns = useMemo<ColumnDef<AdminStaff, unknown>[]>(
+    () => [
+      { accessorKey: "name", header: "Name" },
+      {
+        id: "role",
+        header: "Role",
+        accessorFn: () => "Admin",
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => (
+          <AdminStatusBadge
+            label={staffStatusLabel(row.original.status)}
+            tone={row.original.status === "disabled" ? "destructive" : "primary"}
+          />
+        ),
+      },
+      {
+        id: "action",
+        header: "Action",
+        enableSorting: false,
+        cell: ({ row }) => (
+          <Link className="underline underline-offset-4" href={`/staff/${row.original.id}`}>
+            View/Edit
+          </Link>
+        ),
+      },
+    ],
+    [],
+  );
 
   if (!rows) return <LocalizedSkeleton lines={5} label="Loading staff" />;
 
@@ -33,20 +67,14 @@ export function StaffListPage({ empty }: { empty?: boolean }) {
       {rows.length === 0 ? (
         <FeedbackState id="admin.no-staff" className="mt-6" />
       ) : (
-        <DataTable columns={["Name", "Role", "Status", "Action"]}>
-          {rows.map((row) => (
-            <tr key={row.id} className="border-t border-border">
-              <td className="px-3 py-2">{row.name}</td>
-              <td className="px-3 py-2">Admin</td>
-              <td className="px-3 py-2">{staffStatusLabel(row.status)}</td>
-              <td className="px-3 py-2">
-                <Link className="underline underline-offset-4" href={`/staff/${row.id}`}>
-                  View/Edit
-                </Link>
-              </td>
-            </tr>
-          ))}
-        </DataTable>
+        <div className="mt-4">
+          <AdminDataTable
+            data={rows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            searchPlaceholder="Search staff"
+          />
+        </div>
       )}
     </section>
   );

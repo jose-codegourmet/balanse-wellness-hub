@@ -1,0 +1,16 @@
+{
+  "date": "2026-09-20",
+  "provider": "Higgsfield MCP",
+  "requested_model": "nano_banana_pro",
+  "reported_model": "nano_banana_2",
+  "note": "Requested and completed-job model names differ. Equivalence is not assumed. Illustrative wellness environment, not a documentary image of the actual studio.",
+  "job_id": "9c825301-92e7-4695-824c-89521c53a0d5",
+  "resolution": "2k",
+  "prompt": "Create one premium editorial photographic background for a full-bleed wellness class booking website named Balanse. Wide 16:9 photograph, 2K. A refined tropical movement studio in Cebu-inspired architecture, warm ivory limewash, warm oak flooring, large timber-framed windows opening to a lush tropical courtyard, sheer linen moving slightly in soft morning light, gentle shadows. Make the purpose recognizably movement: two beautiful muted clay and olive yoga mats with cork blocks laid out naturally in the LOWER foreground, a folded linen towel, subtle wooden wall bars on the far right. Quiet luxury, authentic natural materials, cinematic editorial architectural photography, natural realism, rich warm midtones, not a washed-out empty beige room. Composition for website overlay: keep LEFT upper and central 45% calm with broad soft shadow and architectural texture (white headline will overlay); visual interest, greenery and sunlight strongest in middle and far-right edge; the RIGHT central 40% will be covered by a cream booking card. Eye-level wide lens, convincing floor perspective and depth, harmonious geometry. No people, no lettering, no logos, no watermarks, no collage, no UI, no artificial blur, no giant potted palm. This is a mood-setting concept image, not a claimed actual venue.",
+  "width": 2752,
+  "height": 1536,
+  "aspect_ratio": "16:9",
+  "master": "docs/assets/marketing/masters/booking-hero-background-2k.png",
+  "delivery": "apps/web/public/assets/marketing/landing/booking-hero-background-2k.webp",
+  "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HUnNAdWWTmuwthDd01vkvfa0Ut/hf_20260920_090745_9c825301-92e7-4695-824c-89521c53a0d5.png"
+}

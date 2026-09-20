@@ -26,7 +26,12 @@
     "lineWidth": 100
   },
   "linter": {
-    "enabled": true
+    "enabled": true,
+    "rules": {
+      "suspicious": {
+        "noArrayIndexKey": "off"
+      }
+    }
   },
   "javascript": {
     "formatter": {

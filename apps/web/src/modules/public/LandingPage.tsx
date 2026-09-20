@@ -3,9 +3,9 @@ import { ABOUT_CLASS_FAMILIES, CONTACT_DETAILS } from "@balanse/domain";
 import { MarketingImage } from "@balanse/ui";
 import { ArrowDown, ArrowUpRight, MapPin } from "lucide-react";
 import Link from "next/link";
+import { BalanseBookingHero } from "@/components/balanse/marketing/BalanseBookingHero";
 import { BalanseCtaSection } from "@/components/balanse/marketing/BalanseCtaSection";
 import { Button } from "@/components/jabkit/button";
-import { ScheduleCalendarSection } from "@/modules/schedule/ScheduleCalendarSection";
 import { CoachPreviewCard } from "./CoachPreviewCard";
 
 const STEPS = [
@@ -32,53 +32,16 @@ export function LandingPage({
 }) {
   return (
     <div className="marketing-home">
+      <BalanseBookingHero
+        key={`${coachId}-${classId}`}
+        sessions={sessions}
+        classes={classes}
+        coaches={coaches}
+        loadError={loadError}
+        coachId={coachId}
+        classId={classId}
+      />
       <div className="marketing-container">
-        <section data-section="hero-copy" className="home-intro">
-          <div>
-            <p className="marketing-eyebrow">Movement. Wellness. Community.</p>
-            <h1 className="mt-3 font-display text-4xl font-normal leading-[1.1] tracking-[-0.04em] md:text-6xl">
-              Find your balance.
-            </h1>
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground md:text-base">
-              Choose a class. Make a little space for yourself.
-            </p>
-          </div>
-          <MarketingImage
-            assetId="landing-a"
-            decorative
-            loading="eager"
-            className="home-intro-image"
-          />
-        </section>
-
-        <section
-          id="schedule"
-          data-section="calendar-hero"
-          aria-labelledby="schedule-title"
-          className="booking-hero scroll-mt-24"
-        >
-          <div className="booking-hero-heading flex flex-wrap items-center justify-between gap-2">
-            <h2 id="schedule-title" className="font-display text-2xl font-normal tracking-tight">
-              Book a class
-            </h2>
-            <span className="text-xs text-muted-foreground">Cebu City · Philippine time</span>
-          </div>
-          <div className="booking-calendar">
-            <ScheduleCalendarSection
-              audience="guest"
-              initialSessions={sessions}
-              initialClasses={classes}
-              initialCoaches={coaches}
-              initialLoadError={loadError}
-              initialCoachFilter={coachId}
-              initialClassFilter={classId}
-            />
-          </div>
-          <p className="booking-hero-note text-xs leading-relaxed text-muted-foreground">
-            Explore the schedule freely. Sign in when you find your class.
-          </p>
-        </section>
-
         <section data-section="how-it-works" className="marketing-section">
           <div className="max-w-xl">
             <h2 className="marketing-title">A little time. All for you.</h2>

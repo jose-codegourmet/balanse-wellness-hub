@@ -4,7 +4,6 @@ import {
   type AdminClass,
   type AdminCoach,
   type AdminSession,
-  addManilaDays,
   type CustomerBooking,
   coachRateTypeLabel,
   computeSessionInventory,
@@ -20,13 +19,31 @@ import { Button, FeedbackState, Input, Label, LocalizedSkeleton, NativeSelect } 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { FullscreenCalendar } from "@/components/jabkit/fullscreen-calendar";
+import type { FullscreenCalendarDay } from "@/components/jabkit/fullscreen-calendar/FullscreenCalendar.types";
 import { ConfirmAction, PageHeader } from "./shared";
 
+const MOCK_TODAY = new Date(2026, 8, 16);
+
+function ymdFromLocalDate(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function localDateFromYmd(ymd: string) {
+  const [year, month, day] = ymd.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
 export function ScheduleListPage({ empty }: { empty?: boolean }) {
+  const router = useRouter();
   const [sessions, setSessions] = useState<AdminSession[] | null>(null);
   const [bookings, setBookings] = useState<CustomerBooking[]>([]);
   const [cursor, setCursor] = useState(() => startOfManilaMonth("2026-09-16"));
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedDay, setSelectedDay] = useState("2026-09-16");
 
   useEffect(() => {
     void Promise.all([
@@ -38,86 +55,80 @@ export function ScheduleListPage({ empty }: { empty?: boolean }) {
     });
   }, [empty]);
 
-  const monthLabel = useMemo(() => {
-    const [year, month] = cursor.split("-").map(Number);
-    return new Intl.DateTimeFormat("en-PH", {
-      month: "long",
-      year: "numeric",
-      timeZone: "Asia/Manila",
-    }).format(new Date(Date.UTC(year, month - 1, 1, 4)));
-  }, [cursor]);
+  const calendarData = useMemo<FullscreenCalendarDay[]>(() => {
+    const byDay = new Map<string, FullscreenCalendarDay["events"]>();
+    for (const session of sessions ?? []) {
+      const ymd = manilaYmd(session.startsAt);
+      const events = byDay.get(ymd) ?? [];
+      events.push({
+        id: session.id,
+        name: session.className,
+        time: formatSessionTime(session.startsAt),
+      });
+      byDay.set(ymd, events);
+    }
+    return [...byDay.entries()].map(([ymd, events]) => ({
+      day: localDateFromYmd(ymd),
+      events,
+    }));
+  }, [sessions]);
 
   const visible = (sessions ?? []).filter((session) =>
     manilaYmd(session.startsAt).startsWith(cursor.slice(0, 7)),
   );
-  const selected = visible.find((session) => session.id === selectedId) ?? visible[0] ?? null;
+  const daySessions = (sessions ?? []).filter(
+    (session) => manilaYmd(session.startsAt) === selectedDay,
+  );
+  const selected =
+    daySessions.find((session) => session.id === selectedId) ??
+    visible.find((session) => session.id === selectedId) ??
+    daySessions[0] ??
+    null;
 
   if (!sessions) return <LocalizedSkeleton lines={8} label="Loading schedule" />;
 
   return (
     <section>
-      <PageHeader title="Schedule">
-        <Link
-          href="/schedule/new"
-          className="inline-flex h-8 items-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground"
-        >
-          Create Session
-        </Link>
-      </PageHeader>
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <Button type="button" variant="outline" onClick={() => setCursor("2026-09-01")}>
-          Today
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setCursor(startOfManilaMonth(addManilaDays(cursor, -28)))}
-        >
-          &lt;
-        </Button>
-        <p className="min-w-40 text-center font-medium">{monthLabel}</p>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setCursor(startOfManilaMonth(addManilaDays(cursor, 32)))}
-        >
-          &gt;
-        </Button>
+      <PageHeader title="Schedule" />
+      {sessions.length === 0 ? <FeedbackState id="admin.no-sessions" className="mt-6" /> : null}
+      <div className="mt-4 overflow-hidden rounded-xl border border-border">
+        <FullscreenCalendar
+          className="min-h-0"
+          data={calendarData}
+          today={MOCK_TODAY}
+          defaultMonth={localDateFromYmd(cursor)}
+          defaultSelectedDay={localDateFromYmd(selectedDay)}
+          addEventLabel="Create Session"
+          onMonthChange={(month) => setCursor(startOfManilaMonth(ymdFromLocalDate(month)))}
+          onSelectDay={(day) => {
+            const ymd = ymdFromLocalDate(day);
+            setSelectedDay(ymd);
+            const match = (sessions ?? []).find((session) => manilaYmd(session.startsAt) === ymd);
+            setSelectedId(match?.id ?? null);
+          }}
+          onAddEvent={() => router.push("/schedule/new")}
+        />
       </div>
-      {visible.length === 0 ? (
-        <FeedbackState id="admin.no-sessions" className="mt-6" />
-      ) : (
-        <ul className="mt-6 space-y-2">
-          {visible.map((session) => (
-            <li key={session.id}>
-              <button
-                type="button"
-                className="w-full rounded-xl border border-border bg-card p-4 text-left"
-                onClick={() => setSelectedId(session.id)}
-              >
-                <p className="font-medium">
-                  {session.className} · {session.coachName}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {(() => {
-                    const inv = computeSessionInventory(
-                      session,
-                      bookings.filter((booking) => booking.sessionId === session.id),
-                    );
-                    return `Capacity ${session.capacity} · ${inv.confirmed} confirmed / ${inv.held} held / ${inv.waitlisted} waitlisted`;
-                  })()}
-                </p>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {selected ? <SelectedSessionPanel session={selected} /> : null}
+      {selected ? (
+        <SelectedSessionPanel
+          session={selected}
+          inventory={computeSessionInventory(
+            selected,
+            bookings.filter((booking) => booking.sessionId === selected.id),
+          )}
+        />
+      ) : null}
     </section>
   );
 }
 
-function SelectedSessionPanel({ session }: { session: AdminSession }) {
+function SelectedSessionPanel({
+  session,
+  inventory,
+}: {
+  session: AdminSession;
+  inventory: ReturnType<typeof computeSessionInventory>;
+}) {
   return (
     <aside className="mt-8 rounded-xl border border-border bg-card p-4">
       <h2 className="font-display text-2xl">Selected Session</h2>
@@ -126,7 +137,8 @@ function SelectedSessionPanel({ session }: { session: AdminSession }) {
         {formatSessionTime(session.startsAt)}
       </p>
       <p className="text-sm text-muted-foreground">
-        {session.coachName} · Capacity {session.capacity}
+        {session.coachName} · Capacity {session.capacity} · {inventory.confirmed} confirmed /{" "}
+        {inventory.held} held / {inventory.waitlisted} waitlisted
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
         <Link className="underline underline-offset-4" href={`/sessions/${session.id}/roster`}>

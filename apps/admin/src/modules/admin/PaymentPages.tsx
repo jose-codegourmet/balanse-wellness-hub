@@ -11,8 +11,10 @@ import {
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { Button, FeedbackState, Input, Label, LocalizedSkeleton, StatusBadge } from "@balanse/ui";
-import { useEffect, useState } from "react";
-import { ConfirmAction, DataTable, PageHeader } from "./shared";
+import type { ColumnDef } from "@tanstack/react-table";
+import { useEffect, useMemo, useState } from "react";
+import { AdminDataTable } from "@/components/balanse/AdminDataTable";
+import { ConfirmAction, PageHeader } from "./shared";
 
 const TABS: { id: AdminPaymentTab; label: string }[] = [
   { id: "gcash", label: "GCash Pending" },
@@ -38,6 +40,38 @@ export function PaymentReviewPage({ empty }: { empty?: boolean }) {
       setCustomers(people);
     });
   }, [empty]);
+
+  const columns = useMemo<ColumnDef<CustomerBooking, unknown>[]>(
+    () => [
+      {
+        id: "customer",
+        header: "Customer",
+        accessorFn: (row) =>
+          customers.find((person) => person.id === row.customerId)?.fullName ?? row.customerId,
+      },
+      {
+        id: "session",
+        header: "Session",
+        accessorFn: (row) => row.session.className,
+      },
+      {
+        id: "amount",
+        header: "Amount",
+        accessorFn: (row) => row.session.pricePhp,
+        cell: ({ row }) => formatPeso(row.original.session.pricePhp),
+      },
+      {
+        id: "hold",
+        header: "Hold Expiry",
+        accessorFn: (row) => row.holdExpiresAt ?? "",
+        cell: ({ row }) =>
+          row.original.holdExpiresAt
+            ? formatHoldDeadline(row.original.holdExpiresAt, row.original.session.startsAt)
+            : "—",
+      },
+    ],
+    [customers],
+  );
 
   if (!bookings) return <LocalizedSkeleton lines={7} label="Loading payments" />;
   const queue = filterPaymentQueue(bookings, tab);
@@ -65,29 +99,16 @@ export function PaymentReviewPage({ empty }: { empty?: boolean }) {
       {queue.length === 0 ? (
         <FeedbackState id="admin.no-pending-payments" className="mt-6" />
       ) : (
-        <DataTable columns={["Customer", "Session", "Amount", "Hold Expiry"]}>
-          {queue.map((booking) => (
-            <tr key={booking.id} className="border-t border-border">
-              <td className="px-3 py-2">
-                <button
-                  type="button"
-                  className="underline"
-                  onClick={() => setSelectedId(booking.id)}
-                >
-                  {customers.find((row) => row.id === booking.customerId)?.fullName ??
-                    booking.customerId}
-                </button>
-              </td>
-              <td className="px-3 py-2">{booking.session.className}</td>
-              <td className="px-3 py-2">{formatPeso(booking.session.pricePhp)}</td>
-              <td className="px-3 py-2">
-                {booking.holdExpiresAt
-                  ? formatHoldDeadline(booking.holdExpiresAt, booking.session.startsAt)
-                  : "—"}
-              </td>
-            </tr>
-          ))}
-        </DataTable>
+        <div className="mt-6">
+          <AdminDataTable
+            data={queue}
+            columns={columns}
+            getRowId={(row) => row.id}
+            searchPlaceholder="Search payments"
+            emptyLabel="No payments in this queue."
+            onRowClick={(row) => setSelectedId(row.id)}
+          />
+        </div>
       )}
 
       {selected ? (

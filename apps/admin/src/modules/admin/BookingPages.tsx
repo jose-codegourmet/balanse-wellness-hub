@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ADMIN_BOOKING_PAGE_SIZE,
   ADMIN_BOOKING_TABS,
   type AdminBookingTab,
   type AdminClass,
@@ -9,16 +8,17 @@ import {
   type CustomerBooking,
   filterAdminBookings,
   formatSessionRange,
-  paginateRows,
   paymentStatusLabel,
   refundStatusLabel,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { Button, Input, Label, LocalizedSkeleton, NativeSelect, StatusBadge } from "@balanse/ui";
+import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { ConfirmAction, DataTable, PageHeader } from "./shared";
+import { AdminDataTable } from "@/components/balanse/AdminDataTable";
+import { ConfirmAction, PageHeader } from "./shared";
 
 function customerNameLookup(customers: { id: string; fullName: string }[]) {
   return (id: string) => customers.find((row) => row.id === id)?.fullName ?? id;
@@ -29,10 +29,8 @@ export function BookingListPage() {
   const [tab, setTab] = useState<AdminBookingTab>(
     (params.get("tab") as AdminBookingTab) || "pending",
   );
-  const [query, setQuery] = useState("");
   const [classId, setClassId] = useState("all");
   const [date, setDate] = useState("");
-  const [page, setPage] = useState(1);
   const [bookings, setBookings] = useState<CustomerBooking[] | null>(null);
   const [classes, setClasses] = useState<AdminClass[]>([]);
   const [customers, setCustomers] = useState<{ id: string; fullName: string }[]>([]);
@@ -51,11 +49,49 @@ export function BookingListPage() {
 
   const names = useMemo(() => customerNameLookup(customers), [customers]);
   const filtered = useMemo(
-    () => (bookings ? filterAdminBookings(bookings, { tab, query, classId, date }, names) : []),
-    [bookings, classId, date, names, query, tab],
+    () => (bookings ? filterAdminBookings(bookings, { tab, query: "", classId, date }, names) : []),
+    [bookings, classId, date, names, tab],
   );
-  const pageRows = paginateRows(filtered, page);
-  const pages = Math.max(1, Math.ceil(filtered.length / ADMIN_BOOKING_PAGE_SIZE));
+  const columns = useMemo<ColumnDef<CustomerBooking, unknown>[]>(
+    () => [
+      {
+        id: "customer",
+        header: "Customer",
+        accessorFn: (row) => names(row.customerId),
+      },
+      {
+        id: "class",
+        header: "Class",
+        accessorFn: (row) => row.session.className,
+      },
+      {
+        id: "time",
+        header: "Time",
+        accessorFn: (row) => formatSessionRange(row.session.startsAt, row.session.endsAt),
+      },
+      {
+        id: "payment",
+        header: "Payment",
+        accessorFn: (row) => paymentStatusLabel(row.paymentStatus),
+      },
+      {
+        id: "status",
+        header: "Status",
+        cell: ({ row }) => <StatusBadge status={row.original.status} surface="admin" />,
+      },
+      {
+        id: "review",
+        header: "Review",
+        enableSorting: false,
+        cell: ({ row }) => (
+          <Link className="underline underline-offset-4" href={`/bookings/${row.original.id}`}>
+            Review
+          </Link>
+        ),
+      },
+    ],
+    [names],
+  );
 
   if (!bookings) return <LocalizedSkeleton lines={8} label="Loading bookings" />;
 
@@ -70,25 +106,13 @@ export function BookingListPage() {
             variant={tab === item.id ? "default" : "outline"}
             onClick={() => {
               setTab(item.id);
-              setPage(1);
             }}
           >
             {item.label}
           </Button>
         ))}
       </div>
-      <div className="mt-4 grid gap-3 md:grid-cols-3">
-        <div className="grid gap-1.5">
-          <Label htmlFor="booking-search">Search Customer</Label>
-          <Input
-            id="booking-search"
-            value={query}
-            onChange={(event) => {
-              setQuery(event.target.value);
-              setPage(1);
-            }}
-          />
-        </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
         <div className="grid gap-1.5">
           <Label htmlFor="booking-class">Class</Label>
           <NativeSelect
@@ -96,7 +120,6 @@ export function BookingListPage() {
             value={classId}
             onChange={(event) => {
               setClassId(event.target.value);
-              setPage(1);
             }}
           >
             <option value="all">All classes</option>
@@ -115,51 +138,18 @@ export function BookingListPage() {
             value={date}
             onChange={(event) => {
               setDate(event.target.value);
-              setPage(1);
             }}
           />
         </div>
       </div>
-      <DataTable columns={["Customer", "Class", "Time", "Payment", "Status", "Review"]}>
-        {pageRows.map((booking) => (
-          <tr key={booking.id} className="border-t border-border">
-            <td className="px-3 py-2">{names(booking.customerId)}</td>
-            <td className="px-3 py-2">{booking.session.className}</td>
-            <td className="px-3 py-2">
-              {formatSessionRange(booking.session.startsAt, booking.session.endsAt)}
-            </td>
-            <td className="px-3 py-2">{paymentStatusLabel(booking.paymentStatus)}</td>
-            <td className="px-3 py-2">
-              <StatusBadge status={booking.status} surface="admin" />
-            </td>
-            <td className="px-3 py-2">
-              <Link className="underline underline-offset-4" href={`/bookings/${booking.id}`}>
-                Review
-              </Link>
-            </td>
-          </tr>
-        ))}
-      </DataTable>
-      <div className="mt-4 flex items-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          disabled={page <= 1}
-          onClick={() => setPage(page - 1)}
-        >
-          Previous
-        </Button>
-        <p className="text-sm">
-          Page {page} of {pages}
-        </p>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={page >= pages}
-          onClick={() => setPage(page + 1)}
-        >
-          Next
-        </Button>
+      <div className="mt-6">
+        <AdminDataTable
+          data={filtered}
+          columns={columns}
+          getRowId={(row) => row.id}
+          searchPlaceholder="Search customer"
+          emptyLabel="No bookings match these filters."
+        />
       </div>
     </section>
   );

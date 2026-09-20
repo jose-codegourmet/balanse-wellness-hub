@@ -5,6 +5,7 @@ import { getMockAdapter, getMockRuntime, MOCK_NOW_ISO } from "@balanse/mock";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BalanseBookingCalendar } from "@/components/balanse/calendar/BalanseBookingCalendar";
+import { BalanseQuickBooking } from "@/components/balanse/calendar/BalanseQuickBooking";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export function ScheduleCalendarSection({
@@ -15,6 +16,7 @@ export function ScheduleCalendarSection({
   initialLoadError = false,
   initialClassFilter = "all",
   initialCoachFilter = "all",
+  presentation = "calendar",
 }: {
   audience: "guest" | "customer";
   initialSessions: PublicSession[];
@@ -23,6 +25,7 @@ export function ScheduleCalendarSection({
   initialLoadError?: boolean;
   initialClassFilter?: string;
   initialCoachFilter?: string;
+  presentation?: "quick" | "calendar";
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -85,7 +88,7 @@ export function ScheduleCalendarSection({
 
   // The portal reuses the marketing calendar's responsive layout, with customer
   // sessions scoped to the authenticated customer's booking records.
-  const Calendar = BalanseBookingCalendar;
+  const Calendar = presentation === "quick" ? BalanseQuickBooking : BalanseBookingCalendar;
 
   return (
     <Calendar
@@ -111,7 +114,7 @@ export function ScheduleCalendarSection({
         const bookingPath = waitlist
           ? `/portal/book/${session.id}?intent=waitlist`
           : `/portal/book/${session.id}`;
-        if (audience === "guest" || principal.role === "guest") {
+        if (principal.role === "guest") {
           router.push(`/login?returnTo=${encodeURIComponent(bookingPath)}`);
           return;
         }

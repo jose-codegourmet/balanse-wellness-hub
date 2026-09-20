@@ -1,20 +1,11 @@
 "use client";
 
-import { AdminNav, type NavLinkComponent } from "@balanse/ui";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-
-const NextLink: NavLinkComponent = ({ href, className, children, onClick }) => (
-  <Link href={href} className={className} onClick={onClick}>
-    {children}
-  </Link>
-);
+import { AdminSidebar } from "@/components/balanse/AdminSidebar";
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
-      <AdminNav pathname={pathname} link={NextLink} />
+    <div className="flex min-h-dvh flex-col md:flex-row">
+      <AdminSidebar />
       <div className="min-w-0 flex-1 bg-background">{children}</div>
     </div>
   );

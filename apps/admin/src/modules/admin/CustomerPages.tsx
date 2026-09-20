@@ -9,21 +9,59 @@ import {
   refundStatusLabel,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { FeedbackState, Input, LocalizedSkeleton, StatusBadge } from "@balanse/ui";
+import { FeedbackState, LocalizedSkeleton, StatusBadge } from "@balanse/ui";
+import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { DataTable, PageHeader } from "./shared";
+import { useEffect, useMemo, useState } from "react";
+import { AdminDataTable } from "@/components/balanse/AdminDataTable";
+import { PageHeader } from "./shared";
 
 export function CustomerListPage({ empty }: { empty?: boolean }) {
-  const [query, setQuery] = useState("");
   const [upcomingOnly, setUpcomingOnly] = useState(false);
   const [rows, setRows] = useState<AdminCustomer[] | null>(null);
 
   useEffect(() => {
     void getMockAdapter()
-      .getAdminCustomers({ query, hasUpcoming: upcomingOnly || undefined })
+      .getAdminCustomers({ hasUpcoming: upcomingOnly || undefined })
       .then((list) => setRows(empty ? [] : list));
-  }, [empty, query, upcomingOnly]);
+  }, [empty, upcomingOnly]);
+
+  const columns = useMemo<ColumnDef<AdminCustomer, unknown>[]>(
+    () => [
+      { accessorKey: "fullName", header: "Name" },
+      {
+        id: "contact",
+        header: "Contact",
+        accessorFn: (row) => `${row.email} ${row.contactNumber}`,
+        cell: ({ row }) => (
+          <span>
+            {row.original.email}
+            <br />
+            {row.original.contactNumber}
+          </span>
+        ),
+      },
+      { accessorKey: "upcomingCount", header: "Upcoming" },
+      {
+        id: "lastVisit",
+        header: "Last Visit",
+        accessorFn: (row) => row.lastVisitAt ?? "",
+        cell: ({ row }) =>
+          row.original.lastVisitAt ? formatSessionDate(row.original.lastVisitAt) : "—",
+      },
+      {
+        id: "view",
+        header: "View",
+        enableSorting: false,
+        cell: ({ row }) => (
+          <Link className="underline underline-offset-4" href={`/customers/${row.original.id}`}>
+            View
+          </Link>
+        ),
+      },
+    ],
+    [],
+  );
 
   if (!rows) return <LocalizedSkeleton lines={6} label="Loading customers" />;
 
@@ -31,12 +69,6 @@ export function CustomerListPage({ empty }: { empty?: boolean }) {
     <section>
       <PageHeader title="Customers" />
       <div className="mt-4 flex flex-wrap gap-3">
-        <Input
-          aria-label="Search"
-          placeholder="Search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
@@ -51,32 +83,19 @@ export function CustomerListPage({ empty }: { empty?: boolean }) {
           id="admin.no-customers"
           className="mt-6"
           onAction={() => {
-            setQuery("");
             setUpcomingOnly(false);
           }}
         />
       ) : (
-        <DataTable columns={["Name", "Contact", "Upcoming", "Last Visit", "View"]}>
-          {rows.map((row) => (
-            <tr key={row.id} className="border-t border-border">
-              <td className="px-3 py-2">{row.fullName}</td>
-              <td className="px-3 py-2">
-                {row.email}
-                <br />
-                {row.contactNumber}
-              </td>
-              <td className="px-3 py-2">{row.upcomingCount}</td>
-              <td className="px-3 py-2">
-                {row.lastVisitAt ? formatSessionDate(row.lastVisitAt) : "—"}
-              </td>
-              <td className="px-3 py-2">
-                <Link className="underline underline-offset-4" href={`/customers/${row.id}`}>
-                  View
-                </Link>
-              </td>
-            </tr>
-          ))}
-        </DataTable>
+        <div className="mt-4">
+          <AdminDataTable
+            data={rows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            searchPlaceholder="Search customers"
+            emptyLabel="No customers match your filter."
+          />
+        </div>
       )}
     </section>
   );
