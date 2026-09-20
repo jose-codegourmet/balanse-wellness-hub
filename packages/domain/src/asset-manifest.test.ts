@@ -49,6 +49,7 @@ describe("FE-SHR-004 asset manifest", () => {
       "contact-a": "/assets/marketing/contact/visit-hero-16x9.webp",
       "contact-b": "/assets/marketing/contact/walk-in-qr-1x1.webp",
       "faqs-a": "/assets/marketing/faqs/header-accent-3x2.webp",
+      "coaches-b": "/assets/marketing/coaches/group-hero-16x9.webp",
       "coaches-c-yoga": "/assets/marketing/coaches/specialty-accent-yoga-1x1.webp",
       "coaches-c-boxing": "/assets/marketing/coaches/specialty-accent-boxing-1x1.webp",
       "coaches-c-capoeira": "/assets/marketing/coaches/specialty-accent-capoeira-1x1.webp",
@@ -71,7 +72,10 @@ describe("FE-SHR-004 asset manifest", () => {
     ]);
     expect(publishedMarketingSlotIds("contact")).toEqual(["contact-a", "contact-b"]);
     expect(publishedMarketingSlotIds("faqs")).toEqual(["faqs-a"]);
-    expect(publishedMarketingSlotIds("coaches")).toEqual([...COACH_SPECIALTY_ACCENT_IDS]);
+    expect(publishedMarketingSlotIds("coaches")).toEqual([
+      "coaches-b",
+      ...COACH_SPECIALTY_ACCENT_IDS,
+    ]);
     expect(COACH_SPECIALTY_ACCENT_IDS).toEqual([
       "coaches-c-yoga",
       "coaches-c-boxing",
@@ -90,8 +94,10 @@ describe("FE-SHR-004 asset manifest", () => {
       expect(existsSync(resolve(here, "../../../apps/web/public", relative))).toBe(true);
     }
     const groupHero = ASSET_MANIFEST.assets.find((asset) => asset.id === "coaches-b");
-    expect(groupHero?.generation_policy).toBe("do_not_generate");
-    expect(bundledAssetSrc(groupHero as NonNullable<typeof groupHero>)).toBeUndefined();
+    expect(groupHero?.generation_policy).toBe("generate");
+    expect(bundledAssetSrc(groupHero as NonNullable<typeof groupHero>)).toBe(
+      "/assets/marketing/coaches/group-hero-16x9.webp",
+    );
   });
 
   it("bundles every FE-PATHS slot with its JPEG and thumb siblings on disk", () => {
@@ -99,8 +105,8 @@ describe("FE-SHR-004 asset manifest", () => {
     const slots = (["landing", "about", "contact", "faqs", "coaches"] as const).flatMap((page) =>
       publishedMarketingSlotIds(page),
     );
-    // Pass-2 inventory: landing A–E, about A–D, contact A–B, faqs A, six accents.
-    expect(slots.length).toBe(18);
+    // Pass-2 inventory: landing A–E, about A–D, contact A–B, faqs A, coaches B, six accents.
+    expect(slots.length).toBe(19);
     // Every marketing slot now ships responsive thumbnails.
 
     for (const id of slots) {
