@@ -661,12 +661,24 @@ export const publicContent: PublicContent = {
   faqs: flattenFaqs(),
 };
 
-export const adminClasses: AdminClass[] = publicClasses.map((row) => ({
-  ...row,
-  associatedCoachIds: adminCoaches
-    .filter((coach) => coach.specialties.includes(row.name))
-    .map((coach) => coach.id),
-}));
+export const adminClasses: AdminClass[] = [
+  ...publicClasses.map((row) => ({
+    ...row,
+    associatedCoachIds: adminCoaches
+      .filter((coach) => coach.specialties.includes(row.name))
+      .map((coach) => coach.id),
+  })),
+  {
+    id: "class-open-studio",
+    name: "Open Studio",
+    shortDescription:
+      "Unstructured floor time with session-level duration and price. This longer description exercises truncation on the catalogue table.",
+    defaultDurationMinutes: null,
+    defaultPricePhp: null,
+    active: false,
+    associatedCoachIds: adminCoaches.map((coach) => coach.id),
+  },
+];
 
 export const adminSettings: AdminSettings = {
   ...publicContent,
