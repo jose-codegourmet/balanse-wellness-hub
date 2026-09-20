@@ -75,6 +75,14 @@ export function ClassFormPage({
   const upsert = useUpsertAdminClass();
   const router = useRouter();
 
+  function leaveList() {
+    if (surface === "overlay") {
+      router.back();
+      return;
+    }
+    router.push(CLOSE_HREF);
+  }
+
   const defaultValues = existing
     ? {
         name: existing.name,
@@ -107,7 +115,7 @@ export function ClassFormPage({
             ...values,
           });
           notify.admin("class.saved");
-          router.push(CLOSE_HREF);
+          leaveList();
         } catch (error) {
           notify.admin("class.save-failed");
           throw error;
@@ -121,6 +129,7 @@ export function ClassFormPage({
         coaches={coaches}
         surface={surface}
         step={step}
+        onLeaveList={leaveList}
       />
     </AdminForm>
   );
@@ -133,6 +142,7 @@ function ClassWizardFields({
   coaches,
   surface,
   step: stepProp,
+  onLeaveList,
 }: {
   isNew: boolean;
   classId: string;
@@ -140,9 +150,17 @@ function ClassWizardFields({
   coaches: { id: string; name: string }[];
   surface: AdminWizardSurface;
   step?: number;
+  onLeaveList: () => void;
 }) {
   const form = useAdminFormContext<ClassFormValues>();
-  const guard = useUnsavedChangesGuard(form.formState.isDirty);
+  const router = useRouter();
+  const guard = useUnsavedChangesGuard(form.formState.isDirty, (href) => {
+    if (href === CLOSE_HREF) {
+      onLeaveList();
+      return;
+    }
+    router.push(href);
+  });
   const [internalStep, setInternalStep] = useState(stepProp ?? 1);
   const current = stepProp ?? internalStep;
   const isLast = current >= classWizardSteps.length;
