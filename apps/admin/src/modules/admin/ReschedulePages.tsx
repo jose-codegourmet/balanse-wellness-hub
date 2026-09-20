@@ -152,6 +152,7 @@ function RescheduleRequestCard({
   leaving,
   onLeaving,
   bookings,
+  inventoryReady,
 }: {
   row: CustomerBooking;
   stamp: string;
@@ -159,6 +160,7 @@ function RescheduleRequestCard({
   leaving: boolean;
   onLeaving: (row: CustomerBooking) => void;
   bookings: CustomerBooking[];
+  inventoryReady: boolean;
 }) {
   const approve = useApproveAdminReschedule();
   const reject = useRejectAdminReschedule();
@@ -166,12 +168,13 @@ function RescheduleRequestCard({
   const target = row.targetSession;
   const blockReason = approveBlockReason(target);
   const canApprove = !blockReason;
-  const inventory = target
-    ? computeSessionInventory(
-        target,
-        bookings.filter((booking) => booking.sessionId === target.id),
-      )
-    : null;
+  const inventory =
+    target && inventoryReady
+      ? computeSessionInventory(
+          target,
+          bookings.filter((booking) => booking.sessionId === target.id),
+        )
+      : null;
 
   async function run(
     action: () => Promise<unknown>,
@@ -351,6 +354,7 @@ export function RescheduleQueuePage({
             leaving={exiting.has(row.id)}
             onLeaving={onLeaving}
             bookings={bookings}
+            inventoryReady={bookingsQuery.isSuccess}
           />
         )}
         hasNextPage={!empty && !error && !focus && Boolean(query.hasNextPage)}
