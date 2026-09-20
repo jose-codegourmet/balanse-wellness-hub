@@ -31,7 +31,12 @@ Storage key for any full-size file: `marketing-assets/{page}/{slot}-{aspect}.{ex
 - `faqs/header-accent-3x2` (+ `-thumb`)
 
 ## Coaches
-- `coaches/group-hero-16x9` (+ `-thumb`) **NEW — ASSET-015 / manifest `coaches-b` (8-coach cast; Alec/Sofia/Kate excluded)**
+- `coaches/group-hero-16x9` (+ `-thumb`) — ASSET-015 / manifest `coaches-b` (8-coach cast; Alec/Sofia/Kate excluded).
+  **REVISED 2026-09-20 — v2 banner, same paths.** Bytes swapped for the wordmark-free
+  lineup from Jose's share <https://higgsfield.ai/s/OnoKJ3_HjCc>; `apps/web/public/assets/marketing/coaches/`
+  copies are already refreshed. No path or wiring change needed — FE only needs to
+  re-verify framing (flat cream wall, wide empty band above the heads for heading copy).
+  Storage still serves the retired v1 bytes until ASSET-030 re-runs with service role.
 - `coaches/specialty-accent-yoga-1x1` (+ `-thumb`)
 - `coaches/specialty-accent-boxing-1x1` (+ `-thumb`)
 - `coaches/specialty-accent-capoeira-1x1` (+ `-thumb`)
