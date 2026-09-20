@@ -1,3 +1,9 @@
 import type * as React from "react";
 
-export type SkeletonProps = React.ComponentProps<"div">;
+export type SkeletonVariant = "text" | "heading" | "circle" | "rect" | "block";
+
+export type SkeletonProps = React.ComponentProps<"div"> & {
+  variant?: SkeletonVariant;
+  lines?: number;
+  aspect?: string | number;
+};
