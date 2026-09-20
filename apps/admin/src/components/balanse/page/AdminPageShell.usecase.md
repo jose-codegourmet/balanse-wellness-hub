@@ -34,5 +34,5 @@ Stable admin page chrome: breadcrumb, title, optional description / eyebrow / ac
 
 - Server-safe. Do not add `"use client"` here; `AdminBreadcrumb` and `AdminPageTabs` are the client leaves.
 - Keep `<h1 className="font-display text-3xl">` so title geometry matches the previous header.
-- Roster (`/sessions/[sessionId]/roster`) does not match `ADMIN_NAV_ITEMS` — pass an explicit `Schedule › Roster` trail at the call site.
+- Roster (`/sessions/[sessionId]/roster`) lights Schedule in the sidebar, but `AdminBreadcrumb` still cannot infer a "Roster" segment — pass an explicit `Schedule › Roster` trail at the call site.
 - Detail titles that are still loading should use the id, never `undefined`.

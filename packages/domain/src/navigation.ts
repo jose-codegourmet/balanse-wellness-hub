@@ -151,6 +151,9 @@ export function isCustomerNavActive(item: CustomerNavItem, pathname: string): bo
 }
 
 export function isAdminNavActive(item: AdminNavItem, pathname: string): boolean {
+  if (item.id === "schedule" && /^\/sessions\/[^/]+\/roster(?:\/|$)/.test(pathname)) {
+    return true;
+  }
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
