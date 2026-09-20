@@ -30,6 +30,10 @@ Jabkit is source-distributed. Each app has `jabkit.config.json`.
 - App-specific composition lives in `src/components/balanse/`.
 - Do not hand-edit installed Jabkit source unless a ticket explicitly requires a patch, and then record it.
 
+## Component process
+
+Every component added or materially changed ships five colocated files: `Component.tsx`, `Component.schema.ts` (exported props type; plus a `zod` value schema when it is a form or form control), `Component.defaults.ts` (`<component>DefaultValues`), `Component.stories.tsx` (Storybook `meta` with `args` seeded from the defaults), and `Component.usecase.md`. Forms use `react-hook-form` + `zodResolver`, with schema and `defaultValues` colocated, exported, and reused by the story. Reference implementations: `packages/ui/src/components/skeleton/` and `packages/ui/src/components/scroll-area/`. Full rules and the scaffold: `docs/component-guide.md`, `docs/templates/component/`.
+
 ## Data
 
 Screens obtain data only through `getMockAdapter()` (`MockDataAdapter`). Do not import fixture files from screen components. Coach rates exist only on admin coach types.

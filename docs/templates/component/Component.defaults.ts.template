@@ -1,0 +1,7 @@
+import type { ComponentProps } from "./Component.schema";
+
+// Non-form: Partial<ComponentProps>, story-ready (real classes/props).
+// Form: export const componentDefaultValues: ComponentValues = { … }
+export const componentDefaultValues: Partial<ComponentProps> = {
+  className: "w-full",
+};
