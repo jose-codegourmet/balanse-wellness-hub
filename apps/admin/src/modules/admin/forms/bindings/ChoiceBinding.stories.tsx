@@ -37,7 +37,7 @@ export const Default: Story = {
 
 export const Invalid: Story = {
   render: () => (
-    <BindingStory schema={schema} defaultValues={{ value: "" }} label="Rate type" autoSubmit>
+    <BindingStory schema={schema} defaultValues={{ value: "" }} label="Rate type" invalid>
       {(field) => <ChoiceBinding {...field} as="radio" options={options} />}
     </BindingStory>
   ),

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import type { DefaultValues, FieldValues } from "react-hook-form";
+import type { DefaultValues, FieldValues, Path } from "react-hook-form";
 import type { ZodType } from "zod";
-import { AdminForm, FormActions, FormField } from "../AdminForm";
+import { AdminForm, FormActions, FormField, useAdminFormContext } from "../AdminForm";
 import type { FormFieldRenderProps } from "../AdminForm.schema";
 
 export function BindingStory<TValues extends FieldValues>({
@@ -12,7 +12,7 @@ export function BindingStory<TValues extends FieldValues>({
   label,
   description,
   disabled = false,
-  autoSubmit = false,
+  invalid = false,
   wireAria = false,
   orientation,
   children,
@@ -22,7 +22,7 @@ export function BindingStory<TValues extends FieldValues>({
   label: string;
   description?: string;
   disabled?: boolean;
-  autoSubmit?: boolean;
+  invalid?: boolean;
   wireAria?: boolean;
   orientation?: "vertical" | "horizontal" | "responsive";
   children: (field: FormFieldRenderProps) => React.ReactNode;
@@ -43,15 +43,16 @@ export function BindingStory<TValues extends FieldValues>({
       >
         {children}
       </FormField>
-      {autoSubmit ? <AutoSubmit /> : null}
+      {invalid ? <SeedFieldError name="value" message="This field is required" /> : null}
       <FormActions submitLabel="Save" />
     </AdminForm>
   );
 }
 
-export function AutoSubmit() {
+export function SeedFieldError({ name, message }: { name: string; message: string }) {
+  const { setError } = useAdminFormContext();
   useEffect(() => {
-    document.querySelector("form")?.requestSubmit();
-  }, []);
+    setError(name as Path<FieldValues>, { type: "required", message });
+  }, [message, name, setError]);
   return null;
 }

@@ -25,17 +25,12 @@ export const Prefilled: Story = {
   args: { classId: "class-yoga" },
 };
 
+/** Empty required fields — submit in the canvas to see FieldError + summary. */
 export const Invalid: Story = {
   args: { classId: "new" },
-  play: async ({ canvasElement }) => {
-    canvasElement.querySelector("form")?.requestSubmit();
-  },
 };
 
 export const Submitting: Story = {
   args: { classId: "class-yoga" },
   parameters: { mockRuntime: { latencyMs: 10_000 } },
-  play: async ({ canvasElement }) => {
-    canvasElement.querySelector("form")?.requestSubmit();
-  },
 };

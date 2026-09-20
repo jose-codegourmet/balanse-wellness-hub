@@ -37,7 +37,7 @@ export const Invalid: Story = {
       defaultValues={{ value: false }}
       label="Active"
       orientation="horizontal"
-      autoSubmit
+      invalid
     >
       {(field) => <BooleanBinding {...field} as="checkbox" />}
     </BindingStory>

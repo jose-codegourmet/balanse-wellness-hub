@@ -143,17 +143,6 @@ export const Loading: Story = {
   },
 };
 
-export const SnapshotViewport: Story = {
-  name: "Snapshot — disablePortal",
-  args: { disablePortal: true },
-  render: (args) => (
-    <div className="relative min-h-40 w-[28rem]">
-      <AdminToaster {...args} />
-      <Button onClick={() => notify.admin("class.saved")}>Raise admin copy</Button>
-    </div>
-  ),
-};
-
 export const Stacked: Story = {
   render: () => (
     <Panel hint="The viewport stacks up to three toasts. Copy comes from ADMIN_TOAST_IDS.">

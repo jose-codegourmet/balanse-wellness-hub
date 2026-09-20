@@ -32,13 +32,7 @@ export const Default: Story = {
 
 export const Invalid: Story = {
   render: () => (
-    <BindingStory
-      schema={schema}
-      defaultValues={{ value: "" }}
-      label="Start time"
-      wireAria
-      autoSubmit
-    >
+    <BindingStory schema={schema} defaultValues={{ value: "" }} label="Start time" wireAria invalid>
       {(field) => <TimeBinding {...field} />}
     </BindingStory>
   ),

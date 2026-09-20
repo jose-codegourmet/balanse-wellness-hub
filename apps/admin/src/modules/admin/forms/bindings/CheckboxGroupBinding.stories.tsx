@@ -37,12 +37,7 @@ export const Default: Story = {
 
 export const Invalid: Story = {
   render: () => (
-    <BindingStory
-      schema={schema}
-      defaultValues={{ value: [] }}
-      label="Associated coaches"
-      autoSubmit
-    >
+    <BindingStory schema={schema} defaultValues={{ value: [] }} label="Associated coaches" invalid>
       {(field) => <CheckboxGroupBinding {...field} options={options} />}
     </BindingStory>
   ),
@@ -50,8 +45,8 @@ export const Invalid: Story = {
 
 export const Disabled: Story = {
   render: () => (
-    <BindingStory schema={schema} defaultValues={defaults} label="Associated coaches" disabled>
-      {(field) => <CheckboxGroupBinding {...field} options={options} />}
+    <BindingStory schema={schema} defaultValues={defaults} label="Associated coaches">
+      {(field) => <CheckboxGroupBinding {...field} options={options} disabled />}
     </BindingStory>
   ),
 };

@@ -46,7 +46,7 @@ export const Invalid: Story = {
       defaultValues={{ value: "" }}
       label="Coach photo"
       wireAria
-      autoSubmit
+      invalid
     >
       {(field) => (
         <ImageBinding
@@ -62,7 +62,7 @@ export const Invalid: Story = {
 
 export const Disabled: Story = {
   render: () => (
-    <BindingStory schema={schema} defaultValues={defaults} label="Coach photo" wireAria disabled>
+    <BindingStory schema={schema} defaultValues={defaults} label="Coach photo" wireAria>
       {(field) => (
         <ImageBinding
           {...field}

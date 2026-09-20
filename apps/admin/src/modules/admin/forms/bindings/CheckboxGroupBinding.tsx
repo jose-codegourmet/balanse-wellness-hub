@@ -8,12 +8,14 @@ export type CheckboxGroupOption = { value: string; label: string };
 export type CheckboxGroupBindingProps = FormFieldRenderProps & {
   options: CheckboxGroupOption[];
   legend?: string;
+  disabled?: boolean;
 };
 
 /** Composed locally — `@balanse/ui` has no CheckboxGroup primitive. */
 export function CheckboxGroupBinding({
   options,
   legend,
+  disabled,
   value,
   onChange,
   onBlur,
@@ -44,6 +46,7 @@ export function CheckboxGroupBinding({
             <div key={option.value} className="flex items-center gap-2 text-sm">
               <Checkbox
                 id={optionId}
+                disabled={disabled}
                 checked={selected.includes(option.value)}
                 onCheckedChange={(next) => toggle(option.value, next === true)}
               />

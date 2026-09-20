@@ -32,7 +32,7 @@ export const Default: Story = {
 
 export const Invalid: Story = {
   render: () => (
-    <BindingStory schema={schema} defaultValues={{ value: "" }} label="Name" autoSubmit>
+    <BindingStory schema={schema} defaultValues={{ value: "" }} label="Name" invalid>
       {(field) => <TextBinding {...field} />}
     </BindingStory>
   ),
