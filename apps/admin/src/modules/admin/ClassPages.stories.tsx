@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { ClassFormPage, ClassListPage } from "./ClassPages";
+import { ClassFormPage } from "./ClassPages";
+import { ClassListPage } from "./classes/ClassListPage";
 
 const meta = {
   title: "Admin/Screens/Classes",
