@@ -25,5 +25,5 @@ Composition root for admin shell chrome: desktop collapsible rail and mobile `Sh
 ## Gotchas
 
 - Pass `pathname` in (do not call `usePathname` here) so stories stay props-driven. Preview now provides the App Router mock from #211.
-- `#204` (`FE-ADM-015`) is unlanded — the dashboard snapshot is still a local adapter call with `TODO(FE-ADM-015)`.
+- Live counts come from `useQuery(adminDashboardQuery(principal.role))` so they share the dashboard cache with `DashboardPage`. Pass `snapshot` to skip the query (stories).
 - Roster routes (`/sessions/[id]/roster`) match no nav href; missing active state is a known gap for #208.

@@ -1,10 +1,11 @@
 "use client";
 
-import type { AdminDashboardSnapshot } from "@balanse/domain";
-import { getMockAdapter } from "@balanse/mock";
 import { BrandLockup, TooltipProvider } from "@balanse/ui";
-import { useEffect, useId, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useId } from "react";
 import { cn } from "@/components/jabkit/lib/cn";
+import { adminDashboardQuery } from "@/lib/query/queries";
+import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import type { AdminSidebarProps } from "./AdminSidebar.schema";
 import { AdminSidebarFooter } from "./AdminSidebarFooter";
 import { AdminSidebarMobile } from "./AdminSidebarMobile";
@@ -26,20 +27,17 @@ export function AdminSidebar({
   ...props
 }: AdminSidebarProps) {
   const navId = useId();
+  const { principal } = useMockPrincipal();
   const { collapsed, toggleCollapsed } = useSidebarCollapsed({
     defaultCollapsed,
     collapsed: collapsedProp,
     onCollapsedChange,
   });
-  const [loadedSnapshot, setLoadedSnapshot] = useState<AdminDashboardSnapshot | null>(null);
-
-  useEffect(() => {
-    if (snapshotProp !== undefined) return;
-    // TODO(FE-ADM-015): adopt the shared dashboard query key so /dashboard fetches once.
-    void getMockAdapter().getAdminDashboard().then(setLoadedSnapshot);
-  }, [snapshotProp]);
-
-  const snapshot = snapshotProp === undefined ? loadedSnapshot : snapshotProp;
+  const query = useQuery({
+    ...adminDashboardQuery(principal.role),
+    enabled: snapshotProp === undefined,
+  });
+  const snapshot = snapshotProp === undefined ? (query.data ?? null) : snapshotProp;
 
   return (
     <TooltipProvider>
