@@ -22,6 +22,7 @@ import { ConfirmAction } from "@/components/balanse/ConfirmAction";
 import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { AdminPageTabs } from "@/components/balanse/page/AdminPageTabs";
+import { adminNowIso } from "@/lib/clock";
 import {
   adminBookingDetailQuery,
   adminBookingsQuery,
@@ -166,7 +167,7 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
   const actorStamp = auditConfirmationCopy(
     "This booking action",
     "Admin",
-    "2026-09-16T02:50:00.000Z",
+    adminNowIso(),
   );
 
   if (!booking) return null;

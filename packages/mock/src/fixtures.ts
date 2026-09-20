@@ -392,6 +392,35 @@ export const policyAcceptances: Record<string, PolicyAcceptance[]> = {
   "cust-ben": [],
 };
 
+const QUEUE_GIVEN_NAMES = [
+  "Aria",
+  "Benito",
+  "Celine",
+  "Diego",
+  "Elena",
+  "Felix",
+  "Gina",
+  "Hiro",
+  "Isla",
+  "Jonah",
+] as const;
+
+const QUEUE_FAMILY_NAMES = ["Cruz", "Reyes", "Santos", "Tan", "Lim"] as const;
+
+/** Display name for a booking customer. Queue-only ids have no profile row. */
+export function customerNameFor(customerId: string): string {
+  const known = customers.find((row) => row.id === customerId);
+  if (known) return known.fullName;
+  const generated = /^cust-q-[a-z]+-(\d+)$/.exec(customerId);
+  if (generated) {
+    const index = Number(generated[1]);
+    const given = QUEUE_GIVEN_NAMES[index % QUEUE_GIVEN_NAMES.length] ?? "Aria";
+    const family = QUEUE_FAMILY_NAMES[Math.floor(index / 10) % QUEUE_FAMILY_NAMES.length] ?? "Cruz";
+    return `${given} ${family}`;
+  }
+  return "Studio guest";
+}
+
 function booking(
   id: string,
   status: BookingStatus,
@@ -399,9 +428,11 @@ function booking(
   extras: Partial<CustomerBooking> = {},
 ): CustomerBooking {
   const sess = publicSessions.find((s) => s.id === sessionId) ?? publicSessions[2];
+  const customerId = extras.customerId ?? "cust-ana";
   return {
     id,
-    customerId: extras.customerId ?? "cust-ana",
+    customerId,
+    customerName: extras.customerName ?? customerNameFor(customerId),
     sessionId: sess.id,
     status,
     paymentMethod: extras.paymentMethod ?? null,

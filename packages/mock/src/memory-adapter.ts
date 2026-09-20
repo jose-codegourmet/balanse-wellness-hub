@@ -182,6 +182,8 @@ export function createMemoryAdapter(): MockDataAdapter {
         const created = {
           id: `booking-new-${sessionId}`,
           customerId,
+          customerName:
+            profiles.find((profile) => profile.id === customerId)?.fullName ?? "Studio guest",
           sessionId,
           status: waitlisted ? ("WAITLISTED" as const) : ("HELD_AWAITING_PAYMENT" as const),
           paymentMethod: null,

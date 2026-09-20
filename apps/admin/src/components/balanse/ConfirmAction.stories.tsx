@@ -26,6 +26,18 @@ export const Destructive: Story = {
   },
 };
 
+export const RequiredReason: Story = {
+  args: {
+    triggerLabel: "Reject",
+    title: "Reject this request?",
+    description: "Tell the customer why this request cannot proceed.",
+    confirmLabel: "Reject",
+    variant: "destructive",
+    requireReason: true,
+    reasonPlaceholder: "Required — visible to the customer.",
+  },
+};
+
 export const Disabled: Story = {
   args: {
     disabled: true,

@@ -38,6 +38,7 @@ const booking = (
   partial: Partial<CustomerBooking> & Pick<CustomerBooking, "id" | "status">,
 ): CustomerBooking => ({
   customerId: "cust-ana",
+  customerName: "Ana Delgado",
   sessionId: "session-a",
   paymentMethod: "GCASH",
   paymentStatus: "NONE",

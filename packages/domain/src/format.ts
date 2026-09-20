@@ -142,3 +142,30 @@ export function daysInManilaMonth(ymd: string): number {
   const [year, month] = ymd.split("-").map(Number);
   return new Date(Date.UTC(year, month, 0)).getUTCDate();
 }
+
+const MINUTE_MS = 60_000;
+const HOUR_MS = 60 * MINUTE_MS;
+const DAY_MS = 24 * HOUR_MS;
+const WEEK_MS = 7 * DAY_MS;
+const MONTH_MS = 30 * DAY_MS;
+const YEAR_MS = 365 * DAY_MS;
+
+/**
+ * Compact relative time between two instants. `nowIso` is injected so Storybook
+ * and the mock clock stay deterministic (do not call `Date.now()` here).
+ */
+export function formatRelativeTime(iso: string, nowIso: string): string {
+  const then = new Date(iso).getTime();
+  const now = new Date(nowIso).getTime();
+  if (!Number.isFinite(then) || !Number.isFinite(now)) return "";
+  const diffMs = then - now;
+  const abs = Math.abs(diffMs);
+  const rtf = new Intl.RelativeTimeFormat("en-PH", { numeric: "auto" });
+  if (abs < 45_000) return rtf.format(0, "second");
+  if (abs < 45 * MINUTE_MS) return rtf.format(Math.round(diffMs / MINUTE_MS), "minute");
+  if (abs < 36 * HOUR_MS) return rtf.format(Math.round(diffMs / HOUR_MS), "hour");
+  if (abs < 10 * DAY_MS) return rtf.format(Math.round(diffMs / DAY_MS), "day");
+  if (abs < 5 * WEEK_MS) return rtf.format(Math.round(diffMs / WEEK_MS), "week");
+  if (abs < 18 * MONTH_MS) return rtf.format(Math.round(diffMs / MONTH_MS), "month");
+  return rtf.format(Math.round(diffMs / YEAR_MS), "year");
+}

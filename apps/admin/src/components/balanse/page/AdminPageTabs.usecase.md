@@ -33,6 +33,6 @@ Admin page tab strip with the `@balanse/ui` Tabs ARIA contract. Used by `/bookin
 
 - Keep tab **ids and labels** from `@balanse/domain` (or the existing local payment `TABS` const). Do not rename them here.
 - Put the filtered table (or queue) in `AdminPageTabs` children so the active tab owns a `role="tabpanel"`.
-- Seed `/bookings` from `?tab=` and leave other query keys (`tableId` prefixes from FE-ADM-017) alone.
+- Seed `/bookings` from `?tab=` via `useTabParam(param, tabs, defaultId)` (colocated). Leave other query keys (`tableId` prefixes from FE-ADM-017) alone.
 - Active state must stay visible without colour: line indicator + heavier weight.
 - Keyboard handling (Left/Right/Home/End, roving tabindex) is provided by Base UI — do not duplicate it.
