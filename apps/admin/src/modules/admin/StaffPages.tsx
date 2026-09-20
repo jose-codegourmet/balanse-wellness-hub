@@ -2,17 +2,17 @@
 
 import { ADMIN_ROLE_CAPABILITY_NOTE, type AdminStaff, staffStatusLabel } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Badge, Button, FeedbackState, NativeSelect } from "@balanse/ui";
+import { Badge, Button, FeedbackState, Field, FieldLabel, Input, NativeSelect } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { ConfirmAction } from "@/components/balanse/ConfirmAction";
 import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { adminStaffQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import { ConfirmAction, TextField } from "./shared";
 
 export function StaffListPage({ empty }: { empty?: boolean }) {
   const { principal } = useMockPrincipal();
@@ -139,19 +139,23 @@ export function StaffDetailPage({ staffId }: { staffId: string }) {
             });
         }}
       >
-        <TextField
-          id="staff-name"
-          label="Name"
-          value={row.name}
-          onChange={(name) => setRow({ ...row, name })}
-        />
-        <TextField
-          id="staff-email"
-          label="Email"
-          type="email"
-          value={row.email}
-          onChange={(email) => setRow({ ...row, email })}
-        />
+        <Field>
+          <FieldLabel htmlFor="staff-name">Name</FieldLabel>
+          <Input
+            id="staff-name"
+            value={row.name}
+            onChange={(event) => setRow({ ...row, name: event.target.value })}
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="staff-email">Email</FieldLabel>
+          <Input
+            id="staff-email"
+            type="email"
+            value={row.email}
+            onChange={(event) => setRow({ ...row, email: event.target.value })}
+          />
+        </Field>
         <div className="grid gap-1.5">
           <p className="text-sm font-medium">Role</p>
           <NativeSelect value="ADMIN" onChange={() => undefined} aria-label="Role">

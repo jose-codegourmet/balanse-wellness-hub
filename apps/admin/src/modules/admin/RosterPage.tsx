@@ -14,10 +14,10 @@ import { getMockAdapter } from "@balanse/mock";
 import { StatusBadge } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { ConfirmAction } from "@/components/balanse/ConfirmAction";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { adminCustomersQuery, adminSessionRosterQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import { ConfirmAction } from "./shared";
 
 export function RosterPage({ sessionId }: { sessionId: string }) {
   const { principal } = useMockPrincipal();

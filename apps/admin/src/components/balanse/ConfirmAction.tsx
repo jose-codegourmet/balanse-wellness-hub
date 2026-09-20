@@ -10,60 +10,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   Button,
-  Input,
-  Label,
 } from "@balanse/ui";
-import { type ReactNode, useState } from "react";
-
-export function Field({
-  id,
-  label,
-  children,
-  hint,
-}: {
-  id: string;
-  label: string;
-  children: ReactNode;
-  hint?: string;
-}) {
-  return (
-    <div className="grid gap-1.5">
-      <Label htmlFor={id}>{label}</Label>
-      {children}
-      {hint ? <p className="text-sm text-muted-foreground">{hint}</p> : null}
-    </div>
-  );
-}
-
-export function TextField({
-  id,
-  label,
-  value,
-  onChange,
-  type = "text",
-  required,
-  hint,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: string;
-  required?: boolean;
-  hint?: string;
-}) {
-  return (
-    <Field id={id} label={label} hint={hint}>
-      <Input
-        id={id}
-        type={type}
-        value={value}
-        required={required}
-        onChange={(event) => onChange(event.target.value)}
-      />
-    </Field>
-  );
-}
+import { useState } from "react";
+import type { ConfirmActionProps } from "./ConfirmAction.schema";
 
 export function ConfirmAction({
   triggerLabel,
@@ -73,15 +22,7 @@ export function ConfirmAction({
   onConfirm,
   variant = "default",
   disabled,
-}: {
-  triggerLabel: string;
-  title: string;
-  description: string;
-  confirmLabel?: string;
-  onConfirm: () => unknown;
-  variant?: "default" | "outline" | "destructive";
-  disabled?: boolean;
-}) {
+}: ConfirmActionProps) {
   const [open, setOpen] = useState(false);
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>

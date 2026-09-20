@@ -14,12 +14,12 @@ import { CardListSkeleton, FeedbackState, Input, Label, StatusBadge } from "@bal
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
+import { ConfirmAction } from "@/components/balanse/ConfirmAction";
 import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { AdminPageTabs } from "@/components/balanse/page/AdminPageTabs";
 import { adminCustomersQuery, adminPaymentsQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import { ConfirmAction } from "./shared";
 
 const TABS: { id: AdminPaymentTab; label: string }[] = [
   { id: "gcash", label: "GCash Pending" },

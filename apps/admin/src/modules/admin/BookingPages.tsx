@@ -18,6 +18,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
+import { ConfirmAction } from "@/components/balanse/ConfirmAction";
 import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { AdminPageTabs } from "@/components/balanse/page/AdminPageTabs";
@@ -28,7 +29,6 @@ import {
   adminCustomersQuery,
 } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import { ConfirmAction } from "./shared";
 
 function customerNameLookup(customers: { id: string; fullName: string }[]) {
   return (id: string) => customers.find((row) => row.id === id)?.fullName ?? id;
