@@ -53,9 +53,8 @@ export function ContactForm({
           <CircleCheck aria-hidden="true" />
           <AlertTitle>Message saved in this mock</AlertTitle>
           <AlertDescription>
-            Nothing was sent to the studio, and no class was reserved. Your message is still below
-            if you want to copy it.
-            {message ? <span className="contact-form-echo">{message}</span> : null}
+            Nothing was sent to the studio, and no class was reserved. Your message is still in the
+            form below if you want to copy it.
           </AlertDescription>
         </Alert>
       ) : null}

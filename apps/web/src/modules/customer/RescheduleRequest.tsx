@@ -39,6 +39,16 @@ function remainingLabel(session: PublicSession): string {
   return `${session.remainingSlots} of ${session.capacity} spots left`;
 }
 
+/**
+ * Only sessions the published calendar itself still offers can be preferred:
+ * a full, started, or closed session is not something the studio could move
+ * anyone into. This reads the session's own `reservable` flag rather than
+ * applying any reschedule rule — those stay open and manual (OQ-2).
+ */
+function isSelectable(session: PublicSession): boolean {
+  return session.reservable;
+}
+
 export function RescheduleRequest({
   booking,
   sessions,
@@ -105,7 +115,7 @@ export function RescheduleRequest({
 
           <fieldset className="reschedule-picker" disabled={submitting}>
             <legend className="reschedule-legend">
-              <span className="portal-eyebrow">Step 2</span>
+              <span className="portal-eyebrow">Choose one</span>
               <strong className="font-display">Select preferred new session</strong>
             </legend>
 
@@ -123,23 +133,21 @@ export function RescheduleRequest({
                       <p className="reschedule-day-label">{day.label}</p>
                       <ul className="reschedule-day-options">
                         {day.sessions.map((session) => {
-                          const full =
-                            session.remainingSlots <= 0 ||
-                            session.availability === "full_with_waitlist";
+                          const selectable = isSelectable(session);
                           const noteId = `${captionId}-${session.id}`;
                           return (
                             <li key={session.id}>
                               <label
                                 className="reschedule-option"
                                 data-availability={session.availability}
-                                data-selectable={full ? "false" : "true"}
+                                data-selectable={selectable ? "true" : "false"}
                               >
                                 <input
                                   type="radio"
                                   name="target-session"
                                   value={session.id}
                                   checked={targetId === session.id}
-                                  disabled={full}
+                                  disabled={!selectable}
                                   aria-describedby={noteId}
                                   onChange={() => setTargetId(session.id)}
                                 />
@@ -154,7 +162,7 @@ export function RescheduleRequest({
                                   <span className="reschedule-option-capacity" id={noteId}>
                                     {sessionAvailabilityLabel(session.availability)} ·{" "}
                                     {remainingLabel(session)}
-                                    {full ? " · cannot be requested" : ""}
+                                    {selectable ? "" : " · cannot be requested"}
                                   </span>
                                 </span>
                               </label>

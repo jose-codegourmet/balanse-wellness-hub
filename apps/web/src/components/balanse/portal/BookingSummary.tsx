@@ -68,14 +68,14 @@ export function BookingReference({
   );
 }
 
+/**
+ * Date, time, coach, price. The class name is always the surrounding
+ * headline, so repeating it as a labelled row would just be noise.
+ */
 export function BookingFacts({ booking }: { booking: CustomerBooking }) {
   const { session } = booking;
   return (
     <dl className="booking-facts">
-      <div>
-        <dt>Class</dt>
-        <dd>{session.className}</dd>
-      </div>
       <div>
         <dt>Date</dt>
         <dd>{formatSessionDate(session.startsAt)}</dd>
@@ -128,10 +128,6 @@ export function BookingSummary({
         <div className="booking-summary-identity">
           {eyebrow ? <p className="portal-eyebrow">{eyebrow}</p> : null}
           <Heading className="booking-summary-title font-display">{session.className}</Heading>
-          <p className="booking-summary-when">
-            {formatSessionDate(session.startsAt)} ·{" "}
-            {formatSessionTimeRange(session.startsAt, session.endsAt)}
-          </p>
         </div>
         <StatusBadge status={bookingStatusKey(booking)} />
       </header>

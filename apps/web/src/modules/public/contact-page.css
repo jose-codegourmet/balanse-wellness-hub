@@ -45,7 +45,6 @@ a.contact-card:hover { border-color: var(--accent); background: color-mix(in okl
 .contact-form-actions [data-slot="button"] { min-height: 2.9rem; border-radius: 999px; gap: .75rem; padding-inline: 1.5rem; }
 .contact-form-outcome[data-slot="alert"] { border-color: var(--border); border-left: 3px solid var(--balanse-gold-deep); background: var(--background); padding: .9rem 1rem; }
 .contact-form-outcome[data-outcome="failure"] { border-left-color: var(--destructive); }
-.contact-form-echo { margin-top: .6rem; padding-top: .6rem; border-top: 1px solid var(--border); font-size: .78rem; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
 
 @media (max-width: 1023px) {
   .contact-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

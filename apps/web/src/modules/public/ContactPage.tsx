@@ -136,11 +136,11 @@ export function ContactPage() {
           </div>
         </section>
 
-        <section className="contact-section" aria-labelledby="contact-message">
+        <section className="contact-section" aria-labelledby="contact-message-heading">
           <div className="contact-card contact-form-card">
             <div className="contact-form-aside">
               <SectionHeading
-                id="contact-message"
+                id="contact-message-heading"
                 eyebrow="Questions"
                 title="Send a message"
                 description="This form reaches the studio for questions. It does not book a class."
