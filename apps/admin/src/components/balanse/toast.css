@@ -1,0 +1,77 @@
+/* Brand skin for the vendored Jabkit toast (FE-ADM-019).
+   The kit sources under components/jabkit/toast/ stay pristine, so surface,
+   radius, type, and status accents are applied from the wrapper's viewport
+   scope. Colours come from @balanse/config tokens and the globals.css theme
+   bridge — never raw hex. */
+
+.admin-toaster {
+  bottom: 1.5rem;
+}
+
+.admin-toaster [data-slot="toast"] {
+  border-radius: var(--radius);
+  border-color: var(--border);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: 0 1.25rem 2.5rem -1.5rem color-mix(in oklab, var(--balanse-navy) 55%, transparent);
+  overflow: hidden;
+}
+
+.admin-toaster [data-slot="toast"]::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.1875rem;
+  background: var(--border);
+}
+
+.admin-toaster [data-slot="toast"][data-type="success"]::before {
+  background: var(--color-success);
+}
+
+.admin-toaster [data-slot="toast"][data-type="info"]::before {
+  background: var(--accent);
+}
+
+.admin-toaster [data-slot="toast"][data-type="warning"]::before {
+  background: var(--color-warning);
+}
+
+.admin-toaster [data-slot="toast"][data-type="error"]::before {
+  background: var(--destructive);
+}
+
+.admin-toaster [data-slot="toast"][data-type="loading"]::before {
+  background: var(--muted-foreground);
+}
+
+.admin-toaster [data-slot="toast-content"] {
+  padding: 1rem 1.15rem 1rem 1.3rem;
+}
+
+.admin-toaster [data-slot="toast-title"] {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.admin-toaster [data-slot="toast-description"] {
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.admin-toaster [data-slot="toast-icon"] {
+  border-radius: calc(var(--radius) * 0.6);
+  background: var(--secondary);
+}
+
+.admin-toaster [data-slot="toast-action"],
+.admin-toaster [data-slot="toast-close"] {
+  border-radius: calc(var(--radius) * 0.6);
+}
+
+.dark .admin-toaster [data-slot="toast"][data-type="success"]::before {
+  background: color-mix(in oklab, var(--color-success) 45%, var(--balanse-beige));
+}
