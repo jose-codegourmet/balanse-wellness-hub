@@ -36,7 +36,7 @@ Recipe for every admin write form:
 
 ## Unsaved-changes guard
 
-`useUnsavedChangesGuard` covers the `FormActions` cancel control and a `beforeunload` listener. The Next App Router has no navigation-blocking API, so sidebar links and breadcrumbs are not intercepted.
+`useUnsavedChangesGuard` covers the `FormActions` cancel control and a `beforeunload` listener. The Next App Router has no navigation-blocking API, so sidebar links and breadcrumbs are not intercepted. Pass the same guard into `FormActions` and a wizard `onRequestClose` so Escape / dialog close share the confirm. Use `hideSubmit` on intermediate wizard steps.
 
 ## Image upload seam
 

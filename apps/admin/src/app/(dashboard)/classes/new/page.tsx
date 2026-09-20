@@ -6,15 +6,14 @@ import { adminClassesQuery, adminCoachesQuery } from "@/lib/query/queries";
 import { ClassFormPage } from "@/modules/admin/classes/ClassFormPage";
 
 export const metadata: Metadata = {
-  title: "Edit Class",
-  description: "Edit a class.",
+  title: "Add Class",
+  description: "Create a class.",
 };
 
-export default async function Page({ params }: { params: Promise<{ classId: string }> }) {
-  const { classId } = await params;
+export default async function Page() {
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
     [adminClassesQuery(principal.role), adminCoachesQuery(principal.role)],
-    <ClassFormPage classId={classId} surface="page" />,
+    <ClassFormPage classId="new" surface="page" />,
   );
 }

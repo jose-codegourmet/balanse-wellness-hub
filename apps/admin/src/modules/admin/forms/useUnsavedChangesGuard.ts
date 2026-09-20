@@ -44,3 +44,5 @@ export function useUnsavedChangesGuard(isDirty: boolean) {
 
   return { pendingHref, requestLeave, confirmLeave, dismiss };
 }
+
+export type UnsavedChangesGuard = ReturnType<typeof useUnsavedChangesGuard>;
