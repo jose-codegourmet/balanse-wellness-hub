@@ -12,6 +12,9 @@ const meta: Meta<typeof AdminSidebarToggle> = {
   decorators: [
     (Story) => (
       <TooltipProvider>
+        <nav aria-label="Admin" className="sr-only" id="admin-sidebar-nav">
+          Navigation
+        </nav>
         <Story />
       </TooltipProvider>
     ),
