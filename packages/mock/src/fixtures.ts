@@ -417,80 +417,6 @@ function booking(
 const sunDance = publicSessions.find((s) => s.id === "session-sun-dance") ?? null;
 const satFull = publicSessions.find((s) => s.id === "session-sat-full") ?? null;
 
-export const bookings: CustomerBooking[] = BOOKING_STATUSES.map((status, index) => {
-  const extras: Partial<CustomerBooking> = {};
-  if (status === "HELD_AWAITING_PAYMENT") {
-    extras.paymentMethod = null;
-    extras.holdExpiresAt = "2026-09-16T10:00:00.000Z";
-  }
-  if (status === "PAYMENT_SUBMITTED") {
-    extras.paymentMethod = "GCASH";
-    extras.paymentStatus = "PROOF_SUBMITTED";
-    extras.proofPreviewUrl = MOCK_PROOF_PREVIEW_URL;
-  }
-  if (
-    status === "CONFIRMED" ||
-    status === "CHECKED_IN" ||
-    status === "COMPLETED" ||
-    status === "NO_SHOW"
-  ) {
-    extras.paymentMethod = "PAY_AT_COUNTER";
-    extras.paymentStatus = "VERIFIED";
-  }
-  if (status === "CANCELLED") {
-    extras.refundStatus = "REFUNDED";
-    extras.paymentStatus = "VERIFIED";
-    extras.paymentMethod = "GCASH";
-  }
-  if (status === "CANCELLATION_REQUESTED") {
-    extras.paymentMethod = "GCASH";
-    extras.paymentStatus = "VERIFIED";
-    extras.cancellationReason = "Schedule conflict";
-    extras.requestCreatedAt = "2026-09-16T01:10:00.000Z";
-  }
-  if (status === "RESCHEDULE_REQUESTED") {
-    extras.paymentMethod = "GCASH";
-    extras.paymentStatus = "VERIFIED";
-    extras.requestCreatedAt = "2026-09-16T01:20:00.000Z";
-    extras.targetSessionId = "session-sun-dance";
-    extras.targetSession = sunDance;
-  }
-  return booking(`booking-${status.toLowerCase()}`, status, "session-wed-open", {
-    createdAt: `2026-09-14T0${Math.min(index, 9)}:00:00.000Z`,
-    ...extras,
-  });
-}).concat([
-  booking("booking-refund-pending", "CANCELLED", "session-wed-nearly", {
-    id: "booking-refund-pending",
-    refundStatus: "REFUND_PENDING",
-    paymentMethod: "GCASH",
-    paymentStatus: "VERIFIED",
-    customerId: "cust-ben",
-  }),
-  booking("booking-hold-capped", "HELD_AWAITING_PAYMENT", "session-thu-early", {
-    id: "booking-hold-capped",
-    customerId: "cust-ana",
-    createdAt: "2026-09-16T17:00:00.000Z",
-    holdExpiresAt: "2026-09-17T01:00:00.000Z",
-  }),
-  booking("booking-reschedule-full", "RESCHEDULE_REQUESTED", "session-wed-nearly", {
-    id: "booking-reschedule-full",
-    customerId: "cust-ben",
-    paymentMethod: "GCASH",
-    paymentStatus: "VERIFIED",
-    requestCreatedAt: "2026-09-16T01:30:00.000Z",
-    targetSessionId: "session-sat-full",
-    targetSession: satFull,
-  }),
-  booking("booking-counter-held", "HELD_AWAITING_PAYMENT", "session-wed-nearly", {
-    id: "booking-counter-held",
-    customerId: "cust-ben",
-    paymentMethod: "PAY_AT_COUNTER",
-    paymentStatus: "NONE",
-  }),
-  ...buildGeneratedQueueBookings(),
-]);
-
 /** Off today / off `session-wed-open` so dashboard tiles and that roster stay stable. */
 const QUEUE_SESSION_IDS = [
   "session-past-open",
@@ -516,7 +442,7 @@ function queueTargetSession(index: number): PublicSession | null {
 
 /**
  * ~120 synthetic queue rows for FE-ADM-020. Distinct sort keys, new customer
- * ids, existing `booking()` helper only. Showcase rows above stay untouched.
+ * ids, existing `booking()` helper only. Showcase rows stay untouched.
  */
 function buildGeneratedQueueBookings(): CustomerBooking[] {
   const rows: CustomerBooking[] = [];
@@ -600,6 +526,80 @@ function buildGeneratedQueueBookings(): CustomerBooking[] {
 
   return rows;
 }
+
+export const bookings: CustomerBooking[] = BOOKING_STATUSES.map((status, index) => {
+  const extras: Partial<CustomerBooking> = {};
+  if (status === "HELD_AWAITING_PAYMENT") {
+    extras.paymentMethod = null;
+    extras.holdExpiresAt = "2026-09-16T10:00:00.000Z";
+  }
+  if (status === "PAYMENT_SUBMITTED") {
+    extras.paymentMethod = "GCASH";
+    extras.paymentStatus = "PROOF_SUBMITTED";
+    extras.proofPreviewUrl = MOCK_PROOF_PREVIEW_URL;
+  }
+  if (
+    status === "CONFIRMED" ||
+    status === "CHECKED_IN" ||
+    status === "COMPLETED" ||
+    status === "NO_SHOW"
+  ) {
+    extras.paymentMethod = "PAY_AT_COUNTER";
+    extras.paymentStatus = "VERIFIED";
+  }
+  if (status === "CANCELLED") {
+    extras.refundStatus = "REFUNDED";
+    extras.paymentStatus = "VERIFIED";
+    extras.paymentMethod = "GCASH";
+  }
+  if (status === "CANCELLATION_REQUESTED") {
+    extras.paymentMethod = "GCASH";
+    extras.paymentStatus = "VERIFIED";
+    extras.cancellationReason = "Schedule conflict";
+    extras.requestCreatedAt = "2026-09-16T01:10:00.000Z";
+  }
+  if (status === "RESCHEDULE_REQUESTED") {
+    extras.paymentMethod = "GCASH";
+    extras.paymentStatus = "VERIFIED";
+    extras.requestCreatedAt = "2026-09-16T01:20:00.000Z";
+    extras.targetSessionId = "session-sun-dance";
+    extras.targetSession = sunDance;
+  }
+  return booking(`booking-${status.toLowerCase()}`, status, "session-wed-open", {
+    createdAt: `2026-09-14T0${Math.min(index, 9)}:00:00.000Z`,
+    ...extras,
+  });
+}).concat([
+  booking("booking-refund-pending", "CANCELLED", "session-wed-nearly", {
+    id: "booking-refund-pending",
+    refundStatus: "REFUND_PENDING",
+    paymentMethod: "GCASH",
+    paymentStatus: "VERIFIED",
+    customerId: "cust-ben",
+  }),
+  booking("booking-hold-capped", "HELD_AWAITING_PAYMENT", "session-thu-early", {
+    id: "booking-hold-capped",
+    customerId: "cust-ana",
+    createdAt: "2026-09-16T17:00:00.000Z",
+    holdExpiresAt: "2026-09-17T01:00:00.000Z",
+  }),
+  booking("booking-reschedule-full", "RESCHEDULE_REQUESTED", "session-wed-nearly", {
+    id: "booking-reschedule-full",
+    customerId: "cust-ben",
+    paymentMethod: "GCASH",
+    paymentStatus: "VERIFIED",
+    requestCreatedAt: "2026-09-16T01:30:00.000Z",
+    targetSessionId: "session-sat-full",
+    targetSession: satFull,
+  }),
+  booking("booking-counter-held", "HELD_AWAITING_PAYMENT", "session-wed-nearly", {
+    id: "booking-counter-held",
+    customerId: "cust-ben",
+    paymentMethod: "PAY_AT_COUNTER",
+    paymentStatus: "NONE",
+  }),
+  ...buildGeneratedQueueBookings(),
+]);
 
 export const adminSessions: AdminSession[] = publicSessions.map((row) => {
   const coach = adminCoaches.find((c) => c.id === row.coachId) ?? adminCoaches[0];
