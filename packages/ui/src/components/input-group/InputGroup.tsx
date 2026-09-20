@@ -7,7 +7,16 @@ import { Button } from "../button/Button";
 import { Input } from "../input/Input";
 import { Textarea } from "../textarea/Textarea";
 
-function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
+import type {
+  InputGroupAddonProps,
+  InputGroupButtonProps,
+  InputGroupInputProps,
+  InputGroupProps,
+  InputGroupTextareaProps,
+  InputGroupTextProps,
+} from "./InputGroup.schema";
+
+function InputGroup({ className, ...props }: InputGroupProps) {
   return (
     <div
       data-slot="input-group"
@@ -40,11 +49,7 @@ const inputGroupAddonVariants = cva(
   },
 );
 
-function InputGroupAddon({
-  className,
-  align = "inline-start",
-  ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof inputGroupAddonVariants>) {
+function InputGroupAddon({ className, align = "inline-start", ...props }: InputGroupAddonProps) {
   return (
     <div
       role="group"
@@ -82,10 +87,7 @@ function InputGroupButton({
   variant = "ghost",
   size = "xs",
   ...props
-}: Omit<React.ComponentProps<typeof Button>, "size" | "type"> &
-  VariantProps<typeof inputGroupButtonVariants> & {
-    type?: "button" | "submit" | "reset";
-  }) {
+}: InputGroupButtonProps) {
   return (
     <Button
       type={type}
@@ -109,7 +111,7 @@ function InputGroupText({ className, ...props }: React.ComponentProps<"span">) {
   );
 }
 
-function InputGroupInput({ className, ...props }: React.ComponentProps<"input">) {
+function InputGroupInput({ className, ...props }: InputGroupInputProps) {
   return (
     <Input
       data-slot="input-group-control"
@@ -122,7 +124,7 @@ function InputGroupInput({ className, ...props }: React.ComponentProps<"input">)
   );
 }
 
-function InputGroupTextarea({ className, ...props }: React.ComponentProps<"textarea">) {
+function InputGroupTextarea({ className, ...props }: InputGroupTextareaProps) {
   return (
     <Textarea
       data-slot="input-group-control"
@@ -135,6 +137,9 @@ function InputGroupTextarea({ className, ...props }: React.ComponentProps<"texta
   );
 }
 
+export type InputGroupAddonVariantProps = VariantProps<typeof inputGroupAddonVariants>;
+export type InputGroupButtonVariantProps = VariantProps<typeof inputGroupButtonVariants>;
+
 export {
   InputGroup,
   InputGroupAddon,
@@ -142,4 +147,6 @@ export {
   InputGroupInput,
   InputGroupText,
   InputGroupTextarea,
+  inputGroupAddonVariants,
+  inputGroupButtonVariants,
 };

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
+import { Field, FieldLabel } from "../field/Field";
 import {
   Select,
   SelectContent,
@@ -9,15 +10,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./Select";
+import { selectDefaultValues } from "./Select.defaults";
 
 const meta: Meta<typeof Select> = {
   title: "Components/Select",
   component: Select,
   tags: ["autodocs"],
+  args: { ...selectDefaultValues },
 };
 
 export default meta;
-type Story = StoryObj<typeof Select>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: (args) => (
@@ -34,9 +37,63 @@ export const Default: Story = {
   ),
 };
 
-export const WithOptions: Story = {
+export const Sizes: Story = {
   render: (args) => (
-    <Select defaultValue="dog" {...args}>
+    <div className="flex flex-wrap items-center gap-3">
+      {(["sm", "md", "lg"] as const).map((size) => (
+        <Select key={size} {...args}>
+          <SelectTrigger size={size} className="w-[160px]">
+            <SelectValue placeholder={size} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="apple">Apple</SelectItem>
+            <SelectItem value="banana">Banana</SelectItem>
+          </SelectContent>
+        </Select>
+      ))}
+    </div>
+  ),
+};
+
+export const Invalid: Story = {
+  render: (args) => (
+    <Field invalid className="max-w-xs">
+      <FieldLabel>Favorite fruit</FieldLabel>
+      <Select {...args}>
+        <SelectTrigger invalid className="w-[200px]">
+          <SelectValue placeholder="Select a fruit" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+        </SelectContent>
+      </Select>
+    </Field>
+  ),
+};
+
+export const Disabled: Story = {
+  args: {
+    disabled: true,
+  },
+  render: (args) => (
+    <Select {...args}>
+      <SelectTrigger className="w-[200px]" disabled>
+        <SelectValue placeholder="Unavailable" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="apple">Apple</SelectItem>
+      </SelectContent>
+    </Select>
+  ),
+};
+
+export const Grouped: Story = {
+  args: {
+    defaultValue: "dog",
+  },
+  render: (args) => (
+    <Select {...args}>
       <SelectTrigger className="w-[220px]">
         <SelectValue placeholder="Choose a class" />
       </SelectTrigger>
@@ -45,27 +102,11 @@ export const WithOptions: Story = {
           <SelectLabel>Pets</SelectLabel>
           <SelectItem value="dog">Dog</SelectItem>
           <SelectItem value="cat">Cat</SelectItem>
-          <SelectItem value="rabbit">Rabbit</SelectItem>
         </SelectGroup>
         <SelectGroup>
           <SelectLabel>Other</SelectLabel>
           <SelectItem value="fish">Fish</SelectItem>
-          <SelectItem value="bird">Bird</SelectItem>
         </SelectGroup>
-      </SelectContent>
-    </Select>
-  ),
-};
-
-export const Disabled: Story = {
-  render: (args) => (
-    <Select disabled {...args}>
-      <SelectTrigger className="w-[200px]" disabled>
-        <SelectValue placeholder="Unavailable" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="apple">Apple</SelectItem>
-        <SelectItem value="banana">Banana</SelectItem>
       </SelectContent>
     </Select>
   ),

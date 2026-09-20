@@ -1,39 +1,84 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
+import { Field, FieldLabel } from "../field/Field";
 import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from "./NativeSelect";
+import { nativeSelectDefaultValues } from "./NativeSelect.defaults";
 
 const meta: Meta<typeof NativeSelect> = {
   title: "Components/NativeSelect",
   component: NativeSelect,
   tags: ["autodocs"],
+  args: { ...nativeSelectDefaultValues },
 };
 
 export default meta;
-type Story = StoryObj<typeof NativeSelect>;
+type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  render: (args) => (
-    <NativeSelect {...args} defaultValue="medium">
+function FruitOptions() {
+  return (
+    <>
       <NativeSelectOption value="small">Small</NativeSelectOption>
       <NativeSelectOption value="medium">Medium</NativeSelectOption>
       <NativeSelectOption value="large">Large</NativeSelectOption>
+    </>
+  );
+}
+
+export const Default: Story = {
+  render: (args) => (
+    <NativeSelect {...args}>
+      <FruitOptions />
     </NativeSelect>
   ),
 };
 
-export const Small: Story = {
+export const Sizes: Story = {
   render: (args) => (
-    <NativeSelect {...args} size="sm" defaultValue="weekly">
-      <NativeSelectOption value="daily">Daily</NativeSelectOption>
-      <NativeSelectOption value="weekly">Weekly</NativeSelectOption>
-      <NativeSelectOption value="monthly">Monthly</NativeSelectOption>
+    <div className="flex flex-wrap items-center gap-3">
+      <NativeSelect {...args} size="sm">
+        <FruitOptions />
+      </NativeSelect>
+      <NativeSelect {...args} size="md">
+        <FruitOptions />
+      </NativeSelect>
+      <NativeSelect {...args} size="lg">
+        <FruitOptions />
+      </NativeSelect>
+    </div>
+  ),
+};
+
+export const Invalid: Story = {
+  args: {
+    invalid: true,
+  },
+  render: (args) => (
+    <Field invalid>
+      <FieldLabel>Class size</FieldLabel>
+      <NativeSelect {...args}>
+        <FruitOptions />
+      </NativeSelect>
+    </Field>
+  ),
+};
+
+export const Disabled: Story = {
+  args: {
+    disabled: true,
+  },
+  render: (args) => (
+    <NativeSelect {...args}>
+      <FruitOptions />
     </NativeSelect>
   ),
 };
 
 export const Grouped: Story = {
+  args: {
+    defaultValue: "dog",
+  },
   render: (args) => (
-    <NativeSelect {...args} defaultValue="dog">
+    <NativeSelect {...args}>
       <NativeSelectOptGroup label="Pets">
         <NativeSelectOption value="dog">Dog</NativeSelectOption>
         <NativeSelectOption value="cat">Cat</NativeSelectOption>
