@@ -22,7 +22,8 @@ export const adminKeys = {
     all: (role: MockRole) => [...adminKeys.all(role), "bookings"] as const,
     list: (role: MockRole, filters?: AdminBookingListFilters) =>
       [...adminKeys.bookings.all(role), "list", filters ?? null] as const,
-    detail: (role: MockRole, id: string) => [...adminKeys.bookings.all(role), "detail", id] as const,
+    detail: (role: MockRole, id: string) =>
+      [...adminKeys.bookings.all(role), "detail", id] as const,
   },
 
   payments: { all: (role: MockRole) => [...adminKeys.all(role), "payments"] as const },
@@ -42,8 +43,8 @@ export const adminKeys = {
       [...adminKeys.customers.all(role), "detail", id] as const,
   },
 
-  roster: (role: MockRole, sessionId: string) =>
-    [...adminKeys.all(role), "roster", sessionId] as const,
+  rosterAll: (role: MockRole) => [...adminKeys.all(role), "roster"] as const,
+  roster: (role: MockRole, sessionId: string) => [...adminKeys.rosterAll(role), sessionId] as const,
   proofUrl: (role: MockRole, bookingId: string) =>
     [...adminKeys.all(role), "proof-url", bookingId] as const,
 

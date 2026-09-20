@@ -46,9 +46,13 @@ export function MockSessionHarness() {
   }
 
   function applyRuntimeAndRefetch(next: Parameters<typeof setMockRuntime>[0]) {
+    // Runtime knobs live on the browser adapter only. Do not router.refresh() —
+    // a server prefetch would dehydrate pristine fixtures and hide the knob.
+    // resetQueries drops cached results and refetches observers so pending /
+    // error / empty states are visible. clear() alone can leave the last
+    // observer result on screen.
     setMockRuntime(next);
-    clearAdminCache();
-    void queryClient.refetchQueries();
+    void queryClient.resetQueries();
   }
 
   if (!enabled) return null;
@@ -115,6 +119,7 @@ export function MockSessionHarness() {
         <label className="flex items-center gap-2">
           Calendar scenario
           <select
+            data-testid="harness-scenario"
             className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
             value={scenario}
             onChange={(event) => {
@@ -129,10 +134,8 @@ export function MockSessionHarness() {
               } else if (next === "empty-admin-queues") {
                 applyRuntimeAndRefetch({ emptyAdminQueues: true });
               } else {
-                clearAdminCache();
-                void queryClient.refetchQueries();
+                void queryClient.resetQueries();
               }
-              router.refresh();
             }}
           >
             <option value="normal">Normal</option>
@@ -162,6 +165,7 @@ export function MockSessionHarness() {
         <label className="flex items-center gap-2">
           Adapter latency
           <select
+            data-testid="harness-latency"
             className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
             value={latencyMs}
             onChange={(event) => {
@@ -176,6 +180,7 @@ export function MockSessionHarness() {
         </label>
         <button
           type="button"
+          data-testid="harness-fail-next"
           className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
           onClick={() => {
             applyRuntimeAndRefetch({ failNext: true });

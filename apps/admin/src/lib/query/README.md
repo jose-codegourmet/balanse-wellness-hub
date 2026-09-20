@@ -70,9 +70,9 @@ queryClient.invalidateQueries({ queryKey: adminKeys.bookings.all(role) });
 
 `getMockAdapter()` is a module singleton. The server’s instance and the browser’s instance are **different objects**. Server prefetch always dehydrates pristine fixtures; client mutations only mutate the browser copy.
 
-React Query `hydrate` will not clobber a client entry whose `dataUpdatedAt` is newer, so a mutation on `/payments` followed by a return to `/dashboard` should keep the mutated counts.
+React Query `hydrate` will not clobber a client entry whose `dataUpdatedAt` is newer. That only helps after a write goes through `mutations.ts` (which invalidates `dashboard`). `/payments` still calls the adapter directly, so a payment action will not update the dashboard snapshot until that screen adopts the mutation hooks.
 
-Runtime knobs (`latencyMs`, `failNext`, `emptyAdminQueues`, …) live in the **browser** module. After changing a knob the harness clears the cache and refetches **client** queries so those knobs are visible. A server prefetch after a full navigation can still dehydrate pristine data if the server module never saw the knob.
+Runtime knobs (`latencyMs`, `failNext`, `emptyAdminQueues`, …) live in the **browser** module. After changing a knob the harness clears the cache so mounted client queries refetch against that module. It does **not** `router.refresh()` on runtime changes — a server prefetch would dehydrate pristine fixtures and hide the knob. A later full navigation can still hydrate pristine data if the server module never saw the knob.
 
 ## Deferred
 

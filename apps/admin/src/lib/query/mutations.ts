@@ -123,7 +123,7 @@ export function useRejectAdminReschedule() {
 function attendanceKeys(role: MockRole): QueryKey[] {
   return [
     adminKeys.bookings.all(role),
-    [...adminKeys.all(role), "roster"],
+    adminKeys.rosterAll(role),
     adminKeys.dashboard(role),
     adminKeys.reports.all(role),
   ];
@@ -153,8 +153,7 @@ export function useUpsertAdminClass() {
   return useMutation({
     mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["upsertAdminClass"]>[0]) =>
       getMockAdapter().upsertAdminClass(input),
-    onSuccess: () =>
-      invalidateForRole(queryClient, [adminKeys.classes.all(role)]),
+    onSuccess: () => invalidateForRole(queryClient, [adminKeys.classes.all(role)]),
   });
 }
 
@@ -164,8 +163,7 @@ export function useUpsertAdminCoach() {
   return useMutation({
     mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["upsertAdminCoach"]>[0]) =>
       getMockAdapter().upsertAdminCoach(input),
-    onSuccess: () =>
-      invalidateForRole(queryClient, [adminKeys.coaches.all(role)]),
+    onSuccess: () => invalidateForRole(queryClient, [adminKeys.coaches.all(role)]),
   });
 }
 

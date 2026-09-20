@@ -2,11 +2,7 @@ import type { AdminReportFilters } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import type { MockRole } from "@balanse/mock/session";
 import { queryOptions } from "@tanstack/react-query";
-import {
-  type AdminBookingListFilters,
-  type AdminCustomerListFilters,
-  adminKeys,
-} from "./keys";
+import { type AdminBookingListFilters, type AdminCustomerListFilters, adminKeys } from "./keys";
 
 export const adminDashboardQuery = (role: MockRole) =>
   queryOptions({
