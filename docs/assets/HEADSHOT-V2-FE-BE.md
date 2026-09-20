@@ -44,6 +44,10 @@ the native ~4K master — v2 skips the v1 `ai-upscale-4k` step.
 - Use the **vaulted service role** already held by BE / Actions — **do not invent** a new service role key in chat or in this PR.
 - Dry-run then upload with env from vault (`scripts/upload-approved-assets.mjs` or repo equivalent).
 
+### Coexistence with admin uploads (BE-052)
+
+Curated deliveries keep slug keys (`coach-photos/<slug>`). Admin-uploaded profile photos use an opaque key (`coach-photos/<coachId>/<uuid>.<ext>`) stored on `coaches.photoKey`. Replace/remove never deletes a slug-derived Assets-track object. `resolveCoachPhotoSources` still maps curated slugs to bundled crops; `isAdminUploadPhotoKey()` identifies admin objects. Null `photoKey` stays a client-side ASSET-014 crest — not a stored placeholder. Details: `docs/backend/uploads.md`.
+
 ## Skip
 
 - alec, sofia, kate — placeholders only.

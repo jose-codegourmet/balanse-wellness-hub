@@ -1,9 +1,25 @@
+import { FIELD_CONSTRAINTS, SIGNED_UPLOAD } from "@balanse/domain";
 import { requireAdmin, resolveActor, writeAudit } from "../auth";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { asString, ok, pagination, readJson, searchParams } from "../http";
-import { COACH_PHOTO_MIME, money } from "../presenters";
-import { sessionConsumedCapacity } from "../sql";
+import { money } from "../presenters";
+import { updateSessionCapacity } from "../sql";
+import {
+  assertOwnedCoachPhotoKey,
+  confirmUpload,
+  extensionFor,
+  mintSignedUpload,
+  retireAdminObject,
+} from "../uploads";
+import {
+  fieldError,
+  intValue,
+  moneyValue,
+  optionalString,
+  requireString,
+  throwFields,
+} from "../validation";
 
 export async function getAdminClasses(deps: ApiDeps, req: Request): Promise<Response> {
   requireAdmin(await resolveActor(deps, req));
@@ -14,19 +30,20 @@ export async function getAdminClasses(deps: ApiDeps, req: Request): Promise<Resp
 export async function postAdminClass(deps: ApiDeps, req: Request): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
   const body = await readJson(req);
-  const name = asString(body.name)?.trim();
-  if (!name) {
-    throw new ApiError(400, "validation_error", "name is required.", {
-      fields: { name: "Required." },
-    });
-  }
+  const name = requireString(body, "name", FIELD_CONSTRAINTS.class.name.max);
+  const shortDescription = requireString(
+    body,
+    "shortDescription",
+    FIELD_CONSTRAINTS.class.shortDescription.max,
+  );
+  const defaultDurationMinutes = intValue(body, "defaultDurationMinutes", 1, 240, false);
+  const defaultCustomerPrice = moneyValue(body, "defaultCustomerPrice", false);
   const created = await deps.prisma.gymClass.create({
     data: {
       name,
-      shortDescription: asString(body.shortDescription) ?? "",
-      defaultDurationMinutes:
-        typeof body.defaultDurationMinutes === "number" ? body.defaultDurationMinutes : null,
-      defaultCustomerPrice: asString(body.defaultCustomerPrice) ?? null,
+      shortDescription,
+      defaultDurationMinutes: defaultDurationMinutes === undefined ? null : defaultDurationMinutes,
+      defaultCustomerPrice: defaultCustomerPrice ?? null,
       active: body.active !== false,
     },
   });
@@ -42,17 +59,20 @@ export async function postAdminClass(deps: ApiDeps, req: Request): Promise<Respo
 export async function patchAdminClass(deps: ApiDeps, req: Request, id: string): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
   const body = await readJson(req);
+  const name = optionalString(body, "name", FIELD_CONSTRAINTS.class.name.max);
+  const shortDescription = optionalString(
+    body,
+    "shortDescription",
+    FIELD_CONSTRAINTS.class.shortDescription.max,
+  );
+  const defaultDurationMinutes = intValue(body, "defaultDurationMinutes", 1, 240, false);
   const updated = await deps.prisma.gymClass.update({
     where: { id },
     data: {
-      ...(asString(body.name) ? { name: asString(body.name) } : {}),
-      ...(asString(body.shortDescription) !== undefined
-        ? { shortDescription: asString(body.shortDescription) }
-        : {}),
+      ...(name !== undefined ? { name } : {}),
+      ...(shortDescription !== undefined ? { shortDescription } : {}),
       ...(typeof body.active === "boolean" ? { active: body.active } : {}),
-      ...(typeof body.defaultDurationMinutes === "number" || body.defaultDurationMinutes === null
-        ? { defaultDurationMinutes: body.defaultDurationMinutes as number | null }
-        : {}),
+      ...(defaultDurationMinutes !== undefined ? { defaultDurationMinutes } : {}),
     },
   });
   await writeAudit(deps, { entityType: "class", entityId: id, action: "class.update", actor });
@@ -68,22 +88,21 @@ export async function getAdminCoaches(deps: ApiDeps, req: Request): Promise<Resp
 export async function postAdminCoach(deps: ApiDeps, req: Request): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
   const body = await readJson(req);
-  const name = asString(body.name)?.trim();
-  const defaultRate =
-    asString(body.defaultRate) ??
-    (typeof body.defaultRate === "number" ? String(body.defaultRate) : null);
+  const name = requireString(body, "name", FIELD_CONSTRAINTS.coach.name.max);
+  const shortBio = requireString(body, "shortBio", FIELD_CONSTRAINTS.coach.shortBio.max);
+  const defaultRate = moneyValue(body, "defaultRate", true);
   const rateType = asString(body.rateType);
-  if (!name || !defaultRate || (rateType !== "PER_SESSION" && rateType !== "PER_HOUR")) {
-    throw new ApiError(400, "validation_error", "name, defaultRate, and rateType are required.");
+  if (rateType !== "PER_SESSION" && rateType !== "PER_HOUR") {
+    throwFields(
+      fieldError("rateType", "invalid_enum", "rateType must be PER_SESSION or PER_HOUR."),
+    );
   }
   const created = await deps.prisma.coach.create({
     data: {
       name,
-      specialties: Array.isArray(body.specialties)
-        ? body.specialties.filter((item): item is string => typeof item === "string")
-        : [],
-      shortBio: asString(body.shortBio) ?? "",
-      defaultRate,
+      specialties: parseSpecialties(body.specialties),
+      shortBio,
+      defaultRate: defaultRate as string,
       rateType,
       active: body.active !== false,
     },
@@ -100,23 +119,26 @@ export async function postAdminCoach(deps: ApiDeps, req: Request): Promise<Respo
 export async function patchAdminCoach(deps: ApiDeps, req: Request, id: string): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
   const body = await readJson(req);
+  const name = optionalString(body, "name", FIELD_CONSTRAINTS.coach.name.max);
+  const shortBio = optionalString(body, "shortBio", FIELD_CONSTRAINTS.coach.shortBio.max);
+  const defaultRate = moneyValue(body, "defaultRate", false);
+  const rateType = asString(body.rateType);
+  if (rateType && rateType !== "PER_SESSION" && rateType !== "PER_HOUR") {
+    throwFields(
+      fieldError("rateType", "invalid_enum", "rateType must be PER_SESSION or PER_HOUR."),
+    );
+  }
   const updated = await deps.prisma.coach.update({
     where: { id },
     data: {
-      ...(asString(body.name) ? { name: asString(body.name) } : {}),
-      ...(asString(body.shortBio) !== undefined ? { shortBio: asString(body.shortBio) } : {}),
+      ...(name !== undefined ? { name } : {}),
+      ...(shortBio !== undefined ? { shortBio } : {}),
       ...(typeof body.active === "boolean" ? { active: body.active } : {}),
       ...(Array.isArray(body.specialties)
-        ? {
-            specialties: body.specialties.filter(
-              (item): item is string => typeof item === "string",
-            ),
-          }
+        ? { specialties: parseSpecialties(body.specialties) }
         : {}),
-      ...(body.defaultRate !== undefined ? { defaultRate: String(body.defaultRate) } : {}),
-      ...(asString(body.rateType) === "PER_SESSION" || asString(body.rateType) === "PER_HOUR"
-        ? { rateType: asString(body.rateType) as "PER_SESSION" | "PER_HOUR" }
-        : {}),
+      ...(defaultRate !== undefined && defaultRate !== null ? { defaultRate } : {}),
+      ...(rateType === "PER_SESSION" || rateType === "PER_HOUR" ? { rateType } : {}),
     },
   });
   await writeAudit(deps, { entityType: "coach", entityId: id, action: "coach.update", actor });
@@ -131,24 +153,25 @@ export async function postCoachPhoto(deps: ApiDeps, req: Request, id: string): P
   const contentType = asString(body.contentType);
   const objectKey = asString(body.objectKey);
   if (!objectKey) {
-    if (!contentType || !COACH_PHOTO_MIME.has(contentType)) {
-      throw new ApiError(400, "invalid_mime", "Unsupported coach photo type.");
+    if (!contentType) {
+      throwFields(fieldError("contentType", "required", "contentType is required."));
     }
-    const ext =
-      contentType === "image/png"
-        ? "png"
-        : contentType === "image/webp"
-          ? "webp"
-          : contentType === "image/heic"
-            ? "heic"
-            : "jpg";
-    const path = `coach-photos/${id}/${crypto.randomUUID()}.${ext}`;
-    const upload = await deps.storage.createSignedUpload("coach-photos", path, { contentType });
-    return ok({ upload });
+    const path = `coach-photos/${id}/${crypto.randomUUID()}.${extensionFor(contentType)}`;
+    const minted = await mintSignedUpload(deps, actor, {
+      bucket: "coach-photos",
+      purpose: "coach_photo",
+      entityId: id,
+      contentType,
+      allowed: new Set(SIGNED_UPLOAD.coachPhotoTypes),
+      objectKey: path,
+    });
+    return ok(minted);
   }
+  assertOwnedCoachPhotoKey(id, objectKey);
+  await confirmUpload(deps, objectKey);
   const previous = coach.photoKey;
   if (previous && previous !== objectKey) {
-    await deps.storage.remove("coach-photos", [previous]);
+    await retireAdminObject(deps, "coach-photos", previous);
   }
   const updated = await deps.prisma.coach.update({
     where: { id },
@@ -168,9 +191,7 @@ export async function deleteCoachPhoto(deps: ApiDeps, req: Request, id: string):
   const actor = requireAdmin(await resolveActor(deps, req));
   const coach = await deps.prisma.coach.findUnique({ where: { id } });
   if (!coach) throw new ApiError(404, "coach_not_found", "Coach not found.");
-  if (coach.photoKey) {
-    await deps.storage.remove("coach-photos", [coach.photoKey]);
-  }
+  await retireAdminObject(deps, "coach-photos", coach.photoKey);
   await deps.prisma.coach.update({ where: { id }, data: { photoKey: null } });
   await writeAudit(deps, {
     entityType: "coach",
@@ -207,32 +228,34 @@ export async function getAdminSessions(deps: ApiDeps, req: Request): Promise<Res
 export async function postAdminSession(deps: ApiDeps, req: Request): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
   const body = await readJson(req);
-  const classId = asString(body.classId);
-  const startsAt = asString(body.startsAt);
-  const endsAt = asString(body.endsAt);
-  const capacity = typeof body.capacity === "number" ? body.capacity : Number(body.capacity);
-  const customerPrice = body.customerPrice;
-  if (!classId || !startsAt || !endsAt || !capacity || customerPrice == null) {
-    throw new ApiError(
-      400,
-      "validation_error",
-      "classId, startsAt, endsAt, capacity, and customerPrice are required.",
-    );
+  const classId = requireString(body, "classId", 64);
+  const startsAt = requireString(body, "startsAt", 40);
+  const endsAt = requireString(body, "endsAt", 40);
+  const capacity = intValue(body, "capacity", 1, 200, true) as number;
+  const customerPrice = moneyValue(body, "customerPrice", true) as string;
+  assertSessionWindow(startsAt, endsAt);
+  const coachId = requireString(body, "coachId", 64);
+  const coach = await deps.prisma.coach.findUnique({ where: { id: coachId } });
+  if (!coach) throw new ApiError(404, "coach_not_found", "Coach not found.");
+  if (!coach.active) {
+    throwFields(fieldError("coachId", "inactive_reference", "Coach must be active."));
   }
-  const coachId = asString(body.coachId);
-  const coach = coachId ? await deps.prisma.coach.findUnique({ where: { id: coachId } }) : null;
-  if (coachId && !coach) throw new ApiError(404, "coach_not_found", "Coach not found.");
+  const gymClass = await deps.prisma.gymClass.findUnique({ where: { id: classId } });
+  if (!gymClass) throw new ApiError(404, "class_not_found", "Class not found.");
+  if (!gymClass.active) {
+    throwFields(fieldError("classId", "inactive_reference", "Class must be active."));
+  }
   const created = await deps.prisma.gymSession.create({
     data: {
       classId,
-      coachId: coach?.id ?? null,
+      coachId: coach.id,
       startsAt: new Date(startsAt),
       endsAt: new Date(endsAt),
       capacity,
       status: asString(body.status) === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
-      customerPrice: String(customerPrice),
-      coachRate: coach ? coach.defaultRate : "0",
-      coachRateType: coach ? coach.rateType : "PER_SESSION",
+      customerPrice,
+      coachRate: coach.defaultRate,
+      coachRateType: coach.rateType,
     },
   });
   await writeAudit(deps, {
@@ -254,26 +277,36 @@ export async function patchAdminSession(
   const session = await deps.prisma.gymSession.findUnique({ where: { id } });
   if (!session) throw new ApiError(404, "session_not_found", "Session not found.");
   const body = await readJson(req);
-  if (typeof body.capacity === "number") {
-    const consumed = await sessionConsumedCapacity(deps, id);
-    if (body.capacity < consumed) {
-      throw new ApiError(
-        400,
-        "capacity_exceeded",
-        "Capacity cannot be reduced below current consumption.",
-        {
-          details: { consumed, requested: body.capacity },
-        },
-      );
-    }
+  if ("coachRate" in body || "coachRatePhp" in body || "coachRateType" in body) {
+    throw new ApiError(422, "validation_failed", "Session rate snapshots are immutable.", {
+      fieldErrors: [
+        fieldError(
+          "coachRate",
+          "read_only",
+          "Updating a coach default rate never rewrites session snapshots.",
+        ),
+      ],
+    });
   }
+  const startsAt = optionalString(body, "startsAt", 40);
+  const endsAt = optionalString(body, "endsAt", 40);
+  if (startsAt || endsAt) {
+    assertSessionWindow(
+      startsAt ?? session.startsAt.toISOString(),
+      endsAt ?? session.endsAt.toISOString(),
+    );
+  }
+  const capacity = intValue(body, "capacity", 1, 200, false);
+  if (typeof capacity === "number") {
+    await updateSessionCapacity(deps, id, capacity);
+  }
+  const customerPrice = moneyValue(body, "customerPrice", false);
   const updated = await deps.prisma.gymSession.update({
     where: { id },
     data: {
-      ...(asString(body.startsAt) ? { startsAt: new Date(asString(body.startsAt) as string) } : {}),
-      ...(asString(body.endsAt) ? { endsAt: new Date(asString(body.endsAt) as string) } : {}),
-      ...(typeof body.capacity === "number" ? { capacity: body.capacity } : {}),
-      ...(body.customerPrice !== undefined ? { customerPrice: String(body.customerPrice) } : {}),
+      ...(startsAt ? { startsAt: new Date(startsAt) } : {}),
+      ...(endsAt ? { endsAt: new Date(endsAt) } : {}),
+      ...(customerPrice !== undefined && customerPrice !== null ? { customerPrice } : {}),
       ...(asString(body.status) === "DRAFT" || asString(body.status) === "PUBLISHED"
         ? { status: asString(body.status) as "DRAFT" | "PUBLISHED" }
         : {}),
@@ -326,4 +359,59 @@ export async function postCancelSession(
     newReservationsBlocked: true,
     affectedBookings: affected,
   });
+}
+
+function parseSpecialties(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  if (value.length > FIELD_CONSTRAINTS.coach.specialties.maxItems) {
+    throwFields(
+      fieldError(
+        "specialties",
+        "too_long",
+        `At most ${FIELD_CONSTRAINTS.coach.specialties.maxItems} specialties.`,
+      ),
+    );
+  }
+  return value.map((item, index) => {
+    if (typeof item !== "string" || !item.trim()) {
+      throwFields(
+        fieldError(`specialties.${index}`, "invalid_type", "Each specialty must be text."),
+      );
+    }
+    const trimmed = item.trim();
+    if (trimmed.length > FIELD_CONSTRAINTS.coach.specialties.itemMax) {
+      throwFields(
+        fieldError(
+          `specialties.${index}`,
+          "too_long",
+          `Specialty must be at most ${FIELD_CONSTRAINTS.coach.specialties.itemMax} characters.`,
+        ),
+      );
+    }
+    return trimmed;
+  });
+}
+
+function assertSessionWindow(startsAt: string, endsAt: string): void {
+  const start = new Date(startsAt);
+  const end = new Date(endsAt);
+  if (Number.isNaN(start.getTime())) {
+    throwFields(fieldError("startsAt", "invalid_format", "startsAt must be an ISO datetime."));
+  }
+  if (Number.isNaN(end.getTime())) {
+    throwFields(fieldError("endsAt", "invalid_format", "endsAt must be an ISO datetime."));
+  }
+  if (end <= start) {
+    throwFields(fieldError("endsAt", "ends_before_start", "endsAt must be after startsAt."));
+  }
+  const maxMs = FIELD_CONSTRAINTS.session.maxDurationHours * 60 * 60 * 1000;
+  if (end.getTime() - start.getTime() > maxMs) {
+    throwFields(
+      fieldError(
+        "endsAt",
+        "duration_too_long",
+        `Session cannot exceed ${FIELD_CONSTRAINTS.session.maxDurationHours} hours.`,
+      ),
+    );
+  }
 }

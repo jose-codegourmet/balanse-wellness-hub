@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Balanse Wellness Hub API (BE-024 contract pack)",
-    "version": "0.1.0",
-    "description": "Machine-readable contract for the wiring phase. HTTP routes are not implemented in this PR; names match BE-001 enums exactly. Hold duration and cutoff are absent from admin settings."
+    "version": "0.2.0",
+    "description": "Machine-readable contract for the wiring phase (BE-024 plus BE-050–BE-054). Hold duration and cutoff are absent from admin settings. Money is whole pesos as decimal strings. Admin lists use CursorPage. Validation failures use ValidationFailed (422)."
   },
   "paths": {
     "/api/public/sessions": {
@@ -37,7 +37,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -86,7 +86,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -135,7 +135,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -184,7 +184,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -233,7 +233,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -282,7 +282,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -329,7 +329,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -343,6 +343,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -378,7 +398,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -427,7 +447,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -441,6 +461,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       },
@@ -474,7 +514,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -523,7 +563,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -537,6 +577,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -572,7 +632,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -621,7 +681,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -635,6 +695,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -670,7 +750,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -684,6 +764,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -719,7 +819,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -768,7 +868,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -782,6 +882,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -817,7 +937,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -831,6 +951,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -842,13 +982,33 @@
         ],
         "operationId": "BE-036_get__api_admin_bookings",
         "summary": "BE-036 GET /api/admin/bookings",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque unsigned base64url cursor. Malformed values return 400.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GenericSuccess"
+                  "$ref": "#/components/schemas/CursorPage"
                 },
                 "example": {
                   "id": "cbookingexample01",
@@ -866,7 +1026,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -915,7 +1075,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -929,6 +1089,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -964,7 +1144,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -978,6 +1158,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -989,13 +1189,45 @@
         ],
         "operationId": "BE-037_get__api_admin_payments",
         "summary": "BE-037 GET /api/admin/payments",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque unsigned base64url cursor. Malformed values return 400.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tab",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "gcash",
+                "counter",
+                "refunds"
+              ]
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GenericSuccess"
+                  "$ref": "#/components/schemas/CursorPage"
                 },
                 "example": {
                   "id": "cbookingexample01",
@@ -1013,7 +1245,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1062,7 +1294,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1111,7 +1343,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1125,6 +1357,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -1160,7 +1412,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1174,6 +1426,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -1209,7 +1481,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1223,6 +1495,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -1258,7 +1550,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1305,7 +1597,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1319,6 +1611,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -1354,7 +1666,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1368,6 +1680,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -1403,7 +1735,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1450,7 +1782,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1464,6 +1796,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -1499,7 +1851,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1513,6 +1865,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -1548,7 +1920,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1562,6 +1934,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       },
@@ -1595,7 +1987,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1609,6 +2001,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -1644,7 +2056,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1691,7 +2103,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1705,6 +2117,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -1740,7 +2172,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1754,6 +2186,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -1789,7 +2241,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1803,6 +2255,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -1814,13 +2286,33 @@
         ],
         "operationId": "BE-039_get__api_admin_cancellation_requests",
         "summary": "BE-039 GET /api/admin/cancellation-requests",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque unsigned base64url cursor. Malformed values return 400.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GenericSuccess"
+                  "$ref": "#/components/schemas/CursorPage"
                 },
                 "example": {
                   "id": "cbookingexample01",
@@ -1838,7 +2330,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1887,7 +2379,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1901,6 +2393,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -1936,7 +2448,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -1950,6 +2462,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -1961,13 +2493,33 @@
         ],
         "operationId": "BE-039_get__api_admin_reschedule_requests",
         "summary": "BE-039 GET /api/admin/reschedule-requests",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque unsigned base64url cursor. Malformed values return 400.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GenericSuccess"
+                  "$ref": "#/components/schemas/CursorPage"
                 },
                 "example": {
                   "id": "cbookingexample01",
@@ -1985,7 +2537,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2034,7 +2586,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2048,6 +2600,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -2083,7 +2655,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2097,6 +2669,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -2132,7 +2724,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2181,7 +2773,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2195,6 +2787,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -2230,7 +2842,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2244,6 +2856,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -2279,7 +2911,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2328,7 +2960,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2377,7 +3009,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2426,7 +3058,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2475,7 +3107,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2524,7 +3156,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2571,7 +3203,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2585,6 +3217,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -2620,7 +3272,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2634,6 +3286,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -2669,7 +3341,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2683,6 +3355,26 @@
           },
           "403": {
             "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
           }
         }
       }
@@ -2718,7 +3410,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2767,7 +3459,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2816,7 +3508,7 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2863,7 +3555,604 @@
             }
           },
           "400": {
-            "description": "Validation or rule error",
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/settings/qr": {
+      "post": {
+        "tags": [
+          "BE-052"
+        ],
+        "operationId": "BE-052_post__api_admin_settings_qr",
+        "summary": "BE-052 POST /api/admin/settings/qr",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "BE-052"
+        ],
+        "operationId": "BE-052_delete__api_admin_settings_qr",
+        "summary": "BE-052 DELETE /api/admin/settings/qr",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/settings/faqs": {
+      "post": {
+        "tags": [
+          "BE-053"
+        ],
+        "operationId": "BE-053_post__api_admin_settings_faqs",
+        "summary": "BE-053 POST /api/admin/settings/faqs",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/settings/faqs/{id}": {
+      "patch": {
+        "tags": [
+          "BE-053"
+        ],
+        "operationId": "BE-053_patch__api_admin_settings_faqs_id_",
+        "summary": "BE-053 PATCH /api/admin/settings/faqs/{id}",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "BE-053"
+        ],
+        "operationId": "BE-053_delete__api_admin_settings_faqs_id_",
+        "summary": "BE-053 DELETE /api/admin/settings/faqs/{id}",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/settings/faqs/reorder": {
+      "post": {
+        "tags": [
+          "BE-053"
+        ],
+        "operationId": "BE-053_post__api_admin_settings_faqs_reorder",
+        "summary": "BE-053 POST /api/admin/settings/faqs/reorder",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/settings/policies/{id}/promote": {
+      "post": {
+        "tags": [
+          "BE-053"
+        ],
+        "operationId": "BE-053_post__api_admin_settings_policies_id_promote",
+        "summary": "BE-053 POST /api/admin/settings/policies/{id}/promote",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/dashboard": {
+      "get": {
+        "tags": [
+          "BE-054"
+        ],
+        "operationId": "BE-054_get__api_admin_dashboard",
+        "summary": "BE-054 GET /api/admin/dashboard",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/dashboard/metrics": {
+      "get": {
+        "tags": [
+          "BE-054"
+        ],
+        "operationId": "BE-054_get__api_admin_dashboard_metrics",
+        "summary": "BE-054 GET /api/admin/dashboard/metrics",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
             "content": {
               "application/json": {
                 "schema": {
@@ -2951,6 +4240,218 @@
         "type": "object",
         "additionalProperties": true
       },
+      "CursorPage": {
+        "type": "object",
+        "required": [
+          "items",
+          "nextCursor",
+          "totalCount"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "Exact filtered count. Cheap at MVP scale; may become optional later."
+          },
+          "tab": {
+            "type": "string"
+          },
+          "sort": {
+            "type": "string"
+          }
+        }
+      },
+      "ValidationErrorCode": {
+        "type": "string",
+        "enum": [
+          "required",
+          "too_short",
+          "too_long",
+          "out_of_range",
+          "invalid_format",
+          "invalid_enum",
+          "invalid_type",
+          "ends_before_start",
+          "below_confirmed_count",
+          "duration_too_long",
+          "inactive_reference",
+          "read_only",
+          "unknown_section",
+          "faq_limit",
+          "duplicate_value",
+          "developer_config_forbidden"
+        ]
+      },
+      "ValidationFailed": {
+        "type": "object",
+        "required": [
+          "error",
+          "fieldErrors",
+          "formErrors"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "const": "validation_failed"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "path",
+                "code",
+                "message"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Dotted FE field path, e.g. contact.phone or faqs.2.question"
+                },
+                "code": {
+                  "$ref": "#/components/schemas/ValidationErrorCode"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "formErrors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "code",
+                "message"
+              ],
+              "properties": {
+                "code": {
+                  "$ref": "#/components/schemas/ValidationErrorCode"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "SignedUploadIntent": {
+        "type": "object",
+        "required": [
+          "upload",
+          "objectKey",
+          "bucket",
+          "maxBytes",
+          "contentTypes"
+        ],
+        "properties": {
+          "upload": {
+            "type": "object",
+            "properties": {
+              "signedUrl": {
+                "type": "string"
+              },
+              "token": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "expiresIn": {
+                "type": "integer"
+              }
+            }
+          },
+          "objectKey": {
+            "type": "string"
+          },
+          "bucket": {
+            "type": "string",
+            "enum": [
+              "coach-photos",
+              "marketing-assets"
+            ]
+          },
+          "maxBytes": {
+            "type": "integer"
+          },
+          "contentTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "MetricSeries": {
+        "type": "object",
+        "required": [
+          "metric",
+          "grain",
+          "timezone",
+          "windowDays",
+          "points"
+        ],
+        "properties": {
+          "metric": {
+            "type": "string",
+            "enum": [
+              "gross_sales",
+              "occupancy",
+              "session_count",
+              "coach_cost"
+            ]
+          },
+          "grain": {
+            "type": "string",
+            "enum": [
+              "day"
+            ]
+          },
+          "timezone": {
+            "type": "string",
+            "enum": [
+              "Asia/Manila"
+            ]
+          },
+          "windowDays": {
+            "type": "integer"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "date",
+                "value"
+              ],
+              "properties": {
+                "date": {
+                  "type": "string",
+                  "description": "YYYY-MM-DD in Asia/Manila"
+                },
+                "value": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      },
       "ApiError": {
         "type": "object",
         "required": [
@@ -2969,7 +4470,11 @@
               "target_session_full",
               "check_in_requires_confirmed",
               "completed_blocked_oq10",
-              "illegal_booking_transition"
+              "illegal_booking_transition",
+              "invalid_cursor",
+              "validation_failed",
+              "below_confirmed_count",
+              "conflict"
             ]
           },
           "message": {

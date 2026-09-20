@@ -61,7 +61,7 @@ export type PublicContent = {
     email: string;
     address: string;
   };
-  faqs: { id: string; question: string; answer: string }[];
+  faqs: { id: string; question: string; answer: string; sortOrder?: number }[];
 };
 
 export type CustomerProfile = {

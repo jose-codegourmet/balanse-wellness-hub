@@ -68,4 +68,13 @@ export const API_CONTRACT_ROUTES: ContractRoute[] = [
   { ticket: "BE-042", method: "get", path: "/api/admin/customers/{id}" },
   { ticket: "BE-043", method: "get", path: "/api/admin/settings" },
   { ticket: "BE-043", method: "patch", path: "/api/admin/settings" },
+  { ticket: "BE-052", method: "post", path: "/api/admin/settings/qr" },
+  { ticket: "BE-052", method: "delete", path: "/api/admin/settings/qr" },
+  { ticket: "BE-053", method: "post", path: "/api/admin/settings/faqs" },
+  { ticket: "BE-053", method: "patch", path: "/api/admin/settings/faqs/{id}" },
+  { ticket: "BE-053", method: "delete", path: "/api/admin/settings/faqs/{id}" },
+  { ticket: "BE-053", method: "post", path: "/api/admin/settings/faqs/reorder" },
+  { ticket: "BE-053", method: "post", path: "/api/admin/settings/policies/{id}/promote" },
+  { ticket: "BE-054", method: "get", path: "/api/admin/dashboard" },
+  { ticket: "BE-054", method: "get", path: "/api/admin/dashboard/metrics" },
 ];

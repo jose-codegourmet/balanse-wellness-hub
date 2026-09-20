@@ -18,6 +18,8 @@ Authorisation: `public.is_admin()` → active `staff_members.role = ADMIN` and `
 | `waitlist_entries` / requests / acceptances | — | own | all |
 | `staff_members` / `audit_events` | — | — | admin |
 | `developer_config` | — | — | — (postgres only) |
+| `faqs` | select | select | all |
+| `pending_uploads` | — | — | all |
 
 Negative guarantees:
 

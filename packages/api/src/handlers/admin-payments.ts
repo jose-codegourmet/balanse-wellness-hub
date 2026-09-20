@@ -1,82 +1,135 @@
 import { requireAdmin, resolveActor, writeAudit } from "../auth";
+import { cursorPage, decodeCursor, parseLimit } from "../cursor";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
-import { asString, ok, pagination, readJson, searchParams } from "../http";
+import { asString, ok, readJson, searchParams } from "../http";
 import { money } from "../presenters";
 import { transitionRefund } from "../sql";
+
+const TAB_ALIASES: Record<string, "gcash" | "counter" | "refunds"> = {
+  gcash: "gcash",
+  gcash_pending: "gcash",
+  counter: "counter",
+  pay_at_counter: "counter",
+  refunds: "refunds",
+  refund: "refunds",
+};
 
 export async function getAdminPayments(deps: ApiDeps, req: Request): Promise<Response> {
   requireAdmin(await resolveActor(deps, req));
   const params = searchParams(req);
-  const tab = (params.get("tab") ?? "gcash_pending").toLowerCase();
-  const { page, pageSize, skip } = pagination(params);
+  const tab = TAB_ALIASES[(params.get("tab") ?? "gcash").toLowerCase()];
+  if (!tab) {
+    throw new ApiError(400, "validation_error", "tab must be gcash, counter, or refunds.");
+  }
+  const limit = parseLimit(params.get("limit"));
 
   if (tab === "refunds") {
-    const refundWhere = {
-      status: { in: ["REFUND_PENDING" as const, "REFUNDED" as const] },
+    const sort = "createdAt_desc_id_desc";
+    const cursor = decodeCursor(params.get("cursor"), sort);
+    const filters = { status: { in: ["REFUND_PENDING" as const, "REFUNDED" as const] } };
+    const where = {
+      ...filters,
+      ...(cursor
+        ? {
+            AND: [
+              {
+                OR: [
+                  { createdAt: { lt: new Date(cursor.key as string) } },
+                  { createdAt: new Date(cursor.key as string), id: { lt: cursor.id } },
+                ],
+              },
+            ],
+          }
+        : {}),
     };
-    const total = await deps.prisma.refund.count({ where: refundWhere });
-    const rows = await deps.prisma.refund.findMany({
-      where: refundWhere,
-      skip,
-      take: pageSize,
-      orderBy: { createdAt: "desc" },
-      include: {
-        booking: { include: { profile: true, session: { include: { gymClass: true } } } },
-        payment: true,
-      },
-    });
-    return ok({
-      tab,
-      page,
-      pageSize,
-      total,
-      items: rows.map((row) => ({
-        id: row.id,
-        bookingId: row.bookingId,
-        customerName: row.booking.profile.fullName,
-        session: row.booking.session.gymClass.name,
-        amount: money(row.amount),
-        refundStatus: row.status,
-        paymentStatus: row.payment.status,
-        bookingStatus: row.booking.status,
-        holdExpiresAt: row.booking.holdExpiresAt?.toISOString() ?? null,
-      })),
-    });
-  }
-
-  const where =
-    tab === "pay_at_counter"
-      ? { method: "PAY_AT_COUNTER" as const }
-      : { method: "GCASH" as const, status: { in: ["NONE" as const, "PROOF_SUBMITTED" as const] } };
-
-  const [total, rows] = await Promise.all([
-    deps.prisma.payment.count({ where }),
-    deps.prisma.payment.findMany({
-      where,
-      skip,
-      take: pageSize,
-      orderBy: { createdAt: "desc" },
-      include: {
-        booking: { include: { profile: true, session: { include: { gymClass: true } } } },
-      },
-    }),
-  ]);
-  return ok({
-    tab,
-    page,
-    pageSize,
-    total,
-    items: rows.map((row) => ({
+    const [totalCount, rows] = await Promise.all([
+      deps.prisma.refund.count({ where: filters }),
+      deps.prisma.refund.findMany({
+        where,
+        take: limit + 1,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        include: {
+          booking: { include: { profile: true, session: { include: { gymClass: true } } } },
+          payment: true,
+        },
+      }),
+    ]);
+    const mapped = rows.map((row) => ({
       id: row.id,
       bookingId: row.bookingId,
       customerName: row.booking.profile.fullName,
       session: row.booking.session.gymClass.name,
       amount: money(row.amount),
-      paymentStatus: row.status,
+      refundStatus: row.status,
+      paymentStatus: row.payment.status,
       bookingStatus: row.booking.status,
+      requestedAt: row.createdAt.toISOString(),
       holdExpiresAt: row.booking.holdExpiresAt?.toISOString() ?? null,
-    })),
+    }));
+    return ok({
+      tab,
+      sort,
+      ...cursorPage(mapped, limit, totalCount, sort, (row) => row.requestedAt),
+    });
+  }
+
+  const sort = "holdExpiresAt_asc_id_asc";
+  const cursor = decodeCursor(params.get("cursor"), sort);
+  const cursorClause = cursor
+    ? {
+        AND: [
+          {
+            OR: [
+              { booking: { holdExpiresAt: { gt: new Date(cursor.key as string) } } },
+              {
+                booking: { holdExpiresAt: new Date(cursor.key as string) },
+                id: { gt: cursor.id },
+              },
+            ],
+          },
+        ],
+      }
+    : {};
+
+  const filters =
+    tab === "gcash"
+      ? { method: "GCASH" as const, status: "PROOF_SUBMITTED" as const }
+      : {
+          OR: [
+            { method: "PAY_AT_COUNTER" as const },
+            {
+              booking: { status: "HELD_AWAITING_PAYMENT" as const },
+              NOT: { method: "GCASH" as const },
+            },
+          ],
+        };
+
+  const [totalCount, rows] = await Promise.all([
+    deps.prisma.payment.count({ where: filters }),
+    deps.prisma.payment.findMany({
+      where: { AND: [filters, cursorClause] },
+      take: limit + 1,
+      orderBy: [{ booking: { holdExpiresAt: "asc" } }, { id: "asc" }],
+      include: {
+        booking: { include: { profile: true, session: { include: { gymClass: true } } } },
+      },
+    }),
+  ]);
+  const mapped = rows.map((row) => ({
+    id: row.id,
+    bookingId: row.bookingId,
+    customerName: row.booking.profile.fullName,
+    session: row.booking.session.gymClass.name,
+    amount: money(row.amount),
+    paymentStatus: row.status,
+    bookingStatus: row.booking.status,
+    holdExpiresAt: row.booking.holdExpiresAt?.toISOString() ?? null,
+  }));
+  return ok({
+    tab,
+    sort,
+    ...cursorPage(mapped, limit, totalCount, sort, (row) => row.holdExpiresAt),
   });
 }
 

@@ -30,6 +30,8 @@ model Booking {
   @@index([sessionId, status])
   @@index([profileId, status])
   @@index([holdExpiresAt])
+  @@index([reservedAt, id])
+  @@index([holdExpiresAt, id])
   @@map("bookings")
 }
 
@@ -76,6 +78,7 @@ model Payment {
 
   @@index([status, createdAt])
   @@index([bookingId])
+  @@index([method, status, createdAt])
   @@map("payments")
 }
 
@@ -101,6 +104,7 @@ model Refund {
 
   @@index([status, createdAt])
   @@index([bookingId])
+  @@index([status, createdAt, id])
   @@map("refunds")
 }
 
@@ -145,6 +149,7 @@ model CancellationRequest {
 
   @@index([resolution, requestedAt])
   @@index([bookingId])
+  @@index([resolution, requestedAt, id])
   @@map("cancellation_requests")
 }
 
@@ -172,5 +177,6 @@ model RescheduleRequest {
 
   @@index([resolution, requestedAt])
   @@index([bookingId])
+  @@index([resolution, requestedAt, id])
   @@map("reschedule_requests")
 }

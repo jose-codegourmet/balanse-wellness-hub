@@ -1,6 +1,7 @@
 import { requireAdmin, resolveActor } from "../auth";
+import { cursorPage, decodeCursor, parseLimit } from "../cursor";
 import type { ApiDeps } from "../deps";
-import { asString, ok, pagination, readJson, searchParams } from "../http";
+import { asString, ok, readJson, searchParams } from "../http";
 import { OQ2_UNENFORCED_RULES } from "../settings";
 import {
   resolveCancellationRequest,
@@ -10,14 +11,32 @@ import {
 
 export async function getCancellationRequests(deps: ApiDeps, req: Request): Promise<Response> {
   requireAdmin(await resolveActor(deps, req));
-  const { page, pageSize, skip } = pagination(searchParams(req));
-  const [total, items] = await Promise.all([
-    deps.prisma.cancellationRequest.count({ where: { resolution: "OPEN" } }),
+  const sort = "requestedAt_desc_id_desc";
+  const params = searchParams(req);
+  const limit = parseLimit(params.get("limit"));
+  const cursor = decodeCursor(params.get("cursor"), sort);
+  const filters = { resolution: "OPEN" as const };
+  const where = {
+    ...filters,
+    ...(cursor
+      ? {
+          AND: [
+            {
+              OR: [
+                { requestedAt: { lt: new Date(cursor.key as string) } },
+                { requestedAt: new Date(cursor.key as string), id: { lt: cursor.id } },
+              ],
+            },
+          ],
+        }
+      : {}),
+  };
+  const [totalCount, rows] = await Promise.all([
+    deps.prisma.cancellationRequest.count({ where: filters }),
     deps.prisma.cancellationRequest.findMany({
-      where: { resolution: "OPEN" },
-      skip,
-      take: pageSize,
-      orderBy: { requestedAt: "asc" },
+      where,
+      take: limit + 1,
+      orderBy: [{ requestedAt: "desc" }, { id: "desc" }],
       include: {
         booking: {
           include: { profile: true, session: { include: { gymClass: true } }, refunds: true },
@@ -25,7 +44,17 @@ export async function getCancellationRequests(deps: ApiDeps, req: Request): Prom
       },
     }),
   ]);
-  return ok({ page, pageSize, total, items });
+  const items = rows.map((row) => ({
+    id: row.id,
+    bookingId: row.bookingId,
+    customerName: row.booking.profile.fullName,
+    className: row.booking.session.gymClass.name,
+    reason: row.reason,
+    requestedAt: row.requestedAt.toISOString(),
+    resolution: row.resolution,
+    bookingStatus: row.booking.status,
+  }));
+  return ok({ sort, ...cursorPage(items, limit, totalCount, sort, (row) => row.requestedAt) });
 }
 
 export async function completeCancellation(
@@ -78,14 +107,32 @@ export async function rejectCancellation(
 
 export async function getRescheduleRequests(deps: ApiDeps, req: Request): Promise<Response> {
   requireAdmin(await resolveActor(deps, req));
-  const { page, pageSize, skip } = pagination(searchParams(req));
-  const [total, rows] = await Promise.all([
-    deps.prisma.rescheduleRequest.count({ where: { resolution: "OPEN" } }),
+  const sort = "requestedAt_desc_id_desc";
+  const params = searchParams(req);
+  const limit = parseLimit(params.get("limit"));
+  const cursor = decodeCursor(params.get("cursor"), sort);
+  const filters = { resolution: "OPEN" as const };
+  const where = {
+    ...filters,
+    ...(cursor
+      ? {
+          AND: [
+            {
+              OR: [
+                { requestedAt: { lt: new Date(cursor.key as string) } },
+                { requestedAt: new Date(cursor.key as string), id: { lt: cursor.id } },
+              ],
+            },
+          ],
+        }
+      : {}),
+  };
+  const [totalCount, rows] = await Promise.all([
+    deps.prisma.rescheduleRequest.count({ where: filters }),
     deps.prisma.rescheduleRequest.findMany({
-      where: { resolution: "OPEN" },
-      skip,
-      take: pageSize,
-      orderBy: { requestedAt: "asc" },
+      where,
+      take: limit + 1,
+      orderBy: [{ requestedAt: "desc" }, { id: "desc" }],
       include: {
         booking: { include: { profile: true } },
         fromSession: { include: { gymClass: true, coach: true } },
@@ -99,14 +146,21 @@ export async function getRescheduleRequests(deps: ApiDeps, req: Request): Promis
       ? await sessionConsumedCapacity(deps, row.targetSession.id)
       : null;
     items.push({
-      ...row,
+      id: row.id,
+      bookingId: row.bookingId,
+      customerName: row.booking.profile.fullName,
+      fromSessionId: row.fromSessionId,
+      targetSessionId: row.targetSessionId,
+      className: row.fromSession.gymClass.name,
+      requestedAt: row.requestedAt.toISOString(),
+      resolution: row.resolution,
       targetRemaining: row.targetSession
         ? row.targetSession.capacity - (targetConsumed ?? 0)
         : null,
       unenforcedRules: [...OQ2_UNENFORCED_RULES],
     });
   }
-  return ok({ page, pageSize, total, items });
+  return ok({ sort, ...cursorPage(items, limit, totalCount, sort, (row) => row.requestedAt) });
 }
 
 export async function approveReschedule(

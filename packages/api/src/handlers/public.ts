@@ -162,10 +162,22 @@ export async function getPublicClasses(deps: ApiDeps): Promise<Response> {
 
 export async function getPublicContent(deps: ApiDeps): Promise<Response> {
   const settings = await readSettings(deps);
+  const faqs = await deps.prisma.faqItem.findMany({
+    orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
+  });
   const body = {
     about: settings.content.about,
-    contact: settings.content.contact,
-    faqs: settings.content.faqs,
+    contact: {
+      phone: settings.business.phone,
+      email: settings.business.email,
+      address: settings.business.address,
+    },
+    faqs: faqs.map((row) => ({
+      id: row.id,
+      question: row.question,
+      answer: row.answer,
+      sortOrder: row.sortOrder,
+    })),
     business: {
       name: settings.business.name,
       phone: settings.business.phone,

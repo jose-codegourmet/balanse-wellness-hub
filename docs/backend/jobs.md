@@ -21,6 +21,8 @@ If `pg_cron` is available the migration attempts:
 
 `*/5 * * * *` → `balanse-expire-holds-promote`
 
+`15 * * * *` → `balanse-reap-pending-uploads` (`SELECT public.reap_pending_uploads()`) — BE-052 orphan signed-upload rows older than 24 hours.
+
 ## Observability
 
 The function returns `{"expired": n, "promoted": n}`. Audit actions: `hold.expire`, `waitlist.promote`.
