@@ -1,5 +1,5 @@
 import { dehydrate, HydrationBoundary, type QueryClient } from "@tanstack/react-query";
-import { type ReactNode, Suspense } from "react";
+import type { ReactNode } from "react";
 import { makeQueryClient } from "./client";
 
 type Prefetchable = Parameters<QueryClient["prefetchQuery"]>[0];
@@ -14,9 +14,5 @@ type Prefetchable = Parameters<QueryClient["prefetchQuery"]>[0];
 export async function prefetchAdmin(options: readonly object[], children: ReactNode) {
   const client = makeQueryClient();
   await Promise.all(options.map((option) => client.prefetchQuery(option as Prefetchable)));
-  return (
-    <HydrationBoundary state={dehydrate(client)}>
-      <Suspense fallback={null}>{children}</Suspense>
-    </HydrationBoundary>
-  );
+  return <HydrationBoundary state={dehydrate(client)}>{children}</HydrationBoundary>;
 }

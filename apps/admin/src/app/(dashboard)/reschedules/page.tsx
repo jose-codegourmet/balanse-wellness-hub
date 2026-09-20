@@ -1,6 +1,7 @@
 import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { AdminQuerySuspense } from "@/components/balanse/page/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import {
   adminBookingsQuery,
@@ -22,6 +23,8 @@ export default async function Page() {
       adminCustomersQuery(principal.role),
       adminBookingsQuery(principal.role),
     ],
-    <RescheduleQueuePage />,
+    <AdminQuerySuspense>
+      <RescheduleQueuePage />
+    </AdminQuerySuspense>,
   );
 }

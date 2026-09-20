@@ -1,6 +1,7 @@
 import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { AdminQuerySuspense } from "@/components/balanse/page/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { adminClassesQuery, adminCoachesQuery, adminReportsQuery } from "@/lib/query/queries";
 import { ReportsPage } from "@/modules/admin/ReportsPage";
@@ -26,6 +27,8 @@ export default async function Page() {
       adminCoachesQuery(principal.role),
       adminReportsQuery(principal.role, DEFAULT_REPORT_FILTERS),
     ],
-    <ReportsPage />,
+    <AdminQuerySuspense>
+      <ReportsPage />
+    </AdminQuerySuspense>,
   );
 }
