@@ -4,15 +4,17 @@ import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react";
 import { Button } from "../button/Button";
 
 import { ButtonGroup, ButtonGroupSeparator, ButtonGroupText } from "./ButtonGroup";
+import { buttonGroupDefaultValues } from "./ButtonGroup.defaults";
 
 const meta: Meta<typeof ButtonGroup> = {
   title: "Components/ButtonGroup",
   component: ButtonGroup,
   tags: ["autodocs"],
+  args: { ...buttonGroupDefaultValues },
 };
 
 export default meta;
-type Story = StoryObj<typeof ButtonGroup>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: (args) => (
@@ -25,8 +27,11 @@ export const Default: Story = {
 };
 
 export const Vertical: Story = {
+  args: {
+    orientation: "vertical",
+  },
   render: (args) => (
-    <ButtonGroup {...args} orientation="vertical">
+    <ButtonGroup {...args}>
       <Button variant="outline">Top</Button>
       <Button variant="outline">Middle</Button>
       <Button variant="outline">Bottom</Button>

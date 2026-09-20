@@ -1,42 +1,54 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 import { Textarea } from "./Textarea";
+import { textareaDefaultValues } from "./Textarea.defaults";
 
 const meta: Meta<typeof Textarea> = {
   title: "Components/Textarea",
   component: Textarea,
   tags: ["autodocs"],
+  args: { ...textareaDefaultValues },
 };
 
 export default meta;
-type Story = StoryObj<typeof Textarea>;
+type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  args: {
-    placeholder: "Type your message here.",
-  },
-  render: (args) => <Textarea {...args} className="max-w-md" />,
+export const Default: Story = {};
+
+export const Sizes: Story = {
+  render: (args) => (
+    <div className="grid max-w-md gap-3">
+      <Textarea {...args} size="sm" placeholder="Small" />
+      <Textarea {...args} size="md" placeholder="Medium" />
+      <Textarea {...args} size="lg" placeholder="Large" />
+    </div>
+  ),
 };
 
-export const WithPlaceholder: Story = {
+export const Invalid: Story = {
   args: {
-    placeholder: "Tell us about your project goals, timeline, and budget.",
+    invalid: true,
+    defaultValue: "Too short.",
   },
-  render: (args) => <Textarea {...args} className="max-w-md" rows={4} />,
 };
 
 export const Disabled: Story = {
   args: {
     disabled: true,
-    defaultValue: "This field is read-only and cannot be edited.",
+    defaultValue: "This field cannot be edited.",
   },
-  render: (args) => <Textarea {...args} className="max-w-md" />,
 };
 
-export const WithValue: Story = {
+export const ReadOnly: Story = {
   args: {
-    defaultValue:
-      "Thanks for reaching out! We received your message and will respond within one business day.",
+    readOnly: true,
+    defaultValue: "Opening hours are managed by the studio and cannot be edited here.",
   },
-  render: (args) => <Textarea {...args} className="max-w-md" rows={4} />,
+};
+
+export const AutoResize: Story = {
+  args: {
+    autoResize: true,
+    defaultValue: "Type more lines and the field grows with the content.",
+  },
 };

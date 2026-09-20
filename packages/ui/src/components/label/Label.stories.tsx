@@ -1,22 +1,21 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 import { Input } from "../input/Input";
+
 import { Label } from "./Label";
+import { labelDefaultValues } from "./Label.defaults";
 
 const meta: Meta<typeof Label> = {
   title: "Components/Label",
   component: Label,
   tags: ["autodocs"],
+  args: { ...labelDefaultValues },
 };
 
 export default meta;
-type Story = StoryObj<typeof Label>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {
-    children: "Email address",
-    htmlFor: "email",
-  },
   render: (args) => (
     <div className="grid max-w-sm gap-2">
       <Label {...args} />
@@ -43,18 +42,6 @@ export const Disabled: Story = {
         Email address
       </Label>
       <Input id="disabled-email" type="email" disabled placeholder="Disabled field" />
-    </div>
-  ),
-};
-
-export const WithDescription: Story = {
-  render: (args) => (
-    <div className="grid max-w-sm gap-2">
-      <Label {...args} htmlFor="username">
-        Username
-      </Label>
-      <Input id="username" placeholder="johndoe" />
-      <p className="text-xs text-muted-foreground">This is your public display name.</p>
     </div>
   ),
 };

@@ -1,46 +1,49 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 import { Input } from "./Input";
+import { inputDefaultValues } from "./Input.defaults";
 
 const meta: Meta<typeof Input> = {
   title: "Components/Input",
   component: Input,
   tags: ["autodocs"],
+  args: { ...inputDefaultValues },
 };
 
 export default meta;
-type Story = StoryObj<typeof Input>;
+type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  args: {
-    type: "text",
-    placeholder: "Enter text...",
-  },
-  render: (args) => <Input {...args} className="max-w-sm" />,
+export const Default: Story = {};
+
+export const Sizes: Story = {
+  render: (args) => (
+    <div className="grid max-w-sm gap-3">
+      <Input {...args} size="sm" placeholder="Small" />
+      <Input {...args} size="md" placeholder="Medium" />
+      <Input {...args} size="lg" placeholder="Large" />
+    </div>
+  ),
 };
 
-export const WithPlaceholder: Story = {
+export const Invalid: Story = {
   args: {
-    type: "email",
-    placeholder: "name@example.com",
+    invalid: true,
+    defaultValue: "invalid-email",
+    placeholder: "Email address",
   },
-  render: (args) => <Input {...args} className="max-w-sm" />,
 };
 
 export const Disabled: Story = {
   args: {
     disabled: true,
-    placeholder: "Disabled input",
     defaultValue: "Cannot edit",
+    placeholder: "Disabled input",
   },
-  render: (args) => <Input {...args} className="max-w-sm" />,
 };
 
-export const WithError: Story = {
+export const ReadOnly: Story = {
   args: {
-    "aria-invalid": true,
-    defaultValue: "invalid-email",
-    placeholder: "Email address",
+    readOnly: true,
+    defaultValue: "Mon–Fri 7:00–20:00",
   },
-  render: (args) => <Input {...args} className="max-w-sm" />,
 };

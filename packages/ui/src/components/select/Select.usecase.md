@@ -8,49 +8,33 @@ Composable single-value dropdown with portal-positioned popup, groups, and scrol
 
 ## When to use
 
-- Picking one option from a fixed list
-- Grouped option lists with labels and separators
+| Situation | Use |
+| --- | --- |
+| Short admin enum pickers (status, type, 2–8 options) | **NativeSelect** |
+| Searchable or long lists | **Select** |
+
+Use Select when you need custom option UI, grouping, or a portal menu. Do not delete NativeSelect.
 
 ## When NOT to use
 
 - Typeahead / chips → use **Combobox** instead
-- Native OS picker → use **NativeSelect** instead
+- Native OS picker for a short enum → use **NativeSelect** instead
 - Navigational actions → use **DropdownMenu** instead
 
 ## Examples
 
-### Basic select
+### Size and invalid
+
+`SelectTrigger` accepts `size` (`sm | default | md | lg`) and `invalid`. `md` matches `default` (`h-8`).
 
 ```tsx
 <Select>
-  <SelectTrigger className="w-[200px]">
+  <SelectTrigger size="md" className="w-[200px]">
     <SelectValue placeholder="Select a fruit" />
   </SelectTrigger>
   <SelectContent>
     <SelectItem value="apple">Apple</SelectItem>
     <SelectItem value="banana">Banana</SelectItem>
-    <SelectItem value="orange">Orange</SelectItem>
-  </SelectContent>
-</Select>
-```
-
-### Grouped options
-
-```tsx
-<Select defaultValue="dog">
-  <SelectTrigger className="w-[220px]">
-    <SelectValue placeholder="Choose a class" />
-  </SelectTrigger>
-  <SelectContent>
-    <SelectGroup>
-      <SelectLabel>Pets</SelectLabel>
-      <SelectItem value="dog">Dog</SelectItem>
-      <SelectItem value="cat">Cat</SelectItem>
-    </SelectGroup>
-    <SelectGroup>
-      <SelectLabel>Other</SelectLabel>
-      <SelectItem value="fish">Fish</SelectItem>
-    </SelectGroup>
   </SelectContent>
 </Select>
 ```
@@ -58,3 +42,6 @@ Composable single-value dropdown with portal-positioned popup, groups, and scrol
 ## Gotchas
 
 - `"use client"` required; compose Select → Trigger/Value + Content/Item.
+- Trigger reads `useFieldContext()` for `aria-invalid` / `aria-describedby`.
+- Value schema: `selectSchema` is `z.string()`.
+- 44px mobile touch target: `className="max-sm:min-h-11"` on `SelectTrigger`.

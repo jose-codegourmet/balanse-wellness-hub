@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Styled single-line text input for forms.
+Styled single-line text input for forms, with a shared `sm | md | lg` size scale.
 
 ## When to use
 
@@ -20,7 +20,7 @@ Styled single-line text input for forms.
 
 ### Basic text input
 
-Accepts native input props like `type` and `placeholder`.
+`md` (`h-8`) is the default and matches the previous un-sized input.
 
 ```tsx
 import { Input } from "@balanse/ui";
@@ -28,14 +28,19 @@ import { Input } from "@balanse/ui";
 <Input type="email" placeholder="name@example.com" className="max-w-sm" />
 ```
 
-### Invalid state
+### Invalid and read-only
 
-Set `aria-invalid` to apply error styling.
+`invalid` sets `aria-invalid` (or inherit it from `Field`). `readOnly` is muted and non-editable, distinct from `disabled` (which is faded + non-interactive).
 
 ```tsx
-<Input aria-invalid defaultValue="invalid-email" placeholder="Email address" className="max-w-sm" />
+<Input invalid defaultValue="invalid-email" />
+<Input readOnly defaultValue="Mon–Fri 7:00–20:00" />
+<Input disabled defaultValue="Cannot edit" />
 ```
 
 ## Gotchas
 
-- No `"use client"` (usable from Server Components if props stay serializable).
+- `"use client"` because it reads `useFieldContext()`. Safe outside a `Field`.
+- Size scale is `sm | md | lg`. Prefer `md` in new code.
+- 44px mobile touch target is opt-in: `className="max-sm:min-h-11"`.
+- Value schema: `inputSchema` is `z.string()`.

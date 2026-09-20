@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Styled multi-line `<textarea>` with focus, invalid, and disabled styles.
+Styled multi-line `<textarea>` with shared sizes, distinct read-only/disabled treatments, and optional height sync.
 
 ## When to use
 
@@ -13,26 +13,30 @@ Styled multi-line `<textarea>` with focus, invalid, and disabled styles.
 ## When NOT to use
 
 - Single-line text → use **Input** instead
-- Rich text / markdown → use a dedicated editor (not in this set)
+- Rich text / markdown → use **RichTextarea** (`FE-SHR-010`)
 
 ## Examples
 
-### Placeholder
+### Default rows and sizes
+
+`rows` defaults to `3`. `md` keeps today’s `min-h-16`.
 
 ```tsx
 <Textarea className="max-w-md" placeholder="Type your message here." />
+<Textarea size="lg" rows={6} />
 ```
 
-### With default value
+### Auto-resize
+
+`autoResize` syncs height from `scrollHeight` so Firefox and Safari match Chromium. `field-sizing-content` remains as a progressive enhancement.
 
 ```tsx
-<Textarea
-  className="max-w-md"
-  rows={4}
-  defaultValue="Thanks for reaching out! We will respond within one business day."
-/>
+<Textarea autoResize placeholder="Keeps growing as you type." />
 ```
 
 ## Gotchas
 
-- No `"use client"`; wire validation/`aria-invalid` yourself.
+- `"use client"` because of `useFieldContext()` and the resize effect.
+- `readOnly` is muted (`bg-muted/50`) and still focusable; `disabled` is faded and not editable.
+- 44px mobile touch target: `className="max-sm:min-h-11"` (usually unnecessary on textarea).
+- Value schema: `textareaSchema` is `z.string()`.

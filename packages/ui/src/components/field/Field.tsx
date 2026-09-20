@@ -1,10 +1,40 @@
 "use client";
 
 import { cva, type VariantProps } from "class-variance-authority";
-import { useMemo } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import { cn } from "../../lib/utils";
 import { Label } from "../label/Label";
 import { Separator } from "../separator/Separator";
+
+import type { FieldProps } from "./Field.schema";
+
+export type FieldContextValue = {
+  id: string;
+  descriptionId: string;
+  errorId: string;
+  invalid: boolean;
+  disabled: boolean;
+  describedBy?: string;
+  registerDescription: () => void;
+  unregisterDescription: () => void;
+  registerError: () => void;
+  unregisterError: () => void;
+};
+
+const FieldContext = createContext<FieldContextValue | undefined>(undefined);
+
+function useFieldContext(): FieldContextValue | undefined {
+  return useContext(FieldContext);
+}
 
 function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
   return (
@@ -68,16 +98,65 @@ const fieldVariants = cva("group/field flex w-full gap-2 data-[invalid=true]:tex
 function Field({
   className,
   orientation = "vertical",
+  invalid = false,
+  disabled = false,
   ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof fieldVariants>) {
+}: FieldProps) {
+  const reactId = useId();
+  const id = `field-${reactId}`;
+  const descriptionId = `${id}-description`;
+  const errorId = `${id}-error`;
+  const [hasDescription, setHasDescription] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  const registerDescription = useCallback(() => setHasDescription(true), []);
+  const unregisterDescription = useCallback(() => setHasDescription(false), []);
+  const registerError = useCallback(() => setHasError(true), []);
+  const unregisterError = useCallback(() => setHasError(false), []);
+
+  const describedBy = [hasDescription ? descriptionId : null, hasError ? errorId : null]
+    .filter(Boolean)
+    .join(" ");
+
+  const context = useMemo<FieldContextValue>(
+    () => ({
+      id,
+      descriptionId,
+      errorId,
+      invalid,
+      disabled,
+      describedBy: describedBy || undefined,
+      registerDescription,
+      unregisterDescription,
+      registerError,
+      unregisterError,
+    }),
+    [
+      describedBy,
+      descriptionId,
+      disabled,
+      errorId,
+      id,
+      invalid,
+      registerDescription,
+      registerError,
+      unregisterDescription,
+      unregisterError,
+    ],
+  );
+
   return (
-    <div
-      role="group"
-      data-slot="field"
-      data-orientation={orientation}
-      className={cn(fieldVariants({ orientation }), className)}
-      {...props}
-    />
+    <FieldContext.Provider value={context}>
+      <div
+        role="group"
+        data-slot="field"
+        data-orientation={orientation}
+        data-invalid={invalid || undefined}
+        data-disabled={disabled || undefined}
+        className={cn(fieldVariants({ orientation }), className)}
+        {...props}
+      />
+    </FieldContext.Provider>
   );
 }
 
@@ -91,10 +170,13 @@ function FieldContent({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function FieldLabel({ className, ...props }: React.ComponentProps<typeof Label>) {
+function FieldLabel({ className, htmlFor, ...props }: React.ComponentProps<typeof Label>) {
+  const field = useFieldContext();
+
   return (
     <Label
       data-slot="field-label"
+      htmlFor={htmlFor ?? field?.id}
       className={cn(
         "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:border-primary/30 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border *:data-[slot=field]:p-2.5 dark:has-data-checked:border-primary/20 dark:has-data-checked:bg-primary/10",
         "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
@@ -118,9 +200,17 @@ function FieldTitle({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function FieldDescription({ className, ...props }: React.ComponentProps<"p">) {
+function FieldDescription({ className, id, ...props }: React.ComponentProps<"p">) {
+  const field = useFieldContext();
+
+  useLayoutEffect(() => {
+    field?.registerDescription();
+    return () => field?.unregisterDescription();
+  }, [field?.registerDescription, field?.unregisterDescription]);
+
   return (
     <p
+      id={id ?? field?.descriptionId}
       data-slot="field-description"
       className={cn(
         "text-left text-sm leading-normal font-normal text-muted-foreground group-has-data-horizontal/field:text-balance [[data-variant=legend]+&]:-mt-1.5",
@@ -167,10 +257,12 @@ function FieldError({
   className,
   children,
   errors,
+  id,
   ...props
 }: React.ComponentProps<"div"> & {
   errors?: Array<{ message?: string } | undefined>;
 }) {
+  const field = useFieldContext();
   const content = useMemo(() => {
     if (children) {
       return children;
@@ -193,12 +285,21 @@ function FieldError({
     );
   }, [children, errors]);
 
+  useLayoutEffect(() => {
+    if (!content) {
+      return;
+    }
+    field?.registerError();
+    return () => field?.unregisterError();
+  }, [content, field?.registerError, field?.unregisterError]);
+
   if (!content) {
     return null;
   }
 
   return (
     <div
+      id={id ?? field?.errorId}
       role="alert"
       data-slot="field-error"
       className={cn("text-sm font-normal text-destructive", className)}
@@ -208,6 +309,8 @@ function FieldError({
     </div>
   );
 }
+
+export type FieldVariantProps = VariantProps<typeof fieldVariants>;
 
 export {
   Field,
@@ -220,4 +323,6 @@ export {
   FieldSeparator,
   FieldSet,
   FieldTitle,
+  fieldVariants,
+  useFieldContext,
 };

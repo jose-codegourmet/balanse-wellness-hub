@@ -10,6 +10,7 @@ Primary interactive control for actions and links-as-buttons.
 
 - Form submits and primary CTAs
 - Secondary/outline actions and icon-only controls
+- In-flight actions via `loading`
 
 ## When NOT to use
 
@@ -20,7 +21,9 @@ Primary interactive control for actions and links-as-buttons.
 
 ### Variants and sizes
 
-`variant` covers `default | outline | secondary | ghost | destructive | link`; `size` covers `default | xs | sm | lg | icon | icon-xs | icon-sm | icon-lg`.
+`variant` covers `default | secondary | outline | ghost | destructive | link`.
+
+Canonical sizes are `sm | md | lg`. `md` is an alias of the historical `default` (`h-8`). Escape hatches kept for Pagination / Calendar / dense chrome: `default`, `xs`, `icon`, `icon-xs`, `icon-sm`, `icon-lg`.
 
 ```tsx
 import { Button } from "@balanse/ui";
@@ -35,9 +38,17 @@ import { Button } from "@balanse/ui";
 </div>;
 ```
 
-### Link rendered as a button
+### Loading
 
-Base UI `render` polymorphism keeps the styling while changing the element.
+`loading` swaps in `Spinner` in place of a leading icon, sets `disabled` and `aria-busy`, and keeps the label so width does not jump.
+
+```tsx
+<Button loading>Save changes</Button>
+```
+
+### Composition via `render` (not `asChild`)
+
+This package uses Base UI. Polymorphism is the `render` prop — there is no Radix `asChild`.
 
 ```tsx
 import Link from "next/link";
@@ -47,4 +58,7 @@ import Link from "next/link";
 
 ## Gotchas
 
-- Invalid state styles are driven by `aria-invalid`
+- Invalid state styles are driven by `aria-invalid`.
+- `md` and `default` render identically. Prefer `md` in new code; keep passing `default` where Pagination already does.
+- 44px mobile touch target is opt-in: `className="max-sm:min-h-11"`. Do not use `size="lg"` for that.
+- Spinner inside a loading button is `aria-hidden` so it does not nest `role="status"` under `aria-busy`.
