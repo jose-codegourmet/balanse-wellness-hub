@@ -14,6 +14,9 @@ export type PublicNavId =
 
 export type CustomerNavId = "home" | "schedule" | "profile" | "achievements";
 
+/** Submenu under the Profile destination (FE-CUS-017). */
+export type CustomerProfileSectionId = "basic" | "account" | "password" | "policies";
+
 export type AdminNavId =
   | "dashboard"
   | "schedule"
@@ -46,6 +49,14 @@ export type AdminNavItem = {
   href: string;
 };
 
+export type CustomerProfileSection = {
+  id: CustomerProfileSectionId;
+  label: string;
+  href: string;
+  /** Stable `data-section` selector carried over from the single-page profile. */
+  dataSection: "profile" | "account" | "password" | "policy-history";
+};
+
 /** Public set. Schedule and Classes resolve to the landing calendar (OQ-NAV). */
 export const PUBLIC_NAV_ITEMS: readonly PublicNavItem[] = [
   { id: "schedule", label: "Schedule", href: "/#schedule" },
@@ -63,6 +74,33 @@ export const CUSTOMER_NAV_ITEMS: readonly CustomerNavItem[] = [
   { id: "schedule", label: "Schedule", href: "/portal/schedule" },
   { id: "profile", label: "Profile", href: "/portal/profile" },
   { id: "achievements", label: "Achievements (TBD)", href: "/portal/achievements" },
+] as const;
+
+/**
+ * Profile settings submenu. Basic profile is the default landing section, and
+ * policies & waivers stays a first-class destination because FE-CUS-005
+ * requires the accepted-document history to remain reachable.
+ */
+export const CUSTOMER_PROFILE_SECTIONS: readonly CustomerProfileSection[] = [
+  { id: "basic", label: "Basic profile", href: "/portal/profile", dataSection: "profile" },
+  {
+    id: "account",
+    label: "Account settings",
+    href: "/portal/profile/account",
+    dataSection: "account",
+  },
+  {
+    id: "password",
+    label: "Password settings",
+    href: "/portal/profile/password",
+    dataSection: "password",
+  },
+  {
+    id: "policies",
+    label: "Policies & waivers",
+    href: "/portal/profile/policies",
+    dataSection: "policy-history",
+  },
 ] as const;
 
 /** Admin set in the prescribed order, Reports between Classes and Staff. */
@@ -114,4 +152,20 @@ export function isCustomerNavActive(item: CustomerNavItem, pathname: string): bo
 
 export function isAdminNavActive(item: AdminNavItem, pathname: string): boolean {
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
+}
+
+/** Resolves a `/portal/profile/*` pathname to the submenu entry it belongs to. */
+export function customerProfileSectionFromPath(pathname: string): CustomerProfileSection {
+  const match = CUSTOMER_PROFILE_SECTIONS.find(
+    (section) =>
+      section.id !== "basic" &&
+      (pathname === section.href || pathname.startsWith(`${section.href}/`)),
+  );
+  return match ?? CUSTOMER_PROFILE_SECTIONS[0];
+}
+
+export function customerProfileSection(id: CustomerProfileSectionId): CustomerProfileSection {
+  const match = CUSTOMER_PROFILE_SECTIONS.find((section) => section.id === id);
+  if (!match) throw new Error(`Unknown profile section: ${id}`);
+  return match;
 }

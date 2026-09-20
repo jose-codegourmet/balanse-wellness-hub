@@ -1,11 +1,12 @@
 "use client";
 
-import { CUSTOMER_NAV_ITEMS, isCustomerNavActive } from "@balanse/domain";
+import { CUSTOMER_NAV_ITEMS, customerInitials, isCustomerNavActive } from "@balanse/domain";
 import { BrandLockup } from "@balanse/ui";
 import { ArrowLeft, CalendarCheck2, CalendarDays, Flower2, Menu, UserRound, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { BalansePortalLogout } from "@/components/balanse/portal/BalansePortalLogout";
 import { Button } from "@/components/jabkit/button";
 import {
   Dialog,
@@ -14,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/jabkit/dialog";
+import "@/components/balanse/portal/portal.css";
 
 const icons = {
   home: CalendarCheck2,
@@ -22,7 +24,12 @@ const icons = {
   achievements: Flower2,
 };
 
-export function BalansePortalNavigation() {
+export type PortalAccount = {
+  fullName: string;
+  email: string;
+};
+
+export function BalansePortalNavigation({ account }: { account?: PortalAccount }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const links = (
@@ -51,15 +58,34 @@ export function BalansePortalNavigation() {
       <div className="portal-nav-heading">Your wellness space</div>
       {links}
       <div className="portal-sidebar-bottom">
-        <Flower2 size={28} strokeWidth={1} aria-hidden="true" />
-        <p>
-          Make space
-          <br />
-          for yourself.
+        {/* Decoration only. It is the first thing to go when the column is
+            short, so the account footer never gets pushed out of reach. */}
+        <p className="portal-sidebar-motto">
+          <Flower2 size={26} strokeWidth={1} aria-hidden="true" />
+          <span>
+            Make space
+            <br />
+            for yourself.
+          </span>
         </p>
-        <Link href="/">
-          <ArrowLeft size={16} aria-hidden="true" /> Back to the studio
-        </Link>
+        {account ? (
+          <div className="portal-sidebar-account">
+            <span className="profile-avatar portal-account-avatar" aria-hidden="true">
+              {customerInitials(account.fullName)}
+            </span>
+            <span className="portal-account-identity">
+              <strong>{account.fullName}</strong>
+              <span>{account.email}</span>
+            </span>
+          </div>
+        ) : null}
+        <div className="portal-sidebar-actions">
+          <Link href="/" onClick={() => setOpen(false)}>
+            <ArrowLeft size={17} strokeWidth={1.5} aria-hidden="true" />
+            <span>Back to the studio</span>
+          </Link>
+          <BalansePortalLogout />
+        </div>
       </div>
     </>
   );

@@ -1,3 +1,4 @@
+import { getMockAdapter } from "@balanse/mock";
 import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -11,10 +12,14 @@ export default async function PortalLayout({ children }: { children: React.React
   if (principal.role === "guest") {
     redirect("/login?returnTo=/portal");
   }
+  // Identifies whose session the sidebar logout ends (FE-CUS-018).
+  const profile = await getMockAdapter().getMe(principal.customerId);
   return (
     <PortalGuard>
       <div className="portal-shell">
-        <PortalNav />
+        <PortalNav
+          account={profile ? { fullName: profile.fullName, email: profile.email } : undefined}
+        />
         <div className="portal-workspace">
           <main id="main-content" className="min-w-0 flex-1">
             {children}

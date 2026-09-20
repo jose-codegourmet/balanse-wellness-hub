@@ -8,9 +8,22 @@
 .portal-nav-links svg { flex-shrink: 0; }
 .portal-nav-links a:hover { background: var(--background); color: var(--foreground); }
 .portal-nav-links a[aria-current="page"] { background: var(--secondary); color: var(--foreground); font-weight: 600; }
-.portal-sidebar-bottom { margin-top: auto; padding: 3rem 1rem 0; color: var(--muted-foreground); }
-.portal-sidebar-bottom p { font-family: var(--font-display); font-size: 1.65rem; line-height: 1.25; margin: 1rem 0 2rem; }
-.portal-sidebar-bottom a { display: flex; align-items: center; gap: .6rem; font-size: .75rem; }
+.portal-sidebar-bottom { margin-top: auto; display: grid; gap: 1rem; padding: 2rem 1rem 0; color: var(--muted-foreground); }
+.portal-sidebar-motto { display: none; }
+.portal-sidebar-motto span { display: block; font-family: var(--font-display); font-size: 1.5rem; line-height: 1.25; margin-top: .75rem; }
+/* The decoration only appears when the column has room for it, so the account
+   footer never turns a short viewport into three competing stacked blocks. */
+@media (min-height: 800px) { .portal-sidebar-motto { display: block; } }
+.portal-sidebar-account { display: flex; align-items: center; gap: .7rem; min-width: 0; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+.portal-account-avatar { width: 2.4rem; height: 2.4rem; font-size: .85rem; }
+.portal-account-identity { display: grid; min-width: 0; }
+.portal-account-identity strong { font-size: .78rem; font-weight: 600; color: var(--foreground); }
+.portal-account-identity > span, .portal-account-identity strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.portal-account-identity > span { font-size: .68rem; margin-top: .15rem; }
+.portal-sidebar-actions { display: grid; gap: .25rem; }
+.portal-sidebar-actions a, .portal-logout-button { display: flex; align-items: center; justify-content: flex-start; gap: .75rem; width: 100%; min-height: 2.6rem; padding: .5rem 1rem; border-radius: .65rem; font-size: .75rem; font-weight: 400; color: var(--muted-foreground); }
+.portal-sidebar-actions a:hover, .portal-logout-button:hover { background: var(--background); color: var(--foreground); }
+.portal-sidebar-actions svg { flex-shrink: 0; }
 .portal-workspace { display: flex; flex-direction: column; min-width: 0; }
 .portal-workspace > main > section { padding-inline: clamp(1.25rem, 3vw, 3rem); }
 .portal-footer { margin: auto clamp(1.25rem, 3vw, 3rem) 0; padding: 1.5rem 0; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 1rem; font-size: .7rem; color: var(--muted-foreground); }
@@ -24,7 +37,14 @@
 .profile-summary h2 { font-size: 1.5rem; }
 .profile-summary p { font-size: .8rem; color: var(--muted-foreground); margin-top: .3rem; overflow-wrap: anywhere; }
 .profile-account-label { margin-left: auto; display: flex; align-items: center; gap: .5rem; font-size: .7rem; color: var(--muted-foreground); }
-.profile-columns { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; gap: 1.5rem; }
+.profile-layout { display: grid; grid-template-columns: 15rem minmax(0, 1fr); align-items: start; gap: 1.5rem; }
+.profile-submenu { position: sticky; top: 1.5rem; }
+.profile-submenu ul { display: grid; gap: .25rem; }
+.profile-submenu a { display: flex; align-items: center; gap: .7rem; min-height: 2.9rem; padding: .6rem .9rem; border-radius: .65rem; font-size: .8rem; color: var(--muted-foreground); transition: background 180ms, color 180ms; }
+.profile-submenu svg { flex-shrink: 0; }
+.profile-submenu a:hover { background: var(--card); color: var(--foreground); }
+.profile-submenu a[aria-current="page"] { background: var(--secondary); color: var(--foreground); font-weight: 600; }
+.profile-sections { display: grid; gap: 1.5rem; min-width: 0; }
 .profile-panel { background: var(--card); border-radius: 1rem; padding: clamp(1.25rem, 2.5vw, 2rem); min-width: 0; }
 .profile-section-title { display: flex; align-items: center; gap: .75rem; }
 .profile-section-title > svg { color: var(--muted-foreground); flex-shrink: 0; }
@@ -37,13 +57,26 @@
 .profile-form-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; align-items: center; padding-top: .75rem; }
 .profile-form-actions > span { color: var(--muted-foreground); font-size: .7rem; }
 .profile-save-button { min-height: 2.9rem; padding-inline: 1.25rem; border-radius: 999px; gap: 1rem; }
-.profile-secondary { display: grid; gap: 1.5rem; }
-.profile-logout { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); display: grid; gap: .85rem; }
-.profile-logout-button { width: 100%; min-height: 2.9rem; border-radius: 999px; gap: .6rem; }
+.profile-fieldset { display: grid; gap: 1.4rem; border: 0; padding: 0; min-width: 0; }
+.profile-fieldset:disabled { opacity: .6; }
+.profile-field-hint { font-size: .7rem; color: var(--muted-foreground); }
+.profile-save-status { display: flex; align-items: center; gap: .5rem; font-size: .78rem; color: var(--muted-foreground); }
+.profile-save-status:empty { display: none; }
+.profile-connected-account { display: flex; flex-wrap: wrap; align-items: center; gap: .85rem; margin-top: 1.5rem; padding: 1rem; border: 1px solid var(--border); border-radius: .75rem; background: var(--background); }
+.profile-connected-icon { display: grid; place-items: center; flex-shrink: 0; width: 2.5rem; height: 2.5rem; border-radius: 50%; background: var(--secondary); color: var(--muted-foreground); }
+.profile-connected-identity { display: grid; min-width: 0; flex: 1 1 8rem; }
+.profile-connected-identity strong { font-size: .85rem; font-weight: 600; }
+.profile-connected-identity > span { font-size: .72rem; color: var(--muted-foreground); margin-top: .2rem; overflow-wrap: anywhere; }
+.profile-connected-state { display: inline-flex; align-items: center; gap: .35rem; padding: .3rem .6rem; border-radius: 999px; background: var(--secondary); color: var(--muted-foreground); font-size: .68rem; }
+.profile-connected-action { min-height: 2.5rem; border-radius: 999px; font-size: .75rem; }
+.profile-connected-action[aria-disabled="true"] { opacity: .6; cursor: not-allowed; }
+.profile-mock-note { display: flex; align-items: center; gap: .45rem; margin-top: .75rem; font-size: .7rem; color: var(--muted-foreground); }
+.profile-mock-note-lead { margin-top: 1.25rem; }
 .profile-auth-method { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-top: 1.5rem; font-size: .8rem; }
 .profile-auth-method > span { color: var(--muted-foreground); }
 .profile-auth-method strong { font-weight: 500; background: var(--background); padding: .4rem .7rem; border-radius: .4rem; }
-.profile-secondary section > p { font-size: .78rem; line-height: 1.7; color: var(--muted-foreground); }
+.profile-section-link { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); font-size: .78rem; }
+.profile-section-link a { display: inline-flex; align-items: center; gap: .4rem; text-decoration: underline; text-underline-offset: .25rem; }
 .profile-policy-list { margin-top: 1rem; }
 .profile-policy-list li { display: flex; align-items: start; gap: .65rem; padding: 1rem 0; border-top: 1px solid var(--border); }
 .profile-policy-list svg { flex-shrink: 0; color: var(--muted-foreground); margin-top: .15rem; }
@@ -51,14 +84,26 @@
 .profile-policy-list span { display: block; color: var(--muted-foreground); font-size: .7rem; margin-top: .35rem; }
 .portal-menu-drawer { position: fixed; inset: 0 auto 0 0; transform: none; translate: none; width: min(20rem, 90vw); max-width: none; height: 100dvh; max-height: 100dvh; border-radius: 0; display: flex; flex-direction: column; gap: 0; padding: 2.5rem 1.25rem 1.5rem; background: var(--card); overflow-y: auto; }
 .portal-menu-close { position: absolute; top: .75rem; right: .75rem; }
-@media (max-width: 1100px) { .profile-columns { grid-template-columns: minmax(0, 1fr); } .profile-secondary { grid-template-columns: repeat(2, minmax(0, 1fr)); } .profile-account-label { display: none; } }
+/* Brand treatment for the logout confirm (FE-CUS-018). The vendored Jabkit
+   alert-dialog stays pristine; only these classes restyle it. */
+.portal-logout-dialog { gap: 1.25rem; max-width: 24rem; border-radius: 1rem; padding: 1.5rem; background: var(--card); }
+.portal-logout-dialog-media { width: 2.75rem; height: 2.75rem; border-radius: 999px; background: var(--secondary); color: var(--muted-foreground); }
+.portal-logout-dialog-title { font-size: 1.5rem; letter-spacing: -.025em; font-weight: 400; }
+.portal-logout-dialog-footer { margin: 0; padding: 1.25rem 0 0; border-top: 1px solid var(--border); background: transparent; border-radius: 0; }
+.portal-logout-dialog-footer button { min-height: 2.9rem; border-radius: 999px; }
+@media (max-width: 1100px) {
+  .profile-layout { grid-template-columns: minmax(0, 1fr); }
+  .profile-submenu { position: static; margin-bottom: .5rem; }
+  .profile-submenu ul { display: flex; gap: .4rem; overflow-x: auto; padding-bottom: .35rem; scrollbar-width: thin; }
+  .profile-submenu a { white-space: nowrap; background: var(--card); }
+  .profile-account-label { display: none; }
+}
 @media (max-width: 767px) {
   .portal-shell { display: flex; flex-direction: column; }
   .portal-sidebar { display: none; }
   .portal-workspace { flex: 1; }
   .portal-mobile-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; position: sticky; top: 0; z-index: 30; background: var(--card); border-bottom: 1px solid var(--border); }
   .portal-profile { padding-top: 2rem; }
-  .profile-secondary { grid-template-columns: minmax(0, 1fr); }
   .profile-summary { gap: 1rem; margin-block: 1.75rem; }
   .profile-summary h2 { font-size: 1.3rem; }
   .profile-form-actions { align-items: stretch; flex-direction: column; }

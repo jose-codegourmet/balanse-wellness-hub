@@ -1,7 +1,10 @@
 "use client";
 
-import { BalansePortalNavigation } from "@/components/balanse/portal/BalansePortalNavigation";
+import {
+  BalansePortalNavigation,
+  type PortalAccount,
+} from "@/components/balanse/portal/BalansePortalNavigation";
 
-export function PortalNav() {
-  return <BalansePortalNavigation />;
+export function PortalNav({ account }: { account?: PortalAccount }) {
+  return <BalansePortalNavigation account={account} />;
 }
