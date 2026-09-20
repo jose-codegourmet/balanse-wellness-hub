@@ -33,9 +33,7 @@ export function SalesSeriesChart({ series }: SalesSeriesChartProps) {
     sales: point.value,
   }));
   const total = series.points.reduce((sum, point) => sum + point.value, 0);
-  const summary = rows
-    .map((row) => `${row.label}: ${formatPeso(row.sales)}`)
-    .join("; ");
+  const summary = rows.map((row) => `${row.label}: ${formatPeso(row.sales)}`).join("; ");
 
   return (
     <DashboardTile span="chart" aria-labelledby="gross-sales-heading">
@@ -45,8 +43,7 @@ export function SalesSeriesChart({ series }: SalesSeriesChartProps) {
             Today&apos;s Sales — 14 days
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Paid bookings by Manila session day. Zero is a real empty day, not a
-            placeholder.
+            Paid bookings by Manila session day. Zero is a real empty day, not a placeholder.
           </p>
         </div>
         <p className="font-mono text-sm tabular-nums text-muted-foreground">

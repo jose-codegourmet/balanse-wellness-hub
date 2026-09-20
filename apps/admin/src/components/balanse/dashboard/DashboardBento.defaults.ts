@@ -22,9 +22,7 @@ export const dashboardBentoSkeletonTiles: BentoSkeletonTileSpec[] = [
   { id: "coach-cost", span: dashboardTileSpanClass.metric, variant: "stat" },
 ];
 
-export function dashboardSkeletonTilesForRole(
-  canViewCoachCost: boolean,
-): BentoSkeletonTileSpec[] {
+export function dashboardSkeletonTilesForRole(canViewCoachCost: boolean): BentoSkeletonTileSpec[] {
   if (canViewCoachCost) return dashboardBentoSkeletonTiles;
   return dashboardBentoSkeletonTiles.filter((tile) => tile.id !== "coach-cost");
 }

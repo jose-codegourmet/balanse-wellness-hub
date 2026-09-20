@@ -16,7 +16,9 @@ export function NeedsAttentionTile({ items }: NeedsAttentionTileProps) {
         Needs Attention
       </p>
       {allClear ? (
-        <p className="mt-6 text-lg text-muted-foreground">All clear — nothing waiting for review.</p>
+        <p className="mt-6 text-lg text-muted-foreground">
+          All clear — nothing waiting for review.
+        </p>
       ) : (
         <ul className="mt-4 divide-y divide-border">
           {items.map((item) => {

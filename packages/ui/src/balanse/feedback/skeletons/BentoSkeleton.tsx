@@ -24,7 +24,10 @@ function TileBody({ variant }: { variant: BentoSkeletonTileSpec["variant"] }) {
         <Skeleton className="mt-3 h-3 w-56" />
         <div className="mt-6 overflow-hidden rounded-lg border border-border">
           {countKeys("row", 4).map((rowKey) => (
-            <div key={rowKey} className="flex gap-3 border-b border-border/60 px-3 py-2 last:border-b-0">
+            <div
+              key={rowKey}
+              className="flex gap-3 border-b border-border/60 px-3 py-2 last:border-b-0"
+            >
               {countKeys("cell", 5).map((cellKey) => (
                 <Skeleton key={cellKey} className="h-4 flex-1" />
               ))}
@@ -87,10 +90,7 @@ export function BentoSkeleton({
           {resolved.map((tile) => (
             <div
               key={tile.id}
-              className={cn(
-                "rounded-xl border border-border bg-card p-4 md:p-5",
-                tile.span,
-              )}
+              className={cn("rounded-xl border border-border bg-card p-4 md:p-5", tile.span)}
             >
               <TileBody variant={tile.variant} />
             </div>

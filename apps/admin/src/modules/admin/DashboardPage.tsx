@@ -205,13 +205,13 @@ export function DashboardPage({
 
         <AdminStatStrip stats={stats} />
 
-        {data.series?.gross_sales ? (
-          <SalesSeriesChart series={data.series.gross_sales} />
-        ) : null}
+        {data.series?.gross_sales ? <SalesSeriesChart series={data.series.gross_sales} /> : null}
 
         <DashboardTile span="metric">
           <p className="text-sm text-muted-foreground">Today&apos;s Sales</p>
-          <p className="mt-2 font-display text-2xl tabular-nums">{formatPeso(data.todaysSalesPhp)}</p>
+          <p className="mt-2 font-display text-2xl tabular-nums">
+            {formatPeso(data.todaysSalesPhp)}
+          </p>
         </DashboardTile>
         <DashboardTile span="metric">
           <p className="text-sm text-muted-foreground">Pending Refunds</p>
