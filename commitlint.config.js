@@ -19,5 +19,7 @@ export default {
         "assets",
       ],
     ],
+    // Asset commits often start with ticket ids (ASSET-015) or acronyms (CDN).
+    "subject-case": [0],
   },
 };
