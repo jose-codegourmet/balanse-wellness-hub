@@ -146,3 +146,46 @@ export function bookingCreatedToastId(status: BookingStatus): PortalToastId {
   if (status === "HELD_AWAITING_PAYMENT") return "booking.held-awaiting-payment";
   return "booking.reserved";
 }
+
+/**
+ * Admin write confirmations (FE-ADM-019). Reuses `PortalToastTone` — do not
+ * fork a second tone vocabulary. Keep this list to writes the admin form kit
+ * actually performs; later form tickets append their own ids.
+ */
+export const ADMIN_TOAST_IDS = ["class.saved", "class.save-failed", "form.validation-failed"] as const;
+
+export type AdminToastId = (typeof ADMIN_TOAST_IDS)[number];
+
+export type AdminToastCopy = {
+  id: AdminToastId;
+  tone: PortalToastTone;
+  title: string;
+  description: string;
+};
+
+type ExhaustiveAdminToastCopy = { [K in AdminToastId]: AdminToastCopy };
+
+export const ADMIN_TOAST_COPY = {
+  "class.saved": {
+    id: "class.saved",
+    tone: "success",
+    title: "Class saved",
+    description: "The class list is updated.",
+  },
+  "class.save-failed": {
+    id: "class.save-failed",
+    tone: "error",
+    title: "Class not saved",
+    description: "Those changes could not be saved. Try again.",
+  },
+  "form.validation-failed": {
+    id: "form.validation-failed",
+    tone: "error",
+    title: "Check the form",
+    description: "Fix the highlighted fields and try again.",
+  },
+} as const satisfies ExhaustiveAdminToastCopy;
+
+export function adminToastCopy(id: AdminToastId): AdminToastCopy {
+  return ADMIN_TOAST_COPY[id];
+}
