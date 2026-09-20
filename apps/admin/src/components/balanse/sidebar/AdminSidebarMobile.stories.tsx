@@ -9,13 +9,9 @@ const meta: Meta<typeof AdminSidebarMobile> = {
   component: AdminSidebarMobile,
   tags: ["autodocs"],
   args: { ...adminSidebarMobileDefaultValues },
-  decorators: [
-    (Story) => (
-      <div className="w-[360px] [&_header]:flex [&_header]:md:flex">
-        <Story />
-      </div>
-    ),
-  ],
+  parameters: {
+    viewport: { defaultViewport: "mobile" },
+  },
 };
 
 export default meta;
