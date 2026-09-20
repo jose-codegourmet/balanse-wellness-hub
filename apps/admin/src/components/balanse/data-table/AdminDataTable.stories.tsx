@@ -1,8 +1,6 @@
-import { BALANSE_BREAKPOINTS } from "@balanse/config";
 import { FeedbackState } from "@balanse/ui";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import type { ColumnDef } from "@tanstack/react-table";
-import type { ReactNode } from "react";
 
 import { AdminDataTable } from "./AdminDataTable";
 import { adminDataTableDefaultValues } from "./AdminDataTable.defaults";
@@ -56,27 +54,6 @@ function generateRows(count: number): DemoRow[] {
     coach: coaches[index % coaches.length],
     status: statuses[index % statuses.length],
   }));
-}
-
-function Frame({
-  width,
-  dark = false,
-  children,
-}: {
-  width: number;
-  dark?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <div
-      className={
-        dark ? "dark bg-background p-4 text-foreground" : "bg-background p-4 text-foreground"
-      }
-      style={{ width }}
-    >
-      {children}
-    </div>
-  );
 }
 
 const meta: Meta<typeof AdminDataTable<DemoRow>> = {
@@ -215,17 +192,13 @@ export const PrimaryLinkColumn: Story = {
 };
 
 export const Mobile360: Story = {
-  render: (args) => (
-    <Frame width={BALANSE_BREAKPOINTS.mobile}>
-      <AdminDataTable {...args} tableId="story-360" />
-    </Frame>
-  ),
+  args: { tableId: "story-360" },
+  parameters: {
+    viewport: { defaultViewport: "mobile" },
+  },
 };
 
 export const DarkTheme: Story = {
-  render: (args) => (
-    <Frame width={BALANSE_BREAKPOINTS.desktop} dark>
-      <AdminDataTable {...args} tableId="story-dark" />
-    </Frame>
-  ),
+  args: { tableId: "story-dark" },
+  globals: { theme: "dark" },
 };
