@@ -1,12 +1,17 @@
 "use client";
 
+import { BALANSE_BREAKPOINTS } from "@balanse/config";
 import { Button, FormPageSkeleton } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Path } from "react-hook-form";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
-import { AdminWizard, AdminWizardStepPanel } from "@/components/balanse/wizard/AdminWizard";
+import {
+  AdminWizard,
+  AdminWizardStepPanel,
+  useMinWidth,
+} from "@/components/balanse/wizard/AdminWizard";
 import type {
   AdminWizardStep,
   AdminWizardSurface,
@@ -48,6 +53,7 @@ export const classWizardSteps: AdminWizardStep[] = [
 ];
 
 const CLOSE_HREF = "/classes";
+const CLASS_FORM_ID = "class-form";
 const DEFAULTS_NOTE =
   "Session values override class defaults. Do not store coach compensation as class information.";
 
@@ -90,6 +96,7 @@ export function ClassFormPage({
 
   return (
     <AdminForm
+      id={CLASS_FORM_ID}
       key={existing?.id ?? (isNew ? "new" : `pending-${classId}`)}
       schema={classFormSchema}
       defaultValues={defaultValues}
@@ -139,6 +146,7 @@ function ClassWizardFields({
   const [internalStep, setInternalStep] = useState(stepProp ?? 1);
   const current = stepProp ?? internalStep;
   const isLast = current >= classWizardSteps.length;
+  const mdUp = useMinWidth(BALANSE_BREAKPOINTS.tablet);
 
   return (
     <AdminWizard
@@ -169,7 +177,8 @@ function ClassWizardFields({
       footer={
         <FormActions
           submitLabel="Save"
-          hideSubmit={isNew && !isLast}
+          formId={CLASS_FORM_ID}
+          hideSubmit={isNew && !isLast && mdUp}
           cancelHref={CLOSE_HREF}
           guard={guard}
         >

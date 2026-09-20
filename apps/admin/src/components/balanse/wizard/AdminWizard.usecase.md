@@ -40,4 +40,5 @@ Responsive admin create/edit shell: a desktop modal with a stepper, and a mobile
 - Keep every step's fields mounted. Inactive steps use `hidden` so React Hook Form still registers them for the final submit.
 - `surface="overlay"` is a dialog at `≥768px` and a full-bleed page below that — never a nested-scroll sheet on mobile.
 - Share `useUnsavedChangesGuard` between the wizard close handlers and `FormActions` so Escape and Cancel open the same confirm.
+- Dialog footers portal outside the `<form>`. Set `AdminForm id` and `FormActions formId` so Save still calls `requestSubmit`.
 - Do not hand-edit the vendored `stepper-with-titles` source; pass `className` to drop the `min-w-[350px]` default.

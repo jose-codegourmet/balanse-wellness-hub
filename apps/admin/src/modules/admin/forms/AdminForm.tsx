@@ -263,6 +263,7 @@ export function FormActions({
   className,
   children,
   guard: guardProp,
+  formId,
 }: FormActionsProps) {
   const { formState } = useFormContext();
   const ownedGuard = useUnsavedChangesGuard(formState.isDirty);
@@ -275,7 +276,17 @@ export function FormActions({
     >
       {children}
       {hideSubmit ? null : (
-        <Button type="submit" loading={formState.isSubmitting}>
+        <Button
+          type="submit"
+          form={formId}
+          loading={formState.isSubmitting}
+          onClick={(event) => {
+            if (event.currentTarget.form || !formId) return;
+            event.preventDefault();
+            const node = document.getElementById(formId);
+            if (node instanceof HTMLFormElement) node.requestSubmit();
+          }}
+        >
           {submitLabel}
         </Button>
       )}

@@ -33,7 +33,7 @@ export function AdminWizardStepPanel({ children }: AdminWizardStepPanelProps) {
   return <>{children}</>;
 }
 
-function useMinWidth(px: number) {
+export function useMinWidth(px: number) {
   const [matches, setMatches] = useState(false);
 
   useEffect(() => {

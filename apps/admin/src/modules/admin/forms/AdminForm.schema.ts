@@ -55,4 +55,9 @@ export type FormActionsProps = {
   children?: ReactNode;
   /** Share one guard with a wizard shell so Escape / close use the same confirm. */
   guard?: UnsavedChangesGuard;
+  /**
+   * Associates the submit control with a portaled footer (dialog). Matches
+   * `AdminForm`'s `id`.
+   */
+  formId?: string;
 };
