@@ -6,6 +6,7 @@ import { getMockAdapter } from "@balanse/mock";
 import { Button, FeedbackState, LocalizedSkeleton } from "@balanse/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { notify } from "@/modules/notifications/notify";
 
 export function RescheduleRequest({
   booking,
@@ -91,7 +92,10 @@ export function RescheduleRequest({
           setStatus("submitting");
           void getMockAdapter()
             .createRescheduleRequest(booking.id, targetId)
-            .then(() => router.push(`/portal/bookings/${booking.id}`));
+            .then(() => {
+              notify.portal("reschedule.submitted");
+              router.push(`/portal/bookings/${booking.id}`);
+            });
         }}
       >
         Submit Reschedule Request

@@ -6,6 +6,7 @@ import { getMockAdapter } from "@balanse/mock";
 import { FeedbackState, LocalizedSkeleton } from "@balanse/ui";
 import { useState } from "react";
 import { ImageUpload } from "@/components/balanse/ImageUpload";
+import { notify } from "@/modules/notifications/notify";
 
 export function GcashProofPage({
   booking,
@@ -74,8 +75,10 @@ export function GcashProofPage({
                   const next = await getMockAdapter().uploadPaymentProof(current.id);
                   setCurrent(next);
                   setStatus("submitted");
+                  notify.portal("payment.proof-submitted");
                 } catch {
                   setStatus("failed");
+                  notify.portal("payment.proof-failed");
                   throw new Error("Proof upload failed");
                 }
               }}
