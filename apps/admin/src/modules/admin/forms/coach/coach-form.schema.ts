@@ -3,12 +3,16 @@ import { z } from "zod";
 
 export const coachFormSchema = z
   .object({
-    name: z.string().trim().min(1).max(FIELD_CONSTRAINTS.coach.name.max),
+    name: z.string().trim().min(1, "Enter a coach name.").max(FIELD_CONSTRAINTS.coach.name.max),
     specialties: z
       .array(z.string().trim().min(1).max(FIELD_CONSTRAINTS.coach.specialties.itemMax))
       .max(FIELD_CONSTRAINTS.coach.specialties.maxItems)
       .default([]),
-    shortBio: z.string().trim().min(1).max(FIELD_CONSTRAINTS.coach.shortBio.max),
+    shortBio: z
+      .string()
+      .trim()
+      .min(1, "Enter a short bio.")
+      .max(FIELD_CONSTRAINTS.coach.shortBio.max),
     photoKey: z.string().nullable().default(null),
     active: z.boolean(),
     /** Mock field name. Integer pesos — not `defaultRate` / `php_decimal`. */

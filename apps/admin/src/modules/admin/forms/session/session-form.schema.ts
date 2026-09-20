@@ -38,10 +38,10 @@ export function checkCanApproveReschedule(target: PublicSession) {
 }
 
 const sessionFields = {
-  classId: z.string().min(1),
-  coachId: z.string().min(1),
-  startsAt: z.string().min(1),
-  endsAt: z.string().min(1),
+  classId: z.string().min(1, "Choose a class."),
+  coachId: z.string().min(1, "Choose a coach."),
+  startsAt: z.string().min(1, "Set a start time."),
+  endsAt: z.string().min(1, "Set an end time."),
   /** Mock field name. Integer pesos — not `customerPrice` / `php_decimal`. */
   pricePhp: z.coerce.number().int().min(FIELD_CONSTRAINTS.session.customerPrice.min),
   capacity: z.coerce

@@ -3,8 +3,12 @@ import { z } from "zod";
 import { nullableInt } from "../nullable-int";
 
 export const classFormSchema = z.object({
-  name: z.string().trim().min(1).max(FIELD_CONSTRAINTS.class.name.max),
-  shortDescription: z.string().trim().min(1).max(FIELD_CONSTRAINTS.class.shortDescription.max),
+  name: z.string().trim().min(1, "Enter a class name.").max(FIELD_CONSTRAINTS.class.name.max),
+  shortDescription: z
+    .string()
+    .trim()
+    .min(1, "Enter a short description.")
+    .max(FIELD_CONSTRAINTS.class.shortDescription.max),
   defaultDurationMinutes: nullableInt(
     FIELD_CONSTRAINTS.class.defaultDurationMinutes.min,
     FIELD_CONSTRAINTS.class.defaultDurationMinutes.max,
