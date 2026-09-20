@@ -18,6 +18,14 @@ import "./coaches-directory.css";
 /** The one place the group hero points at, so ASSET-015's replacement is a single edit. */
 const HERO_ASSET_ID = "coaches-b";
 
+/**
+ * The 16:9 delivery carries a wide band of empty studio wall above the heads so
+ * a layout can set heading copy over it. This one sets the heading above the
+ * image instead, so the band is cropped away (anchored to the bottom in CSS)
+ * and the hero reads as the banner the reference asks for.
+ */
+const HERO_FRAME_RATIO = "2:1";
+
 function Portrait({ coach }: { coach: PublicCoach }) {
   const hasPhoto = !resolveCoachPhotoSources(coach.photoKey).isPlaceholder;
   return hasPhoto ? (
@@ -91,6 +99,7 @@ export function BalanseCoachesDirectory({
             assetId={HERO_ASSET_ID}
             loading="eager"
             sizes="(min-width: 1280px) 1216px, 100vw"
+            frameRatio={HERO_FRAME_RATIO}
             className="coaches-hero-group-media"
             frameLabel="The coaching team"
             frameCaption="Group portrait coming soon."

@@ -21,6 +21,7 @@ export function MarketingImage({
   frameTone = "cream",
   frameLabel,
   frameCaption,
+  frameRatio,
   imgClassName,
   loading = "lazy",
   sizes = "(max-width: 640px) 100vw, 960px",
@@ -33,6 +34,12 @@ export function MarketingImage({
   frameTone?: BrandFrameTone;
   frameLabel?: string;
   frameCaption?: string;
+  /**
+   * Renders the slot at a ratio other than the asset's own, for compositions
+   * that crop a delivery rather than show all of it. `data-aspect-ratio` keeps
+   * reporting the asset's native ratio.
+   */
+  frameRatio?: string;
   imgClassName?: string;
   loading?: "lazy" | "eager";
   sizes?: string;
@@ -56,10 +63,11 @@ export function MarketingImage({
 
   return (
     <AspectRatio
-      ratio={aspectRatioNumber(ratio)}
+      ratio={aspectRatioNumber(frameRatio ?? ratio)}
       className={cn("overflow-hidden rounded-xl bg-secondary/40", className)}
       data-asset-id={assetId}
       data-aspect-ratio={ratio}
+      data-frame-ratio={frameRatio}
       data-asset-src={bundled?.webp}
       data-master-path={fromCoach?.masterJpeg}
     >
