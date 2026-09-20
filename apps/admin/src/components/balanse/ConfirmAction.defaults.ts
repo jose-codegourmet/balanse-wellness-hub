@@ -6,4 +6,6 @@ export const confirmActionDefaultValues: Partial<ConfirmActionProps> = {
   description: "This writes through the mock adapter.",
   confirmLabel: "Confirm",
   variant: "default",
+  requireReason: false,
+  reasonLabel: "Reason",
 };

@@ -81,6 +81,8 @@ export type PolicyAcceptance = {
 export type CustomerBooking = {
   id: string;
   customerId: string;
+  /** Display name only — same field BE-050 already returns on queue rows. */
+  customerName: string;
   sessionId: string;
   status: BookingStatus;
   paymentMethod: PaymentMethod | null;

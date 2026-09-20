@@ -11,6 +11,7 @@ import { FeedbackState } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ConfirmAction } from "@/components/balanse/ConfirmAction";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { adminNowIso } from "@/lib/clock";
 import { adminCancellationsQuery, adminCustomersQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
@@ -20,11 +21,7 @@ export function CancellationQueuePage({ empty }: { empty?: boolean }) {
   const customersQuery = useSuspenseQuery(adminCustomersQuery(principal.role));
   const rows = empty ? [] : rowsQuery.data;
   const customers = customersQuery.data;
-  const stamp = auditConfirmationCopy(
-    "This cancellation action",
-    "Admin",
-    "2026-09-16T02:50:00.000Z",
-  );
+  const stamp = auditConfirmationCopy("This cancellation action", "Admin", adminNowIso());
 
   return (
     <AdminPageShell title="Cancellation Requests">

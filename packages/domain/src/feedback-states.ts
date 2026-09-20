@@ -18,6 +18,8 @@ export const FEEDBACK_STATE_IDS = [
   "admin.no-customers",
   "admin.no-sessions",
   "admin.no-staff",
+  "admin.no-classes",
+  "admin.no-coaches",
 ] as const;
 
 export type FeedbackStateId = (typeof FEEDBACK_STATE_IDS)[number];
@@ -131,5 +133,17 @@ export const FEEDBACK_STATE_DEFAULTS: Record<FeedbackStateId, FeedbackStateCopy>
     kind: "empty",
     title: "No staff found",
     description: "No staff accounts match this view.",
+  },
+  "admin.no-classes": {
+    id: "admin.no-classes",
+    kind: "empty",
+    title: "No classes yet",
+    description: "Add a class to start publishing sessions on the studio calendar.",
+  },
+  "admin.no-coaches": {
+    id: "admin.no-coaches",
+    kind: "empty",
+    title: "No coaches yet",
+    description: "Add a coach to assign sessions and publish the schedule.",
   },
 };

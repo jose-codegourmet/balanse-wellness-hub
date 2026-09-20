@@ -23,6 +23,7 @@ import { ConfirmAction } from "@/components/balanse/ConfirmAction";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { FullscreenCalendar } from "@/components/jabkit/fullscreen-calendar";
 import type { FullscreenCalendarDay } from "@/components/jabkit/fullscreen-calendar/FullscreenCalendar.types";
+import { adminTodayYmd } from "@/lib/clock";
 import {
   adminBookingsQuery,
   adminClassesQuery,
@@ -52,9 +53,9 @@ export function ScheduleListPage({ empty }: { empty?: boolean }) {
   const bookingsQuery = useQuery(adminBookingsQuery(principal.role));
   const sessions = empty ? [] : sessionsQuery.data;
   const bookings = bookingsQuery.data ?? [];
-  const [cursor, setCursor] = useState(() => startOfManilaMonth("2026-09-16"));
+  const [cursor, setCursor] = useState(() => startOfManilaMonth(adminTodayYmd()));
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedDay, setSelectedDay] = useState("2026-09-16");
+  const [selectedDay, setSelectedDay] = useState(() => adminTodayYmd());
 
   const calendarData = useMemo<FullscreenCalendarDay[]>(() => {
     const byDay = new Map<string, FullscreenCalendarDay["events"]>();

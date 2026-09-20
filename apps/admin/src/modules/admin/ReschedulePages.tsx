@@ -13,6 +13,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ConfirmAction } from "@/components/balanse/ConfirmAction";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { adminNowIso } from "@/lib/clock";
 import {
   adminBookingsQuery,
   adminCustomersQuery,
@@ -29,11 +30,7 @@ export function RescheduleQueuePage({ empty }: { empty?: boolean }) {
   const customers = customersQuery.data;
   const bookings = bookingsQuery.data;
   const [message, setMessage] = useState<string | null>(null);
-  const stamp = auditConfirmationCopy(
-    "This reschedule action",
-    "Admin",
-    "2026-09-16T02:50:00.000Z",
-  );
+  const stamp = auditConfirmationCopy("This reschedule action", "Admin", adminNowIso());
 
   return (
     <AdminPageShell title="Reschedule Requests">

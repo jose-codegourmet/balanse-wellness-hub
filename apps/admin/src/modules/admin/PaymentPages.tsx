@@ -18,6 +18,7 @@ import { ConfirmAction } from "@/components/balanse/ConfirmAction";
 import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { AdminPageTabs } from "@/components/balanse/page/AdminPageTabs";
+import { adminNowIso } from "@/lib/clock";
 import { adminCustomersQuery, adminPaymentsQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
@@ -37,7 +38,7 @@ export function PaymentReviewPage({ empty }: { empty?: boolean }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [zoom, setZoom] = useState(false);
-  const stamp = auditConfirmationCopy("This payment action", "Admin", "2026-09-16T02:50:00.000Z");
+  const stamp = auditConfirmationCopy("This payment action", "Admin", adminNowIso());
 
   const columns = useMemo<ColumnDef<CustomerBooking, unknown>[]>(
     () => [

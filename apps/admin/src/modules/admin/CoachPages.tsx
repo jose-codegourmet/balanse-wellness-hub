@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ImageUpload } from "@/components/balanse/ImageUpload";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { adminTodayYmd } from "@/lib/clock";
 import { adminCoachesQuery, adminSessionsQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
@@ -87,7 +88,9 @@ export function CoachFormPage({ coachId }: { coachId: string }) {
     const sessions = sessionsQuery.data;
     if (!sessions || isNew) return;
     setUpcoming(
-      sessions.filter((session) => session.coachId === coachId && session.startsAt >= "2026-09-16"),
+      sessions.filter(
+        (session) => session.coachId === coachId && session.startsAt >= adminTodayYmd(),
+      ),
     );
   }, [coachId, isNew, sessionsQuery.data]);
 
