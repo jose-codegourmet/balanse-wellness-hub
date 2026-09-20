@@ -8,7 +8,7 @@ import {
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { FeedbackState } from "@balanse/ui";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { adminCancellationsQuery, adminCustomersQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
@@ -16,17 +16,15 @@ import { ConfirmAction } from "./shared";
 
 export function CancellationQueuePage({ empty }: { empty?: boolean }) {
   const { principal } = useMockPrincipal();
-  const rowsQuery = useQuery(adminCancellationsQuery(principal.role));
-  const customersQuery = useQuery(adminCustomersQuery(principal.role));
-  const rows = empty ? [] : (rowsQuery.data ?? null);
-  const customers = customersQuery.data ?? [];
+  const rowsQuery = useSuspenseQuery(adminCancellationsQuery(principal.role));
+  const customersQuery = useSuspenseQuery(adminCustomersQuery(principal.role));
+  const rows = empty ? [] : rowsQuery.data;
+  const customers = customersQuery.data;
   const stamp = auditConfirmationCopy(
     "This cancellation action",
     "Admin",
     "2026-09-16T02:50:00.000Z",
   );
-
-  if (!rows) return null;
 
   return (
     <AdminPageShell title="Cancellation Requests">

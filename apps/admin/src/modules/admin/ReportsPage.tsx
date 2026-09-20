@@ -8,7 +8,7 @@ import {
   formatSessionTime,
 } from "@balanse/domain";
 import { Label, NativeSelect } from "@balanse/ui";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -30,9 +30,9 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
   const [classId, setClassId] = useState("all");
   const [coachId, setCoachId] = useState("all");
   const [sessionStatus, setSessionStatus] = useState("all");
-  const classesQuery = useQuery(adminClassesQuery(principal.role));
-  const coachesQuery = useQuery(adminCoachesQuery(principal.role));
-  const reportsQuery = useQuery(
+  const classesQuery = useSuspenseQuery(adminClassesQuery(principal.role));
+  const coachesQuery = useSuspenseQuery(adminCoachesQuery(principal.role));
+  const reportsQuery = useSuspenseQuery(
     adminReportsQuery(principal.role, {
       from,
       to,
@@ -43,16 +43,14 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
   );
   const classes = classesQuery.data ?? [];
   const coaches = coachesQuery.data ?? [];
-  const reports = !reportsQuery.data
-    ? null
-    : empty
-      ? {
-          ...reportsQuery.data,
-          sessionPerformance: [],
-          classPerformance: [],
-          coachCosts: [],
-        }
-      : reportsQuery.data;
+  const reports = empty
+    ? {
+        ...reportsQuery.data,
+        sessionPerformance: [],
+        classPerformance: [],
+        coachCosts: [],
+      }
+    : reportsQuery.data;
 
   const classColumns = useMemo<ColumnDef<AdminReports["classPerformance"][number], unknown>[]>(
     () => [
@@ -126,7 +124,6 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
     [],
   );
 
-  if (!reports) return null;
   const noData = reports.sessionPerformance.length === 0;
 
   return (
@@ -223,9 +220,8 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
 
 export function ReportDrilldownPage({ sessionId }: { sessionId: string }) {
   const { principal } = useMockPrincipal();
-  const query = useQuery(adminSessionReportQuery(principal.role, sessionId));
-  const row = query.data ?? null;
-
+  const query = useSuspenseQuery(adminSessionReportQuery(principal.role, sessionId));
+  const row = query.data;
   if (!row) return null;
 
   const title = `${row.className} — ${formatSessionDate(row.startsAt)} — ${formatSessionTime(row.startsAt)}`;

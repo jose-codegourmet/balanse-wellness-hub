@@ -11,7 +11,7 @@ import {
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { CardListSkeleton, FeedbackState, Input, Label, StatusBadge } from "@balanse/ui";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
@@ -30,9 +30,9 @@ const TABS: { id: AdminPaymentTab; label: string }[] = [
 export function PaymentReviewPage({ empty }: { empty?: boolean }) {
   const { principal } = useMockPrincipal();
   const [tab, setTab] = useState<AdminPaymentTab>("gcash");
-  const paymentsQuery = useQuery(adminPaymentsQuery(principal.role));
+  const paymentsQuery = useSuspenseQuery(adminPaymentsQuery(principal.role));
   const customersQuery = useQuery(adminCustomersQuery(principal.role));
-  const bookings = empty ? [] : (paymentsQuery.data ?? null);
+  const bookings = empty ? [] : paymentsQuery.data;
   const customers = customersQuery.data ?? [];
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
@@ -71,7 +71,6 @@ export function PaymentReviewPage({ empty }: { empty?: boolean }) {
     [customers],
   );
 
-  if (!bookings) return null;
   const queue = filterPaymentQueue(bookings, tab);
   const selected = queue.find((row) => row.id === selectedId) ?? queue[0] ?? null;
 

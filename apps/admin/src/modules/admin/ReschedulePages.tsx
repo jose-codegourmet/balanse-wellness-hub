@@ -9,7 +9,7 @@ import {
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { FeedbackState } from "@balanse/ui";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import {
@@ -22,20 +22,18 @@ import { ConfirmAction } from "./shared";
 
 export function RescheduleQueuePage({ empty }: { empty?: boolean }) {
   const { principal } = useMockPrincipal();
-  const rowsQuery = useQuery(adminReschedulesQuery(principal.role));
-  const customersQuery = useQuery(adminCustomersQuery(principal.role));
-  const bookingsQuery = useQuery(adminBookingsQuery(principal.role));
-  const rows = empty ? [] : (rowsQuery.data ?? null);
-  const customers = customersQuery.data ?? [];
-  const bookings = bookingsQuery.data ?? [];
+  const rowsQuery = useSuspenseQuery(adminReschedulesQuery(principal.role));
+  const customersQuery = useSuspenseQuery(adminCustomersQuery(principal.role));
+  const bookingsQuery = useSuspenseQuery(adminBookingsQuery(principal.role));
+  const rows = empty ? [] : rowsQuery.data;
+  const customers = customersQuery.data;
+  const bookings = bookingsQuery.data;
   const [message, setMessage] = useState<string | null>(null);
   const stamp = auditConfirmationCopy(
     "This reschedule action",
     "Admin",
     "2026-09-16T02:50:00.000Z",
   );
-
-  if (!rows) return null;
 
   return (
     <AdminPageShell title="Reschedule Requests">

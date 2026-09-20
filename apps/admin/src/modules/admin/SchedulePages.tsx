@@ -15,7 +15,7 @@ import {
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { Button, DetailPageSkeleton, FeedbackState, Input, Label, NativeSelect } from "@balanse/ui";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -48,9 +48,9 @@ function localDateFromYmd(ymd: string) {
 export function ScheduleListPage({ empty }: { empty?: boolean }) {
   const router = useRouter();
   const { principal } = useMockPrincipal();
-  const sessionsQuery = useQuery(adminSessionsQuery(principal.role));
+  const sessionsQuery = useSuspenseQuery(adminSessionsQuery(principal.role));
   const bookingsQuery = useQuery(adminBookingsQuery(principal.role));
-  const sessions = empty ? [] : (sessionsQuery.data ?? null);
+  const sessions = empty ? [] : sessionsQuery.data;
   const bookings = bookingsQuery.data ?? [];
   const [cursor, setCursor] = useState(() => startOfManilaMonth("2026-09-16"));
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -85,8 +85,6 @@ export function ScheduleListPage({ empty }: { empty?: boolean }) {
     visible.find((session) => session.id === selectedId) ??
     daySessions[0] ??
     null;
-
-  if (!sessions) return null;
 
   return (
     <AdminPageShell title="Schedule">

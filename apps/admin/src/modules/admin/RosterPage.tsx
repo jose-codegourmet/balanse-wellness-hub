@@ -12,7 +12,7 @@ import {
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { StatusBadge } from "@balanse/ui";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { adminCustomersQuery, adminSessionRosterQuery } from "@/lib/query/queries";
@@ -21,12 +21,10 @@ import { ConfirmAction } from "./shared";
 
 export function RosterPage({ sessionId }: { sessionId: string }) {
   const { principal } = useMockPrincipal();
-  const rosterQuery = useQuery(adminSessionRosterQuery(principal.role, sessionId));
-  const customersQuery = useQuery(adminCustomersQuery(principal.role));
-  const roster = rosterQuery.data ?? null;
-  const customers = customersQuery.data ?? [];
-
-  if (!roster) return null;
+  const rosterQuery = useSuspenseQuery(adminSessionRosterQuery(principal.role, sessionId));
+  const customersQuery = useSuspenseQuery(adminCustomersQuery(principal.role));
+  const roster = rosterQuery.data;
+  const customers = customersQuery.data;
 
   const name = (id: string) => customers.find((row) => row.id === id)?.fullName ?? id;
   const occ = occupancyRatio(roster.confirmedCount, roster.capacity);

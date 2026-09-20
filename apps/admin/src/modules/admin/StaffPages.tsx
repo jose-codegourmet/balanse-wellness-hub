@@ -3,7 +3,7 @@
 import { ADMIN_ROLE_CAPABILITY_NOTE, type AdminStaff, staffStatusLabel } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { Badge, Button, FeedbackState, NativeSelect } from "@balanse/ui";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,8 +16,8 @@ import { ConfirmAction, TextField } from "./shared";
 
 export function StaffListPage({ empty }: { empty?: boolean }) {
   const { principal } = useMockPrincipal();
-  const query = useQuery(adminStaffQuery(principal.role));
-  const rows = empty ? [] : (query.data ?? null);
+  const query = useSuspenseQuery(adminStaffQuery(principal.role));
+  const rows = empty ? [] : query.data;
 
   const columns = useMemo<ColumnDef<AdminStaff, unknown>[]>(
     () => [
@@ -62,8 +62,6 @@ export function StaffListPage({ empty }: { empty?: boolean }) {
     [],
   );
 
-  if (!rows) return null;
-
   return (
     <AdminPageShell
       title="Staff Management"
@@ -95,7 +93,7 @@ export function StaffDetailPage({ staffId }: { staffId: string }) {
   const router = useRouter();
   const isNew = staffId === "new";
   const { principal } = useMockPrincipal();
-  const query = useQuery(adminStaffQuery(principal.role));
+  const query = useSuspenseQuery(adminStaffQuery(principal.role));
   const loaded = isNew
     ? { id: "", name: "", email: "", role: "ADMIN" as const, status: "active" as const }
     : (query.data?.find((s) => s.id === staffId) ?? null);

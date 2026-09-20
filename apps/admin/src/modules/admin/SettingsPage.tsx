@@ -3,7 +3,7 @@
 import type { AdminSettings } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { Button, Input, Label, Textarea } from "@balanse/ui";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { type ReactNode, useEffect, useState } from "react";
 import { ImageUpload } from "@/components/balanse/ImageUpload";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
@@ -12,16 +12,14 @@ import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export function SettingsPage() {
   const { principal } = useMockPrincipal();
-  const query = useQuery(adminSettingsQuery(principal.role));
-  const [settings, setSettings] = useState<AdminSettings | null>(null);
+  const query = useSuspenseQuery(adminSettingsQuery(principal.role));
+  const [settings, setSettings] = useState<AdminSettings>(query.data);
   const [newVersion, setNewVersion] = useState("2026-09");
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (query.data) setSettings(query.data);
   }, [query.data]);
-
-  if (!settings) return null;
 
   return (
     <AdminPageShell className="max-w-2xl" title="Settings">

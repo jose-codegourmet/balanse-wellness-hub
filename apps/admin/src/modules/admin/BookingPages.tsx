@@ -13,7 +13,7 @@ import {
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { Button, Input, Label, NativeSelect, StatusBadge } from "@balanse/ui";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -42,12 +42,9 @@ export function BookingListPage() {
   );
   const [classId, setClassId] = useState("all");
   const [date, setDate] = useState("");
-  const bookingsQuery = useQuery(adminBookingsQuery(principal.role));
-  const classesQuery = useQuery(adminClassesQuery(principal.role));
-  const customersQuery = useQuery(adminCustomersQuery(principal.role));
-  const bookings = bookingsQuery.data ?? null;
-  const classes = classesQuery.data ?? [];
-  const customers = customersQuery.data ?? [];
+  const { data: bookings } = useSuspenseQuery(adminBookingsQuery(principal.role));
+  const { data: classes } = useSuspenseQuery(adminClassesQuery(principal.role));
+  const { data: customers } = useSuspenseQuery(adminCustomersQuery(principal.role));
 
   const names = useMemo(() => customerNameLookup(customers), [customers]);
   const filtered = useMemo(
@@ -100,8 +97,6 @@ export function BookingListPage() {
     ],
     [names],
   );
-
-  if (!bookings) return null;
 
   return (
     <AdminPageShell
@@ -162,10 +157,9 @@ export function BookingListPage() {
 
 export function BookingDetailPage({ bookingId }: { bookingId: string }) {
   const { principal } = useMockPrincipal();
-  const bookingQuery = useQuery(adminBookingDetailQuery(principal.role, bookingId));
-  const customersQuery = useQuery(adminCustomersQuery(principal.role));
-  const booking = bookingQuery.data ?? null;
-  const customers = customersQuery.data ?? [];
+  const bookingQuery = useSuspenseQuery(adminBookingDetailQuery(principal.role, bookingId));
+  const { data: customers } = useSuspenseQuery(adminCustomersQuery(principal.role));
+  const booking = bookingQuery.data;
   const [reason, setReason] = useState("");
   const [proofOpen, setProofOpen] = useState(false);
   const [policies, setPolicies] = useState<string | null>(null);

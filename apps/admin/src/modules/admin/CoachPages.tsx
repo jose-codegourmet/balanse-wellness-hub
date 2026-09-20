@@ -10,7 +10,7 @@ import {
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { Button, CardListSkeleton, CoachPhoto, Input, Label, NativeSelect } from "@balanse/ui";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -21,10 +21,7 @@ import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export function CoachListPage() {
   const { principal } = useMockPrincipal();
-  const query = useQuery(adminCoachesQuery(principal.role));
-  const rows = query.data ?? null;
-
-  if (!rows) return null;
+  const { data: rows } = useSuspenseQuery(adminCoachesQuery(principal.role));
 
   return (
     <AdminPageShell

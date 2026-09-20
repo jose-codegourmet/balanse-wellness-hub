@@ -9,7 +9,7 @@ import {
   refundStatusLabel,
 } from "@balanse/domain";
 import { FeedbackState, StatusBadge } from "@balanse/ui";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -21,10 +21,10 @@ import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 export function CustomerListPage({ empty }: { empty?: boolean }) {
   const { principal } = useMockPrincipal();
   const [upcomingOnly, setUpcomingOnly] = useState(false);
-  const query = useQuery(
+  const query = useSuspenseQuery(
     adminCustomersQuery(principal.role, { hasUpcoming: upcomingOnly || undefined }),
   );
-  const rows = empty ? [] : (query.data ?? null);
+  const rows = empty ? [] : query.data;
 
   const columns = useMemo<ColumnDef<AdminCustomer, unknown>[]>(
     () => [
@@ -66,8 +66,6 @@ export function CustomerListPage({ empty }: { empty?: boolean }) {
     ],
     [],
   );
-
-  if (!rows) return null;
 
   return (
     <AdminPageShell title="Customers">
@@ -140,9 +138,8 @@ function BookingBlock({
 
 export function CustomerDetailPage({ customerId }: { customerId: string }) {
   const { principal } = useMockPrincipal();
-  const query = useQuery(adminCustomerDetailQuery(principal.role, customerId));
-  const detail = query.data ?? null;
-
+  const query = useSuspenseQuery(adminCustomerDetailQuery(principal.role, customerId));
+  const detail = query.data;
   if (!detail) return null;
 
   return (

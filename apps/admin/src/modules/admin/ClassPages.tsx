@@ -1,8 +1,8 @@
 "use client";
 
 import { getMockAdapter } from "@balanse/mock";
-import { Button, FeedbackState, Input, Label } from "@balanse/ui";
-import { useQuery } from "@tanstack/react-query";
+import { Button, Input, Label } from "@balanse/ui";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -12,28 +12,8 @@ import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export function ClassListPage({ empty }: { empty?: boolean }) {
   const { principal } = useMockPrincipal();
-  const query = useQuery(adminClassesQuery(principal.role));
-  const rows = empty ? [] : (query.data ?? null);
-
-  if (!empty && query.isPending && !rows) return null;
-
-  if (!empty && query.isError) {
-    return (
-      <AdminPageShell title="Classes">
-        <FeedbackState
-          id="calendar.load-failed"
-          title="Classes could not load"
-          description="The class catalog did not load. Retry the request."
-          actionLabel="Retry"
-          onAction={() => {
-            void query.refetch();
-          }}
-        />
-      </AdminPageShell>
-    );
-  }
-
-  if (!rows) return null;
+  const query = useSuspenseQuery(adminClassesQuery(principal.role));
+  const rows = empty ? [] : query.data;
 
   return (
     <AdminPageShell
