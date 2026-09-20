@@ -88,7 +88,7 @@ export const Warning: Story = {
   ),
 };
 
-export const Error: Story = {
+export const ErrorTone: Story = {
   name: "Tone — error",
   render: () => (
     <Panel hint="Error tone. Raised on mock failNext and validation failures.">

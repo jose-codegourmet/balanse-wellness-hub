@@ -1,6 +1,6 @@
 "use client";
 
-import { type AdminToastId, type PortalToastTone, adminToastCopy } from "@balanse/domain";
+import { type AdminToastId, adminToastCopy, type PortalToastTone } from "@balanse/domain";
 import { toast } from "@/components/jabkit/toast";
 
 /**

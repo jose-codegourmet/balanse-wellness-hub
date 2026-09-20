@@ -152,7 +152,11 @@ export function bookingCreatedToastId(status: BookingStatus): PortalToastId {
  * fork a second tone vocabulary. Keep this list to writes the admin form kit
  * actually performs; later form tickets append their own ids.
  */
-export const ADMIN_TOAST_IDS = ["class.saved", "class.save-failed", "form.validation-failed"] as const;
+export const ADMIN_TOAST_IDS = [
+  "class.saved",
+  "class.save-failed",
+  "form.validation-failed",
+] as const;
 
 export type AdminToastId = (typeof ADMIN_TOAST_IDS)[number];
 
