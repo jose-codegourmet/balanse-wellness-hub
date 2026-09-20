@@ -14,68 +14,64 @@ import {
   Wallet,
   XCircle,
 } from "lucide-react";
+
 import { Badge } from "../../components/badge/Badge";
 import { cn } from "../../lib/utils";
+import type { StatusBadgeCellProps, StatusBadgeProps } from "./StatusBadge.schema";
 
-export type StatusBadgeSurface = "customer" | "admin";
+export type {
+  StatusBadgeCellProps,
+  StatusBadgeProps,
+  StatusBadgeSurface,
+} from "./StatusBadge.schema";
 
 const STATUS_MARK: Record<
   CustomerStatusKey,
-  { icon: typeof Clock3; pattern: string; abbr: string }
+  {
+    variant: "neutral" | "info" | "success" | "warning" | "danger";
+    icon: typeof Clock3;
+    strike?: boolean;
+  }
 > = {
-  WAITLISTED: { icon: Clock3, pattern: "border-dashed", abbr: "WL" },
-  HELD_AWAITING_PAYMENT: { icon: Wallet, pattern: "border-dotted", abbr: "PAY" },
-  PAYMENT_SUBMITTED: { icon: Hourglass, pattern: "border-dotted", abbr: "REV" },
-  CONFIRMED: { icon: CircleCheck, pattern: "border-solid", abbr: "OK" },
-  CANCELLATION_REQUESTED: { icon: Undo2, pattern: "border-dashed", abbr: "CXL" },
-  RESCHEDULE_REQUESTED: { icon: RefreshCw, pattern: "border-dashed", abbr: "RS" },
-  CANCELLED: { icon: XCircle, pattern: "line-through", abbr: "CAN" },
-  REJECTED: { icon: Ban, pattern: "line-through", abbr: "NC" },
-  EXPIRED: { icon: CircleAlert, pattern: "line-through", abbr: "EXP" },
-  CHECKED_IN: { icon: UserCheck, pattern: "border-solid", abbr: "IN" },
-  COMPLETED: { icon: CircleCheck, pattern: "border-solid", abbr: "DONE" },
-  NO_SHOW: { icon: ShieldAlert, pattern: "border-double", abbr: "NS" },
-  REFUND_PENDING: { icon: Receipt, pattern: "border-dotted", abbr: "RFP" },
-  REFUNDED: { icon: Receipt, pattern: "border-solid", abbr: "RF" },
+  CONFIRMED: { variant: "success", icon: CircleCheck },
+  CHECKED_IN: { variant: "success", icon: UserCheck },
+  COMPLETED: { variant: "success", icon: CircleCheck },
+  REFUNDED: { variant: "success", icon: Receipt },
+  HELD_AWAITING_PAYMENT: { variant: "warning", icon: Wallet },
+  PAYMENT_SUBMITTED: { variant: "warning", icon: Hourglass },
+  REFUND_PENDING: { variant: "warning", icon: Receipt },
+  WAITLISTED: { variant: "info", icon: Clock3 },
+  CANCELLATION_REQUESTED: { variant: "info", icon: Undo2 },
+  RESCHEDULE_REQUESTED: { variant: "info", icon: RefreshCw },
+  REJECTED: { variant: "danger", icon: Ban, strike: true },
+  NO_SHOW: { variant: "danger", icon: ShieldAlert, strike: true },
+  CANCELLED: { variant: "neutral", icon: XCircle, strike: true },
+  EXPIRED: { variant: "neutral", icon: CircleAlert, strike: true },
 };
 
-export function StatusBadge({
-  status,
-  surface = "customer",
-  className,
-}: {
-  status: CustomerStatusKey;
-  surface?: StatusBadgeSurface;
-  className?: string;
-}) {
+export function StatusBadge({ status, surface = "customer", className }: StatusBadgeProps) {
   const label = customerStatusLabel(status);
   if (isRawStatusToken(label)) {
     throw new Error("Raw status enum must never reach the DOM");
   }
   const mark = STATUS_MARK[status];
   const Icon = mark.icon;
+
   return (
     <Badge
-      variant="outline"
+      variant={mark.variant}
+      appearance={surface === "admin" ? "solid" : "soft"}
+      size={surface === "admin" ? "sm" : "md"}
+      icon={<Icon aria-hidden="true" />}
       data-status-surface={surface}
-      className={cn(
-        "h-auto max-w-full gap-1.5 px-2 py-1 font-medium",
-        mark.pattern === "line-through" && "line-through decoration-2",
-        mark.pattern !== "line-through" && mark.pattern,
-        surface === "admin" && "rounded-md font-mono text-[0.7rem] tracking-wide",
-        className,
-      )}
+      className={cn(mark.strike && "line-through decoration-2", className)}
     >
-      <span aria-hidden="true" className="font-mono text-[0.65rem] text-muted-foreground">
-        {mark.abbr}
-      </span>
-      <Icon aria-hidden="true" className="size-3.5" />
-      <span>{label}</span>
+      {label}
     </Badge>
   );
 }
 
-export function StatusBadgeCell({ status }: { status: CustomerStatusKey }) {
+export function StatusBadgeCell({ status }: StatusBadgeCellProps) {
   return (
     <td className="px-3 py-2">
       <StatusBadge status={status} surface="admin" />
