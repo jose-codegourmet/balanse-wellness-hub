@@ -95,17 +95,34 @@ function isYmdBlocked(
   return Boolean(disabledDates?.includes(ymd));
 }
 
-function useTabletPanel() {
-  const subscribe = React.useCallback((onStoreChange: () => void) => {
-    const media = window.matchMedia(`(min-width: ${BALANSE_BREAKPOINTS.tablet}px)`);
-    media.addEventListener("change", onStoreChange);
-    return () => media.removeEventListener("change", onStoreChange);
-  }, []);
-  const getSnapshot = React.useCallback(
-    () => window.matchMedia(`(min-width: ${BALANSE_BREAKPOINTS.tablet}px)`).matches,
-    [],
-  );
-  return React.useSyncExternalStore(subscribe, getSnapshot, () => false);
+function useTwoMonthPanel(containerRef: React.RefObject<HTMLElement | null>) {
+  const [twoMonths, setTwoMonths] = React.useState(false);
+
+  React.useEffect(() => {
+    const node = containerRef.current;
+    if (!node) {
+      return;
+    }
+
+    const update = () => {
+      const containerWide = node.getBoundingClientRect().width >= BALANSE_BREAKPOINTS.tablet;
+      const viewportWide = window.matchMedia(
+        `(min-width: ${BALANSE_BREAKPOINTS.tablet}px)`,
+      ).matches;
+      setTwoMonths(containerWide && viewportWide);
+    };
+
+    const observer = new ResizeObserver(update);
+    observer.observe(node);
+    window.addEventListener("resize", update);
+    update();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [containerRef]);
+
+  return twoMonths;
 }
 
 function resolveToday(today?: DatePickerValues): DatePickerValues {
@@ -330,7 +347,8 @@ function DateRangePicker({
   );
 
   const today = resolveToday(todayProp);
-  const twoMonths = useTabletPanel();
+  const hostRef = React.useRef<HTMLDivElement>(null);
+  const twoMonths = useTwoMonthPanel(hostRef);
   const [open, setOpen] = React.useState(false);
   const [focused, setFocused] = React.useState(false);
   const [draft, setDraft] = React.useState(value ? `${value.from} to ${value.to}` : "");
@@ -406,6 +424,7 @@ function DateRangePicker({
 
   return (
     <InputGroup
+      ref={hostRef}
       className={cn(className)}
       data-slot="date-range-picker"
       data-disabled={disabled || undefined}
