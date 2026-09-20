@@ -1,6 +1,7 @@
 export { BooleanBinding } from "./BooleanBinding";
 export { CheckboxGroupBinding } from "./CheckboxGroupBinding";
 export { ChoiceBinding } from "./ChoiceBinding";
+export { ComboboxBinding } from "./ComboboxBinding";
 export { DateBinding } from "./DateBinding";
 export { ImageBinding } from "./ImageBinding";
 export { RichTextBinding } from "./RichTextBinding";

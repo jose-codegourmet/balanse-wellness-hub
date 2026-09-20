@@ -176,7 +176,13 @@ export function useUpsertAdminCoach() {
 }
 
 function sessionKeys(role: MockRole): QueryKey[] {
-  return [adminKeys.sessions.all(role), adminKeys.dashboard(role), adminKeys.reports.all(role)];
+  return [
+    adminKeys.sessions.all(role),
+    adminKeys.dashboard(role),
+    adminKeys.reports.all(role),
+    adminKeys.bookings.all(role),
+    adminKeys.rosterAll(role),
+  ];
 }
 
 export function useUpsertAdminSession() {

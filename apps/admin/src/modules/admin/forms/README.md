@@ -26,6 +26,7 @@ Recipe for every admin write form:
 | Primitive | `useFieldContext()` | Binding |
 | --- | --- | --- |
 | `Input`, `Textarea`, `Checkbox`, `Switch`, `RadioGroup`, `NativeSelect`, `Select` | yes — do not spread `aria-*` | `TextBinding`, `TextareaBinding`, `BooleanBinding`, `ChoiceBinding` |
+| `Combobox` | yes | `ComboboxBinding` |
 | `RichTextarea`, `DatePicker`, `TimePicker`, `MockImageUpload` | no | `RichTextBinding`, `DateBinding`, `TimeBinding`, `ImageBinding` (explicit `id` / `aria-invalid` / `aria-describedby`) |
 
 `CheckboxGroupBinding` is composed over `Checkbox` + `FieldSet` + `FieldLegend`. There is no primitive.

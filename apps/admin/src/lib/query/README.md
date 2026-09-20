@@ -43,7 +43,7 @@ queryClient.invalidateQueries({ queryKey: adminKeys.bookings.all(role) });
 | `checkIn`, `markNoShow` | `bookings.all`, `roster` (prefix), `dashboard`, `reports.all` |
 | `upsertAdminClass` | `classes.all` |
 | `upsertAdminCoach` | `coaches.all` |
-| `upsertAdminSession`, `cancelAdminSession` | `sessions.all`, `dashboard`, `reports.all` |
+| `upsertAdminSession`, `cancelAdminSession` | `sessions.all`, `dashboard`, `reports.all`, `bookings.all`, `roster` (prefix) |
 | `upsertAdminStaff`, `disableAdminStaff` | `staff.all` |
 | `updateAdminSettings`, `promotePolicyVersion` | `settings.all` |
 
