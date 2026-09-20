@@ -77,6 +77,16 @@ export function coachRateTypeLabel(type: CoachRateType): string {
   return COACH_RATE_TYPE_LABELS[type];
 }
 
+export const SESSION_STATUS_LABELS: Record<SessionStatus, string> = {
+  DRAFT: "Draft",
+  PUBLISHED: "Published",
+  CANCELLED: "Cancelled",
+};
+
+export function sessionStatusLabel(status: SessionStatus): string {
+  return SESSION_STATUS_LABELS[status];
+}
+
 export function validateAdminLogin(
   input: LoginInput,
 ):

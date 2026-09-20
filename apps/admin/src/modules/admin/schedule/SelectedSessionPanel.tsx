@@ -1,0 +1,117 @@
+"use client";
+
+import {
+  type AdminSession,
+  auditConfirmationCopy,
+  type computeSessionInventory,
+  formatSessionDate,
+  formatSessionTime,
+  sessionStatusLabel,
+} from "@balanse/domain";
+import { Badge, Button } from "@balanse/ui";
+import Link from "next/link";
+import { ConfirmAction } from "@/components/balanse/ConfirmAction";
+import { adminNowIso } from "@/lib/clock";
+import { useCancelAdminSession } from "@/lib/query/mutations";
+import { notify } from "@/modules/notifications/notify";
+import { editSessionHref, rosterHref } from "./schedule-href";
+
+type Inventory = ReturnType<typeof computeSessionInventory>;
+
+export function SelectedSessionPanel({
+  session,
+  inventory,
+  daySessions,
+  onSelectSession,
+}: {
+  session: AdminSession;
+  inventory: Inventory;
+  daySessions: AdminSession[];
+  onSelectSession: (id: string) => void;
+}) {
+  const cancel = useCancelAdminSession();
+  const canCancel = session.status !== "CANCELLED";
+
+  return (
+    <aside className="rounded-xl border border-border bg-card p-4">
+      <h2 className="font-display text-2xl">Selected Session</h2>
+      {daySessions.length > 1 ? (
+        <ul className="mt-3 grid gap-1">
+          {daySessions.map((row) => {
+            const active = row.id === session.id;
+            return (
+              <li key={row.id}>
+                <button
+                  type="button"
+                  aria-pressed={active}
+                  className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={() => onSelectSession(row.id)}
+                >
+                  <span className="min-w-0 truncate">
+                    {row.className} · {formatSessionTime(row.startsAt)}
+                  </span>
+                  {active ? <Badge>Selected</Badge> : null}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+      <p className="mt-3 text-sm">
+        {session.className} · {formatSessionDate(session.startsAt)} ·{" "}
+        {formatSessionTime(session.startsAt)}–{formatSessionTime(session.endsAt)}
+      </p>
+      <p className="text-sm text-muted-foreground">
+        {session.coachName} · {sessionStatusLabel(session.status)}
+      </p>
+      <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <InventoryStat label="Capacity" value={session.capacity} />
+        <InventoryStat label="Confirmed" value={inventory.confirmed} />
+        <InventoryStat label="Held" value={inventory.held} />
+        <InventoryStat label="Waitlisted" value={inventory.waitlisted} />
+        <InventoryStat label="Available" value={inventory.available} />
+      </dl>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button
+          nativeButton={false}
+          variant="outline"
+          render={<Link href={rosterHref(session.id)} />}
+        >
+          View Roster
+        </Button>
+        <Button
+          nativeButton={false}
+          variant="outline"
+          render={<Link href={editSessionHref(session.id)} />}
+        >
+          Edit
+        </Button>
+        {canCancel ? (
+          <ConfirmAction
+            triggerLabel="Cancel Session"
+            title="Cancel this session?"
+            description={`${auditConfirmationCopy("Cancel session", "Admin", adminNowIso())} Affected bookings enter manual refund handling. The session stays in history.`}
+            variant="outline"
+            onConfirm={async () => {
+              try {
+                await cancel.mutateAsync(session.id);
+                notify.admin("session.cancelled");
+              } catch {
+                notify.admin("session.cancel-failed");
+              }
+            }}
+          />
+        ) : null}
+      </div>
+    </aside>
+  );
+}
+
+function InventoryStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-lg bg-muted/60 px-3 py-2">
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className="font-medium tabular-nums">{value}</dd>
+    </div>
+  );
+}

@@ -171,6 +171,10 @@ export const ADMIN_TOAST_IDS = [
   "reschedule.approved",
   "reschedule.rejected",
   "reschedule.action-failed",
+  "session.saved",
+  "session.save-failed",
+  "session.cancelled",
+  "session.cancel-failed",
 ] as const;
 
 export type AdminToastId = (typeof ADMIN_TOAST_IDS)[number];
@@ -298,6 +302,30 @@ export const ADMIN_TOAST_COPY = {
     tone: "error",
     title: "Reschedule not updated",
     description: "That request could not be updated. Try again.",
+  },
+  "session.saved": {
+    id: "session.saved",
+    tone: "success",
+    title: "Session saved",
+    description: "The schedule is updated.",
+  },
+  "session.save-failed": {
+    id: "session.save-failed",
+    tone: "error",
+    title: "Session not saved",
+    description: "Those changes could not be saved. Try again.",
+  },
+  "session.cancelled": {
+    id: "session.cancelled",
+    tone: "success",
+    title: "Session cancelled",
+    description: "Affected bookings enter manual refund handling. The session stays in history.",
+  },
+  "session.cancel-failed": {
+    id: "session.cancel-failed",
+    tone: "error",
+    title: "Session not cancelled",
+    description: "That session could not be cancelled. Try again.",
   },
 } as const satisfies ExhaustiveAdminToastCopy;
 

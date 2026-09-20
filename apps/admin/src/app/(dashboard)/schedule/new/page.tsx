@@ -1,3 +1,4 @@
+import { isManilaYmd } from "@balanse/domain";
 import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
@@ -6,12 +7,12 @@ import { adminClassesQuery, adminCoachesQuery, adminSessionsQuery } from "@/lib/
 import { SessionFormPage } from "@/modules/admin/schedule/SessionFormPage";
 
 export const metadata: Metadata = {
-  title: "Session",
-  description: "Create or edit a session.",
+  title: "Create Session",
+  description: "Schedule a session.",
 };
 
-export default async function Page({ params }: { params: Promise<{ sessionId: string }> }) {
-  const { sessionId } = await params;
+export default async function Page({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
+  const { date } = await searchParams;
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
     [
@@ -19,6 +20,6 @@ export default async function Page({ params }: { params: Promise<{ sessionId: st
       adminCoachesQuery(principal.role),
       adminSessionsQuery(principal.role),
     ],
-    <SessionFormPage sessionId={sessionId} surface="page" />,
+    <SessionFormPage sessionId="new" date={isManilaYmd(date) ? date : undefined} surface="page" />,
   );
 }

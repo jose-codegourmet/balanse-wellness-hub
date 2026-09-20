@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { adminBookingsQuery, adminSessionsQuery } from "@/lib/query/queries";
-import { ScheduleListPage } from "@/modules/admin/SchedulePages";
+import { ScheduleListPage } from "@/modules/admin/schedule/ScheduleListPage";
 
 export const metadata: Metadata = {
   title: "Schedule",
