@@ -6,6 +6,7 @@ import {
   type AdminClass,
   auditConfirmationCopy,
   type CustomerBooking,
+  customerStatusLabel,
   filterAdminBookings,
   formatSessionRange,
   paymentStatusLabel,
@@ -17,7 +18,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { AdminDataTable } from "@/components/balanse/AdminDataTable";
+import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
 import { ConfirmAction, PageHeader } from "./shared";
 
 function customerNameLookup(customers: { id: string; fullName: string }[]) {
@@ -58,11 +59,14 @@ export function BookingListPage() {
         id: "customer",
         header: "Customer",
         accessorFn: (row) => names(row.customerId),
+        meta: { primaryLink: (row) => `/bookings/${row.id}` },
       },
       {
         id: "class",
         header: "Class",
         accessorFn: (row) => row.session.className,
+        enableColumnFilter: true,
+        meta: { enableFaceting: true, facetLabel: "Class" },
       },
       {
         id: "time",
@@ -77,6 +81,9 @@ export function BookingListPage() {
       {
         id: "status",
         header: "Status",
+        accessorFn: (row) => customerStatusLabel(row.status),
+        enableColumnFilter: true,
+        meta: { enableFaceting: true, facetLabel: "Status" },
         cell: ({ row }) => <StatusBadge status={row.original.status} surface="admin" />,
       },
       {
@@ -144,11 +151,12 @@ export function BookingListPage() {
       </div>
       <div className="mt-6">
         <AdminDataTable
+          tableId="bookings"
           data={filtered}
           columns={columns}
           getRowId={(row) => row.id}
           searchPlaceholder="Search customer"
-          emptyLabel="No bookings match these filters."
+          emptyFilterLabel="No bookings match these filters."
         />
       </div>
     </section>

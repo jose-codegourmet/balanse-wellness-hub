@@ -6,14 +6,14 @@ import {
   formatRatioPercent,
   formatSessionTime,
 } from "@balanse/domain";
-import { FeedbackState, LocalizedSkeleton } from "@balanse/ui";
+import { Badge, FeedbackState, LocalizedSkeleton } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { CalendarDays, CreditCard, Repeat, Ticket, UserX } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
-import { AdminDataTable, AdminStatusBadge } from "@/components/balanse/AdminDataTable";
 import { AdminStatStrip } from "@/components/balanse/AdminStatStrip";
+import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
 import { adminDashboardQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { PageHeader } from "./shared";
@@ -43,19 +43,37 @@ export function DashboardPage({
         header: "Time",
         cell: ({ row }) => formatSessionTime(row.original.startsAt),
       },
-      { accessorKey: "className", header: "Class" },
-      { accessorKey: "coachName", header: "Coach" },
+      {
+        accessorKey: "className",
+        header: "Class",
+        enableColumnFilter: true,
+        meta: { enableFaceting: true, facetLabel: "Class" },
+      },
+      {
+        accessorKey: "coachName",
+        header: "Coach",
+        enableColumnFilter: true,
+        meta: { enableFaceting: true, facetLabel: "Coach" },
+      },
       { accessorKey: "capacity", header: "Capacity" },
       {
-        accessorKey: "status",
+        id: "status",
         header: "Status",
+        accessorFn: (row) =>
+          row.status === "PUBLISHED" ? "Published" : row.status === "DRAFT" ? "Draft" : "Cancelled",
+        enableColumnFilter: true,
+        meta: { enableFaceting: true, facetLabel: "Status" },
         cell: ({ row }) => {
           const status = row.original.status;
           const label =
             status === "PUBLISHED" ? "Published" : status === "DRAFT" ? "Draft" : "Cancelled";
-          const tone =
-            status === "PUBLISHED" ? "primary" : status === "DRAFT" ? "secondary" : "destructive";
-          return <AdminStatusBadge label={label} tone={tone} />;
+          const variant =
+            status === "PUBLISHED" ? "success" : status === "DRAFT" ? "neutral" : "danger";
+          return (
+            <Badge variant={variant} appearance="solid" size="sm" dot>
+              {label}
+            </Badge>
+          );
         },
       },
     ],
@@ -185,6 +203,7 @@ export function DashboardPage({
           </>
         ) : (
           <AdminDataTable
+            tableId="dashboard-sessions"
             title="Today's Schedule"
             description="Published and draft sessions for today."
             data={data.todaysSchedule}
@@ -192,7 +211,7 @@ export function DashboardPage({
             getRowId={(row) => row.id}
             searchable
             searchPlaceholder="Search class or coach"
-            emptyLabel="No sessions on today's board."
+            emptyFilterLabel="No sessions on today's board."
           />
         )}
       </div>

@@ -15,7 +15,7 @@ import { Label, LocalizedSkeleton, NativeSelect } from "@balanse/ui";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { AdminDataTable } from "@/components/balanse/AdminDataTable";
+import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
 import { ReportsOverview } from "@/components/balanse/ReportsOverview";
 import { PageHeader } from "./shared";
 
@@ -105,7 +105,12 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
           </Link>
         ),
       },
-      { accessorKey: "className", header: "Class" },
+      {
+        accessorKey: "className",
+        header: "Class",
+        enableColumnFilter: true,
+        meta: { enableFaceting: true, facetLabel: "Class" },
+      },
       { accessorKey: "capacity", header: "Capacity" },
       { accessorKey: "confirmed", header: "Confirmed" },
       {
@@ -187,6 +192,7 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
       ) : (
         <div className="mt-10 grid gap-10">
           <AdminDataTable
+            tableId="reports-classes"
             title="Class Performance"
             data={reports.classPerformance}
             columns={classColumns}
@@ -194,6 +200,7 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
             searchPlaceholder="Search classes"
           />
           <AdminDataTable
+            tableId="reports-coaches"
             title="Coach Costs"
             data={reports.coachCosts}
             columns={coachColumns}
@@ -201,6 +208,7 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
             searchPlaceholder="Search coaches"
           />
           <AdminDataTable
+            tableId="reports-sessions"
             title="Session Performance"
             data={reports.sessionPerformance}
             columns={sessionColumns}
