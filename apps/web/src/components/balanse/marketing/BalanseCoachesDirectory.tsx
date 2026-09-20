@@ -12,6 +12,7 @@ import { ArrowDown, ArrowUpRight, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/jabkit/button";
+import { BalanseCtaSection } from "./BalanseCtaSection";
 import "./coaches-directory.css";
 
 function Portrait({ coach }: { coach: PublicCoach }) {
@@ -161,21 +162,21 @@ export function BalanseCoachesDirectory({
           </div>
         )}
       </section>
-      <section
-        className="coaches-invitation marketing-container"
-        aria-labelledby="coaches-invitation-title"
-      >
-        <div>
-          <p className="marketing-eyebrow">We’ll meet you on the mat</p>
-          <h2 id="coaches-invitation-title">Your next class starts here.</h2>
-          <p>Choose a time that works for you. We’ll take it from there.</p>
-        </div>
-        <Button asChild className="coaches-schedule-button">
-          <Link href="/#schedule">
-            Find a class <ArrowUpRight size={18} aria-hidden="true" />
-          </Link>
-        </Button>
-      </section>
+      {/* The closing invitation now runs through the same composition as every
+          other public page, so `/coaches` stops being the one page with a
+          hand-rolled CTA. The photo slot is optional: ASSET-015 can attach an
+          asset to the `coaches-close` block later with no change here. */}
+      <BalanseCtaSection
+        blockId="coaches-close"
+        sectionName="coaches-invitation"
+        className="coaches-closing-cta"
+        features={[
+          { icon: "users", label: "Every coach teaches published sessions" },
+          { icon: "sparkles", label: "Filter the week by coach or class" },
+          { icon: "workflow", label: "Reserve, pay, get confirmed" },
+          { icon: "shield", label: "Guests can browse before signing up" },
+        ]}
+      />
     </article>
   );
 }

@@ -2,6 +2,7 @@
 
 import { BALANSE_BREAKPOINTS } from "@balanse/config";
 import {
+  SESSION_AVAILABILITY_LABELS as AVAILABILITY,
   filterPublicSessions,
   formatPeso,
   formatSessionDate,
@@ -35,14 +36,6 @@ type EventVariant = "chip" | "timed" | "list";
 type EventDensity = "compact" | "full";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const AVAILABILITY: Record<PublicSession["availability"], string> = {
-  open: "Open",
-  nearly_full: "Almost full",
-  full_with_waitlist: "Full · waitlist available",
-  past: "Past",
-  cancelled: "Cancelled",
-  past_cutoff: "Booking closed",
-};
 const HOUR_HEIGHT = 72;
 const dateLabel = (ymd: string, options: Intl.DateTimeFormatOptions) =>
   new Intl.DateTimeFormat("en-US", { ...options, timeZone: "Asia/Manila" }).format(

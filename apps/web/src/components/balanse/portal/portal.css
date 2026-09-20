@@ -28,6 +28,22 @@
 .portal-workspace > main > section { padding-inline: clamp(1.25rem, 3vw, 3rem); }
 .portal-footer { margin: auto clamp(1.25rem, 3vw, 3rem) 0; padding: 1.5rem 0; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 1rem; font-size: .7rem; color: var(--muted-foreground); }
 .portal-mobile-header { display: none; }
+/* Shared page scaffolding. Every portal screen sits on the same measure and
+   rhythm so the workspace reads as one product (FE-CUS-014–016). */
+.portal-page { max-width: 76rem; margin: 0 auto; padding: 3.5rem clamp(1.25rem, 3vw, 3rem) 4rem; min-width: 0; }
+.portal-page-narrow { max-width: 58rem; }
+.portal-eyebrow { font-size: .65rem; text-transform: uppercase; letter-spacing: .16em; color: var(--muted-foreground); }
+.portal-page-head h1 { font-size: clamp(2.1rem, 3.2vw, 3rem); letter-spacing: -.045em; line-height: 1.12; margin-top: .75rem; }
+.portal-page-lead { max-width: 46rem; margin-top: 1rem; font-size: .85rem; line-height: 1.7; color: var(--muted-foreground); }
+.portal-section { margin-top: clamp(2rem, 4vw, 3rem); min-width: 0; }
+.portal-section-title { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+.portal-section-title h2 { font-family: var(--font-display); font-size: 1.45rem; letter-spacing: -.03em; font-weight: 400; }
+.portal-section-title > p { font-size: .75rem; color: var(--muted-foreground); }
+.portal-panel { background: var(--card); border-radius: 1rem; padding: clamp(1.25rem, 2.5vw, 2rem); min-width: 0; }
+.portal-quiet-note { font-size: .8rem; line-height: 1.7; color: var(--muted-foreground); }
+.portal-inline-link { display: inline-flex; align-items: center; gap: .4rem; font-size: .78rem; font-weight: 500; text-decoration: underline; text-underline-offset: .3rem; text-decoration-color: var(--border); transition: text-decoration-color 180ms; }
+.portal-inline-link:hover { text-decoration-color: var(--foreground); }
+.portal-pill-button { min-height: 2.9rem; border-radius: 999px; gap: 1rem; padding-inline: 1.35rem; }
 .portal-profile { max-width: 76rem; margin: 0 auto; padding: 3.5rem clamp(1.25rem, 3vw, 3rem) 4rem; }
 .profile-eyebrow { font-size: .65rem; text-transform: uppercase; letter-spacing: .16em; color: var(--muted-foreground); margin-bottom: .75rem; }
 .profile-heading h1 { font-size: clamp(2.3rem, 3.5vw, 3.4rem); letter-spacing: -.045em; line-height: 1.1; }
@@ -103,7 +119,7 @@
   .portal-sidebar { display: none; }
   .portal-workspace { flex: 1; }
   .portal-mobile-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; position: sticky; top: 0; z-index: 30; background: var(--card); border-bottom: 1px solid var(--border); }
-  .portal-profile { padding-top: 2rem; }
+  .portal-page, .portal-profile { padding-top: 2rem; }
   .profile-summary { gap: 1rem; margin-block: 1.75rem; }
   .profile-summary h2 { font-size: 1.3rem; }
   .profile-form-actions { align-items: stretch; flex-direction: column; }

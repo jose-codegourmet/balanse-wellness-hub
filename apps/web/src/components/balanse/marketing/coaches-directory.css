@@ -13,7 +13,7 @@
 .coaches-portrait img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.035); filter: brightness(1.12) saturate(.85); transition: transform 450ms ease; }
 .coaches-roster { scroll-margin-top: 6rem; }
 .coaches-roster-heading { border-top: 1px solid var(--border); padding-top: 2.5rem; display: flex; justify-content: space-between; align-items: end; gap: 2rem; }
-.coaches-roster-heading h2, .coaches-invitation h2 { font-family: var(--font-display); font-size: clamp(1.9rem, 3vw, 2.75rem); font-weight: 400; letter-spacing: -.035em; margin-top: .65rem; line-height: 1.15; }
+.coaches-roster-heading h2 { font-family: var(--font-display); font-size: clamp(1.9rem, 3vw, 2.75rem); font-weight: 400; letter-spacing: -.035em; margin-top: .65rem; line-height: 1.15; }
 .coaches-roster-heading > p { font-size: .8rem; color: var(--muted-foreground); line-height: 1.8; }
 .coaches-filter-section { margin-top: 2rem; padding: 1.25rem 0; border-block: 1px solid var(--border); }
 .coaches-filter-label { display: flex; align-items: center; gap: .5rem; font-size: .65rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted-foreground); margin-bottom: .85rem; }
@@ -39,9 +39,7 @@
 .coaches-empty { padding: 4rem 1rem; text-align: center; background: var(--card); }
 .coaches-empty h3 { font-family: var(--font-display); font-size: 1.8rem; }
 .coaches-empty p { margin-block: 1rem; color: var(--muted-foreground); }
-.coaches-invitation { display: flex; align-items: center; justify-content: space-between; gap: 2rem; margin-top: 5rem; padding-block: 3rem; border-block: 1px solid var(--border); }
-.coaches-invitation p:not(.marketing-eyebrow) { margin-top: 1rem; font-size: .8rem; color: var(--muted-foreground); }
-.coaches-schedule-button { min-height: 3rem; border-radius: 999px; gap: 2rem; padding-inline: 1.5rem; }
+.coaches-closing-cta { margin-top: 5rem; padding-top: 3rem; border-top: 1px solid var(--border); }
 .coaches-directory a:focus-visible, .coaches-directory button:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
 @media (max-width: 1023px) {
   .coaches-intro { gap: 2rem; }
@@ -62,7 +60,7 @@
   .coaches-person-specialties { font-size: .67rem; }
   .coaches-person-bio { font-size: .72rem; }
   .coaches-photo-action { right: .6rem; bottom: .6rem; width: 2rem; height: 2rem; }
-  .coaches-invitation { flex-direction: column; align-items: start; margin-top: 3rem; padding-block: 2.5rem; }
+  .coaches-closing-cta { margin-top: 3rem; padding-top: 2.5rem; }
 }
 @media (max-width: 479px) {
   .coaches-roster-grid { grid-template-columns: minmax(0, 1fr); }

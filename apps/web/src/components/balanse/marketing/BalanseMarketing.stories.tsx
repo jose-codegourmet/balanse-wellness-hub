@@ -86,6 +86,22 @@ export const ClosingCta: StoryObj = {
   ),
 };
 
+export const CoachesClosingCta: StoryObj = {
+  name: "Closing CTA — coaches (asset-independent)",
+  render: () => (
+    <BalanseCtaSection
+      blockId="coaches-close"
+      sectionName="coaches-invitation"
+      features={[
+        { icon: "users", label: "Every coach teaches published sessions" },
+        { icon: "sparkles", label: "Filter the week by coach or class" },
+        { icon: "workflow", label: "Reserve, pay, get confirmed" },
+        { icon: "shield", label: "Guests can browse before signing up" },
+      ]}
+    />
+  ),
+};
+
 export const FaqSection: StoryObj = {
   name: "FAQs — faq12",
   render: () => (

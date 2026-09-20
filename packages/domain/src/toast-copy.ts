@@ -2,7 +2,8 @@ import type { BookingStatus } from "./enums";
 import { CUSTOMER_STATUS_LABELS } from "./status-language";
 
 /**
- * Transient confirmation copy for the customer portal (FE-SHR-006).
+ * Transient confirmation copy for the customer portal and the one public
+ * surface that submits something (FE-SHR-006).
  *
  * Lives beside the status labels so the wording stays reviewable in one place.
  * The vocabulary is deliberately small: a held booking, a chosen payment
@@ -27,6 +28,8 @@ export const PORTAL_TOAST_IDS = [
   "cancellation.failed",
   "profile.saved",
   "profile.save-failed",
+  "contact.message-sent",
+  "contact.message-failed",
 ] as const;
 
 export type PortalToastId = (typeof PORTAL_TOAST_IDS)[number];
@@ -113,6 +116,19 @@ export const PORTAL_TOAST_COPY = {
     tone: "error",
     title: "Profile not saved",
     description: "Your changes could not be saved. Try again.",
+  },
+  /** The contact form reaches the studio with a question — it books nothing. */
+  "contact.message-sent": {
+    id: "contact.message-sent",
+    tone: "info",
+    title: "Message recorded",
+    description: "The studio has your question. This does not reserve a class.",
+  },
+  "contact.message-failed": {
+    id: "contact.message-failed",
+    tone: "error",
+    title: "Message not saved",
+    description: "That message could not be saved. Try again, or call the studio.",
   },
 } as const satisfies ExhaustivePortalToastCopy;
 

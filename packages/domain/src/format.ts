@@ -53,6 +53,16 @@ export function formatSessionTime(iso: string | Date): string {
   return `${p.hour}:${p.minute} ${p.dayPeriod}`.replace(/\s+/g, " ").trim();
 }
 
+/**
+ * Clock range without the calendar date, for layouts that already show the day
+ * in its own row or group heading.
+ */
+export function formatSessionTimeRange(startsAt: string | Date, endsAt: string | Date): string {
+  const start = partsInManila(startsAt);
+  const end = partsInManila(endsAt);
+  return `${start.hour}:${start.minute} ${start.dayPeriod} – ${end.hour}:${end.minute} ${end.dayPeriod}`;
+}
+
 export function formatSessionRange(startsAt: string | Date, endsAt: string | Date): string {
   const start = partsInManila(startsAt);
   const end = partsInManila(endsAt);

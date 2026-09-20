@@ -1,15 +1,58 @@
 import type { CustomerBooking, CustomerProfile } from "@balanse/domain";
-import {
-  bookingReference,
-  customerBookingActions,
-  formatPeso,
-  formatSessionDate,
-  formatSessionRange,
-  paymentMethodLabel,
-  paymentStatusLabel,
-} from "@balanse/domain";
-import { StatusBadge } from "@balanse/ui";
+import { customerBookingActions, paymentMethodLabel, paymentStatusLabel } from "@balanse/domain";
+import { Alert, AlertDescription, AlertTitle, StatusBadge } from "@balanse/ui";
+import { Hourglass, Info, Wallet } from "lucide-react";
 import Link from "next/link";
+import {
+  BookingFacts,
+  BookingReference,
+  bookingMood,
+  bookingStatusKey,
+} from "@/components/balanse/portal/BookingSummary";
+import "@/components/balanse/portal/portal-booking.css";
+import { Button } from "@/components/jabkit/button";
+
+type Advisory = {
+  kind: "instruction" | "informational" | "held";
+  icon: typeof Wallet;
+  title: string;
+  body: string;
+};
+
+/**
+ * The conditional payment notices differ in kind, not just in wording: one is
+ * an instruction the customer must act on, one is background information, and
+ * one explains a state the studio is holding. Keeping them in one list makes
+ * that distinction explicit instead of three identical paragraphs.
+ */
+function advisoriesFor(booking: CustomerBooking): Advisory[] {
+  const advisories: Advisory[] = [];
+  if (booking.paymentMethod === "PAY_AT_COUNTER" && booking.paymentStatus === "NONE") {
+    advisories.push({
+      kind: "instruction",
+      icon: Wallet,
+      title: "Pay at the counter before class",
+      body: "Paying at the counter does not auto-confirm the booking.",
+    });
+  }
+  if (booking.status === "WAITLISTED") {
+    advisories.push({
+      kind: "informational",
+      icon: Info,
+      title: "You are on the waitlist",
+      body: "No payment is due while you wait.",
+    });
+  }
+  if (booking.status === "CANCELLATION_REQUESTED" || booking.status === "RESCHEDULE_REQUESTED") {
+    advisories.push({
+      kind: "held",
+      icon: Hourglass,
+      title: "A request is with the studio",
+      body: "Your slot stays held until the studio finishes this request.",
+    });
+  }
+  return advisories;
+}
 
 export function BookingDetail({
   booking,
@@ -19,103 +62,102 @@ export function BookingDetail({
   profile: CustomerProfile | null;
 }) {
   const actions = customerBookingActions(booking.status);
-  const statusKey =
-    booking.refundStatus === "REFUND_PENDING" || booking.refundStatus === "REFUNDED"
-      ? booking.refundStatus
-      : booking.status;
+  const advisories = advisoriesFor(booking);
+  const mood = bookingMood(booking);
+  const { session } = booking;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-10 px-4 py-12">
-      <section data-section="booking-status">
-        <h1 className="font-display text-3xl">Booking confirmation</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+    <div className="portal-page portal-booking-detail">
+      <header className="portal-page-head">
+        <p className="portal-eyebrow">My bookings</p>
+        <h1 className="font-display">Booking confirmation</h1>
+        {/* Spec guardrail: this stays directly under the title so it is read
+            before the ticket, never demoted into fine print. */}
+        <p className="portal-page-lead">
           This is a booking confirmation for the front desk. It is not an official receipt.
         </p>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <StatusBadge status={statusKey} />
-        </div>
-        {profile ? (
-          <p className="mt-4 text-sm">
-            {profile.fullName} · {profile.email} · {profile.contactNumber}
+      </header>
+
+      <section data-section="booking-status" className="booking-ticket" data-mood={mood}>
+        <div className="booking-ticket-stub">
+          <StatusBadge status={bookingStatusKey(booking)} />
+          <BookingReference bookingId={booking.id} size="primary" />
+          <p className="booking-ticket-stub-note">
+            Show this reference at the front desk. Studio time is Asia/Manila.
           </p>
-        ) : null}
-        <dl className="mt-4 grid gap-2 text-sm">
-          <div className="flex justify-between gap-4">
-            <dt>Class</dt>
-            <dd>{booking.session.className}</dd>
-          </div>
-          <div className="flex justify-between gap-4">
-            <dt>Date</dt>
-            <dd>{formatSessionDate(booking.session.startsAt)}</dd>
-          </div>
-          <div className="flex justify-between gap-4">
-            <dt>Time</dt>
-            <dd>{formatSessionRange(booking.session.startsAt, booking.session.endsAt)}</dd>
-          </div>
-          <div className="flex justify-between gap-4">
-            <dt>Coach</dt>
-            <dd>{booking.session.coachName}</dd>
-          </div>
-          <div className="flex justify-between gap-4">
-            <dt>Price</dt>
-            <dd>{formatPeso(booking.session.pricePhp)}</dd>
-          </div>
-          <div className="flex justify-between gap-4">
-            <dt>Reference</dt>
-            <dd>{bookingReference(booking.id)}</dd>
-          </div>
-        </dl>
+        </div>
+        <div className="booking-ticket-body">
+          <h2 className="booking-summary-title font-display">{session.className}</h2>
+          <BookingFacts booking={booking} />
+          {profile ? (
+            <dl className="booking-identity">
+              <div>
+                <dt>Booked by</dt>
+                <dd>{profile.fullName}</dd>
+              </div>
+              <div>
+                <dt>Email</dt>
+                <dd>{profile.email}</dd>
+              </div>
+              <div>
+                <dt>Contact number</dt>
+                <dd>{profile.contactNumber}</dd>
+              </div>
+            </dl>
+          ) : null}
+        </div>
       </section>
 
-      <section data-section="payment">
-        <h2 className="font-display text-2xl">Payment</h2>
-        <dl className="mt-3 grid gap-2 text-sm">
-          <div className="flex justify-between gap-4">
+      <section data-section="payment" className="portal-section">
+        <div className="portal-section-title">
+          <h2>Payment</h2>
+          <p>Handled by the studio, never on this page.</p>
+        </div>
+        <dl className="booking-facts">
+          <div>
             <dt>Method</dt>
             <dd>{paymentMethodLabel(booking.paymentMethod)}</dd>
           </div>
-          <div className="flex justify-between gap-4">
+          <div>
             <dt>Payment status</dt>
             <dd>{paymentStatusLabel(booking.paymentStatus)}</dd>
           </div>
         </dl>
-        {booking.paymentMethod === "PAY_AT_COUNTER" && booking.paymentStatus === "NONE" ? (
-          <p className="mt-3 text-sm">
-            Pay at the counter before class. Paying at the counter does not auto-confirm the
-            booking.
-          </p>
-        ) : null}
-        {booking.status === "WAITLISTED" ? (
-          <p className="mt-3 text-sm">You are on the waitlist. No payment is due while you wait.</p>
-        ) : null}
-        {booking.status === "CANCELLATION_REQUESTED" ||
-        booking.status === "RESCHEDULE_REQUESTED" ? (
-          <p className="mt-3 text-sm">
-            Your slot stays held until the studio finishes this request.
-          </p>
+        {advisories.length > 0 ? (
+          <div className="booking-advisories">
+            {advisories.map((advisory) => {
+              const Icon = advisory.icon;
+              return (
+                <Alert
+                  key={advisory.kind}
+                  className="booking-advisory"
+                  data-advisory={advisory.kind}
+                >
+                  <Icon aria-hidden="true" />
+                  <AlertTitle>{advisory.title}</AlertTitle>
+                  <AlertDescription>{advisory.body}</AlertDescription>
+                </Alert>
+              );
+            })}
+          </div>
         ) : null}
       </section>
 
-      <section data-section="actions" className="flex flex-wrap gap-3">
+      <section data-section="actions" className="booking-actions">
         {actions.reschedule ? (
-          <Link
-            href={`/portal/bookings/${booking.id}/reschedule`}
-            className="inline-flex h-8 items-center rounded-lg border border-border px-2.5 text-sm"
-          >
-            Request Reschedule
-          </Link>
+          <Button asChild variant="primary" className="portal-pill-button">
+            <Link href={`/portal/bookings/${booking.id}/reschedule`}>Request Reschedule</Link>
+          </Button>
         ) : null}
         {actions.cancel ? (
-          <Link
-            href={`/portal/bookings/${booking.id}/cancel`}
-            className="inline-flex h-8 items-center rounded-lg border border-border px-2.5 text-sm"
-          >
-            Request Cancellation
-          </Link>
+          <Button asChild variant="secondary" className="portal-pill-button">
+            <Link href={`/portal/bookings/${booking.id}/cancel`}>Request Cancellation</Link>
+          </Button>
         ) : null}
         {!actions.reschedule && !actions.cancel ? (
-          <p className="text-sm text-muted-foreground">
-            No customer requests are available for this booking.
+          <p className="booking-actions-note">
+            No customer requests are available for this booking. Nothing is wrong — this status is
+            already resolved, so the studio handles any further change.
           </p>
         ) : null}
       </section>
