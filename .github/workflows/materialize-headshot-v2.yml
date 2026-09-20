@@ -14,8 +14,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install ImageMagick
-        run: sudo apt-get update && sudo apt-get install -y imagemagick jq
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          pip install --quiet pillow
       - name: Materialize from CDN
         run: bash scripts/materialize-headshot-v2.sh
       - name: Commit masters
