@@ -2,8 +2,8 @@
 
 import {
   auditConfirmationCopy,
-  computeSessionInventory,
   type CustomerBooking,
+  computeSessionInventory,
   formatRelativeTime,
   formatSessionDate,
   formatSessionTimeRange,
@@ -127,8 +127,8 @@ function SessionMoveSide({
           <p className="text-pretty wrap-break-word">{session.coachName}</p>
           {inventory ? (
             <p className="mt-2 text-xs text-pretty wrap-break-word text-muted-foreground">
-              {inventory.confirmed} confirmed · {inventory.held} held · {session.capacity} capacity ·{" "}
-              {inventory.available} open
+              {inventory.confirmed} confirmed · {inventory.held} held · {session.capacity} capacity
+              · {inventory.available} open
             </p>
           ) : null}
           {session.status === "CANCELLED" || session.availability === "cancelled" ? (
@@ -211,10 +211,11 @@ function RescheduleRequestCard({
         emphasis
         body={
           <div className="grid gap-3">
-            <div
-              className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-stretch"
-              aria-label={`Requested move from ${row.session.className} to ${target?.className ?? "an unspecified session"}`}
-            >
+            <p className="sr-only">
+              Requested move from {row.session.className} to{" "}
+              {target?.className ?? "an unspecified session"}
+            </p>
+            <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-stretch">
               <SessionMoveSide label="From" session={row.session} />
               <div className="flex items-center justify-center py-0.5 sm:px-1 sm:py-0" aria-hidden>
                 <ArrowDown className="size-4 text-muted-foreground sm:hidden" />
