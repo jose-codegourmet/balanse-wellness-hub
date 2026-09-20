@@ -119,13 +119,14 @@ Rules:
   | `packages/ui/src/components/` | `Components/*` |
   | `packages/ui/src/balanse/` | `Shared/*` |
   | `packages/ui/src/brand/` (and similar foundation) | `Foundation/*` |
-  | App screens / modules | `Admin/*`, `Customer/*`, `Marketing/*`, `Portal/*` |
+  | App screens / modules | `Admin/Screens/<Screen>`, `Customer/*`, `Marketing/*`, `Portal/*` |
+  | `apps/admin/src/components/balanse/` | `Admin/Components/<Component>` |
 
 - `tags: ["autodocs"]` always.
 - Args come from `defaultValues` — **never re-typed inline**.
 - A story that needs a different shape overrides via its own `args`. Any prop passed after `{...args}` in a `render` wins over the arg — do not both seed `className` in defaults and hardcode it in `render`.
 - One story per meaningful state.
-- a11y must stay green (violations fail the Storybook build).
+- a11y must stay green. For admin, run `pnpm --filter admin test-storybook` before shipping — the static Storybook build does not execute axe.
 - Stories are excluded from `pnpm typecheck` (`packages/ui/tsconfig.json`). `pnpm build-storybook` is the only type gate for stories.
 
 ## `Component.usecase.md` shape

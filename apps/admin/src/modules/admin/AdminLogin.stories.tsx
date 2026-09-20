@@ -2,8 +2,9 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { AdminLogin } from "./AdminLogin";
 
 const meta = {
-  title: "Admin/Login",
+  title: "Admin/Screens/Login",
   component: AdminLogin,
+  tags: ["autodocs"],
 } satisfies Meta<typeof AdminLogin>;
 
 export default meta;
