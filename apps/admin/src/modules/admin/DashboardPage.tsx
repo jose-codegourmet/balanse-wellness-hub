@@ -6,14 +6,15 @@ import {
   formatRatioPercent,
   formatSessionTime,
 } from "@balanse/domain";
-import { getMockAdapter } from "@balanse/mock";
 import { FeedbackState, LocalizedSkeleton } from "@balanse/ui";
+import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { CalendarDays, CreditCard, Repeat, Ticket, UserX } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { AdminDataTable, AdminStatusBadge } from "@/components/balanse/AdminDataTable";
 import { AdminStatStrip } from "@/components/balanse/AdminStatStrip";
+import { adminDashboardQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { PageHeader } from "./shared";
 
@@ -27,16 +28,12 @@ export function DashboardPage({
   loading?: boolean;
 }) {
   const { principal } = useMockPrincipal();
-  const [data, setData] = useState<AdminDashboardSnapshot | null>(initial ?? null);
-  const [loading, setLoading] = useState(!initial);
-
-  useEffect(() => {
-    if (initial) return;
-    void getMockAdapter()
-      .getAdminDashboard()
-      .then(setData)
-      .finally(() => setLoading(false));
-  }, [initial]);
+  const query = useQuery({
+    ...adminDashboardQuery(principal.role),
+    ...(initial ? { initialData: initial } : {}),
+  });
+  const data = query.data ?? null;
+  const loading = query.isPending;
 
   const columns = useMemo<ColumnDef<ScheduleRow, unknown>[]>(
     () => [
@@ -65,8 +62,23 @@ export function DashboardPage({
     [],
   );
 
-  if (forcedLoading || loading || !data) {
+  if (forcedLoading || loading) {
     return <LocalizedSkeleton lines={8} label="Loading dashboard" />;
+  }
+
+  if (query.isError || !data) {
+    return (
+      <FeedbackState
+        id="calendar.load-failed"
+        className="mt-6"
+        title="Dashboard could not load"
+        description="The operations snapshot did not load. Retry the request."
+        actionLabel="Retry"
+        onAction={() => {
+          void query.refetch();
+        }}
+      />
+    );
   }
 
   const stats = [

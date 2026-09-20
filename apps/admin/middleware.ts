@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "./src/lib/principal";
+import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 
 export function middleware(request: NextRequest) {
   const principal = parseMockPrincipal(request.cookies.get(MOCK_HARNESS_COOKIE)?.value);

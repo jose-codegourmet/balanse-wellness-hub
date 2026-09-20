@@ -2,6 +2,7 @@
 
 import { resetMockRuntime, setMockRuntime } from "@balanse/mock";
 import { isMockHarnessEnabled } from "@balanse/mock/session";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
@@ -34,8 +35,21 @@ type Scenario = "normal" | "schedule-failed" | "session-became-full" | "empty-ad
 export function MockSessionHarness() {
   const enabled = isMockHarnessEnabled();
   const { principal, setPrincipal } = useMockPrincipal();
+  const queryClient = useQueryClient();
   const router = useRouter();
   const [scenario, setScenario] = useState<Scenario>("normal");
+  const [latencyMs, setLatencyMs] = useState(0);
+
+  function clearAdminCache() {
+    // Clear (do not invalidate): another role's data must not stay reachable.
+    queryClient.clear();
+  }
+
+  function applyRuntimeAndRefetch(next: Parameters<typeof setMockRuntime>[0]) {
+    setMockRuntime(next);
+    clearAdminCache();
+    void queryClient.refetchQueries();
+  }
 
   if (!enabled) return null;
 
@@ -52,6 +66,7 @@ export function MockSessionHarness() {
             className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
             value={principal.role}
             onChange={(event) => {
+              clearAdminCache();
               setPrincipal({ role: event.target.value as typeof principal.role });
               router.refresh();
             }}
@@ -67,6 +82,7 @@ export function MockSessionHarness() {
             className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
             value={principal.customerId}
             onChange={(event) => {
+              clearAdminCache();
               setPrincipal({ customerId: event.target.value });
               router.refresh();
             }}
@@ -84,6 +100,7 @@ export function MockSessionHarness() {
             className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
             value={principal.showcaseBookingId}
             onChange={(event) => {
+              clearAdminCache();
               setPrincipal({ showcaseBookingId: event.target.value });
               router.refresh();
             }}
@@ -103,15 +120,17 @@ export function MockSessionHarness() {
             onChange={(event) => {
               const next = event.target.value as Scenario;
               setScenario(next);
+              setLatencyMs(0);
               resetMockRuntime();
               if (next === "schedule-failed") {
-                setMockRuntime({ failPublicSessions: true });
-              }
-              if (next === "session-became-full") {
-                setMockRuntime({ sessionBecameFullId: "session-wed-open" });
-              }
-              if (next === "empty-admin-queues") {
-                setMockRuntime({ emptyAdminQueues: true });
+                applyRuntimeAndRefetch({ failPublicSessions: true });
+              } else if (next === "session-became-full") {
+                applyRuntimeAndRefetch({ sessionBecameFullId: "session-wed-open" });
+              } else if (next === "empty-admin-queues") {
+                applyRuntimeAndRefetch({ emptyAdminQueues: true });
+              } else {
+                clearAdminCache();
+                void queryClient.refetchQueries();
               }
               router.refresh();
             }}
@@ -140,6 +159,30 @@ export function MockSessionHarness() {
             ))}
           </select>
         </label>
+        <label className="flex items-center gap-2">
+          Adapter latency
+          <select
+            className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
+            value={latencyMs}
+            onChange={(event) => {
+              const next = Number(event.target.value);
+              setLatencyMs(next);
+              applyRuntimeAndRefetch({ latencyMs: next });
+            }}
+          >
+            <option value={0}>0 ms</option>
+            <option value={1500}>1500 ms</option>
+          </select>
+        </label>
+        <button
+          type="button"
+          className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
+          onClick={() => {
+            applyRuntimeAndRefetch({ failNext: true });
+          }}
+        >
+          Fail next adapter call
+        </button>
       </div>
     </aside>
   );

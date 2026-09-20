@@ -1,21 +1,39 @@
 "use client";
 
-import type { AdminClass, AdminCoach } from "@balanse/domain";
+import type { AdminCoach } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Button, Input, Label, LocalizedSkeleton } from "@balanse/ui";
+import { Button, FeedbackState, Input, Label, LocalizedSkeleton } from "@balanse/ui";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { adminClassesQuery } from "@/lib/query/queries";
+import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { PageHeader } from "./shared";
 
 export function ClassListPage({ empty }: { empty?: boolean }) {
-  const [rows, setRows] = useState<AdminClass[] | null>(null);
+  const { principal } = useMockPrincipal();
+  const query = useQuery(adminClassesQuery(principal.role));
+  const rows = empty ? [] : (query.data ?? null);
 
-  useEffect(() => {
-    void getMockAdapter()
-      .getAdminClasses()
-      .then((list) => setRows(empty ? [] : list));
-  }, [empty]);
+  if (!empty && query.isPending && !rows) {
+    return <LocalizedSkeleton lines={5} label="Loading classes" />;
+  }
+
+  if (!empty && query.isError) {
+    return (
+      <FeedbackState
+        id="calendar.load-failed"
+        className="mt-6"
+        title="Classes could not load"
+        description="The class catalog did not load. Retry the request."
+        actionLabel="Retry"
+        onAction={() => {
+          void query.refetch();
+        }}
+      />
+    );
+  }
 
   if (!rows) return <LocalizedSkeleton lines={5} label="Loading classes" />;
 
