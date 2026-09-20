@@ -59,16 +59,22 @@ const withAdminProviders: Decorator = (Story, context) => {
   const theme = (context.globals.theme as "light" | "dark") ?? "light";
   const role = (context.globals.principal as MockRole) ?? "admin";
   const initialPrincipal = { ...DEFAULT_MOCK_PRINCIPAL, role };
+  const mockRuntime = context.parameters.mockRuntime as Partial<MockRuntimeOptions> | undefined;
+  // Apply knobs during render, before useQuery fires in the story.
+  resetMockRuntime();
+  if (mockRuntime) setMockRuntime(mockRuntime);
 
   return (
     <ThemeClass theme={theme}>
       <div
         className={`min-h-screen bg-background text-foreground${theme === "dark" ? " dark" : ""}`}
       >
-        <Providers initialPrincipal={initialPrincipal}>
-          <MockRuntimeBridge
-            options={context.parameters.mockRuntime as Partial<MockRuntimeOptions> | undefined}
-          >
+        <Providers
+          // Fresh QueryClient per principal / mockRuntime so caches cannot leak.
+          key={`${role}:${JSON.stringify(mockRuntime ?? null)}`}
+          initialPrincipal={initialPrincipal}
+        >
+          <MockRuntimeBridge options={mockRuntime}>
             <Story />
           </MockRuntimeBridge>
         </Providers>
