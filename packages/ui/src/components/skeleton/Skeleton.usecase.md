@@ -40,3 +40,4 @@ Pulsing muted placeholder block for loading UI.
 ## Gotchas
 
 - Server-safe (no `"use client"`); size is entirely class-driven.
+- Authoring: this folder is the reference implementation of the five-file set in `docs/component-guide.md`.

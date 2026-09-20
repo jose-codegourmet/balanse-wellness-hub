@@ -12,5 +12,7 @@ Use this on every `FE-PUB`, `FE-CUS`, `FE-ADM`, and `FE-SHR` ticket.
 - [ ] No hardcoded hex in screen code — tokens only
 - [ ] Public/customer views never receive coach rate fields
 - [ ] Placeholders for marketing images; do not invent production assets
+- [ ] Component ships schema + defaultValues + story + usecase (docs/component-guide.md)
+- [ ] Forms bind through react-hook-form + zod (zodResolver); errors via FieldError
 
 Linked from the FE epic and foundation tickets as the shared quality bar (FE-FND-011).

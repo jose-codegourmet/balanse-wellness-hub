@@ -1,0 +1,26 @@
+# Component — Use Cases
+
+> Part of the [Component Usage Guide](../../../../../docs/component-guide.md).
+
+## Purpose
+
+Short description of what this component is for.
+
+## When to use
+
+- First valid use
+- Second valid use
+
+## When NOT to use
+
+- Adjacent component or native control to use instead
+
+## Examples
+
+```tsx
+<Component className="w-full" />
+```
+
+## Gotchas
+
+- Note `"use client"` / sizing / composition constraints here.

@@ -70,7 +70,7 @@ Both apps consume `@balanse/ui` at runtime. No other workspace *package* (`packa
 
 | Task | Read next |
 |---|---|
-| Add a new primitive | `packages/ui/docs/development.md`, `docs/template/COMPONENTS.md`, `docs/component-guide.md` |
+| Add a new primitive | `packages/ui/docs/development.md`, `docs/component-guide.md`, `docs/templates/component/` |
 | Change a component API | `packages/ui/docs/api.md`, then search consumers in both apps |
 | Fix a styling issue | `docs/styling-and-design-system.md` |
 | Update `cn()` | `src/lib/utils.ts` — changes affect both apps |

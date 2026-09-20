@@ -1,0 +1,11 @@
+// TODO: add "use client" only for state, effects, refs, context, or a client-only primitive.
+
+import { cn } from "../../lib/utils";
+
+import type { ComponentProps } from "./Component.schema";
+
+function Component({ className, ...props }: ComponentProps) {
+  return <div className={cn(className)} {...props} />;
+}
+
+export { Component };

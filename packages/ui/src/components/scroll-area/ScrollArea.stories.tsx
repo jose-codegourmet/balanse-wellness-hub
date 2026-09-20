@@ -13,13 +13,13 @@ const meta: Meta<typeof ScrollArea> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof ScrollArea>;
+type Story = StoryObj<typeof meta>;
 
 const tags = Array.from({ length: 20 }, (_, index) => `Tag ${index + 1}`);
 
 export const Default: Story = {
   render: (args) => (
-    <ScrollArea {...args} className="h-48 w-48 rounded-xl border">
+    <ScrollArea {...args}>
       <div className="space-y-2 p-4">
         {tags.map((tag) => (
           <div key={tag} className="text-sm">

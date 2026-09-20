@@ -50,3 +50,4 @@ Custom-scrollbar overflow container for clipped content.
 ## Gotchas
 
 - `"use client"`; needs a constrained size (e.g. `h-48`); root always injects a vertical `ScrollBar`
+- Authoring: this folder is the reference implementation of the five-file set in `docs/component-guide.md`.

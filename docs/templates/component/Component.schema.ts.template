@@ -1,0 +1,15 @@
+import type * as React from "react";
+
+// Derive from the real render contract. Do not hand-write a narrower interface.
+export type ComponentProps = React.ComponentProps<"div">;
+
+// TODO: keep this block only for a form or a value-owning form control.
+// Never import zod in a file that exports no zod schema.
+//
+// import { z } from "zod";
+//
+// export const componentSchema = z.object({
+//   value: z.string(),
+// });
+//
+// export type ComponentValues = z.infer<typeof componentSchema>;

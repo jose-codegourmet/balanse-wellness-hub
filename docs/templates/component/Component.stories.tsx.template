@@ -1,0 +1,16 @@
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+
+import { Component } from "./Component";
+import { componentDefaultValues } from "./Component.defaults";
+
+const meta: Meta<typeof Component> = {
+  title: "Components/Component",
+  component: Component,
+  tags: ["autodocs"],
+  args: { ...componentDefaultValues },
+};
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {};

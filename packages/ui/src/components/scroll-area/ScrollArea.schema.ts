@@ -1,7 +1,4 @@
-import type * as React from "react";
-import { z } from "zod";
+import type { ScrollArea as ScrollAreaPrimitive } from "@base-ui/react/scroll-area";
 
-export interface ScrollAreaProps {
-  className?: string;
-  children?: React.ReactNode;
-}
+export type ScrollAreaProps = ScrollAreaPrimitive.Root.Props;
+export type ScrollBarProps = ScrollAreaPrimitive.Scrollbar.Props;

@@ -53,5 +53,6 @@ Conventional Commits are enforced via Husky + commitlint.
 - Screen specs: `docs/screen-specs/`
 - Infra: `docs/backend/`
 - FE screen checklist: `docs/engineering/fe-screen-ticket-checklist.md`
+- Component authoring guide: `docs/component-guide.md`
 - Jabkit convention: `docs/engineering/jabkit.md`
 - Mock harness removal (WIRE-002): `docs/engineering/mock-harness-removal.md`

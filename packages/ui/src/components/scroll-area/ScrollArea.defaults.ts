@@ -1,5 +1,5 @@
 import type { ScrollAreaProps } from "./ScrollArea.schema";
 
 export const scrollAreaDefaultValues: Partial<ScrollAreaProps> = {
-  children: "Example",
+  className: "h-48 w-48 rounded-xl border",
 };
