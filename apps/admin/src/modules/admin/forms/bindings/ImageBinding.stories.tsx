@@ -32,7 +32,7 @@ export const Default: Story = {
           {...field}
           label="Coach photo"
           fallbackLabel="No photo yet."
-          photoKeyField="value"
+          previewName="Coach"
         />
       )}
     </BindingStory>
@@ -53,7 +53,7 @@ export const Invalid: Story = {
           {...field}
           label="Coach photo"
           fallbackLabel="No photo yet."
-          photoKeyField="value"
+          previewName="Coach"
         />
       )}
     </BindingStory>
@@ -68,7 +68,7 @@ export const Disabled: Story = {
           {...field}
           label="Coach photo"
           fallbackLabel="No photo yet."
-          photoKeyField="value"
+          previewName="Coach"
         />
       )}
     </BindingStory>

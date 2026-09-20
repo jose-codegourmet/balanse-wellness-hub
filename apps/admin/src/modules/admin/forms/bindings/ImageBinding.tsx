@@ -1,30 +1,29 @@
 "use client";
 
 import { useFieldContext } from "@balanse/ui";
-import { useFormContext } from "react-hook-form";
 import { ImageUpload } from "@/components/balanse/ImageUpload";
 import type { FormFieldRenderProps } from "../AdminForm.schema";
 
 export type ImageBindingProps = FormFieldRenderProps & {
   label: string;
   fallbackLabel: string;
-  photoKeyField?: string;
-  mockKey?: string;
+  previewName?: string;
 };
 
 /**
- * Action binding, not a value binding. `MockImageUpload` has no value
- * contract — a successful mock submit `setValue`s `photoKey`.
+ * Value binding for `photoKey`. Replace always writes a new pending token —
+ * it does not keep the previous key.
  */
 export function ImageBinding({
   label,
   fallbackLabel,
-  photoKeyField = "photoKey",
-  mockKey = "uploads/mock",
+  previewName,
+  value,
+  onChange,
   name,
 }: ImageBindingProps) {
   const field = useFieldContext();
-  const { setValue } = useFormContext();
+  const photoKey = typeof value === "string" && value.length > 0 ? value : null;
 
   return (
     <div
@@ -35,11 +34,11 @@ export function ImageBinding({
       <ImageUpload
         label={label}
         fallbackLabel={fallbackLabel}
-        onMockSubmit={async () => {
-          setValue(photoKeyField, mockKey, { shouldDirty: true, shouldValidate: true });
-        }}
+        photoKey={photoKey}
+        previewName={previewName}
+        onPhotoKeyChange={(next) => onChange(next)}
       />
-      <input type="hidden" name={name} value="" readOnly />
+      <input type="hidden" name={name} value={photoKey ?? ""} readOnly />
     </div>
   );
 }

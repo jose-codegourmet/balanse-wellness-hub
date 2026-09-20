@@ -154,6 +154,8 @@ export function bookingCreatedToastId(status: BookingStatus): PortalToastId {
 export const ADMIN_TOAST_IDS = [
   "class.saved",
   "class.save-failed",
+  "coach.saved",
+  "coach.save-failed",
   "form.validation-failed",
   "cancellation.completed",
   "cancellation.rejected",
@@ -184,6 +186,18 @@ export const ADMIN_TOAST_COPY = {
     id: "class.save-failed",
     tone: "error",
     title: "Class not saved",
+    description: "Those changes could not be saved. Try again.",
+  },
+  "coach.saved": {
+    id: "coach.saved",
+    tone: "success",
+    title: "Coach saved",
+    description: "The coach list is updated. Existing session rate snapshots stay as they were.",
+  },
+  "coach.save-failed": {
+    id: "coach.save-failed",
+    tone: "error",
+    title: "Coach not saved",
     description: "Those changes could not be saved. Try again.",
   },
   "form.validation-failed": {

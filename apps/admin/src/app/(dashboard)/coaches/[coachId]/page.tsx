@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { adminCoachesQuery, adminSessionsQuery } from "@/lib/query/queries";
-import { CoachFormPage } from "@/modules/admin/CoachPages";
+import { CoachFormPage } from "@/modules/admin/coaches/CoachFormPage";
 
 export const metadata: Metadata = {
   title: "Coach",

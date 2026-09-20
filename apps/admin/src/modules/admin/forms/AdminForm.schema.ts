@@ -48,5 +48,6 @@ export type FormActionsProps = {
   submitLabel: string;
   cancelHref?: string;
   cancelLabel?: string;
+  className?: string;
   children?: ReactNode;
 };

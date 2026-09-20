@@ -4,6 +4,7 @@ export { ChoiceBinding } from "./ChoiceBinding";
 export { DateBinding } from "./DateBinding";
 export { ImageBinding } from "./ImageBinding";
 export { RichTextBinding } from "./RichTextBinding";
+export { TagListBinding } from "./TagListBinding";
 export { TextareaBinding } from "./TextareaBinding";
 export { TextBinding } from "./TextBinding";
 export { TimeBinding } from "./TimeBinding";
