@@ -122,7 +122,11 @@ export function ClassFormPage({ classId }: { classId: string }) {
       title={isNew ? "Add Class" : "Edit Class"}
       breadcrumb={[
         { label: "Classes", href: "/classes" },
-        { label: isNew ? "Add Class" : (classesQuery.data?.find((row) => row.id === classId)?.name ?? classId) },
+        {
+          label: isNew
+            ? "Add Class"
+            : (classesQuery.data?.find((row) => row.id === classId)?.name ?? classId),
+        },
       ]}
     >
       <p className="text-sm text-muted-foreground">

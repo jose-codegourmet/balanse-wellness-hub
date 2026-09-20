@@ -151,7 +151,10 @@ export function CustomerDetailPage({ customerId }: { customerId: string }) {
 
   if (!detail) {
     return (
-      <AdminPageShell title={customerId} breadcrumb={[{ label: "Customers", href: "/customers" }, { label: customerId }]}>
+      <AdminPageShell
+        title={customerId}
+        breadcrumb={[{ label: "Customers", href: "/customers" }, { label: customerId }]}
+      >
         <DetailPageSkeleton label="Loading customer" />
       </AdminPageShell>
     );
@@ -160,10 +163,7 @@ export function CustomerDetailPage({ customerId }: { customerId: string }) {
   return (
     <AdminPageShell
       title={detail.fullName}
-      breadcrumb={[
-        { label: "Customers", href: "/customers" },
-        { label: detail.fullName },
-      ]}
+      breadcrumb={[{ label: "Customers", href: "/customers" }, { label: detail.fullName }]}
     >
       <h2 className="font-display text-2xl">Profile</h2>
       <dl className="mt-3 grid gap-2 text-sm">

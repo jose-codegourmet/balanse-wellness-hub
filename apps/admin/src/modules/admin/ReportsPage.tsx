@@ -245,10 +245,7 @@ export function ReportDrilldownPage({ sessionId }: { sessionId: string }) {
     <AdminPageShell
       className="max-w-xl"
       title={title}
-      breadcrumb={[
-        { label: "Reports", href: "/reports" },
-        { label: title },
-      ]}
+      breadcrumb={[{ label: "Reports", href: "/reports" }, { label: title }]}
     >
       <dl className="grid gap-2 text-sm">
         <Line label="Capacity" value={row.capacity} />

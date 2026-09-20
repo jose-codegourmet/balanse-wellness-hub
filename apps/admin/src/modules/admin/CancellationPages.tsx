@@ -2,7 +2,6 @@
 
 import {
   auditConfirmationCopy,
-  type CustomerBooking,
   formatSessionDate,
   paymentStatusLabel,
   SLOT_LOCKED_UNTIL_CANCEL_NOTE,
@@ -37,9 +36,7 @@ export function CancellationQueuePage({ empty }: { empty?: boolean }) {
 
   return (
     <AdminPageShell title="Cancellation Requests">
-      <p className="max-w-2xl text-sm text-muted-foreground">
-        {SLOT_LOCKED_UNTIL_CANCEL_NOTE}
-      </p>
+      <p className="max-w-2xl text-sm text-muted-foreground">{SLOT_LOCKED_UNTIL_CANCEL_NOTE}</p>
       {rows.length === 0 ? (
         <FeedbackState id="admin.no-cancellation-requests" className="mt-6" />
       ) : (

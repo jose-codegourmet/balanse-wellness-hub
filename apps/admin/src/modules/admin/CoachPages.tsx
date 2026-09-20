@@ -114,7 +114,7 @@ export function CoachFormPage({ coachId }: { coachId: string }) {
       title={isNew ? "Add Coach" : "Edit Coach"}
       breadcrumb={[
         { label: "Coaches", href: "/coaches" },
-        { label: isNew ? "Add Coach" : (form.name || coachId) },
+        { label: isNew ? "Add Coach" : form.name || coachId },
       ]}
     >
       <form

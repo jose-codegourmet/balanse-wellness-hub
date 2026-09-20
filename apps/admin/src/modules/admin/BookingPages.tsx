@@ -21,7 +21,12 @@ import { useMemo, useState } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { AdminPageTabs } from "@/components/balanse/page/AdminPageTabs";
-import { adminBookingDetailQuery, adminBookingsQuery, adminClassesQuery, adminCustomersQuery } from "@/lib/query/queries";
+import {
+  adminBookingDetailQuery,
+  adminBookingsQuery,
+  adminClassesQuery,
+  adminCustomersQuery,
+} from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { ConfirmAction } from "./shared";
 
@@ -194,10 +199,7 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
     <AdminPageShell
       className="max-w-2xl"
       title="Booking detail"
-      breadcrumb={[
-        { label: "Bookings", href: "/bookings" },
-        { label: name },
-      ]}
+      breadcrumb={[{ label: "Bookings", href: "/bookings" }, { label: name }]}
     >
       <p className="font-medium">{name}</p>
       <p className="text-sm text-muted-foreground">
@@ -220,7 +222,6 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
           <button type="button" className="mb-2 underline" onClick={() => setProofOpen(false)}>
             Close
           </button>
-          {/* biome-ignore lint/performance/noImgElement: zoomable mock proof from fixture path */}
           <img
             src={booking.proofPreviewUrl}
             alt="Payment proof"

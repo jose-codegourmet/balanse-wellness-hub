@@ -14,7 +14,7 @@ const meta: Meta<typeof AdminPageTabs> = {
     docs: {
       description: {
         component:
-          "Wrapper over `@balanse/ui` Tabs (Base UI). The primitive supplies `role=\"tablist\"`, `aria-controls` ↔ `role=\"tabpanel\"`, roving `tabIndex`, and Left/Right/Home/End. Active state uses weight plus the line indicator so it is not colour-only.",
+          'Wrapper over `@balanse/ui` Tabs (Base UI). The primitive supplies `role="tablist"`, `aria-controls` ↔ `role="tabpanel"`, roving `tabIndex`, and Left/Right/Home/End. Active state uses weight plus the line indicator so it is not colour-only.',
       },
     },
   },

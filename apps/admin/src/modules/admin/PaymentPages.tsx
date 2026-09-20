@@ -128,7 +128,6 @@ export function PaymentReviewPage({ empty }: { empty?: boolean }) {
           </p>
           {selected.proofPreviewUrl ? (
             <button type="button" className="mt-4 block" onClick={() => setZoom(true)}>
-              {/* biome-ignore lint/performance/noImgElement: zoomable mock proof from fixture path */}
               <img
                 src={selected.proofPreviewUrl}
                 alt="Payment proof preview"
@@ -146,7 +145,6 @@ export function PaymentReviewPage({ empty }: { empty?: boolean }) {
               <button type="button" className="mb-2 underline" onClick={() => setZoom(false)}>
                 Close
               </button>
-              {/* biome-ignore lint/performance/noImgElement: zoomable mock proof from fixture path */}
               <img
                 src={selected.proofPreviewUrl}
                 alt="Payment proof enlarged"

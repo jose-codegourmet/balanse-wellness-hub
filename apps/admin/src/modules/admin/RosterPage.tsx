@@ -30,10 +30,7 @@ export function RosterPage({ sessionId }: { sessionId: string }) {
     return (
       <AdminPageShell
         title="Roster"
-        breadcrumb={[
-          { label: "Schedule", href: "/schedule" },
-          { label: "Roster" },
-        ]}
+        breadcrumb={[{ label: "Schedule", href: "/schedule" }, { label: "Roster" }]}
       >
         <DetailPageSkeleton label="Loading roster" />
       </AdminPageShell>
@@ -54,10 +51,7 @@ export function RosterPage({ sessionId }: { sessionId: string }) {
     <AdminPageShell
       className="max-w-3xl overflow-x-hidden"
       title={title}
-      breadcrumb={[
-        { label: "Schedule", href: "/schedule" },
-        { label: "Roster" },
-      ]}
+      breadcrumb={[{ label: "Schedule", href: "/schedule" }, { label: "Roster" }]}
     >
       <p>{roster.session.coachName}</p>
       <p className="text-sm text-muted-foreground">

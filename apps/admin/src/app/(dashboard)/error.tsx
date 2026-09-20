@@ -26,7 +26,8 @@ export default function DashboardSegmentError({
         </EmptyMedia>
         <EmptyTitle>This page could not load</EmptyTitle>
         <EmptyDescription>
-          {error.message || "Something went wrong while loading this admin screen. Retry the request."}
+          {error.message ||
+            "Something went wrong while loading this admin screen. Retry the request."}
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>

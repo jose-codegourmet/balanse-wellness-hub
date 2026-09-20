@@ -78,10 +78,7 @@ export const WithStats: Story = {
 export const WithBreadcrumb: Story = {
   args: {
     title: "Maya Cruz",
-    breadcrumb: [
-      { label: "Customers", href: "/customers" },
-      { label: "Maya Cruz" },
-    ],
+    breadcrumb: [{ label: "Customers", href: "/customers" }, { label: "Maya Cruz" }],
   },
 };
 
@@ -115,10 +112,7 @@ export const Desktop1280: Story = {
 export const DarkTheme: Story = {
   args: {
     actions: <Button type="button">Add Class</Button>,
-    breadcrumb: [
-      { label: "Classes", href: "/classes" },
-      { label: "Vinyasa Flow" },
-    ],
+    breadcrumb: [{ label: "Classes", href: "/classes" }, { label: "Vinyasa Flow" }],
   },
   globals: { theme: "dark" },
 };

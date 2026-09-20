@@ -4,7 +4,6 @@ import {
   type AdminClass,
   type AdminCoach,
   type AdminSession,
-  type CustomerBooking,
   coachRateTypeLabel,
   computeSessionInventory,
   formatSessionDate,
@@ -28,9 +27,9 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { FullscreenCalendar } from "@/components/jabkit/fullscreen-calendar";
 import type { FullscreenCalendarDay } from "@/components/jabkit/fullscreen-calendar/FullscreenCalendar.types";
-import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import {
   adminBookingsQuery,
   adminClassesQuery,

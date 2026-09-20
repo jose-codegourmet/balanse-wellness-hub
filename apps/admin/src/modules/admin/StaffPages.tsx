@@ -2,7 +2,14 @@
 
 import { ADMIN_ROLE_CAPABILITY_NOTE, type AdminStaff, staffStatusLabel } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Badge, Button, FeedbackState, FormPageSkeleton, NativeSelect, TablePageSkeleton } from "@balanse/ui";
+import {
+  Badge,
+  Button,
+  FeedbackState,
+  FormPageSkeleton,
+  NativeSelect,
+  TablePageSkeleton,
+} from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
@@ -128,7 +135,7 @@ export function StaffDetailPage({ staffId }: { staffId: string }) {
       title={isNew ? "Add Staff" : "Staff Detail"}
       breadcrumb={[
         { label: "Staff", href: "/staff" },
-        { label: isNew ? "Add Staff" : (row.name || staffId) },
+        { label: isNew ? "Add Staff" : row.name || staffId },
       ]}
     >
       <p className="text-sm text-muted-foreground">

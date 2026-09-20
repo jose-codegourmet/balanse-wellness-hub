@@ -21,11 +21,12 @@ function deriveTrail(pathname: string, recordName?: string): AdminBreadcrumbItem
   const isDetail = pathname !== nav.href && pathname.startsWith(`${nav.href}/`);
   if (!isDetail) return [{ label: nav.label }];
 
-  const segment = pathname.slice(nav.href.length + 1).split("/").filter(Boolean)[0] ?? "";
-  return [
-    { label: nav.label, href: nav.href },
-    { label: recordName ?? segment },
-  ];
+  const segment =
+    pathname
+      .slice(nav.href.length + 1)
+      .split("/")
+      .filter(Boolean)[0] ?? "";
+  return [{ label: nav.label, href: nav.href }, { label: recordName ?? segment }];
 }
 
 export function AdminBreadcrumb({

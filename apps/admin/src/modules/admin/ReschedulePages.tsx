@@ -2,7 +2,6 @@
 
 import {
   auditConfirmationCopy,
-  type CustomerBooking,
   canApproveReschedule,
   computeSessionInventory,
   formatSessionRange,
