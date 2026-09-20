@@ -58,7 +58,7 @@ queryClient.invalidateQueries({ queryKey: adminKeys.bookings.all(role) });
 - `retry: 0` — `failNext` is one-shot; retry would swallow the harness failure.
 - `refetchOnWindowFocus: false`
 
-`Providers` accepts an optional `queryClient` so a story can inject a seeded client. Storybook already wraps stories in `Providers` (#211 owns `.storybook/**`).
+`Providers` accepts an optional `queryClient` so a story can inject a seeded client. `apps/admin/.storybook/preview.tsx` (FE-ADM-021) wraps stories in `Providers` and keys that tree by principal + `mockRuntime` so toolbar / parameter changes get a fresh `makeQueryClient()`.
 
 ## Cache + mock principal
 
