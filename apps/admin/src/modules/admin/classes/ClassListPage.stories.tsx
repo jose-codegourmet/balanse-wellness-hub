@@ -30,7 +30,7 @@ export const Loading: Story = {
   args: { loading: true },
 };
 
-export const Error: Story = {
+export const LoadError: Story = {
   args: { error: true },
 };
 

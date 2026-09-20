@@ -80,7 +80,9 @@ export function ClassListPage({
         accessorFn: (row) => row.defaultDurationMinutes,
         enableGlobalFilter: false,
         cell: ({ row }) => (
-          <span className="tabular-nums">{formatDuration(row.original.defaultDurationMinutes)}</span>
+          <span className="tabular-nums">
+            {formatDuration(row.original.defaultDurationMinutes)}
+          </span>
         ),
       },
       {
