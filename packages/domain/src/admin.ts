@@ -250,13 +250,49 @@ export const ADMIN_PAYMENT_REFUND_SORT = "createdAt_desc_id_desc";
 
 type CursorPayload = { v: 1; s: string; k: string | null; i: string };
 
+/** Same alphabet as Node `Buffer.toString("base64url")` / `packages/api/src/cursor.ts`. */
+const B64URL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+function toBase64Url(value: string): string {
+  const bytes = new TextEncoder().encode(value);
+  let out = "";
+  for (let index = 0; index < bytes.length; index += 3) {
+    const a = bytes[index] ?? 0;
+    const b = bytes[index + 1] ?? 0;
+    const c = bytes[index + 2] ?? 0;
+    const n = (a << 16) | (b << 8) | c;
+    out += B64URL[(n >> 18) & 63];
+    out += B64URL[(n >> 12) & 63];
+    if (index + 1 < bytes.length) out += B64URL[(n >> 6) & 63];
+    if (index + 2 < bytes.length) out += B64URL[n & 63];
+  }
+  return out;
+}
+
+function fromBase64Url(raw: string): string {
+  const clean = raw.replace(/=+$/g, "");
+  const bytes: number[] = [];
+  for (let index = 0; index < clean.length; index += 4) {
+    const a = B64URL.indexOf(clean[index] ?? "");
+    const b = B64URL.indexOf(clean[index + 1] ?? "");
+    const c = B64URL.indexOf(clean[index + 2] ?? "A");
+    const d = B64URL.indexOf(clean[index + 3] ?? "A");
+    if (a < 0 || b < 0 || c < 0 || d < 0) throw new Error("shape");
+    const n = (a << 18) | (b << 12) | (c << 6) | d;
+    bytes.push((n >> 16) & 255);
+    if (index + 2 < clean.length) bytes.push((n >> 8) & 255);
+    if (index + 3 < clean.length) bytes.push(n & 255);
+  }
+  return new TextDecoder().decode(Uint8Array.from(bytes));
+}
+
 /**
  * Opaque keyset cursor. Shape is mirrored from `packages/api/src/cursor.ts`
  * so BE-050 and the mock stay byte-compatible. Do not import `@balanse/api`.
  */
 function encodeCursor(sort: string, key: string | null, id: string): string {
   const payload: CursorPayload = { v: 1, s: sort, k: key, i: id };
-  return Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+  return toBase64Url(JSON.stringify(payload));
 }
 
 /**
@@ -270,7 +306,7 @@ function decodeCursor(
 ): { key: string | null; id: string } | null {
   if (raw == null || raw === "") return null;
   try {
-    const parsed = JSON.parse(Buffer.from(raw, "base64url").toString("utf8")) as CursorPayload;
+    const parsed = JSON.parse(fromBase64Url(raw)) as CursorPayload;
     if (parsed.v !== 1 || parsed.s !== expectedSort || typeof parsed.i !== "string") {
       throw new Error("shape");
     }
