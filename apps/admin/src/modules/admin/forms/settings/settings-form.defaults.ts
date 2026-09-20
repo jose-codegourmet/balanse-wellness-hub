@@ -1,4 +1,10 @@
-import type { SettingsFormValues } from "./settings-form.schema";
+import type {
+  BusinessProfileFormValues,
+  PaymentInfoFormValues,
+  PolicyPromoteFormValues,
+  PublicContentFormValues,
+  SettingsFormValues,
+} from "./settings-form.schema";
 
 export const settingsFormDefaultValues: SettingsFormValues = {
   businessName: "",
@@ -9,4 +15,26 @@ export const settingsFormDefaultValues: SettingsFormValues = {
   about: "",
   faqs: [],
   openingHours: "",
+};
+
+export const businessProfileFormDefaultValues: BusinessProfileFormValues = {
+  businessName: "",
+  contact: { phone: "", address: "" },
+  openingHours: "",
+};
+
+export const paymentInfoFormDefaultValues: PaymentInfoFormValues = {
+  gcashName: "",
+  gcashNumber: "",
+  qrImageKey: null,
+};
+
+export const publicContentFormDefaultValues: PublicContentFormValues = {
+  about: "",
+  contact: { email: "" },
+  faqs: [],
+};
+
+export const policyPromoteFormDefaultValues: PolicyPromoteFormValues = {
+  version: "",
 };

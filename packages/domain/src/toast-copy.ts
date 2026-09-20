@@ -175,6 +175,10 @@ export const ADMIN_TOAST_IDS = [
   "session.save-failed",
   "session.cancelled",
   "session.cancel-failed",
+  "settings.saved",
+  "settings.save-failed",
+  "policy.promoted",
+  "policy.promote-failed",
 ] as const;
 
 export type AdminToastId = (typeof ADMIN_TOAST_IDS)[number];
@@ -285,6 +289,7 @@ export const ADMIN_TOAST_COPY = {
     title: "Check-in not saved",
     description: "The guest could not be checked in. Try again.",
   },
+<<<<<<< HEAD
   "reschedule.approved": {
     id: "reschedule.approved",
     tone: "success",
@@ -326,6 +331,31 @@ export const ADMIN_TOAST_COPY = {
     tone: "error",
     title: "Session not cancelled",
     description: "That session could not be cancelled. Try again.",
+  },
+  "settings.saved": {
+    id: "settings.saved",
+    tone: "success",
+    title: "Settings saved",
+    description: "Only this section was updated. Other settings are unchanged.",
+  },
+  "settings.save-failed": {
+    id: "settings.save-failed",
+    tone: "error",
+    title: "Settings not saved",
+    description: "Those changes could not be saved. Try again.",
+  },
+  "policy.promoted": {
+    id: "policy.promoted",
+    tone: "success",
+    title: "Policy version promoted",
+    description:
+      "Customers accept the new version going forward. Existing acceptances stay historical.",
+  },
+  "policy.promote-failed": {
+    id: "policy.promote-failed",
+    tone: "error",
+    title: "Policy not promoted",
+    description: "That version could not be promoted. Try again.",
   },
 } as const satisfies ExhaustiveAdminToastCopy;
 
