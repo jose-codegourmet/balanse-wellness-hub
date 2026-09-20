@@ -8,7 +8,7 @@ import {
   RESCHEDULE_HISTORY_NOTE,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { CardListSkeleton, FeedbackState } from "@balanse/ui";
+import { FeedbackState } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
@@ -35,13 +35,7 @@ export function RescheduleQueuePage({ empty }: { empty?: boolean }) {
     "2026-09-16T02:50:00.000Z",
   );
 
-  if (!rows) {
-    return (
-      <AdminPageShell title="Reschedule Requests">
-        <CardListSkeleton label="Loading reschedule requests" items={3} />
-      </AdminPageShell>
-    );
-  }
+  if (!rows) return null;
 
   return (
     <AdminPageShell title="Reschedule Requests">

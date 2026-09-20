@@ -2,7 +2,7 @@
 
 import type { AdminSettings } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Button, FormPageSkeleton, Input, Label, Textarea } from "@balanse/ui";
+import { Button, Input, Label, Textarea } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import { type ReactNode, useEffect, useState } from "react";
 import { ImageUpload } from "@/components/balanse/ImageUpload";
@@ -21,13 +21,7 @@ export function SettingsPage() {
     if (query.data) setSettings(query.data);
   }, [query.data]);
 
-  if (!settings) {
-    return (
-      <AdminPageShell title="Settings">
-        <FormPageSkeleton label="Loading settings" sections={4} fields={3} />
-      </AdminPageShell>
-    );
-  }
+  if (!settings) return null;
 
   return (
     <AdminPageShell className="max-w-2xl" title="Settings">

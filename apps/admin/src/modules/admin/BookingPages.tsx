@@ -12,7 +12,7 @@ import {
   refundStatusLabel,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Button, Input, Label, NativeSelect, StatusBadge, TablePageSkeleton } from "@balanse/ui";
+import { Button, Input, Label, NativeSelect, StatusBadge } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
@@ -101,13 +101,7 @@ export function BookingListPage() {
     [names],
   );
 
-  if (!bookings) {
-    return (
-      <AdminPageShell title="Bookings">
-        <TablePageSkeleton label="Loading bookings" rows={8} columns={6} />
-      </AdminPageShell>
-    );
-  }
+  if (!bookings) return null;
 
   return (
     <AdminPageShell
@@ -119,50 +113,50 @@ export function BookingListPage() {
           onValueChange={(id) => {
             setTab(id as AdminBookingTab);
           }}
-        />
+        >
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-1.5">
+              <Label htmlFor="booking-class">Class</Label>
+              <NativeSelect
+                id="booking-class"
+                value={classId}
+                onChange={(event) => {
+                  setClassId(event.target.value);
+                }}
+              >
+                <option value="all">All classes</option>
+                {classes.map((row) => (
+                  <option key={row.id} value={row.id}>
+                    {row.name}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="booking-date">Date</Label>
+              <Input
+                id="booking-date"
+                type="date"
+                value={date}
+                onChange={(event) => {
+                  setDate(event.target.value);
+                }}
+              />
+            </div>
+          </div>
+          <div className="mt-6">
+            <AdminDataTable
+              tableId="bookings"
+              data={filtered}
+              columns={columns}
+              getRowId={(row) => row.id}
+              searchPlaceholder="Search customer"
+              emptyFilterLabel="No bookings match these filters."
+            />
+          </div>
+        </AdminPageTabs>
       }
-    >
-      <div className="grid gap-3 md:grid-cols-2">
-        <div className="grid gap-1.5">
-          <Label htmlFor="booking-class">Class</Label>
-          <NativeSelect
-            id="booking-class"
-            value={classId}
-            onChange={(event) => {
-              setClassId(event.target.value);
-            }}
-          >
-            <option value="all">All classes</option>
-            {classes.map((row) => (
-              <option key={row.id} value={row.id}>
-                {row.name}
-              </option>
-            ))}
-          </NativeSelect>
-        </div>
-        <div className="grid gap-1.5">
-          <Label htmlFor="booking-date">Date</Label>
-          <Input
-            id="booking-date"
-            type="date"
-            value={date}
-            onChange={(event) => {
-              setDate(event.target.value);
-            }}
-          />
-        </div>
-      </div>
-      <div className="mt-6">
-        <AdminDataTable
-          tableId="bookings"
-          data={filtered}
-          columns={columns}
-          getRowId={(row) => row.id}
-          searchPlaceholder="Search customer"
-          emptyFilterLabel="No bookings match these filters."
-        />
-      </div>
-    </AdminPageShell>
+    />
   );
 }
 
@@ -181,13 +175,7 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
     "2026-09-16T02:50:00.000Z",
   );
 
-  if (!booking) {
-    return (
-      <AdminPageShell title="Booking detail">
-        <TablePageSkeleton label="Loading booking" rows={8} columns={4} />
-      </AdminPageShell>
-    );
-  }
+  if (!booking) return null;
   const name =
     customers.find((row) => row.id === booking.customerId)?.fullName ?? booking.customerId;
 

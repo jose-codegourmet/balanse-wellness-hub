@@ -14,15 +14,7 @@ import {
   validateSessionCapacity,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import {
-  Button,
-  CalendarSkeleton,
-  DetailPageSkeleton,
-  FeedbackState,
-  Input,
-  Label,
-  NativeSelect,
-} from "@balanse/ui";
+import { Button, DetailPageSkeleton, FeedbackState, Input, Label, NativeSelect } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -94,13 +86,7 @@ export function ScheduleListPage({ empty }: { empty?: boolean }) {
     daySessions[0] ??
     null;
 
-  if (!sessions) {
-    return (
-      <AdminPageShell title="Schedule">
-        <CalendarSkeleton label="Loading schedule" />
-      </AdminPageShell>
-    );
-  }
+  if (!sessions) return null;
 
   return (
     <AdminPageShell title="Schedule">

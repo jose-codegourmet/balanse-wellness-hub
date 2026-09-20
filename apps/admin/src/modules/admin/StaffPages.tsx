@@ -2,14 +2,7 @@
 
 import { ADMIN_ROLE_CAPABILITY_NOTE, type AdminStaff, staffStatusLabel } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import {
-  Badge,
-  Button,
-  FeedbackState,
-  FormPageSkeleton,
-  NativeSelect,
-  TablePageSkeleton,
-} from "@balanse/ui";
+import { Badge, Button, FeedbackState, NativeSelect } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
@@ -69,13 +62,7 @@ export function StaffListPage({ empty }: { empty?: boolean }) {
     [],
   );
 
-  if (!rows) {
-    return (
-      <AdminPageShell title="Staff Management">
-        <TablePageSkeleton label="Loading staff" rows={6} columns={4} />
-      </AdminPageShell>
-    );
-  }
+  if (!rows) return null;
 
   return (
     <AdminPageShell
@@ -121,13 +108,7 @@ export function StaffDetailPage({ staffId }: { staffId: string }) {
     setRow(next);
   }, [isNew, query.data, staffId]);
 
-  if (!row) {
-    return (
-      <AdminPageShell title={isNew ? "Add Staff" : "Staff Detail"}>
-        <FormPageSkeleton label="Loading staff" sections={1} fields={2} />
-      </AdminPageShell>
-    );
-  }
+  if (!row) return null;
 
   return (
     <AdminPageShell

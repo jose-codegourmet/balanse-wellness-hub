@@ -1,7 +1,7 @@
 "use client";
 
 import { getMockAdapter } from "@balanse/mock";
-import { Button, FeedbackState, Input, Label, TablePageSkeleton } from "@balanse/ui";
+import { Button, FeedbackState, Input, Label } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -15,13 +15,7 @@ export function ClassListPage({ empty }: { empty?: boolean }) {
   const query = useQuery(adminClassesQuery(principal.role));
   const rows = empty ? [] : (query.data ?? null);
 
-  if (!empty && query.isPending && !rows) {
-    return (
-      <AdminPageShell title="Classes">
-        <TablePageSkeleton label="Loading classes" rows={6} columns={3} />
-      </AdminPageShell>
-    );
-  }
+  if (!empty && query.isPending && !rows) return null;
 
   if (!empty && query.isError) {
     return (
@@ -39,13 +33,7 @@ export function ClassListPage({ empty }: { empty?: boolean }) {
     );
   }
 
-  if (!rows) {
-    return (
-      <AdminPageShell title="Classes">
-        <TablePageSkeleton label="Loading classes" rows={6} columns={3} />
-      </AdminPageShell>
-    );
-  }
+  if (!rows) return null;
 
   return (
     <AdminPageShell

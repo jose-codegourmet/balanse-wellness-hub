@@ -9,15 +9,7 @@ import {
   formatSessionTime,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import {
-  Button,
-  CardListSkeleton,
-  CoachPhoto,
-  Input,
-  Label,
-  NativeSelect,
-  TablePageSkeleton,
-} from "@balanse/ui";
+import { Button, CardListSkeleton, CoachPhoto, Input, Label, NativeSelect } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -32,13 +24,7 @@ export function CoachListPage() {
   const query = useQuery(adminCoachesQuery(principal.role));
   const rows = query.data ?? null;
 
-  if (!rows) {
-    return (
-      <AdminPageShell title="Coaches">
-        <TablePageSkeleton label="Loading coaches" rows={6} columns={3} />
-      </AdminPageShell>
-    );
-  }
+  if (!rows) return null;
 
   return (
     <AdminPageShell

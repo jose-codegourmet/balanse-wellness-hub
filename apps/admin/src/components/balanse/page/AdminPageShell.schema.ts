@@ -10,6 +10,6 @@ export type AdminPageShellProps = {
   actions?: React.ReactNode;
   tabs?: React.ReactNode;
   stats?: React.ReactNode;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
 };

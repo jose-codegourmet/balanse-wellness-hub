@@ -154,11 +154,13 @@ export function ReportsOverview({
   from,
   to,
   onRangeChange,
+  hideTitle = false,
 }: {
   reports: AdminReports;
   from: string;
   to: string;
   onRangeChange: (next: { from: string; to: string }) => void;
+  hideTitle?: boolean;
 }) {
   const headingId = useId();
   const gradientId = useId();
@@ -273,13 +275,25 @@ export function ReportsOverview({
   let offset = 0;
 
   return (
-    <section aria-labelledby={headingId} className="bg-background text-foreground">
+    <section
+      aria-labelledby={hideTitle ? undefined : headingId}
+      aria-label={hideTitle ? "Reports" : undefined}
+      className="bg-background text-foreground"
+    >
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-xl">
-          <h1 id={headingId} className="font-display text-3xl">
-            Reports
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          {hideTitle ? null : (
+            <h1 id={headingId} className="font-display text-3xl">
+              Reports
+            </h1>
+          )}
+          <p
+            className={
+              hideTitle
+                ? "text-sm leading-6 text-muted-foreground"
+                : "mt-2 text-sm leading-6 text-muted-foreground"
+            }
+          >
             Sales, occupancy, and class mix for the selected range.
           </p>
           <p className="mt-2 text-xs text-muted-foreground">

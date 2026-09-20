@@ -7,7 +7,7 @@ import {
   formatSessionDate,
   formatSessionTime,
 } from "@balanse/domain";
-import { DetailPageSkeleton, Label, NativeSelect, TablePageSkeleton } from "@balanse/ui";
+import { Label, NativeSelect } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
@@ -126,18 +126,13 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
     [],
   );
 
-  if (!reports) {
-    return (
-      <AdminPageShell title="Reports">
-        <TablePageSkeleton label="Loading reports" rows={8} columns={6} />
-      </AdminPageShell>
-    );
-  }
+  if (!reports) return null;
   const noData = reports.sessionPerformance.length === 0;
 
   return (
-    <section>
+    <AdminPageShell title="Reports">
       <ReportsOverview
+        hideTitle
         reports={reports}
         from={from}
         to={to}
@@ -222,7 +217,7 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
           />
         </div>
       )}
-    </section>
+    </AdminPageShell>
   );
 }
 
@@ -231,13 +226,7 @@ export function ReportDrilldownPage({ sessionId }: { sessionId: string }) {
   const query = useQuery(adminSessionReportQuery(principal.role, sessionId));
   const row = query.data ?? null;
 
-  if (!row) {
-    return (
-      <AdminPageShell title="Session report">
-        <DetailPageSkeleton label="Loading session report" />
-      </AdminPageShell>
-    );
-  }
+  if (!row) return null;
 
   const title = `${row.className} — ${formatSessionDate(row.startsAt)} — ${formatSessionTime(row.startsAt)}`;
 

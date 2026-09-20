@@ -11,7 +11,7 @@ import {
   paymentStatusLabel,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { DetailPageSkeleton, StatusBadge } from "@balanse/ui";
+import { StatusBadge } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
@@ -26,16 +26,7 @@ export function RosterPage({ sessionId }: { sessionId: string }) {
   const roster = rosterQuery.data ?? null;
   const customers = customersQuery.data ?? [];
 
-  if (!roster) {
-    return (
-      <AdminPageShell
-        title="Roster"
-        breadcrumb={[{ label: "Schedule", href: "/schedule" }, { label: "Roster" }]}
-      >
-        <DetailPageSkeleton label="Loading roster" />
-      </AdminPageShell>
-    );
-  }
+  if (!roster) return null;
 
   const name = (id: string) => customers.find((row) => row.id === id)?.fullName ?? id;
   const occ = occupancyRatio(roster.confirmedCount, roster.capacity);

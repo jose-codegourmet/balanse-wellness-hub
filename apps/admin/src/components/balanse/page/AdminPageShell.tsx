@@ -26,7 +26,7 @@ export function AdminPageShell({
       </div>
       {stats ? <div>{stats}</div> : null}
       {tabs ? <div>{tabs}</div> : null}
-      <div>{children}</div>
+      {children ? <div>{children}</div> : null}
     </section>
   );
 }

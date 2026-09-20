@@ -7,7 +7,7 @@ import {
   SLOT_LOCKED_UNTIL_CANCEL_NOTE,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { CardListSkeleton, FeedbackState } from "@balanse/ui";
+import { FeedbackState } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 import { adminCancellationsQuery, adminCustomersQuery } from "@/lib/query/queries";
@@ -26,13 +26,7 @@ export function CancellationQueuePage({ empty }: { empty?: boolean }) {
     "2026-09-16T02:50:00.000Z",
   );
 
-  if (!rows) {
-    return (
-      <AdminPageShell title="Cancellation Requests">
-        <CardListSkeleton label="Loading cancellation requests" items={3} />
-      </AdminPageShell>
-    );
-  }
+  if (!rows) return null;
 
   return (
     <AdminPageShell title="Cancellation Requests">

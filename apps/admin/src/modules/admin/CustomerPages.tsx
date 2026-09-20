@@ -8,7 +8,7 @@ import {
   paymentStatusLabel,
   refundStatusLabel,
 } from "@balanse/domain";
-import { DetailPageSkeleton, FeedbackState, StatusBadge, TablePageSkeleton } from "@balanse/ui";
+import { FeedbackState, StatusBadge } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
@@ -67,13 +67,7 @@ export function CustomerListPage({ empty }: { empty?: boolean }) {
     [],
   );
 
-  if (!rows) {
-    return (
-      <AdminPageShell title="Customers">
-        <TablePageSkeleton label="Loading customers" rows={8} columns={5} />
-      </AdminPageShell>
-    );
-  }
+  if (!rows) return null;
 
   return (
     <AdminPageShell title="Customers">
@@ -149,16 +143,7 @@ export function CustomerDetailPage({ customerId }: { customerId: string }) {
   const query = useQuery(adminCustomerDetailQuery(principal.role, customerId));
   const detail = query.data ?? null;
 
-  if (!detail) {
-    return (
-      <AdminPageShell
-        title={customerId}
-        breadcrumb={[{ label: "Customers", href: "/customers" }, { label: customerId }]}
-      >
-        <DetailPageSkeleton label="Loading customer" />
-      </AdminPageShell>
-    );
-  }
+  if (!detail) return null;
 
   return (
     <AdminPageShell

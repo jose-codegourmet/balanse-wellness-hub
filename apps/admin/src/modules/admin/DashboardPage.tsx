@@ -80,13 +80,15 @@ export function DashboardPage({
     [],
   );
 
-  if (forcedLoading || (loading && !data)) {
+  if (forcedLoading) {
     return (
       <AdminPageShell title="Dashboard">
         <BentoSkeleton label="Loading dashboard" tiles={4} />
       </AdminPageShell>
     );
   }
+
+  if (loading && !data) return null;
 
   if (query.isError || !data) {
     return (
