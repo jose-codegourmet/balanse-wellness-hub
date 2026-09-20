@@ -112,12 +112,13 @@ export function AdminForm<TValues extends FieldValues>({
 
   function handleInvalid() {
     notify.admin("form.validation-failed");
+    onSubmitError?.(form.formState.errors);
     const first = firstErrorName(form.formState.errors);
-    if (first) {
+    queueMicrotask(() => {
+      if (!first) return;
       const fieldId = metaRef.current[first]?.id;
       if (fieldId) document.getElementById(fieldId)?.focus();
-    }
-    onSubmitError?.(form.formState.errors);
+    });
   }
 
   return (
@@ -258,13 +259,17 @@ export function FormActions({
   submitLabel,
   cancelHref,
   cancelLabel = "Cancel",
+  className,
   children,
 }: FormActionsProps) {
   const { formState } = useFormContext();
   const guard = useUnsavedChangesGuard(formState.isDirty);
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div
+      data-slot="form-actions"
+      className={["flex flex-wrap items-center gap-2", className].filter(Boolean).join(" ")}
+    >
       <Button type="submit" loading={formState.isSubmitting}>
         {submitLabel}
       </Button>
