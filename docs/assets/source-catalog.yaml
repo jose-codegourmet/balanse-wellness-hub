@@ -1,12 +1,12 @@
 # Stable source_asset_id.intake_item_id values for ASSET-002.
 # Private ARWs are Drive-only. Repo paths are web derivatives already committed.
-# higgsfield_media_id: fill at ASSET-011/012 registration.
+# higgsfield_media_id: filled at ASSET-011/012 registration; refreshed 2026-09-20 headshot-v2.
 
 items:
   - intake_item_id: src-coach-rex-01
     coach_slug: rex-francis-regis
     working_preview: docs/coaches/rex/coach-rex-01.webp
-    higgsfield_media_id: null
+    higgsfield_media_id: c8cd8c6f-0292-41e6-ac04-bb938ad74072
     usable_for_generation: true
   - intake_item_id: src-coach-ephraim-01
     coach_slug: ephraim-bacaltos
@@ -16,30 +16,30 @@ items:
   - intake_item_id: src-coach-rachelle-01
     coach_slug: rachelle-tobiano
     working_preview: docs/coaches/rachelle/coach-rachelle-01.webp
-    higgsfield_media_id: null
+    higgsfield_media_id: 3c6439c2-7d55-4f93-bded-480891081819
     usable_for_generation: true
   - intake_item_id: src-coach-jodi-01
     coach_slug: jodi-tio
     working_preview: docs/coaches/jodi/coach-jodi-01.webp
-    higgsfield_media_id: null
+    higgsfield_media_id: 306d918d-947b-4878-a6e9-84a078d27bda
     usable_for_generation: true
   - intake_item_id: src-coach-wolf-01
     coach_slug: wolf
     working_preview: docs/coaches/wolf/coach-wolf-01.webp
-    higgsfield_media_id: null
+    higgsfield_media_id: 1096a1c8-4d42-4200-9ee3-009d79ceabed
     usable_for_generation: true
   - intake_item_id: src-coach-mikaela-01
     coach_slug: mikaela-danielle
     working_preview: docs/coaches/mikaela/coach-mikaela-01.webp
-    higgsfield_media_id: null
+    higgsfield_media_id: 62be0e00-fa9f-45b8-ae6c-596b33aa9860
     usable_for_generation: true
   - intake_item_id: src-coach-maris-01
     coach_slug: maris-cabrera
     working_preview: docs/coaches/maris/coach-maris-01.webp
-    higgsfield_media_id: null
+    higgsfield_media_id: 8839d104-07b9-430d-8f18-ad7c3800bf79
     usable_for_generation: true
   - intake_item_id: src-coach-francis-01
     coach_slug: francis-acido
     working_preview: docs/coaches/francis/coach-francis-01.webp
-    higgsfield_media_id: null
+    higgsfield_media_id: 6e301446-b351-4271-bf4e-7bfbbce1d6b8
     usable_for_generation: true
