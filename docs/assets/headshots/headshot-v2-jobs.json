@@ -1,5 +1,6 @@
 {
-  "generated_at": "2026-09-20T17:20:00+08:00",
+  "generated_at": "2026-09-20T17:38:00+08:00",
+  "materialize_trigger": "2026-09-20T17:38:00+08:00",
   "intent_model": "nano_banana_2_shots",
   "actual_model": "nano_banana_2 (resolved nano_banana_flash)",
   "reason": "nano_banana_2_shots returns 3x3 identity contact sheets; nano_banana_2@4k returns locked-pose single editorial portraits at native 3712x4608. Upscale skipped (already ~4K).",
