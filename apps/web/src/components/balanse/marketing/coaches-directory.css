@@ -32,7 +32,8 @@
 .coaches-person:hover { border-color: var(--balanse-tan); }
 .coaches-photo-link { display: block; position: relative; }
 .coaches-photo-link:hover .coaches-portrait img { transform: scale(1.07); }
-.coaches-photo-action { position: absolute; right: 1rem; bottom: 1rem; display: grid; place-items: center; width: 2.5rem; height: 2.5rem; background: var(--card); border-radius: 50%; color: var(--foreground); }
+/* The card and the portrait share a tone now, so the affordance needs its own edge. */
+.coaches-photo-action { position: absolute; right: .75rem; bottom: .75rem; display: grid; place-items: center; width: 2.25rem; height: 2.25rem; background: var(--card); border: 1px solid var(--border); border-radius: 50%; color: var(--foreground); }
 .coaches-person-details { padding: 1.15rem .5rem .25rem; display: flex; flex: 1; flex-direction: column; align-items: start; }
 .coaches-person h3 { font-family: var(--font-display); font-size: 1.5rem; letter-spacing: -.035em; line-height: 1.2; }
 .coaches-person-specialties { margin-top: .5rem; color: var(--muted-foreground); font-size: .72rem; line-height: 1.7; }

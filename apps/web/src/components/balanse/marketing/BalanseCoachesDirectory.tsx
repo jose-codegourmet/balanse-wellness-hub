@@ -90,7 +90,7 @@ export function BalanseCoachesDirectory({
           <MarketingImage
             assetId={HERO_ASSET_ID}
             loading="eager"
-            sizes="(max-width: 767px) 100vw, (max-width: 1279px) 100vw, 1216px"
+            sizes="(min-width: 1280px) 1216px, 100vw"
             className="coaches-hero-group-media"
             frameLabel="The coaching team"
             frameCaption="Group portrait coming soon."
