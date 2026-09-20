@@ -1,107 +1,18 @@
 "use client";
 
 import {
-  type AdminCustomer,
   type AdminCustomerDetail,
   bookingListTab,
   formatSessionDate,
   paymentStatusLabel,
   refundStatusLabel,
 } from "@balanse/domain";
-import { FeedbackState, StatusBadge } from "@balanse/ui";
+import { Badge, StatusBadge } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
-import { adminCustomerDetailQuery, adminCustomersQuery } from "@/lib/query/queries";
+import { adminCustomerDetailQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-
-export function CustomerListPage({ empty }: { empty?: boolean }) {
-  const { principal } = useMockPrincipal();
-  const [upcomingOnly, setUpcomingOnly] = useState(false);
-  const query = useSuspenseQuery(
-    adminCustomersQuery(principal.role, { hasUpcoming: upcomingOnly || undefined }),
-  );
-  const rows = empty ? [] : query.data;
-
-  const columns = useMemo<ColumnDef<AdminCustomer, unknown>[]>(
-    () => [
-      {
-        accessorKey: "fullName",
-        header: "Name",
-        meta: { primaryLink: (row) => `/customers/${row.id}` },
-      },
-      {
-        id: "contact",
-        header: "Contact",
-        accessorFn: (row) => `${row.email} ${row.contactNumber}`,
-        cell: ({ row }) => (
-          <span>
-            {row.original.email}
-            <br />
-            {row.original.contactNumber}
-          </span>
-        ),
-      },
-      { accessorKey: "upcomingCount", header: "Upcoming" },
-      {
-        id: "lastVisit",
-        header: "Last Visit",
-        accessorFn: (row) => row.lastVisitAt ?? "",
-        cell: ({ row }) =>
-          row.original.lastVisitAt ? formatSessionDate(row.original.lastVisitAt) : "—",
-      },
-      {
-        id: "view",
-        header: "View",
-        enableSorting: false,
-        cell: ({ row }) => (
-          <Link className="underline underline-offset-4" href={`/customers/${row.original.id}`}>
-            View
-          </Link>
-        ),
-      },
-    ],
-    [],
-  );
-
-  return (
-    <AdminPageShell title="Customers">
-      <div className="flex flex-wrap gap-3">
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={upcomingOnly}
-            onChange={(event) => setUpcomingOnly(event.target.checked)}
-          />
-          Filters: upcoming only
-        </label>
-      </div>
-      {rows.length === 0 ? (
-        <FeedbackState
-          id="admin.no-customers"
-          className="mt-6"
-          onAction={() => {
-            setUpcomingOnly(false);
-          }}
-        />
-      ) : (
-        <div className="mt-4">
-          <AdminDataTable
-            tableId="customers"
-            data={rows}
-            columns={columns}
-            getRowId={(row) => row.id}
-            searchPlaceholder="Search customers"
-            emptyFilterLabel="No customers match your filter."
-          />
-        </div>
-      )}
-    </AdminPageShell>
-  );
-}
 
 function BookingBlock({
   title,
@@ -157,6 +68,18 @@ export function CustomerDetailPage({ customerId }: { customerId: string }) {
           <dt className="text-muted-foreground">Contact</dt>
           <dd>{detail.contactNumber}</dd>
         </div>
+        <div>
+          <dt className="text-muted-foreground">Upcoming</dt>
+          <dd>
+            <Badge
+              variant={detail.upcomingCount > 0 ? "info" : "neutral"}
+              appearance={detail.upcomingCount > 0 ? "solid" : "soft"}
+              size="sm"
+            >
+              {detail.upcomingCount}
+            </Badge>
+          </dd>
+        </div>
       </dl>
 
       <BookingBlock title="Upcoming" empty="No upcoming bookings." rows={detail.upcoming} />
@@ -181,15 +104,25 @@ export function CustomerDetailPage({ customerId }: { customerId: string }) {
           <ul className="mt-3 space-y-2">
             {detail.paymentHistory.map((booking) => (
               <li key={booking.id} className="rounded-xl border border-border p-3 text-sm">
-                <Link className="underline underline-offset-4" href={`/bookings/${booking.id}`}>
-                  {booking.session.className}
-                </Link>
-                <p>Payment status: {paymentStatusLabel(booking.paymentStatus)}</p>
-                <p>
-                  Refund status:{" "}
-                  {booking.refundStatus === "NOT_APPLICABLE"
-                    ? "Not applicable"
-                    : refundStatusLabel(booking.refundStatus)}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <Link className="underline underline-offset-4" href={`/bookings/${booking.id}`}>
+                    {booking.session.className}
+                  </Link>
+                  <StatusBadge status={booking.status} surface="admin" />
+                </div>
+                <p className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className="text-muted-foreground">Payment</span>
+                  <Badge appearance="soft" size="sm">
+                    {paymentStatusLabel(booking.paymentStatus)}
+                  </Badge>
+                </p>
+                <p className="mt-1 flex flex-wrap items-center gap-2">
+                  <span className="text-muted-foreground">Refund</span>
+                  <Badge appearance="soft" size="sm">
+                    {booking.refundStatus === "NOT_APPLICABLE"
+                      ? "Not applicable"
+                      : refundStatusLabel(booking.refundStatus)}
+                  </Badge>
                 </p>
               </li>
             ))}
