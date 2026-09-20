@@ -31,7 +31,7 @@ export function fromSessionIso(iso: string): { ymd: string; hhmm: string } {
 
 /**
  * Reschedule approval is about a *target* session, not this form's values.
- * #220 should call this at the reschedule action — do not fold it into a refine.
+ * #215 (`/reschedules`) is the consumer — do not fold it into a refine.
  */
 export function checkCanApproveReschedule(target: PublicSession) {
   return canApproveReschedule(target);
