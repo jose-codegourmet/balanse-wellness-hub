@@ -1,4 +1,8 @@
+import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { prefetchAdmin } from "@/lib/query/prefetch";
+import { adminCustomersQuery, adminPaymentsQuery } from "@/lib/query/queries";
 import { PaymentReviewPage } from "@/modules/admin/PaymentPages";
 
 export const metadata: Metadata = {
@@ -6,6 +10,10 @@ export const metadata: Metadata = {
   description: "Payment review.",
 };
 
-export default function Page() {
-  return <PaymentReviewPage />;
+export default async function Page() {
+  const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
+  return prefetchAdmin(
+    [adminPaymentsQuery(principal.role), adminCustomersQuery(principal.role)],
+    <PaymentReviewPage />,
+  );
 }

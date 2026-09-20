@@ -2,25 +2,35 @@
 
 import type { AdminSettings } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Button, Input, Label, LocalizedSkeleton, Textarea } from "@balanse/ui";
+import { Button, FormPageSkeleton, Input, Label, Textarea } from "@balanse/ui";
+import { useQuery } from "@tanstack/react-query";
 import { type ReactNode, useEffect, useState } from "react";
 import { ImageUpload } from "@/components/balanse/ImageUpload";
-import { PageHeader } from "./shared";
+import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { adminSettingsQuery } from "@/lib/query/queries";
+import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export function SettingsPage() {
+  const { principal } = useMockPrincipal();
+  const query = useQuery(adminSettingsQuery(principal.role));
   const [settings, setSettings] = useState<AdminSettings | null>(null);
   const [newVersion, setNewVersion] = useState("2026-09");
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    void getMockAdapter().getAdminSettings().then(setSettings);
-  }, []);
+    if (query.data) setSettings(query.data);
+  }, [query.data]);
 
-  if (!settings) return <LocalizedSkeleton lines={8} label="Loading settings" />;
+  if (!settings) {
+    return (
+      <AdminPageShell title="Settings">
+        <FormPageSkeleton label="Loading settings" sections={4} fields={3} />
+      </AdminPageShell>
+    );
+  }
 
   return (
-    <section className="max-w-2xl">
-      <PageHeader title="Settings" />
+    <AdminPageShell className="max-w-2xl" title="Settings">
       <form
         className="mt-8 grid gap-10"
         onSubmit={(event) => {
@@ -183,7 +193,7 @@ export function SettingsPage() {
         <Button type="submit">Save settings</Button>
         {saved ? <p className="text-sm">Saved in this mock.</p> : null}
       </form>
-    </section>
+    </AdminPageShell>
   );
 }
 

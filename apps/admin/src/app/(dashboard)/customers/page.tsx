@@ -1,4 +1,8 @@
+import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { prefetchAdmin } from "@/lib/query/prefetch";
+import { adminCustomersQuery } from "@/lib/query/queries";
 import { CustomerListPage } from "@/modules/admin/CustomerPages";
 
 export const metadata: Metadata = {
@@ -6,6 +10,7 @@ export const metadata: Metadata = {
   description: "Customer management.",
 };
 
-export default function Page() {
-  return <CustomerListPage />;
+export default async function Page() {
+  const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
+  return prefetchAdmin([adminCustomersQuery(principal.role)], <CustomerListPage />);
 }

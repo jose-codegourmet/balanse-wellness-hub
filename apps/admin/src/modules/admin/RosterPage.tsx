@@ -11,43 +11,55 @@ import {
   paymentStatusLabel,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { LocalizedSkeleton, StatusBadge } from "@balanse/ui";
+import { DetailPageSkeleton, StatusBadge } from "@balanse/ui";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { ConfirmAction, PageHeader } from "./shared";
-
-type Roster = Awaited<ReturnType<ReturnType<typeof getMockAdapter>["getAdminSessionRoster"]>>;
+import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { adminCustomersQuery, adminSessionRosterQuery } from "@/lib/query/queries";
+import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { ConfirmAction } from "./shared";
 
 export function RosterPage({ sessionId }: { sessionId: string }) {
-  const [roster, setRoster] = useState<Roster | null>(null);
-  const [customers, setCustomers] = useState<{ id: string; fullName: string }[]>([]);
+  const { principal } = useMockPrincipal();
+  const rosterQuery = useQuery(adminSessionRosterQuery(principal.role, sessionId));
+  const customersQuery = useQuery(adminCustomersQuery(principal.role));
+  const roster = rosterQuery.data ?? null;
+  const customers = customersQuery.data ?? [];
 
-  useEffect(() => {
-    void Promise.all([
-      getMockAdapter().getAdminSessionRoster(sessionId),
-      getMockAdapter().getAdminCustomers(),
-    ]).then(([next, people]) => {
-      setRoster(next);
-      setCustomers(people);
-    });
-  }, [sessionId]);
-
-  if (!roster) return <LocalizedSkeleton lines={8} label="Loading roster" />;
+  if (!roster) {
+    return (
+      <AdminPageShell
+        title="Roster"
+        breadcrumb={[
+          { label: "Schedule", href: "/schedule" },
+          { label: "Roster" },
+        ]}
+      >
+        <DetailPageSkeleton label="Loading roster" />
+      </AdminPageShell>
+    );
+  }
 
   const name = (id: string) => customers.find((row) => row.id === id)?.fullName ?? id;
   const occ = occupancyRatio(roster.confirmedCount, roster.capacity);
   const att = attendanceUtilisation(roster.checkedIn, roster.capacity);
 
   async function refresh() {
-    setRoster(await getMockAdapter().getAdminSessionRoster(sessionId));
+    await rosterQuery.refetch();
   }
 
+  const title = `${roster.session.className} — ${formatSessionDate(roster.session.startsAt)} — ${formatSessionTime(roster.session.startsAt)}`;
+
   return (
-    <section className="max-w-3xl overflow-x-hidden">
-      <PageHeader
-        title={`${roster.session.className} — ${formatSessionDate(roster.session.startsAt)} — ${formatSessionTime(roster.session.startsAt)}`}
-      />
-      <p className="mt-2">{roster.session.coachName}</p>
+    <AdminPageShell
+      className="max-w-3xl overflow-x-hidden"
+      title={title}
+      breadcrumb={[
+        { label: "Schedule", href: "/schedule" },
+        { label: "Roster" },
+      ]}
+    >
+      <p>{roster.session.coachName}</p>
       <p className="text-sm text-muted-foreground">
         {roster.confirmedCount} confirmed · {roster.heldCount} held · {roster.waitlistedCount}{" "}
         waitlisted
@@ -86,7 +98,7 @@ export function RosterPage({ sessionId }: { sessionId: string }) {
           ))}
         </ol>
       </section>
-    </section>
+    </AdminPageShell>
   );
 }
 

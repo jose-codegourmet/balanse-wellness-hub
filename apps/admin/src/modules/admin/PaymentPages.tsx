@@ -10,11 +10,16 @@ import {
   paymentStatusLabel,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Button, FeedbackState, Input, Label, LocalizedSkeleton, StatusBadge } from "@balanse/ui";
+import { CardListSkeleton, FeedbackState, Input, Label, StatusBadge } from "@balanse/ui";
+import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
-import { ConfirmAction, PageHeader } from "./shared";
+import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { AdminPageTabs } from "@/components/balanse/page/AdminPageTabs";
+import { adminCustomersQuery, adminPaymentsQuery } from "@/lib/query/queries";
+import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { ConfirmAction } from "./shared";
 
 const TABS: { id: AdminPaymentTab; label: string }[] = [
   { id: "gcash", label: "GCash Pending" },
@@ -23,23 +28,16 @@ const TABS: { id: AdminPaymentTab; label: string }[] = [
 ];
 
 export function PaymentReviewPage({ empty }: { empty?: boolean }) {
+  const { principal } = useMockPrincipal();
   const [tab, setTab] = useState<AdminPaymentTab>("gcash");
-  const [bookings, setBookings] = useState<CustomerBooking[] | null>(null);
-  const [customers, setCustomers] = useState<{ id: string; fullName: string }[]>([]);
+  const paymentsQuery = useQuery(adminPaymentsQuery(principal.role));
+  const customersQuery = useQuery(adminCustomersQuery(principal.role));
+  const bookings = empty ? [] : (paymentsQuery.data ?? null);
+  const customers = customersQuery.data ?? [];
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [zoom, setZoom] = useState(false);
   const stamp = auditConfirmationCopy("This payment action", "Admin", "2026-09-16T02:50:00.000Z");
-
-  useEffect(() => {
-    void Promise.all([
-      getMockAdapter().getAdminPayments(),
-      getMockAdapter().getAdminCustomers(),
-    ]).then(([rows, people]) => {
-      setBookings(empty ? [] : rows);
-      setCustomers(people);
-    });
-  }, [empty]);
 
   const columns = useMemo<ColumnDef<CustomerBooking, unknown>[]>(
     () => [
@@ -73,29 +71,31 @@ export function PaymentReviewPage({ empty }: { empty?: boolean }) {
     [customers],
   );
 
-  if (!bookings) return <LocalizedSkeleton lines={7} label="Loading payments" />;
+  if (!bookings) {
+    return (
+      <AdminPageShell title="Payments">
+        <CardListSkeleton label="Loading payments" items={3} />
+      </AdminPageShell>
+    );
+  }
   const queue = filterPaymentQueue(bookings, tab);
   const selected = queue.find((row) => row.id === selectedId) ?? queue[0] ?? null;
 
   async function refresh() {
-    setBookings(await getMockAdapter().getAdminPayments());
+    await paymentsQuery.refetch();
   }
 
   return (
-    <section>
-      <PageHeader title="Payments" />
-      <div className="mt-4 flex flex-wrap gap-2">
-        {TABS.map((item) => (
-          <Button
-            key={item.id}
-            type="button"
-            variant={tab === item.id ? "default" : "outline"}
-            onClick={() => setTab(item.id)}
-          >
-            {item.label}
-          </Button>
-        ))}
-      </div>
+    <AdminPageShell
+      title="Payments"
+      tabs={
+        <AdminPageTabs
+          tabs={TABS}
+          value={tab}
+          onValueChange={(id) => setTab(id as AdminPaymentTab)}
+        />
+      }
+    >
       {queue.length === 0 ? (
         <FeedbackState id="admin.no-pending-payments" className="mt-6" />
       ) : (
@@ -111,6 +111,12 @@ export function PaymentReviewPage({ empty }: { empty?: boolean }) {
           />
         </div>
       )}
+
+      {customersQuery.isPending && !customersQuery.data ? (
+        <aside className="mt-8">
+          <CardListSkeleton label="Loading payments" items={1} />
+        </aside>
+      ) : null}
 
       {selected ? (
         <aside className="mt-8 rounded-xl border border-border p-4">
@@ -232,6 +238,6 @@ export function PaymentReviewPage({ empty }: { empty?: boolean }) {
           ) : null}
         </aside>
       ) : null}
-    </section>
+    </AdminPageShell>
   );
 }

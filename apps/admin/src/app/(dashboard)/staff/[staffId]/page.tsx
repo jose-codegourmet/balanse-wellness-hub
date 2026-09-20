@@ -1,4 +1,8 @@
+import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { prefetchAdmin } from "@/lib/query/prefetch";
+import { adminStaffQuery } from "@/lib/query/queries";
 import { StaffDetailPage } from "@/modules/admin/StaffPages";
 
 export const metadata: Metadata = {
@@ -8,5 +12,6 @@ export const metadata: Metadata = {
 
 export default async function Page({ params }: { params: Promise<{ staffId: string }> }) {
   const { staffId } = await params;
-  return <StaffDetailPage staffId={staffId} />;
+  const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
+  return prefetchAdmin([adminStaffQuery(principal.role)], <StaffDetailPage staffId={staffId} />);
 }

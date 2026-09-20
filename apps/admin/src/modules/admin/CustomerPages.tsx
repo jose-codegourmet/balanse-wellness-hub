@@ -8,23 +8,23 @@ import {
   paymentStatusLabel,
   refundStatusLabel,
 } from "@balanse/domain";
-import { getMockAdapter } from "@balanse/mock";
-import { FeedbackState, LocalizedSkeleton, StatusBadge } from "@balanse/ui";
+import { DetailPageSkeleton, FeedbackState, StatusBadge, TablePageSkeleton } from "@balanse/ui";
+import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
-import { PageHeader } from "./shared";
+import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { adminCustomerDetailQuery, adminCustomersQuery } from "@/lib/query/queries";
+import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export function CustomerListPage({ empty }: { empty?: boolean }) {
+  const { principal } = useMockPrincipal();
   const [upcomingOnly, setUpcomingOnly] = useState(false);
-  const [rows, setRows] = useState<AdminCustomer[] | null>(null);
-
-  useEffect(() => {
-    void getMockAdapter()
-      .getAdminCustomers({ hasUpcoming: upcomingOnly || undefined })
-      .then((list) => setRows(empty ? [] : list));
-  }, [empty, upcomingOnly]);
+  const query = useQuery(
+    adminCustomersQuery(principal.role, { hasUpcoming: upcomingOnly || undefined }),
+  );
+  const rows = empty ? [] : (query.data ?? null);
 
   const columns = useMemo<ColumnDef<AdminCustomer, unknown>[]>(
     () => [
@@ -67,12 +67,17 @@ export function CustomerListPage({ empty }: { empty?: boolean }) {
     [],
   );
 
-  if (!rows) return <LocalizedSkeleton lines={6} label="Loading customers" />;
+  if (!rows) {
+    return (
+      <AdminPageShell title="Customers">
+        <TablePageSkeleton label="Loading customers" rows={8} columns={5} />
+      </AdminPageShell>
+    );
+  }
 
   return (
-    <section>
-      <PageHeader title="Customers" />
-      <div className="mt-4 flex flex-wrap gap-3">
+    <AdminPageShell title="Customers">
+      <div className="flex flex-wrap gap-3">
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
@@ -102,7 +107,7 @@ export function CustomerListPage({ empty }: { empty?: boolean }) {
           />
         </div>
       )}
-    </section>
+    </AdminPageShell>
   );
 }
 
@@ -140,18 +145,27 @@ function BookingBlock({
 }
 
 export function CustomerDetailPage({ customerId }: { customerId: string }) {
-  const [detail, setDetail] = useState<AdminCustomerDetail | null>(null);
+  const { principal } = useMockPrincipal();
+  const query = useQuery(adminCustomerDetailQuery(principal.role, customerId));
+  const detail = query.data ?? null;
 
-  useEffect(() => {
-    void getMockAdapter().getAdminCustomer(customerId).then(setDetail);
-  }, [customerId]);
-
-  if (!detail) return <LocalizedSkeleton lines={8} label="Loading customer" />;
+  if (!detail) {
+    return (
+      <AdminPageShell title={customerId} breadcrumb={[{ label: "Customers", href: "/customers" }, { label: customerId }]}>
+        <DetailPageSkeleton label="Loading customer" />
+      </AdminPageShell>
+    );
+  }
 
   return (
-    <section>
-      <PageHeader title={detail.fullName} />
-      <h2 className="mt-6 font-display text-2xl">Profile</h2>
+    <AdminPageShell
+      title={detail.fullName}
+      breadcrumb={[
+        { label: "Customers", href: "/customers" },
+        { label: detail.fullName },
+      ]}
+    >
+      <h2 className="font-display text-2xl">Profile</h2>
       <dl className="mt-3 grid gap-2 text-sm">
         <div>
           <dt className="text-muted-foreground">Email</dt>
@@ -218,6 +232,6 @@ export function CustomerDetailPage({ customerId }: { customerId: string }) {
       <Link className="mt-8 inline-flex text-sm underline underline-offset-4" href="/customers">
         Back to customers
       </Link>
-    </section>
+    </AdminPageShell>
   );
 }

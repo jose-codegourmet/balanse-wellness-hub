@@ -9,33 +9,47 @@ import {
   formatSessionTime,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Button, CoachPhoto, Input, Label, LocalizedSkeleton, NativeSelect } from "@balanse/ui";
+import {
+  Button,
+  CardListSkeleton,
+  CoachPhoto,
+  Input,
+  Label,
+  NativeSelect,
+  TablePageSkeleton,
+} from "@balanse/ui";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ImageUpload } from "@/components/balanse/ImageUpload";
-import { PageHeader } from "./shared";
+import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { adminCoachesQuery, adminSessionsQuery } from "@/lib/query/queries";
+import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export function CoachListPage() {
-  const [rows, setRows] = useState<AdminCoach[] | null>(null);
+  const { principal } = useMockPrincipal();
+  const query = useQuery(adminCoachesQuery(principal.role));
+  const rows = query.data ?? null;
 
-  useEffect(() => {
-    void getMockAdapter().getAdminCoaches().then(setRows);
-  }, []);
-
-  if (!rows) return <LocalizedSkeleton lines={6} label="Loading coaches" />;
+  if (!rows) {
+    return (
+      <AdminPageShell title="Coaches">
+        <TablePageSkeleton label="Loading coaches" rows={6} columns={3} />
+      </AdminPageShell>
+    );
+  }
 
   return (
-    <section>
-      <PageHeader title="Coaches">
-        <Link
-          href="/coaches/new"
-          className="inline-flex h-8 items-center rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground"
-        >
+    <AdminPageShell
+      title="Coaches"
+      actions={
+        <Button nativeButton={false} render={<Link href="/coaches/new" />}>
           Add Coach
-        </Link>
-      </PageHeader>
-      <ul className="mt-6 space-y-2">
+        </Button>
+      }
+    >
+      <ul className="space-y-2">
         {rows.map((row) => (
           <li
             key={row.id}
@@ -53,13 +67,16 @@ export function CoachListPage() {
           </li>
         ))}
       </ul>
-    </section>
+    </AdminPageShell>
   );
 }
 
 export function CoachFormPage({ coachId }: { coachId: string }) {
   const router = useRouter();
   const isNew = coachId === "new";
+  const { principal } = useMockPrincipal();
+  const coachesQuery = useQuery(adminCoachesQuery(principal.role));
+  const sessionsQuery = useQuery(adminSessionsQuery(principal.role));
   const [form, setForm] = useState<AdminCoach>({
     id: "",
     name: "",
@@ -74,28 +91,32 @@ export function CoachFormPage({ coachId }: { coachId: string }) {
   const [specialtyInput, setSpecialtyInput] = useState("");
 
   useEffect(() => {
-    void Promise.all([
-      getMockAdapter().getAdminCoaches(),
-      getMockAdapter().getAdminSessions(),
-    ]).then(([coaches, sessions]) => {
-      if (!isNew) {
-        const existing = coaches.find((row) => row.id === coachId);
-        if (existing) {
-          setForm(existing);
-          setSpecialtyInput(existing.specialties.join(", "));
-          setUpcoming(
-            sessions.filter(
-              (session) => session.coachId === existing.id && session.startsAt >= "2026-09-16",
-            ),
-          );
-        }
-      }
-    });
-  }, [coachId, isNew]);
+    const coaches = coachesQuery.data;
+    if (!coaches || isNew) return;
+    const existing = coaches.find((row) => row.id === coachId);
+    if (existing) {
+      setForm(existing);
+      setSpecialtyInput(existing.specialties.join(", "));
+    }
+  }, [coachId, coachesQuery.data, isNew]);
+
+  useEffect(() => {
+    const sessions = sessionsQuery.data;
+    if (!sessions || isNew) return;
+    setUpcoming(
+      sessions.filter((session) => session.coachId === coachId && session.startsAt >= "2026-09-16"),
+    );
+  }, [coachId, isNew, sessionsQuery.data]);
 
   return (
-    <section className="max-w-xl">
-      <PageHeader title={isNew ? "Add Coach" : "Edit Coach"} />
+    <AdminPageShell
+      className="max-w-xl"
+      title={isNew ? "Add Coach" : "Edit Coach"}
+      breadcrumb={[
+        { label: "Coaches", href: "/coaches" },
+        { label: isNew ? "Add Coach" : (form.name || coachId) },
+      ]}
+    >
       <form
         className="mt-6 grid gap-8"
         onSubmit={(event) => {
@@ -224,7 +245,9 @@ export function CoachFormPage({ coachId }: { coachId: string }) {
       {!isNew ? (
         <section className="mt-10">
           <h2 className="font-display text-2xl">Upcoming Sessions</h2>
-          {upcoming.length === 0 ? (
+          {sessionsQuery.isPending && !sessionsQuery.data ? (
+            <CardListSkeleton label="Loading coach" items={2} />
+          ) : upcoming.length === 0 ? (
             <p className="mt-2 text-sm text-muted-foreground">No upcoming assigned sessions.</p>
           ) : (
             <ul className="mt-3 space-y-2">
@@ -238,6 +261,6 @@ export function CoachFormPage({ coachId }: { coachId: string }) {
           )}
         </section>
       ) : null}
-    </section>
+    </AdminPageShell>
   );
 }

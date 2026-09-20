@@ -8,35 +8,36 @@ import {
   SLOT_LOCKED_UNTIL_CANCEL_NOTE,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { FeedbackState, LocalizedSkeleton } from "@balanse/ui";
-import { useEffect, useState } from "react";
-import { ConfirmAction, PageHeader } from "./shared";
+import { CardListSkeleton, FeedbackState } from "@balanse/ui";
+import { useQuery } from "@tanstack/react-query";
+import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { adminCancellationsQuery, adminCustomersQuery } from "@/lib/query/queries";
+import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { ConfirmAction } from "./shared";
 
 export function CancellationQueuePage({ empty }: { empty?: boolean }) {
-  const [rows, setRows] = useState<CustomerBooking[] | null>(null);
-  const [customers, setCustomers] = useState<{ id: string; fullName: string }[]>([]);
+  const { principal } = useMockPrincipal();
+  const rowsQuery = useQuery(adminCancellationsQuery(principal.role));
+  const customersQuery = useQuery(adminCustomersQuery(principal.role));
+  const rows = empty ? [] : (rowsQuery.data ?? null);
+  const customers = customersQuery.data ?? [];
   const stamp = auditConfirmationCopy(
     "This cancellation action",
     "Admin",
     "2026-09-16T02:50:00.000Z",
   );
 
-  useEffect(() => {
-    void Promise.all([
-      getMockAdapter().getAdminCancellationRequests(),
-      getMockAdapter().getAdminCustomers(),
-    ]).then(([list, people]) => {
-      setRows(empty ? [] : list);
-      setCustomers(people);
-    });
-  }, [empty]);
-
-  if (!rows) return <LocalizedSkeleton lines={6} label="Loading cancellation requests" />;
+  if (!rows) {
+    return (
+      <AdminPageShell title="Cancellation Requests">
+        <CardListSkeleton label="Loading cancellation requests" items={3} />
+      </AdminPageShell>
+    );
+  }
 
   return (
-    <section>
-      <PageHeader title="Cancellation Requests" />
-      <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
+    <AdminPageShell title="Cancellation Requests">
+      <p className="max-w-2xl text-sm text-muted-foreground">
         {SLOT_LOCKED_UNTIL_CANCEL_NOTE}
       </p>
       {rows.length === 0 ? (
@@ -74,9 +75,9 @@ export function CancellationQueuePage({ empty }: { empty?: boolean }) {
                   onConfirm={() =>
                     getMockAdapter()
                       .completeAdminCancellation(row.id)
-                      .then(async () =>
-                        setRows(await getMockAdapter().getAdminCancellationRequests()),
-                      )
+                      .then(async () => {
+                        await rowsQuery.refetch();
+                      })
                   }
                 />
                 <ConfirmAction
@@ -87,9 +88,9 @@ export function CancellationQueuePage({ empty }: { empty?: boolean }) {
                   onConfirm={() =>
                     getMockAdapter()
                       .rejectAdminCancellation(row.id, "Request rejected")
-                      .then(async () =>
-                        setRows(await getMockAdapter().getAdminCancellationRequests()),
-                      )
+                      .then(async () => {
+                        await rowsQuery.refetch();
+                      })
                   }
                 />
                 <ConfirmAction
@@ -111,6 +112,6 @@ export function CancellationQueuePage({ empty }: { empty?: boolean }) {
           ))}
         </ul>
       )}
-    </section>
+    </AdminPageShell>
   );
 }

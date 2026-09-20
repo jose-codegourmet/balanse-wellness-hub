@@ -1,4 +1,8 @@
+import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { prefetchAdmin } from "@/lib/query/prefetch";
+import { adminClassesQuery, adminCoachesQuery } from "@/lib/query/queries";
 import { ClassFormPage } from "@/modules/admin/ClassPages";
 
 export const metadata: Metadata = {
@@ -8,5 +12,9 @@ export const metadata: Metadata = {
 
 export default async function Page({ params }: { params: Promise<{ classId: string }> }) {
   const { classId } = await params;
-  return <ClassFormPage classId={classId} />;
+  const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
+  return prefetchAdmin(
+    [adminClassesQuery(principal.role), adminCoachesQuery(principal.role)],
+    <ClassFormPage classId={classId} />,
+  );
 }
