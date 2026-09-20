@@ -59,6 +59,7 @@ export * from "./components/popover/Popover";
 export * from "./components/progress/Progress";
 export * from "./components/radio-group/RadioGroup";
 export * from "./components/resizable/Resizable";
+export * from "./components/rich-textarea/RichTextarea";
 export * from "./components/scroll-area/ScrollArea";
 export * from "./components/select/Select";
 export * from "./components/separator/Separator";
