@@ -65,7 +65,7 @@ ONE single wide editorial photograph only — never a grid, never a contact shee
 | Master | nano_banana_2 @ 2k | metered |
 | Upscale 4k | upscale_image | metered |
 
-See `docs/assets/cost-log.csv` / `docs/assets/cost-log-append-only.csv` rows dated 2026-09-20 for `coaches-b`.
+See `docs/assets/cost-log-append-only.csv` rows dated 2026-09-20 for `coaches-b`.
 
 ## FE / BE
 
