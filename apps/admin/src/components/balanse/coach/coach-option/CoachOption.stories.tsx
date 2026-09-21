@@ -1,6 +1,7 @@
 import { coachPhotoKey } from "@balanse/domain";
 import {
   CheckboxGroupItem,
+  type ChoiceOption,
   CheckboxGroup as CoachCheckboxGroup,
   Combobox,
   ComboboxCollection,
@@ -91,7 +92,7 @@ function CoachPickerDemo({
     ...(includeAll ? [{ value: "all", label: "All coaches" }] : []),
     ...coaches.map(toCoachChoiceOption),
   ];
-  const [value, setValue] = useState(options[0] ?? null);
+  const [value, setValue] = useState<ChoiceOption | null>(options[0] ?? null);
 
   return (
     <div className="max-w-sm">

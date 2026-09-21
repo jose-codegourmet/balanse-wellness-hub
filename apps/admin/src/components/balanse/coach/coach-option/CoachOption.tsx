@@ -3,6 +3,8 @@
 import { Badge, type ChoiceOption, CoachPhoto, cn } from "@balanse/ui";
 import type { CoachOptionCoach, CoachOptionProps } from "./CoachOption.schema";
 
+export type { CoachOptionCoach, CoachOptionLayout, CoachOptionProps } from "./CoachOption.schema";
+
 export function coachSpecialtyLine(coach: CoachOptionCoach): string | undefined {
   const specialties = (coach.specialties ?? []).slice(0, 3);
   const parts = [...specialties];
