@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 function tabId<T extends string>(tab: T | { id: T }): T {
   return typeof tab === "string" ? tab : tab.id;
@@ -10,6 +10,7 @@ function tabId<T extends string>(tab: T | { id: T }): T {
 /**
  * Sync the active admin tab with a search param. Unknown or missing values
  * fall back to `defaultId`. Writing the default id drops the param.
+ * Local state updates immediately so panel switches do not wait on `router.replace`.
  */
 export function useTabParam<T extends string>(
   param: string,
@@ -23,11 +24,20 @@ export function useTabParam<T extends string>(
   const allowed = useMemo(() => new Set(tabs.map((tab) => tabId(tab))), [tabs]);
 
   const raw = searchParams.get(param);
-  const value = raw && allowed.has(raw as T) ? (raw as T) : defaultId;
+  const urlValue = raw && allowed.has(raw as T) ? (raw as T) : defaultId;
+  const [value, setValueState] = useState(urlValue);
+  const lastUrlValue = useRef(urlValue);
+
+  useEffect(() => {
+    if (urlValue === lastUrlValue.current) return;
+    lastUrlValue.current = urlValue;
+    setValueState(urlValue);
+  }, [urlValue]);
 
   const setValue = useCallback(
     (next: T) => {
       if (!allowed.has(next)) return;
+      setValueState(next);
       const params = new URLSearchParams(searchParams.toString());
       if (next === defaultId) {
         params.delete(param);
