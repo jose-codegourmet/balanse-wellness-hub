@@ -1,6 +1,14 @@
 # Agent Instructions — `packages/config`
 
-Local agent instructions for the shared config package placeholder.
+Local agent instructions for the shared config package placeholder. Read `/AGENTS.md` first, then this file.
+
+## Read order
+
+Follow the root `AGENTS.md` order and stop once the picture is clear:
+
+1. **OpenSpec** — `openspec/specs/` and any matching `openspec/changes/` proposal.
+2. **`Component.meta.ts`** — when the work touches a UI component. If the meta already explains it, do not skim the implementation.
+3. **Implementation** — only when the spec/meta is missing, stale, or does not answer the question.
 
 ---
 

@@ -4,7 +4,7 @@ import {
   loadClassCatalogue,
   saveClassCatalogue,
 } from "@/lib/class-catalogue-actions";
-import { ClassCatalogueProvider } from "@/modules/admin/classes/class-catalogue-provider/ClassCatalogueProvider";
+import { ClassCatalogueProvider } from "./_components/class-catalogue-provider/ClassCatalogueProvider";
 export default async function Layout({ children }: { children: React.ReactNode }) {
   if (process.env.NEXT_PUBLIC_CLASS_CATALOGUE_MODE !== "database") return children;
   return (

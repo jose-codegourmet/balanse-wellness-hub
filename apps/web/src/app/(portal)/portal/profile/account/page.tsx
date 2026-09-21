@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ProfileSectionRoute } from "../ProfileSectionRoute";
+import { ProfileSectionRoute } from "../_components/profile-section-route/ProfileSectionRoute";
 
 export const metadata: Metadata = {
   title: "Account settings",

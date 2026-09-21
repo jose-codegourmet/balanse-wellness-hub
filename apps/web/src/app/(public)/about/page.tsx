@@ -1,6 +1,6 @@
 import { getMockAdapter } from "@balanse/mock";
 import type { Metadata } from "next";
-import { AboutPage } from "@/modules/public/AboutPage";
+import { AboutPage } from "./_components/about-page/AboutPage";
 
 export const metadata: Metadata = {
   title: "About",

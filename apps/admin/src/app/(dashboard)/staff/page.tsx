@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { adminCoachesQuery, adminStaffQuery } from "@/lib/query/queries";
-import { StaffListPage } from "@/modules/admin/staff/StaffListPage";
+import { StaffListPage } from "./_components/staff-list-page/StaffListPage";
 
 export const metadata: Metadata = {
   title: "Staff",

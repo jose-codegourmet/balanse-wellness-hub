@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { adminClassesQuery, adminCoachesQuery, adminSessionsQuery } from "@/lib/query/queries";
-import { SessionFormPage } from "@/modules/admin/schedule/session-form-page/SessionFormPage";
+import { SessionFormPage } from "../_components/session-form-page/SessionFormPage";
 
 export const metadata: Metadata = {
   title: "Session",

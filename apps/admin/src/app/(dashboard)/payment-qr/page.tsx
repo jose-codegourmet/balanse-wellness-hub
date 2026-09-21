@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { adminPaymentQrsQuery, adminSettingsQuery } from "@/lib/query/queries";
-import { PaymentQrPage } from "@/modules/admin/payment-qr/PaymentQrPage";
+import { PaymentQrPage } from "./_components/payment-qr-page/PaymentQrPage";
 
 export const metadata: Metadata = {
   title: "Payment QR",

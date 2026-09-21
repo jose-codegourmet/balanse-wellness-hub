@@ -2,7 +2,7 @@
 
 ## Purpose and scope
 
-This is the target of the backlink in every `*.usecase.md` (`> Part of the [Component Usage Guide](…/docs/component-guide.md).`). It is the authoring contract for shared primitives in `@balanse/ui` and for app-local composition under `src/components/balanse/` (or `packages/ui/src/balanse/` when both apps need the same wrapper). Vendored Jabkit files are exempt — they keep their upstream shape.
+This is the supporting authoring guide for shared primitives in `@balanse/ui` and app-local composition under `src/components/balanse/` (or `packages/ui/src/balanse/` when both apps need the same wrapper). The current source of truth is `docs/ways-of-working.md`. Vendored Jabkit files are exempt — they keep their upstream shape.
 
 This ticket publishes process only. It does not change rendered pixels.
 
@@ -20,15 +20,15 @@ Do not migrate existing mixed `@balanse/ui` / `@/components/jabkit/*` imports un
 
 ## Required file set
 
-Every component added or materially changed from now on ships these five colocated files:
+Every component added or materially changed from now on ships these colocated files:
 
 | File | Required? | Contents |
 | --- | --- | --- |
 | `Component.tsx` | Always | Implementation. Add `"use client"` only when the component uses state, effects, refs, context, or a client-only primitive. `Skeleton` is server-safe and must stay so. `ScrollArea` is client. |
-| `Component.schema.ts` | Always | Exported props type. A runtime `zod` schema only when [schema rules](#componentschemats-rules) require it. |
-| `Component.defaults.ts` | Always | Exported defaults, typed from the schema file — never redeclare the type. |
+| `Component.meta.ts` | Always | AI-facing purpose, API, usage guidance, and gotchas. |
+| `Component.schema.ts` | Forms only | Runtime `zod` value schema for forms and value-owning controls. |
+| `Component.defaults.ts` | Forms only | Typed form defaults consumed by the component and story. |
 | `Component.stories.tsx` | Always | Storybook `meta` plus one story per meaningful state. |
-| `Component.usecase.md` | Always | Purpose / When to use / When NOT to use / Examples / Gotchas, opening with the guide backlink. |
 
 Copy-paste stubs: `docs/templates/component/`.
 
@@ -129,51 +129,9 @@ Rules:
 - a11y must stay green. For admin, run `pnpm --filter admin test-storybook` before shipping — the static Storybook build does not execute axe.
 - Stories are excluded from `pnpm typecheck` (`packages/ui/tsconfig.json`). `pnpm build-storybook` is the only type gate for stories.
 
-## `Component.usecase.md` shape
+## `Component.meta.ts` shape
 
-Required headings, in this order:
-
-1. Opening backlink
-2. `## Purpose`
-3. `## When to use`
-4. `## When NOT to use`
-5. `## Examples`
-6. `## Gotchas`
-
-Backlink depths (already correct in the repo — do not “normalize” them):
-
-- From `packages/ui/src/components/<name>/`: `../../../../../docs/component-guide.md`
-- One extra `../` per extra nesting level (today: `components/table/data-table/` and `components/motion/scroll-reveal/` use six).
-- From `apps/admin/src/components/balanse/<kebab-name>/`: six (`../../../../../../docs/component-guide.md`).
-- From `apps/admin/src/components/balanse/<area>/<kebab-name>/`: seven (`../../../../../../../docs/component-guide.md`).
-
-```md
-# Component — Use Cases
-
-> Part of the [Component Usage Guide](../../../../../docs/component-guide.md).
-
-## Purpose
-
-…
-
-## When to use
-
-…
-
-## When NOT to use
-
-…
-
-## Examples
-
-…
-
-## Gotchas
-
-…
-```
-
-Examples use design tokens and utility classes only — no hardcoded hex colors.
+The meta file is a short, source-readable contract for purpose, props, usage boundaries, examples, and gotchas. Keep it colocated with the implementation. Do not create a separate use-case markdown file.
 
 ## Form standard
 
@@ -210,12 +168,12 @@ Vendored Jabkit under `src/components/jabkit/` stays pristine and is exempt.
 ## Author checklist
 
 - [ ] Folder is `kebab-case`; files are `PascalCase.*`
-- [ ] Five files: `.tsx`, `.schema.ts`, `.defaults.ts`, `.stories.tsx`, `.usecase.md`
+- [ ] Required files: `.meta.ts`, `.tsx`, `.stories.tsx`; add schema/defaults only for forms
 - [ ] Props type is `<Component>Props` derived from the real render contract (not a narrower hand-written interface)
 - [ ] Zod is imported only when this is a form or value-owning form control; schema is `<component>Schema`, values are `<Component>Values`
-- [ ] Defaults are `<component>DefaultValues`, typed from `./Component.schema`, story-ready (no `children: "Example"`)
+- [ ] Form defaults are `<component>DefaultValues`, typed from `./Component.schema`, story-ready
 - [ ] Story `meta` uses `tags: ["autodocs"]` and `args: { ...defaultValues }`; `Default` is args-driven; one story per meaningful state
-- [ ] Usecase opens with the guide backlink (correct `../` depth) and the five headings in order
+- [ ] Meta describes purpose, usage boundaries, examples, and gotchas
 - [ ] Forms: `react-hook-form` + `zodResolver`; errors via `FieldError` or `FormMessage`
 - [ ] `"use client"` only when required; no hardcoded hex; barrel export only if the public API needs it
 - [ ] `pnpm --filter @balanse/ui typecheck && pnpm lint` plus `pnpm build-storybook` for story changes

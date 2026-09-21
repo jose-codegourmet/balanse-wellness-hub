@@ -2,6 +2,14 @@
 
 Local agent instructions for the shared database package. Read `/AGENTS.md` first, then this file.
 
+## Read order
+
+Follow the root `AGENTS.md` order and stop once the picture is clear:
+
+1. **OpenSpec** — the matching spec under `openspec/specs/` and any in-flight `openspec/changes/` proposal. Backend behavior in `docs/backend/` comes after OpenSpec, not before.
+2. **Meta** — when the work touches a UI component, read that component’s `Component.meta.ts` next. If it already explains the component, do not skim the implementation.
+3. **Implementation** — schema, migrations, or `Component.tsx` only when the spec/meta is missing, stale, or does not answer the question.
+
 ---
 
 ## Scope

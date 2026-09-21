@@ -2,6 +2,14 @@
 
 Local agent instructions for the shared UI package. Read `/AGENTS.md` first, then this file.
 
+## Read order
+
+Follow the root `AGENTS.md` order and stop once the picture is clear:
+
+1. **OpenSpec** — `openspec/specs/fe-shared-systems.md` and `openspec/specs/fe-foundation.md` (plus the consuming app spec when the primitive is used by a specific screen). Check `openspec/changes/` if a matching change is in flight.
+2. **`Component.meta.ts`** — colocated in `src/components/<kebab-name>/`. If it already explains the primitive, do not skim `Component.tsx`.
+3. **Implementation** — only when the meta is missing, stale, or does not answer the question.
+
 ---
 
 ## Scope

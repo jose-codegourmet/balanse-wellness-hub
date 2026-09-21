@@ -3,7 +3,7 @@ import { getMockAdapter } from "@balanse/mock";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getClassCatalogue } from "@/lib/class-catalogue";
-import { ClassDetailPage } from "@/modules/public/class-detail-page/ClassDetailPage";
+import { ClassDetailPage } from "./_components/class-detail-page/ClassDetailPage";
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ preview?: string }> };
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {

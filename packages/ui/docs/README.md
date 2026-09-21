@@ -105,7 +105,7 @@ New primitives belong in this package, not in either app. `apps/admin` has no CL
 pnpm --filter web exec shadcn add <component>
 ```
 
-Treat CLI output as a draft. Relocate the generated file into `src/components/<kebab-name>/`, add a story and `.usecase.md`, and export it from `src/index.ts`. Do not keep a parallel `components/ui` tree in `apps/web` or `apps/admin`.
+Treat CLI output as a draft. Relocate the generated file into `src/components/<kebab-name>/`, add a `.meta.ts` contract and story, and export it from `src/index.ts`. Do not keep a parallel `components/ui` tree in `apps/web` or `apps/admin`.
 
 See `docs/styling-and-design-system.md` and `packages/ui/docs/development.md`.
 

@@ -21,7 +21,7 @@ packages/ui/
 │       │   ├── Button.schema.ts
 │       │   ├── Button.defaults.ts
 │       │   ├── Button.stories.tsx
-│       │   └── Button.usecase.md
+│       │   └── Button.meta.ts
 │       └── ...
 ```
 
@@ -36,7 +36,7 @@ Prefer creating the kebab folder by hand. If you scaffold with the shadcn CLI, r
 3. Add `PascalCase.schema.ts` (exported props type; plus a `zod` value schema when it is a form or form control).
 4. Add `PascalCase.defaults.ts` (`<component>DefaultValues`, typed from the schema file).
 5. Add a Storybook story `PascalCase.stories.tsx` (`meta.args` seeded from the defaults).
-6. Add a use-case doc `PascalCase.usecase.md`.
+6. Add a component contract `PascalCase.meta.ts` with purpose and usage guidance.
 7. Add an export line to `src/index.ts` (append-only).
 8. Follow `docs/component-guide.md`; copy `docs/templates/component/`.
 9. Run `pnpm --filter @balanse/ui typecheck` and `pnpm lint`.
@@ -49,7 +49,7 @@ packages/ui/src/components/alert/
   ├── Alert.schema.ts
   ├── Alert.defaults.ts
   ├── Alert.stories.tsx
-  └── Alert.usecase.md
+  └── Alert.meta.ts
 ```
 
 ---

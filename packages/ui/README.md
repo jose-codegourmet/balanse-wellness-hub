@@ -55,7 +55,7 @@ packages/ui/src/
 │   ├── button/
 │   │   ├── Button.tsx
 │   │   ├── Button.stories.tsx
-│   │   └── Button.usecase.md
+│   │   └── Button.meta.ts
 │   ├── card/
 │   ├── dialog/
 │   └── …                       # ~60 primitives
@@ -74,7 +74,7 @@ Note that a few nested primitives break the flat pattern: `table/data-table/Data
 ## Adding a primitive
 
 1. Create `src/components/<kebab-name>/<PascalName>.tsx`.
-2. Add `<PascalName>.stories.tsx` and `<PascalName>.usecase.md` alongside it (add `.schema.ts` / `.defaults.ts` only if it is a form).
+2. Add `<PascalName>.meta.ts` and `<PascalName>.stories.tsx` alongside it (add `.schema.ts` / `.defaults.ts` only if it is a form).
 3. Export it from [`src/index.ts`](src/index.ts):
 
 ```ts

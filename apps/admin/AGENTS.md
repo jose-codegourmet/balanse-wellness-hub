@@ -1,11 +1,21 @@
 # Admin app
 
-Admin mocks. Read `docs/screen-specs/admin/`. Never expose sign-up or forgot-password. Coach rates stay on admin types only.
+Admin mocks. Never expose sign-up or forgot-password. Coach rates stay on admin types only.
+
+## Read order
+
+Follow the root `AGENTS.md` order and stop once the picture is clear:
+
+1. **OpenSpec** — `openspec/specs/fe-admin-screens.md`, plus `fe-shared-systems` / `fe-foundation` when the work crosses them. Check `openspec/changes/` if a matching change is in flight.
+2. **`Component.meta.ts`** — colocated in the component folder. If it already explains the component, do not skim `Component.tsx`.
+3. **Implementation** — only when the meta is missing, stale, or does not answer the question.
+
+Screen-spec details live in `docs/screen-specs/admin/` after OpenSpec.
 
 ## Components
 
 - **Source order:** `@balanse/ui` first for anything shared; vendored Jabkit under `src/components/jabkit/` (pristine, installed via `npx @jabkit/cli add <name>`, never hand-edited) for blocks that exist upstream; `src/components/balanse/` for admin-only composition of either. Existing mixed imports stay as they are until a ticket migrates them.
-- **Authoring standard:** `docs/component-guide.md` — each component is wrapped in a `kebab-case` folder (`src/components/balanse/<kebab-name>/` or `src/components/balanse/<area>/<kebab-name>/`). The five-file set lives inside that folder, and every admin component gets a colocated story.
+- **Authoring standard:** `docs/ways-of-working.md` — each component is wrapped in a `kebab-case` folder (`src/components/balanse/<kebab-name>/` or `src/components/balanse/<area>/<kebab-name>/`). Always ship `.meta.ts`, `.tsx`, and `.stories.tsx`. Schema/defaults only for forms. Do not write `.usecase.md`.
 - **Forms:** use the admin form kit in `src/modules/admin/forms/` (`FE-ADM-019` / #209, polished in `FE-ADM-036`) — `react-hook-form` + `zodResolver` + the `@balanse/ui` field family. Recipe: schema → defaults → `AdminForm` → `FormSection` / `FormField` → binding → `lib/query/mutations.ts` → `notify.admin`. Do not pass ad-hoc `max-md:*` classes into `FormActions`; set `sticky={false}` inside `AdminWizard`. No new hand-rolled `useState` form objects, no new private `Field` wrappers.
 - **Tables:** `AdminDataTable` (`src/components/balanse/data-table/admin-data-table/`). Every admin list uses it. Do not revive the deleted `DataTable({ columns: string[] })` helper. `RosterPage` and notification queues stay card lists. Below tablet, the table renders as cards driven by column `meta.mobile` (`title` / `subtitle` / `meta` / `status` / `hidden`). Pin `layout` only in stories.
 - **Data:** `getMockAdapter()` only, through the React Query layer from `FE-ADM-015` (#204) once it lands; never import `packages/mock/src/fixtures.ts` from a screen (stories may).

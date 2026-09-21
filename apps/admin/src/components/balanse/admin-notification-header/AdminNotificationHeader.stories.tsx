@@ -5,7 +5,8 @@ import { adminNotificationHeaderDefaultValues } from "./AdminNotificationHeader.
 const meta = {
   title: "Admin/Layout/Notification header",
   component: AdminNotificationHeader,
-  args: adminNotificationHeaderDefaultValues,
+  tags: ["autodocs"],
+  args: { ...adminNotificationHeaderDefaultValues },
 } satisfies Meta<typeof AdminNotificationHeader>;
 export default meta;
 export const Default: StoryObj<typeof meta> = {};

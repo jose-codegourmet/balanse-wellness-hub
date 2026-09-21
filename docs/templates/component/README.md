@@ -27,7 +27,7 @@ Also replace the story `title` namespace (`Components/Component` → `Components
 5. Decide `"use client"` (only for state, effects, refs, context, or a client-only primitive).
 6. Fill defaults with a real, story-ready configuration — not `children: "Example"`.
 7. Add a barrel export in `packages/ui/src/index.ts` **only** when shipping a new public `@balanse/ui` primitive (append-only). Do not export props/defaults unless an outside consumer needs them.
-8. Fix the usecase backlink depth if the folder is nested deeper than `packages/ui/src/components/<name>/`.
+8. Keep the `.meta.ts` contract next to the component implementation.
 9. Run `pnpm --filter @balanse/ui typecheck && pnpm lint`. Story edits also need `pnpm build-storybook`.
 
 Full rules: [`docs/component-guide.md`](../../component-guide.md).

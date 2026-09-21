@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getClassCatalogue } from "@/lib/class-catalogue";
-import { ClassesPage } from "@/modules/public/classes-page/ClassesPage";
+import { ClassesPage } from "./_components/classes-page/ClassesPage";
 export const metadata: Metadata = {
   title: "Classes",
   description: "Explore yoga, Pilates, strength, dance and movement classes at Balansé.",
