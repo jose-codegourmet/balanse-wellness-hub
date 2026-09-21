@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Notification-queue loading shell for `/payments` side panels, `/cancellations`, and `/reschedules`: stacked bordered cards with action rows.
+Notification-queue loading shell for `/payments`, `/cancellations`, and `/reschedules`: filter chips plus stacked queue cards that match `AdminQueueCard` rhythm (`min-h-40`, header / body / actions).
 
 ## When to use
 
@@ -16,7 +16,7 @@ Notification-queue loading shell for `/payments` side panels, `/cancellations`, 
 
 ## Shape props
 
-`label` (required), `items` (default 3 so 360px stays above the fold). No data. No `@balanse/mock`.
+`label` (required), `items` (default 3 so 360px stays above the fold). Filter chips scroll horizontally below `md` and wrap on tablet+.
 
 ## Accessibility
 

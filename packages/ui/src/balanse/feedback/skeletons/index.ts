@@ -1,6 +1,6 @@
 export { BentoSkeleton } from "./BentoSkeleton";
 export type { BentoSkeletonProps, BentoSkeletonTileSpec } from "./BentoSkeleton.schema";
-export { CalendarSkeleton } from "./CalendarSkeleton";
+export { CalendarSkeleton, detectCalendarView } from "./CalendarSkeleton";
 export { CardListSkeleton } from "./CardListSkeleton";
 export { DetailPageSkeleton } from "./DetailPageSkeleton";
 export { FormPageSkeleton } from "./FormPageSkeleton";

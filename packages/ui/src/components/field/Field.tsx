@@ -80,14 +80,14 @@ function FieldGroup({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-const fieldVariants = cva("group/field flex w-full gap-2 data-[invalid=true]:text-destructive", {
+const fieldVariants = cva("group/field flex w-full data-[invalid=true]:text-destructive", {
   variants: {
     orientation: {
-      vertical: "flex-col *:w-full [&>.sr-only]:w-auto",
+      vertical: "flex-col gap-1.5 *:w-full [&>.sr-only]:w-auto",
       horizontal:
-        "flex-row items-center has-[>[data-slot=field-content]]:items-start *:data-[slot=field-label]:flex-auto has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px",
+        "flex-row flex-wrap items-center gap-x-3 gap-y-1.5 [&>[data-slot=field-description]]:w-full [&>[data-slot=field-error]]:w-full has-[>[data-slot=field-content]]:items-start *:data-[slot=field-label]:flex-auto has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio],[data-slot=checkbox],[data-slot=switch]]:mt-px",
       responsive:
-        "flex-col *:w-full @md/field-group:flex-row @md/field-group:items-center @md/field-group:*:w-auto @md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:*:data-[slot=field-label]:flex-auto [&>.sr-only]:w-auto @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px",
+        "flex-col gap-1.5 *:w-full @md/field-group:flex-row @md/field-group:flex-wrap @md/field-group:items-center @md/field-group:gap-x-3 @md/field-group:*:w-auto @md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:*:data-[slot=field-label]:flex-auto [&>.sr-only]:w-auto @md/field-group:[&>[data-slot=field-description]]:w-full @md/field-group:[&>[data-slot=field-error]]:w-full @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio],[data-slot=checkbox],[data-slot=switch]]:mt-px",
     },
   },
   defaultVariants: {

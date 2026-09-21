@@ -4,6 +4,7 @@ import { formatSessionTime } from "@balanse/domain";
 import { ClockIcon, XIcon } from "lucide-react";
 import * as React from "react";
 import { cn } from "../../lib/utils";
+import { useFieldContext } from "../field/Field";
 import {
   InputGroup,
   InputGroupAddon,
@@ -105,8 +106,9 @@ function TimePicker({
   }, [value, focused]);
 
   const slots = React.useMemo(() => buildSlots(step), [step]);
+  const field = useFieldContext();
   const afterViolation = Boolean(after && value && !isStrictlyAfter(value, after));
-  const isInvalid = Boolean(invalid ?? ariaInvalid) || afterViolation;
+  const isInvalid = Boolean(invalid ?? ariaInvalid ?? field?.invalid) || afterViolation;
   const displayValue = focused ? draft : value ? formatClockLabel(value) : draft;
 
   const canCommit = (parsed: TimePickerValues) => !after || isStrictlyAfter(parsed, after);
@@ -202,20 +204,20 @@ function TimePicker({
     <InputGroup
       className={cn(className)}
       data-slot="time-picker"
-      data-disabled={disabled || undefined}
+      data-disabled={(disabled ?? field?.disabled) || undefined}
     >
       <InputGroupInput
         {...inputProps}
-        id={id}
+        id={id ?? field?.id}
         name={name}
         autoComplete="off"
         inputMode="numeric"
-        disabled={disabled}
+        disabled={disabled ?? field?.disabled}
         readOnly={readOnly}
         placeholder={placeholder}
         value={displayValue}
-        aria-invalid={isInvalid || undefined}
-        aria-describedby={ariaDescribedBy}
+        aria-invalid={ariaInvalid ?? (isInvalid || undefined)}
+        aria-describedby={ariaDescribedBy ?? field?.describedBy}
         aria-label={ariaLabel}
         onFocus={(event) => {
           setFocused(true);

@@ -15,7 +15,7 @@ function assignRef<T>(ref: Ref<T> | undefined, value: T | null) {
 import { cn } from "../../lib/utils";
 import { Button } from "../button/Button";
 import { ButtonGroup } from "../button-group/ButtonGroup";
-import { FieldError } from "../field/Field";
+import { FieldError, useFieldContext } from "../field/Field";
 import { Textarea } from "../textarea/Textarea";
 import { renderMarkdownSubset } from "./RichTextarea.markdown";
 import type { RichTextareaProps } from "./RichTextarea.schema";
@@ -77,8 +77,9 @@ function RichTextarea({
   value,
   ...props
 }: RichTextareaProps) {
+  const field = useFieldContext();
   const generatedId = useId();
-  const controlId = id ?? generatedId;
+  const controlId = id ?? field?.id ?? generatedId;
   const errorId = `${controlId}-over-limit`;
   const descriptionId = `${controlId}-count`;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -90,7 +91,7 @@ function RichTextarea({
   const isControlled = value !== undefined;
   const currentValue = isControlled ? String(value) : uncontrolled;
   const overLimit = currentValue.length > maxLength;
-  const isInvalid = Boolean(invalid) || overLimit;
+  const isInvalid = Boolean(invalid ?? field?.invalid) || overLimit;
   const marks = detectMarks(currentValue, selection.start, selection.end);
   const toolbarLocked = Boolean(disabled || readOnly);
 
@@ -253,7 +254,11 @@ function RichTextarea({
     setSelection({ start: el.selectionStart, end: el.selectionEnd });
   };
 
-  const describedBy = [props["aria-describedby"], descriptionId, overLimit ? errorId : undefined]
+  const describedBy = [
+    props["aria-describedby"] ?? field?.describedBy,
+    descriptionId,
+    overLimit ? errorId : undefined,
+  ]
     .filter(Boolean)
     .join(" ");
 
@@ -328,7 +333,7 @@ function RichTextarea({
         }}
         id={controlId}
         value={currentValue}
-        disabled={disabled}
+        disabled={disabled ?? field?.disabled}
         readOnly={readOnly}
         rows={minRows}
         aria-invalid={isInvalid || undefined}

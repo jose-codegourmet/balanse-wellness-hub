@@ -11,6 +11,7 @@ Binary (or indeterminate) checked control for forms and filters.
 - Multi-select form options
 - Filter lists with independent choices
 - “Select all” parents via `indeterminate`
+- Rich multi-select rows via **CheckboxGroup** / **CheckboxGroupItem** (`leading`, `description`)
 
 ## When NOT to use
 
@@ -49,6 +50,14 @@ Use Base UI’s `indeterminate` on the root — do not invent a third checked va
 
 ```tsx
 <Checkbox indeterminate aria-label="Select all" />
+```
+
+### CheckboxGroup
+
+```tsx
+<CheckboxGroup aria-label="Associated coaches">
+  <CheckboxGroupItem label="Maya Santos" leading={<Avatar size="sm" />} description="Reformer" />
+</CheckboxGroup>
 ```
 
 ## Gotchas

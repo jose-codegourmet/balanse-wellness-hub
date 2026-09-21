@@ -2,6 +2,6 @@ import type { CalendarSkeletonProps } from "./CalendarSkeleton.schema";
 
 export const calendarSkeletonDefaultValues: CalendarSkeletonProps = {
   weeks: 5,
-  view: "month",
+  view: "auto",
   label: "Loading schedule",
 };

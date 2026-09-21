@@ -4,42 +4,26 @@
 
 ## Purpose
 
-Searchable, filterable select with optional chips/multi-select UI.
+Searchable single- or multi-value picker. Options may stay flat `{ value, label }` or add optional `leading` / `description` for recognizable rows.
 
 ## When to use
 
-- Large option lists that need typeahead
-- Autocomplete / tag pickers; multi-value chips via `ComboboxChips`
+- Long searchable lists (coaches, customers, classes)
+- When the closed trigger should keep a selected avatar (`leading` on `ComboboxInput`)
 
 ## When NOT to use
 
-- Simple fixed list, no search → use **Select** instead
-- Native OS picker → use **NativeSelect** instead
-- Global command palette → use **Command** instead
+- Short enums → **NativeSelect** or **Select**
+- Independent multi-check rows → **CheckboxGroup**
 
 ## Examples
 
-### Searchable framework picker
-
-Pass options via `items` and render each with `ComboboxCollection`.
+### Flat options
 
 ```tsx
-import {
-  Combobox,
-  ComboboxCollection,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@balanse/ui";
-
-const frameworks = ["Next.js", "React", "Vue", "Svelte", "Astro"];
-
-<Combobox items={frameworks}>
-  <ComboboxInput placeholder="Select framework..." className="w-[240px]" />
+<Combobox items={["Reformer", "Tower"]} itemToStringLabel={(item) => item}>
+  <ComboboxInput placeholder="Search…" />
   <ComboboxContent>
-    <ComboboxEmpty>No framework found.</ComboboxEmpty>
     <ComboboxList>
       <ComboboxCollection>
         {(item) => (
@@ -53,7 +37,12 @@ const frameworks = ["Next.js", "React", "Vue", "Svelte", "Astro"];
 </Combobox>
 ```
 
+### Rich options
+
+Pass `leading` and `description` on `ComboboxItem`. Filter with `choiceOptionFilterText` so search matches label + description, never the leading node. Repeat `leading` on `ComboboxInput` so the closed trigger stays recognizable.
+
 ## Gotchas
 
 - `"use client"` required.
-- Chip layouts often need `useComboboxAnchor` + `anchor` on Content.
+- `ComboboxInput` is `w-full` by default (FE-SHR-016). Constrain the layout, not the control.
+- `leading` is decorative (`aria-hidden`). `description` is `aria-describedby` on the option.

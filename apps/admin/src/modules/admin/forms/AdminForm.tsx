@@ -195,7 +195,6 @@ export function FormField<TValues extends FieldValues = FieldValues>({
           orientation={orientation}
         >
           <FieldLabel>{label}</FieldLabel>
-          {description ? <FieldDescription>{description}</FieldDescription> : null}
           <FormFieldControl
             name={String(name)}
             label={label}
@@ -203,6 +202,7 @@ export function FormField<TValues extends FieldValues = FieldValues>({
             field={field}
             render={children}
           />
+          {description ? <FieldDescription>{description}</FieldDescription> : null}
           <FieldError errors={[fieldState.error]} />
         </Field>
       )}

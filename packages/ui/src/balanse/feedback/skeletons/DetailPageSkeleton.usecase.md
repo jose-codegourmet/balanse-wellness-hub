@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Customer-detail loading shell: header, Profile `dl`, then a two-column booking-block body (`md:grid-cols-2`) plus payment history. Used for `/customers/[id]` and as a starting shape for `/bookings/[id]` / `/reports/[id]`.
+Customer-detail loading shell: header, Profile summary first, then stacked booking blocks and payment history. Single column at every width — matches `/customers/[id]`. Used for `/customers/[id]` and as a starting shape for `/bookings/[id]` / `/reports/[id]`.
 
 ## Shape props
 

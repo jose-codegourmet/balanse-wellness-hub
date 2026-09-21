@@ -87,26 +87,24 @@ export const VersusReal: Story = {
             <dd>+63 917 000 0000</dd>
           </div>
         </dl>
-        <div className="grid gap-8 md:grid-cols-2">
-          <section className="mt-8">
-            <h2 className="font-display text-2xl">Upcoming</h2>
-            <ul className="mt-3 space-y-2">
-              <li className="rounded-xl border border-border p-3 text-sm">
-                <p>Reformer Flow</p>
-                <p className="text-muted-foreground">Confirmed</p>
-              </li>
-            </ul>
-          </section>
-          <section className="mt-8">
-            <h2 className="font-display text-2xl">Pending</h2>
-            <ul className="mt-3 space-y-2">
-              <li className="rounded-xl border border-border p-3 text-sm">
-                <p>Tower Basics</p>
-                <p className="text-muted-foreground">Hold</p>
-              </li>
-            </ul>
-          </section>
-        </div>
+        <section className="mt-8">
+          <h2 className="font-display text-2xl">Upcoming</h2>
+          <ul className="mt-3 space-y-2">
+            <li className="rounded-xl border border-border p-3 text-sm">
+              <p>Reformer Flow</p>
+              <p className="text-muted-foreground">Confirmed</p>
+            </li>
+          </ul>
+        </section>
+        <section className="mt-8">
+          <h2 className="font-display text-2xl">Pending</h2>
+          <ul className="mt-3 space-y-2">
+            <li className="rounded-xl border border-border p-3 text-sm">
+              <p>Tower Basics</p>
+              <p className="text-muted-foreground">Hold</p>
+            </li>
+          </ul>
+        </section>
       </section>
     </div>
   ),

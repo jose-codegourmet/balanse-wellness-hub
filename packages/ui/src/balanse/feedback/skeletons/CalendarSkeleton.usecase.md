@@ -4,16 +4,17 @@
 
 ## Purpose
 
-Month-grid loading shell for `/schedule` and the public/customer `ScheduleCalendar`. Replaces the old six-bar stub. Prop-compatible with `{ className?: string }` — `weeks` and `label` are optional.
+Responsive loading shell for `/schedule` and the public/customer `ScheduleCalendar`. Default `view="auto"` follows `useBreakpoint()` with the same rule as `detectView()`: day agenda below 768, week strip at 768, month grid at 1280.
 
 ## When to use
 
 - `ScheduleCalendar` `loading` prop
 - `BalanseQuickBooking` / `BalanseBookingCalendar` loading states
+- Admin `/schedule` `loading.tsx`
 
 ## Shape props
 
-`className`, optional `weeks` (default 5), optional `view` (`day` / `week` / `month`, default `month` — matches `ScheduleCalendar` auto view), optional `label` (default `"Loading schedule"`). Existing callers that pass only `className` stay valid. The shell is `space-y-4` like the loaded calendar, not the old stub card.
+`className`, optional `weeks` (default 5), optional `view` (`day` / `week` / `month` / `auto`, default `auto`), optional `label` (default `"Loading schedule"`). Pin `view` in stories. The side panel stacks under the calendar below `xl` (`xl:grid-cols-[minmax(0,1fr)_22rem]`), matching `ScheduleListPage`.
 
 ## Accessibility
 

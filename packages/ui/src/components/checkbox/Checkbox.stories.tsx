@@ -1,9 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-
+import { Avatar, AvatarFallback } from "../avatar/Avatar";
 import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from "../field/Field";
-
-import { Checkbox } from "./Checkbox";
+import { Checkbox, CheckboxGroup, CheckboxGroupItem } from "./Checkbox";
 import { checkboxDefaultValues } from "./Checkbox.defaults";
+
+function CoachMark({ initials }: { initials: string }) {
+  return (
+    <Avatar size="sm" className="size-7">
+      <AvatarFallback>{initials}</AvatarFallback>
+    </Avatar>
+  );
+}
 
 const meta: Meta<typeof Checkbox> = {
   title: "Components/Checkbox",
@@ -65,5 +72,50 @@ export const Disabled: Story = {
   args: {
     disabled: true,
     defaultChecked: true,
+  },
+};
+
+export const RichGroup: Story = {
+  render: () => (
+    <CheckboxGroup className="max-w-sm" aria-label="Associated coaches">
+      <CheckboxGroupItem
+        label="Maya Santos"
+        leading={<CoachMark initials="MS" />}
+        description="Reformer · senior"
+        defaultChecked
+      />
+      <CheckboxGroupItem
+        label="Lina Cruz"
+        leading={<CoachMark initials="LC" />}
+        description="Tower · weekend"
+      />
+      <CheckboxGroupItem label="Plain option" />
+    </CheckboxGroup>
+  ),
+  parameters: {
+    viewport: { defaultViewport: "mobile" },
+  },
+};
+
+export const RichGroupDark: Story = {
+  render: () => (
+    <div className="dark bg-background p-4 text-foreground">
+      <CheckboxGroup className="max-w-sm" aria-label="Associated coaches">
+        <CheckboxGroupItem
+          label="Maya Santos"
+          leading={<CoachMark initials="MS" />}
+          description="Reformer · senior"
+          defaultChecked
+        />
+        <CheckboxGroupItem
+          label="Lina Cruz"
+          leading={<CoachMark initials="LC" />}
+          description="Tower · weekend"
+        />
+      </CheckboxGroup>
+    </div>
+  ),
+  parameters: {
+    viewport: { defaultViewport: "desktop" },
   },
 };

@@ -27,9 +27,9 @@ Recipe for every admin write form:
 | --- | --- | --- |
 | `Input`, `Textarea`, `Checkbox`, `Switch`, `RadioGroup`, `NativeSelect`, `Select` | yes — do not spread `aria-*` | `TextBinding`, `TextareaBinding`, `BooleanBinding`, `ChoiceBinding` |
 | `Combobox` | yes | `ComboboxBinding` |
-| `RichTextarea`, `DatePicker`, `TimePicker`, `MockImageUpload` | no | `RichTextBinding`, `DateBinding`, `TimeBinding`, `ImageBinding` (explicit `id` / `aria-invalid` / `aria-describedby`) |
+| `RichTextarea`, `DatePicker`, `TimePicker`, `MockImageUpload` | yes — explicit `id` / `aria-*` still win | `RichTextBinding`, `DateBinding`, `TimeBinding`, `ImageBinding` |
 
-`CheckboxGroupBinding` is composed over `Checkbox` + `FieldSet` + `FieldLegend`. There is no primitive.
+`CheckboxGroupBinding` uses `@balanse/ui` `CheckboxGroup` / `CheckboxGroupItem`. Options may include optional `leading` and `description`.
 
 ## RichTextarea max length
 

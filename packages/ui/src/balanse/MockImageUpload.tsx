@@ -1,6 +1,8 @@
 "use client";
 
 import { useId, useState } from "react";
+import { useFieldContext } from "../components/field/Field";
+import { controlSurfaceVariants } from "../lib/control-surface";
 import { cn } from "../lib/utils";
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -24,7 +26,9 @@ export function MockImageUpload({
   forceFailure = false,
   className,
 }: MockImageUploadProps) {
-  const inputId = useId();
+  const field = useFieldContext();
+  const generatedId = useId();
+  const inputId = field?.id ?? generatedId;
   const statusId = useId();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [, setFileName] = useState<string | null>(null);
@@ -88,7 +92,10 @@ export function MockImageUpload({
         id={inputId}
         type="file"
         accept="image/*"
-        className="block w-full text-sm"
+        disabled={field?.disabled}
+        aria-invalid={field?.invalid || undefined}
+        aria-describedby={field?.describedBy ?? statusId}
+        className={cn(controlSurfaceVariants({ size: "md" }), "text-sm")}
         onChange={(event) => onFile(event.target.files?.[0])}
       />
       <div aria-live="polite" id={statusId} className="text-sm">
