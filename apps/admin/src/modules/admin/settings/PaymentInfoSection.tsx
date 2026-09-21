@@ -1,10 +1,12 @@
 "use client";
 
 import type { AdminSettings } from "@balanse/domain";
+import { Button } from "@balanse/ui";
+import Link from "next/link";
 import { useUpdateAdminSettings } from "@/lib/query/mutations";
 import { notify } from "@/modules/notifications/notify";
 import { AdminForm, FormActions, FormField, FormSection } from "../forms/AdminForm";
-import { ImageBinding, TextBinding } from "../forms/bindings";
+import { TextBinding } from "../forms/bindings";
 import { paymentInfoFormDefaultValues } from "../forms/settings/settings-form.defaults";
 import {
   type PaymentInfoFormValues,
@@ -16,7 +18,6 @@ export function valuesFromPaymentSettings(settings: AdminSettings): PaymentInfoF
   return {
     gcashName: settings.gcashName,
     gcashNumber: settings.gcashNumber,
-    qrImageKey: settings.qrImageKey,
   };
 }
 
@@ -44,7 +45,6 @@ export function PaymentInfoSection({
           await update.mutateAsync({
             gcashName: values.gcashName,
             gcashNumber: values.gcashNumber,
-            qrImageKey: values.qrImageKey,
           });
           notify.admin("settings.saved");
           onSaved?.();
@@ -57,25 +57,20 @@ export function PaymentInfoSection({
       <DirtyBridge onDirtyChange={onDirtyChange} />
       <FormSection
         title="Payment info"
-        description="GCash details shown when a guest pays online. Saving here does not rewrite public content."
+        description="GCash account details shown when a guest pays online. Manage receive QRs on the Payment QR page."
         columns={2}
         surface="card"
+        action={
+          <Button nativeButton={false} variant="outline" render={<Link href="/payment-qr" />}>
+            Manage payment QRs
+          </Button>
+        }
       >
         <FormField name="gcashName" label="GCash name">
           {(field) => <TextBinding {...field} />}
         </FormField>
         <FormField name="gcashNumber" label="GCash number">
           {(field) => <TextBinding {...field} type="tel" inputMode="tel" />}
-        </FormField>
-        <FormField name="qrImageKey" label="GCash QR" wireAria span="full">
-          {(field) => (
-            <ImageBinding
-              {...field}
-              label={field.value ? "Replace QR" : "Upload QR"}
-              fallbackLabel="No QR uploaded yet."
-              previewName="GCash QR"
-            />
-          )}
         </FormField>
       </FormSection>
       <FormActions submitLabel="Save payment info" />

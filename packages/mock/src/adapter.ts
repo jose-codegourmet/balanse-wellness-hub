@@ -16,6 +16,7 @@ import type {
   CustomerProfile,
   PaymentInstructions,
   PaymentMethod,
+  PaymentQrCode,
   PolicyAcceptance,
   PublicClass,
   PublicCoach,
@@ -173,6 +174,17 @@ export type MockDataAdapter = {
   getAdminCustomer: (id: string) => Promise<AdminCustomerDetail | null>;
   getAdminSettings: () => Promise<AdminSettings>;
   updateAdminSettings: (patch: Partial<AdminSettings>) => Promise<AdminSettings>;
+  listPaymentQrs: (includeArchived?: boolean) => Promise<{
+    items: PaymentQrCode[];
+    activeId: string | null;
+  }>;
+  upsertPaymentQr: (input: {
+    id?: string;
+    label: string;
+    imageKey: string;
+  }) => Promise<PaymentQrCode>;
+  activatePaymentQr: (id: string) => Promise<PaymentQrCode>;
+  archivePaymentQr: (id: string) => Promise<PaymentQrCode>;
   promotePolicyVersion: (documentName: string, version: string) => Promise<AdminSettings>;
   getAdminDashboard: () => Promise<AdminDashboardSnapshot>;
 };

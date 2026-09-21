@@ -7,7 +7,7 @@ Name | contact | address
 
 PAYMENT INFO
 GCash name / number
-Receive QR collection (many images, exactly one active)
+Link to /payment-qr for receive QR collection
 
 PUBLIC CONTENT
 About | Contact | FAQs
@@ -26,7 +26,7 @@ If financial permissions are added later, they should remain restricted to autho
 
 ## Payment receive QRs (BE-056 / FE-ADM-040)
 
-Settings hold **many** GCash receive QRs and **exactly one** active image. Admin can upload, label, switch active, and archive. Customers see only the active QR plus `gcashName` / `gcashNumber` — never labels or the archived set.
+Settings keep `gcashName` / `gcashNumber` only. The receive-QR collection lives on `/payment-qr` (see `15-payment-qr.md`). Customers see only the active QR plus those GCash fields — never labels or the archived set.
 
 The legacy single `qrImageKey` is a **read-only derived** field pointing at the active row so existing payment-instruction screens keep working. Contract: `docs/backend/payment-qr-collection.md`.
 

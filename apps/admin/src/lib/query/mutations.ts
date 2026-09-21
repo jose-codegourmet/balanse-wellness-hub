@@ -223,6 +223,38 @@ export function useDisableAdminStaff() {
   });
 }
 
+function paymentQrKeys(role: MockRole): QueryKey[] {
+  return [adminKeys.paymentQrs.all(role), adminKeys.settings.all(role)];
+}
+
+export function useUpsertPaymentQr() {
+  const role = useAdminRole();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["upsertPaymentQr"]>[0]) =>
+      getMockAdapter().upsertPaymentQr(input),
+    onSuccess: () => invalidateForRole(queryClient, paymentQrKeys(role)),
+  });
+}
+
+export function useActivatePaymentQr() {
+  const role = useAdminRole();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => getMockAdapter().activatePaymentQr(id),
+    onSuccess: () => invalidateForRole(queryClient, paymentQrKeys(role)),
+  });
+}
+
+export function useArchivePaymentQr() {
+  const role = useAdminRole();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => getMockAdapter().archivePaymentQr(id),
+    onSuccess: () => invalidateForRole(queryClient, paymentQrKeys(role)),
+  });
+}
+
 export function useUpdateAdminSettings() {
   const role = useAdminRole();
   const queryClient = useQueryClient();

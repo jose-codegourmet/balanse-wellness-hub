@@ -684,6 +684,7 @@ export const adminClasses: AdminClass[] = [
 export const adminSettings: AdminSettings = {
   ...publicContent,
   ...paymentInstructions,
+  paymentQrs: [],
   businessName: "Balansé Wellness Hub",
   openingHours: "",
   policyDocuments: [

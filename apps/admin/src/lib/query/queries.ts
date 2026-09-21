@@ -94,6 +94,12 @@ export const adminSettingsQuery = (role: MockRole) =>
     queryFn: () => getMockAdapter().getAdminSettings(),
   });
 
+export const adminPaymentQrsQuery = (role: MockRole) =>
+  queryOptions({
+    queryKey: adminKeys.paymentQrs.all(role),
+    queryFn: () => getMockAdapter().listPaymentQrs(),
+  });
+
 export const adminReportsQuery = (role: MockRole, filters: AdminReportFilters) =>
   queryOptions({
     queryKey: adminKeys.reports.list(role, filters),

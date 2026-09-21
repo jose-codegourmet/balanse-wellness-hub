@@ -7,7 +7,7 @@ Schedule, Classes, Coaches, About, FAQs, Contact, Login/Profile
 Home/My Bookings, Schedule, Profile, Achievements(TBD)
 
 ## Admin
-Dashboard, Schedule, Bookings, Payments, Cancellations, Reschedules, Customers, Coaches, Classes, Staff, Settings
+Dashboard, Schedule, Bookings, Payments, Payment QR, Cancellations, Reschedules, Customers, Coaches, Classes, Staff, Settings
 
 ## Admin reporting addition
 
@@ -21,6 +21,7 @@ Suggested admin navigation order:
 - Schedule
 - Bookings
 - Payments
+- Payment QR
 - Cancellations
 - Reschedules
 - Customers
