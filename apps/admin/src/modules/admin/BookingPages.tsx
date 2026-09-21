@@ -58,37 +58,40 @@ export function BookingListPage() {
         id: "customer",
         header: "Customer",
         accessorFn: (row) => names(row.customerId),
-        meta: { primaryLink: (row) => `/bookings/${row.id}` },
+        meta: { primaryLink: (row) => `/bookings/${row.id}`, mobile: { role: "title" } },
       },
       {
         id: "class",
         header: "Class",
         accessorFn: (row) => row.session.className,
         enableColumnFilter: true,
-        meta: { enableFaceting: true, facetLabel: "Class" },
+        meta: { enableFaceting: true, facetLabel: "Class", mobile: { role: "subtitle" } },
       },
       {
         id: "time",
         header: "Time",
         accessorFn: (row) => formatSessionRange(row.session.startsAt, row.session.endsAt),
+        meta: { mobile: { role: "meta" } },
       },
       {
         id: "payment",
         header: "Payment",
         accessorFn: (row) => paymentStatusLabel(row.paymentStatus),
+        meta: { mobile: { role: "meta" } },
       },
       {
         id: "status",
         header: "Status",
         accessorFn: (row) => customerStatusLabel(row.status),
         enableColumnFilter: true,
-        meta: { enableFaceting: true, facetLabel: "Status" },
+        meta: { enableFaceting: true, facetLabel: "Status", mobile: { role: "status" } },
         cell: ({ row }) => <StatusBadge status={row.original.status} surface="admin" />,
       },
       {
         id: "review",
         header: "Review",
         enableSorting: false,
+        meta: { mobile: { role: "hidden" } },
         cell: ({ row }) => (
           <Link className="underline underline-offset-4" href={`/bookings/${row.original.id}`}>
             Review

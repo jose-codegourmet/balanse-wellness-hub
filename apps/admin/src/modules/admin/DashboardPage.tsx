@@ -47,16 +47,18 @@ export function DashboardPage({
         accessorFn: (row) => formatSessionTime(row.startsAt),
         id: "time",
         header: "Time",
+        meta: { mobile: { role: "title" } },
         cell: ({ row }) => formatSessionTime(row.original.startsAt),
       },
-      { accessorKey: "className", header: "Class" },
-      { accessorKey: "coachName", header: "Coach" },
-      { accessorKey: "capacity", header: "Capacity" },
+      { accessorKey: "className", header: "Class", meta: { mobile: { role: "subtitle" } } },
+      { accessorKey: "coachName", header: "Coach", meta: { mobile: { role: "meta" } } },
+      { accessorKey: "capacity", header: "Capacity", meta: { mobile: { role: "meta" } } },
       {
         id: "status",
         header: "Status",
         accessorFn: (row) =>
           row.status === "PUBLISHED" ? "Published" : row.status === "DRAFT" ? "Draft" : "Cancelled",
+        meta: { mobile: { role: "status" } },
         cell: ({ row }) => {
           const status = row.original.status;
           const label =

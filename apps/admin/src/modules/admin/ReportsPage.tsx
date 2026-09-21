@@ -54,34 +54,38 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
 
   const classColumns = useMemo<ColumnDef<AdminReports["classPerformance"][number], unknown>[]>(
     () => [
-      { accessorKey: "className", header: "Class" },
-      { accessorKey: "sessions", header: "Sessions" },
+      { accessorKey: "className", header: "Class", meta: { mobile: { role: "title" } } },
+      { accessorKey: "sessions", header: "Sessions", meta: { mobile: { role: "meta" } } },
       {
         accessorKey: "revenuePhp",
         header: "Revenue",
+        meta: { mobile: { role: "meta" } },
         cell: ({ row }) => formatPeso(row.original.revenuePhp),
       },
       {
         accessorKey: "occupancy",
         header: "Occupancy",
+        meta: { mobile: { role: "meta" } },
         cell: ({ row }) => formatRatioPercent(row.original.occupancy),
       },
-      { accessorKey: "noShows", header: "No-shows" },
+      { accessorKey: "noShows", header: "No-shows", meta: { mobile: { role: "meta" } } },
     ],
     [],
   );
   const coachColumns = useMemo<ColumnDef<AdminReports["coachCosts"][number], unknown>[]>(
     () => [
-      { accessorKey: "coachName", header: "Coach" },
-      { accessorKey: "sessions", header: "Sessions" },
+      { accessorKey: "coachName", header: "Coach", meta: { mobile: { role: "title" } } },
+      { accessorKey: "sessions", header: "Sessions", meta: { mobile: { role: "meta" } } },
       {
         accessorKey: "coachCostPhp",
         header: "Coach Cost",
+        meta: { mobile: { role: "meta" } },
         cell: ({ row }) => formatPeso(row.original.coachCostPhp),
       },
       {
         accessorKey: "relatedRevenuePhp",
         header: "Related Revenue",
+        meta: { mobile: { role: "meta" } },
         cell: ({ row }) => formatPeso(row.original.relatedRevenuePhp),
       },
     ],
@@ -93,6 +97,7 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
         id: "when",
         header: "Date/Time",
         accessorFn: (row) => `${row.startsAt}`,
+        meta: { mobile: { role: "title" } },
         cell: ({ row }) => (
           <Link
             className="underline underline-offset-4"
@@ -106,18 +111,20 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
         accessorKey: "className",
         header: "Class",
         enableColumnFilter: true,
-        meta: { enableFaceting: true, facetLabel: "Class" },
+        meta: { enableFaceting: true, facetLabel: "Class", mobile: { role: "subtitle" } },
       },
-      { accessorKey: "capacity", header: "Capacity" },
-      { accessorKey: "confirmed", header: "Confirmed" },
+      { accessorKey: "capacity", header: "Capacity", meta: { mobile: { role: "meta" } } },
+      { accessorKey: "confirmed", header: "Confirmed", meta: { mobile: { role: "meta" } } },
       {
         accessorKey: "revenuePhp",
         header: "Revenue",
+        meta: { mobile: { role: "meta" } },
         cell: ({ row }) => formatPeso(row.original.revenuePhp),
       },
       {
         accessorKey: "coachCostPhp",
         header: "Cost",
+        meta: { mobile: { role: "meta" } },
         cell: ({ row }) => formatPeso(row.original.coachCostPhp),
       },
     ],

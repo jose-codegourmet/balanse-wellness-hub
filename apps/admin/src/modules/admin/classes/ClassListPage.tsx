@@ -63,11 +63,12 @@ export function ClassListPage({
       {
         accessorKey: "name",
         header: "Name",
-        meta: { primaryLink: (row) => `/classes/${row.id}` },
+        meta: { primaryLink: (row) => `/classes/${row.id}`, mobile: { role: "title" } },
       },
       {
         accessorKey: "shortDescription",
         header: "Short description",
+        meta: { mobile: { role: "subtitle" } },
         cell: ({ row }) => (
           <span className="block max-w-[18rem] truncate" title={row.original.shortDescription}>
             {row.original.shortDescription}
@@ -78,6 +79,7 @@ export function ClassListPage({
         id: "duration",
         header: "Duration",
         accessorFn: (row) => row.defaultDurationMinutes,
+        meta: { mobile: { role: "meta" } },
         enableGlobalFilter: false,
         cell: ({ row }) => (
           <span className="tabular-nums">
@@ -89,6 +91,7 @@ export function ClassListPage({
         id: "price",
         header: "Price",
         accessorFn: (row) => row.defaultPricePhp,
+        meta: { mobile: { role: "meta" } },
         enableGlobalFilter: false,
         cell: ({ row }) => (
           <span className="tabular-nums">{formatPrice(row.original.defaultPricePhp)}</span>
@@ -100,7 +103,7 @@ export function ClassListPage({
         accessorFn: (row) => row.associatedCoachIds.map(coachName).join(", "),
         enableColumnFilter: true,
         enableGlobalFilter: false,
-        meta: { enableFaceting: true, facetLabel: "Coach" },
+        meta: { enableFaceting: true, facetLabel: "Coach", mobile: { role: "meta" } },
         filterFn: (row, _columnId, filterValue) => {
           if (!Array.isArray(filterValue) || filterValue.length === 0) return true;
           const names = row.original.associatedCoachIds.map(coachName);
@@ -133,7 +136,7 @@ export function ClassListPage({
         accessorFn: (row) => (row.active ? "Active" : "Inactive"),
         enableColumnFilter: true,
         enableGlobalFilter: false,
-        meta: { enableFaceting: true, facetLabel: "Status" },
+        meta: { enableFaceting: true, facetLabel: "Status", mobile: { role: "status" } },
         cell: ({ row }) => (
           <Badge
             variant={row.original.active ? "success" : "neutral"}

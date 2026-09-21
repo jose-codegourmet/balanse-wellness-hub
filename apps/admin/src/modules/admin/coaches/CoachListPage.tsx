@@ -84,6 +84,7 @@ export function CoachListPage({
       enableSorting: false,
       enableGlobalFilter: false,
       enableHiding: false,
+      meta: { mobile: { role: "hidden" } },
       cell: ({ row }) => (
         <CoachPhoto
           photoKey={row.original.photoKey}
@@ -98,7 +99,7 @@ export function CoachListPage({
     const name: ColumnDef<CoachListRow, unknown> = {
       accessorKey: "name",
       header: "Name",
-      meta: { primaryLink: (row) => `/coaches/${row.id}` },
+      meta: { primaryLink: (row) => `/coaches/${row.id}`, mobile: { role: "title" } },
     };
 
     const specialties: ColumnDef<CoachListRow, unknown> = {
@@ -108,7 +109,7 @@ export function CoachListPage({
       enableColumnFilter: true,
       filterFn: specialtyFacetFilter,
       getUniqueValues: (row) => row.specialties,
-      meta: { enableFaceting: true, facetLabel: "Specialty" },
+      meta: { enableFaceting: true, facetLabel: "Specialty", mobile: { role: "subtitle" } },
       cell: ({ row }) => (
         <div className="flex max-w-72 flex-wrap gap-1">
           {row.original.specialties.map((specialty) => (
@@ -126,7 +127,7 @@ export function CoachListPage({
       accessorFn: (row) => (row.active ? "Active" : "Inactive"),
       enableColumnFilter: true,
       enableGlobalFilter: false,
-      meta: { enableFaceting: true, facetLabel: "Status" },
+      meta: { enableFaceting: true, facetLabel: "Status", mobile: { role: "status" } },
       cell: ({ row }) => (
         <Badge
           variant={row.original.active ? "success" : "danger"}
@@ -143,12 +144,14 @@ export function CoachListPage({
       accessorKey: "upcomingCount",
       header: "Upcoming sessions",
       enableGlobalFilter: false,
+      meta: { mobile: { role: "meta" } },
     };
 
     const rate: ColumnDef<CoachListRow, unknown> = {
       id: "rate",
       header: "Rate",
       enableGlobalFilter: false,
+      meta: { mobile: { role: "meta" } },
       accessorFn: (row) => `${formatPeso(row.defaultRatePhp)} ${coachRateTypeLabel(row.rateType)}`,
       cell: ({ row }) => (
         <span>

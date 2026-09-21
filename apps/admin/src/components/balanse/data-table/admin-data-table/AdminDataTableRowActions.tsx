@@ -17,11 +17,13 @@ export function AdminDataTableRowActions<TData>({
   actions,
   labels,
   rowName,
+  touch = false,
 }: {
   row: TData;
   actions: AdminDataTableRowAction<TData>[];
   labels: AdminDataTableLabels;
   rowName: string;
+  touch?: boolean;
 }) {
   if (actions.length === 0) return null;
 
@@ -32,7 +34,8 @@ export function AdminDataTableRowActions<TData>({
           <Button
             type="button"
             variant="ghost"
-            size="icon-sm"
+            size={touch ? "icon" : "icon-sm"}
+            className={touch ? "min-h-11 min-w-11" : undefined}
             aria-label={`${labels.rowActions} for ${rowName}`}
             onClick={(event) => event.stopPropagation()}
           />

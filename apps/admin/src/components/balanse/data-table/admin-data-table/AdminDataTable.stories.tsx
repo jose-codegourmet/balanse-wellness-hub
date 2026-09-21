@@ -22,24 +22,24 @@ const DEMO_ROWS: DemoRow[] = [
 ];
 
 const DEMO_COLUMNS: ColumnDef<DemoRow, unknown>[] = [
-  { accessorKey: "name", header: "Name" },
+  { accessorKey: "name", header: "Name", meta: { mobile: { role: "title" } } },
   {
     accessorKey: "className",
     header: "Class",
     enableColumnFilter: true,
-    meta: { enableFaceting: true, facetLabel: "Class" },
+    meta: { enableFaceting: true, facetLabel: "Class", mobile: { role: "subtitle" } },
   },
   {
     accessorKey: "coach",
     header: "Coach",
     enableColumnFilter: true,
-    meta: { enableFaceting: true, facetLabel: "Coach" },
+    meta: { enableFaceting: true, facetLabel: "Coach", mobile: { role: "meta" } },
   },
   {
     accessorKey: "status",
     header: "Status",
     enableColumnFilter: true,
-    meta: { enableFaceting: true, facetLabel: "Status" },
+    meta: { enableFaceting: true, facetLabel: "Status", mobile: { role: "status" } },
   },
 ];
 
@@ -191,10 +191,41 @@ export const PrimaryLinkColumn: Story = {
   },
 };
 
+export const CardsForced: Story = {
+  args: {
+    tableId: "story-cards",
+    layout: "cards",
+    enableColumnVisibility: true,
+    selectable: true,
+    rowActions: (row) => [{ id: "view", label: "View", href: `/sessions/${row.id}` }],
+  },
+};
+
+export const TableForced: Story = {
+  args: {
+    tableId: "story-table",
+    layout: "table",
+  },
+};
+
 export const Mobile360: Story = {
-  args: { tableId: "story-360" },
+  args: { tableId: "story-360", layout: "auto" },
   parameters: {
     viewport: { defaultViewport: "mobile" },
+  },
+};
+
+export const Tablet768: Story = {
+  args: { tableId: "story-768", layout: "auto" },
+  parameters: {
+    viewport: { defaultViewport: "tablet" },
+  },
+};
+
+export const Desktop1280: Story = {
+  args: { tableId: "story-1280", layout: "auto" },
+  parameters: {
+    viewport: { defaultViewport: "desktop" },
   },
 };
 
