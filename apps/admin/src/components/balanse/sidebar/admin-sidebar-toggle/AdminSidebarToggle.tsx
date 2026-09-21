@@ -2,7 +2,8 @@
 
 import { Button, Kbd, Tooltip, TooltipContent, TooltipTrigger } from "@balanse/ui";
 import { PanelLeft, PanelLeftClose } from "lucide-react";
-import type { AdminSidebarToggleProps } from "./AdminSidebarToggle.schema";
+import { cn } from "@/components/jabkit/lib/cn";
+import type { AdminSidebarToggleProps } from "./AdminSidebarToggle.meta";
 
 export function AdminSidebarToggle({
   collapsed,
@@ -25,7 +26,10 @@ export function AdminSidebarToggle({
             aria-expanded={!collapsed}
             aria-controls={controlsId}
             aria-label={label}
-            className={className}
+            className={cn(
+              "shrink-0 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+              className,
+            )}
             onClick={onToggle}
             {...props}
           />

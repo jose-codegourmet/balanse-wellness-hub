@@ -47,16 +47,15 @@ _components/
     AnotherExample.stories.tsx
 ```
 
-Right — form (only then add schema + defaults):
+Right — form (own component; schema + defaults required):
 
 ```
-_components/
-  booking-form/
-    BookingForm.meta.ts
-    BookingForm.tsx
-    BookingForm.schema.ts
-    BookingForm.defaults.ts
-    BookingForm.stories.tsx
+login-form/
+  LoginForm.tsx
+  LoginForm.meta.ts
+  LoginForm.defaults.ts
+  LoginForm.schema.ts
+  LoginForm.stories.tsx
 ```
 
 | Thing | Pattern | Example |
@@ -64,7 +63,8 @@ _components/
 | Folder | `kebab-case` | `some-example/` |
 | Files | `PascalCase.*` | `SomeExample.tsx` |
 | Always | `.meta.ts`, `.tsx`, `.stories.tsx` | every authored component |
-| Forms only | `.schema.ts`, `.defaults.ts` | `react-hook-form` + zod value schema |
+| Forms only | `.schema.ts`, `.defaults.ts` | [react-hook-form](https://react-hook-form.com/) + zod value schema |
+| Story fixtures | `.stories-data.ts` | non-form demo data used only by stories |
 | Never | `.usecase.md` | purpose lives in `.meta.ts` |
 
 **Do not write, add, or complete `Component.usecase.md`.** Purpose, when to use, and when not to use belong in `Component.meta.ts`. Leave existing `*.usecase.md` files alone unless a ticket asks to delete them.
@@ -74,6 +74,31 @@ _components/
 This applies everywhere a component is authored: `_components/` next to a route, `src/components/balanse/`, `src/modules/` (legacy), and `packages/ui`. Vendored `src/components/jabkit/` keeps its upstream shape and is exempt.
 
 Admin composition may nest under a feature parent (`dashboard/dashboard-bento/`). One-off non-component helpers (`_lib/format-money.ts`, `_hooks/use-booking-id.ts`) do not need the companion set, but they still live in kebab-case folders when they are more than a single file.
+
+## Forms
+
+Every `<form>` is its own component. Do not inline a form in a page, layout, dialog wrapper, or a parent section that also owns other UI. Extract it into a kebab-case folder and author it with [react-hook-form](https://react-hook-form.com/).
+
+Required file set:
+
+```
+login-form/
+  LoginForm.tsx
+  LoginForm.meta.ts
+  LoginForm.defaults.ts
+  LoginForm.schema.ts
+  LoginForm.stories.tsx
+```
+
+| File | Role |
+| --- | --- |
+| `LoginForm.tsx` | The only file that renders the `<form>`. Uses `useForm` + `zodResolver`. |
+| `LoginForm.schema.ts` | Zod value schema. Export the schema and the inferred values type. |
+| `LoginForm.defaults.ts` | `defaultValues` reused by `useForm({ defaultValues })` and the story. |
+| `LoginForm.meta.ts` | Purpose, API, when to use / not use. |
+| `LoginForm.stories.tsx` | Stories reuse the same schema and defaults. Do not re-declare values inline. |
+
+Do not manage form fields with raw `useState` + `onSubmit` preventDefault. Bind fields through react-hook-form (`register` or `Controller`) and surface errors from `formState.errors`. Authoring details (naming, zod, `FieldError`) live in [`docs/component-guide.md`](./component-guide.md).
 
 ## Component colocation convention
 

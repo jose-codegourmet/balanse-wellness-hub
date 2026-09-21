@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { DashboardBentoProps } from "./DashboardBento.schema";
+import type { DashboardBentoProps } from "./DashboardBento.meta";
 
 export function DashboardBento({ className, ...props }: DashboardBentoProps) {
   return (

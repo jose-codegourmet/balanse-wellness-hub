@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { useState } from "react";
 import { AdminPageTabs } from "./AdminPageTabs";
-import { adminPageTabsDefaultValues } from "./AdminPageTabs.defaults";
-import type { AdminPageTab } from "./AdminPageTabs.schema";
+import type { AdminPageTab } from "./AdminPageTabs.meta";
+import { adminPageTabsDefaultValues } from "./AdminPageTabs.stories-data";
 
 function TabsDemo({
   tabs,

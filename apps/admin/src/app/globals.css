@@ -5,6 +5,18 @@
 @source "../../../../packages/ui/src/**/*.{ts,tsx}";
 @source "../../../../packages/config/src/**/*.{ts,tsx}";
 
+/* Admin-only light rail. Shared tokens keep a navy sidebar for apps/web. */
+:root {
+  --sidebar: var(--balanse-warm-white);
+  --sidebar-foreground: var(--balanse-navy);
+  --sidebar-primary: var(--balanse-navy);
+  --sidebar-primary-foreground: var(--balanse-warm-white);
+  --sidebar-accent: color-mix(in oklab, var(--balanse-beige) 70%, var(--balanse-warm-white));
+  --sidebar-accent-foreground: var(--balanse-navy);
+  --sidebar-border: var(--balanse-tan);
+  --sidebar-ring: var(--balanse-gold-deep);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

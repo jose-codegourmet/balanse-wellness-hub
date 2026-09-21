@@ -10,8 +10,10 @@ export const metadata: Metadata = {
 export default async function Page() {
   const schedule = await loadPublicSchedule();
   return (
-    <section className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="font-display text-3xl">Schedule</h1>
+    <section className="w-full pt-12 pb-12 px-0">
+      <div className="max-w-6xl px-4">
+        <h1 className="font-display text-3xl">Schedule</h1>
+      </div>
       <div className="mt-6">
         <ScheduleCalendarSection
           audience="customer"

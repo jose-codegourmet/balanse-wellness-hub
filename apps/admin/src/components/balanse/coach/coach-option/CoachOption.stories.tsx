@@ -14,6 +14,7 @@ import {
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { useState } from "react";
 import { CoachOption, toCoachChoiceOption } from "./CoachOption";
+import type { CoachOptionCoach } from "./CoachOption.meta";
 import {
   coachOptionAlec,
   coachOptionDefaultValues,
@@ -21,8 +22,7 @@ import {
   coachOptionKate,
   coachOptionRex,
   coachOptionSofia,
-} from "./CoachOption.defaults";
-import type { CoachOptionCoach } from "./CoachOption.schema";
+} from "./CoachOption.stories-data";
 
 const roster: CoachOptionCoach[] = [
   coachOptionRex,
@@ -179,11 +179,6 @@ export const LongRoster768: Story = {
 export const LongRoster1280: Story = {
   render: () => <CoachPickerDemo coaches={roster} includeAll />,
   parameters: { viewport: { defaultViewport: "desktop" } },
-};
-
-export const DarkTheme: Story = {
-  render: () => <CoachPickerDemo coaches={roster} />,
-  globals: { theme: "dark" },
 };
 
 export const MultiAssign: Story = {

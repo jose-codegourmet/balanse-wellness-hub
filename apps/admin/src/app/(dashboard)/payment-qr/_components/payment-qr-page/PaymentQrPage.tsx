@@ -17,7 +17,11 @@ import {
 import { adminPaymentQrsQuery, adminSettingsQuery } from "@/lib/query/queries";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import type { PaymentQrPageProps } from "./PaymentQrPage.schema";
+
+export type PaymentQrPageProps = {
+  empty?: boolean;
+  items?: import("@balanse/domain").PaymentQrCode[];
+};
 
 export function PaymentQrPage({ empty, items: itemsProp }: PaymentQrPageProps) {
   const { principal } = useMockPrincipal();

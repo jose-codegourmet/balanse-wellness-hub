@@ -7,7 +7,7 @@ import {
   adminSidebarNavDefaultValues,
   sidebarSnapshotEmpty,
   sidebarSnapshotOverflow,
-} from "./AdminSidebarNav.defaults";
+} from "./AdminSidebarNav.stories-data";
 
 const meta: Meta<typeof AdminSidebarNav> = {
   title: "Admin/Components/AdminSidebarNav",
@@ -17,7 +17,7 @@ const meta: Meta<typeof AdminSidebarNav> = {
   decorators: [
     (Story) => (
       <TooltipProvider>
-        <div className="w-64 border border-border bg-background">
+        <div className="w-64 border border-sidebar-border bg-sidebar">
           <Story />
         </div>
       </TooltipProvider>
@@ -35,7 +35,7 @@ export const Collapsed: Story = {
   decorators: [
     (Story) => (
       <TooltipProvider>
-        <div className="w-16 border border-border bg-background">
+        <div className="w-16 border border-sidebar-border bg-sidebar">
           <Story />
         </div>
       </TooltipProvider>

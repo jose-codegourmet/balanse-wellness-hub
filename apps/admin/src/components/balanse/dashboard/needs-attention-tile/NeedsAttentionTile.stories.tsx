@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { NeedsAttentionTile } from "./NeedsAttentionTile";
-import { needsAttentionTileDefaultValues } from "./NeedsAttentionTile.defaults";
+import { needsAttentionTileDefaultValues } from "./NeedsAttentionTile.stories-data";
 
 const meta: Meta<typeof NeedsAttentionTile> = {
   title: "Admin/Components/NeedsAttentionTile",

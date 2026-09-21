@@ -12,7 +12,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment } from "react";
-import type { AdminBreadcrumbItem } from "./AdminPageShell.schema";
+import type { AdminBreadcrumbItem } from "./AdminPageShell.meta";
 
 function deriveTrail(pathname: string, recordName?: string): AdminBreadcrumbItem[] {
   const nav = ADMIN_NAV_ITEMS.find((item) => isAdminNavActive(item, pathname));

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { dashboardTileSpanClass } from "./DashboardTile.defaults";
-import type { DashboardTileProps } from "./DashboardTile.schema";
+import type { DashboardTileProps } from "./DashboardTile.meta";
+import { dashboardTileSpanClass } from "./DashboardTile.stories-data";
 
 export function DashboardTile({
   span = "stat",

@@ -2,7 +2,7 @@
 
 import { cn, useIsMobile } from "@balanse/ui";
 import { type KeyboardEvent, useEffect, useRef } from "react";
-import type { AdminPageTabsProps } from "./AdminPageTabs.schema";
+import type { AdminPageTabsProps } from "./AdminPageTabs.meta";
 
 export function AdminPageTabs({
   tabs,
@@ -20,8 +20,13 @@ export function AdminPageTabs({
 
   useEffect(() => {
     if (!chips) return;
-    const active = listRef.current?.querySelector<HTMLElement>('[aria-selected="true"]');
-    active?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+    const list = listRef.current;
+    const active = list?.querySelector<HTMLElement>('[aria-selected="true"]');
+    if (!list || !active) return;
+    list.scrollTo({
+      left: active.offsetLeft - (list.clientWidth - active.offsetWidth) / 2,
+      behavior: "smooth",
+    });
   }, [chips, value]);
 
   function selectTab(next: string) {
@@ -88,12 +93,12 @@ export function AdminPageTabs({
   return (
     <div className={cn("grid gap-4", className)}>
       {hideList ? null : chips ? (
-        <div className="sticky top-0 z-20 -mx-4 border-b border-border bg-background px-4 py-3">
+        <div className="sticky top-0 z-20 -mx-4 overflow-hidden border-b border-border bg-background px-4 py-3">
           <div
             ref={listRef}
             role="tablist"
             aria-label={label}
-            className="flex w-max max-w-none flex-nowrap gap-2 overflow-x-auto scroll-px-1 snap-x snap-mandatory"
+            className="flex w-full max-w-full flex-nowrap gap-2 overflow-x-auto scroll-px-1 snap-x snap-mandatory"
             onKeyDown={onListKeyDown}
           >
             {triggers}

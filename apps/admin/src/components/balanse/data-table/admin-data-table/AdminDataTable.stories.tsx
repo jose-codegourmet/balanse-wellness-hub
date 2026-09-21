@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { AdminDataTable } from "./AdminDataTable";
-import { adminDataTableDefaultValues } from "./AdminDataTable.defaults";
+import { adminDataTableDefaultValues } from "./AdminDataTable.stories-data";
 
 type DemoRow = {
   id: string;
@@ -249,9 +249,4 @@ export const Desktop1280: Story = {
   parameters: {
     viewport: { defaultViewport: "desktop" },
   },
-};
-
-export const DarkTheme: Story = {
-  args: { tableId: "story-dark" },
-  globals: { theme: "dark" },
 };

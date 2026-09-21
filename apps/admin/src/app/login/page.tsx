@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { AdminLogin } from "@/modules/admin/AdminLogin";
+import { AdminLogin } from "./_components/admin-login/AdminLogin";
 
 export const metadata: Metadata = {
   title: "Log in",

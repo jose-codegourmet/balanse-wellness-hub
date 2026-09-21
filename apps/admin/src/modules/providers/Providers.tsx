@@ -26,7 +26,12 @@ export function Providers({
         {process.env.NODE_ENV !== "production" ? (
           <ReactQueryDevtools initialIsOpen={false} />
         ) : null}
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          forcedTheme="light"
+        >
           <MockSessionHarness />
           {children}
           <AdminToaster />

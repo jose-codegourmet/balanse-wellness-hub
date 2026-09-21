@@ -3,9 +3,9 @@ import { BalansePortalLogout } from "./BalansePortalLogout";
 import { BalansePortalNavigation } from "./BalansePortalNavigation";
 
 /**
- * The portal sidebar owns the single logout entry point (FE-CUS-018). The same
- * block renders inside the mobile drawer, so the footer is sized for a 20rem
- * column as well as the 16.5rem sidebar.
+ * Desktop: the account row opens a menu (Profile, Back to the studio, Log out).
+ * The same footer stays stacked in the mobile drawer. Logout confirm is still
+ * FE-CUS-018 — one dialog, opened from the menu or the drawer button.
  */
 const meta = {
   title: "Portal/BalansePortalNavigation",

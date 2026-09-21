@@ -1,7 +1,7 @@
 import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import { BentoSkeleton } from "@balanse/ui";
 import { cookies } from "next/headers";
-import { dashboardSkeletonTilesForRole } from "@/components/balanse/dashboard/dashboard-bento/DashboardBento.defaults";
+import { dashboardSkeletonTilesForRole } from "@/components/balanse/dashboard/dashboard-bento/DashboardBento.stories-data";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 
 export default async function Loading() {

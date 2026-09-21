@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { adminCancellationsInfiniteQuery } from "@/lib/query/queries";
-import { CancellationQueuePage } from "@/modules/admin/CancellationPages";
+import { CancellationQueuePage } from "./_components/cancellation-queue-page/CancellationPages";
 
 export const metadata: Metadata = {
   title: "Cancellations",

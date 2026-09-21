@@ -10,7 +10,7 @@ import {
   StatusBadge,
 } from "@balanse/ui";
 
-import type { AdminQueueCardProps } from "./AdminQueueCard.schema";
+import type { AdminQueueCardProps } from "./AdminQueueCard.meta";
 
 export function AdminQueueCard({
   who,

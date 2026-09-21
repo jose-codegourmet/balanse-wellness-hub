@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@balanse/ui";
 import { Database, LockKeyhole } from "lucide-react";
-import { AdminForm, FormField } from "@/modules/admin/forms/AdminForm";
+import { AdminForm, FormField } from "@/modules/admin/forms/admin-form/AdminForm";
 import { TextBinding } from "@/modules/admin/forms/bindings";
 import { classDatabaseAccessDefaultValues } from "./ClassDatabaseAccess.defaults";
 import {

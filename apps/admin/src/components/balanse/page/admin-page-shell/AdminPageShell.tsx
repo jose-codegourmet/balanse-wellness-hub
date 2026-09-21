@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { AdminBreadcrumb } from "./AdminBreadcrumb";
-import type { AdminPageShellProps } from "./AdminPageShell.schema";
+import type { AdminPageShellProps } from "./AdminPageShell.meta";
 
 export function AdminPageShell({
   title,
@@ -14,7 +14,7 @@ export function AdminPageShell({
   className,
 }: AdminPageShellProps) {
   return (
-    <section className={cn("grid gap-4", className)}>
+    <section className={cn("grid min-w-0 gap-4 overflow-x-hidden", className)}>
       <AdminBreadcrumb items={breadcrumb} />
       {eyebrow ? <p className="text-sm font-medium text-muted-foreground">{eyebrow}</p> : null}
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -25,8 +25,8 @@ export function AdminPageShell({
         {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
       </div>
       {stats ? <div>{stats}</div> : null}
-      {tabs ? <div>{tabs}</div> : null}
-      {children ? <div>{children}</div> : null}
+      {tabs ? <div className="min-w-0">{tabs}</div> : null}
+      {children ? <div className="min-w-0">{children}</div> : null}
     </section>
   );
 }

@@ -1,7 +1,7 @@
 import { getMockAdapter } from "@balanse/mock";
 import type { Metadata } from "next";
-import { LandingPage } from "@/modules/public/LandingPage";
 import { loadPublicSchedule } from "@/modules/schedule/load-schedule";
+import { LandingPage } from "./_components/landing-page/LandingPage";
 
 export const metadata: Metadata = {
   title: "Schedule",

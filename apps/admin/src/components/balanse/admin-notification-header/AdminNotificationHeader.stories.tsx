@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { AdminNotificationHeader } from "./AdminNotificationHeader";
-import { adminNotificationHeaderDefaultValues } from "./AdminNotificationHeader.defaults";
+import { adminNotificationHeaderDefaultValues } from "./AdminNotificationHeader.stories-data";
 
 const meta = {
   title: "Admin/Layout/Notification header",

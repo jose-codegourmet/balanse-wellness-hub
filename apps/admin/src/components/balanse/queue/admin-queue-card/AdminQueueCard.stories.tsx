@@ -2,7 +2,7 @@ import { Button } from "@balanse/ui";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 import { AdminQueueCard } from "./AdminQueueCard";
-import { adminQueueCardDefaultValues } from "./AdminQueueCard.defaults";
+import { adminQueueCardDefaultValues } from "./AdminQueueCard.stories-data";
 
 const meta: Meta<typeof AdminQueueCard> = {
   title: "Admin/Components/AdminQueueCard",
@@ -55,10 +55,6 @@ export const WithMedia: Story = {
 
 export const Quiet: Story = {
   args: { emphasis: false, status: "CONFIRMED" },
-};
-
-export const Dark: Story = {
-  globals: { theme: "dark" },
 };
 
 export const Mobile360: Story = {

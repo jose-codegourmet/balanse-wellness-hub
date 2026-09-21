@@ -24,13 +24,13 @@ import {
 import { useMemo } from "react";
 import { FullscreenCalendar } from "@/components/jabkit/fullscreen-calendar";
 import type { FullscreenCalendarDay } from "@/components/jabkit/fullscreen-calendar/FullscreenCalendar.types";
-import type { AdminCalendarView, AdminScheduleCalendarProps } from "./AdminScheduleCalendar.schema";
+import type { AdminCalendarView, AdminScheduleCalendarProps } from "./AdminScheduleCalendar.meta";
 
 export type {
   AdminCalendarView,
   AdminScheduleCalendarProps,
   AdminScheduleCalendarView,
-} from "./AdminScheduleCalendar.schema";
+} from "./AdminScheduleCalendar.meta";
 
 export function detectAdminCalendarView(width: number): AdminCalendarView {
   if (width >= BALANSE_BREAKPOINTS.desktop) return "month";

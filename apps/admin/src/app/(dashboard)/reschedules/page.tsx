@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { adminBookingsQuery, adminReschedulesInfiniteQuery } from "@/lib/query/queries";
-import { RescheduleQueuePage } from "@/modules/admin/ReschedulePages";
+import { RescheduleQueuePage } from "./_components/reschedule-queue-page/ReschedulePages";
 
 export const metadata: Metadata = {
   title: "Reschedules",

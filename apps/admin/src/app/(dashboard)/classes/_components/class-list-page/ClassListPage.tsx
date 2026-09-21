@@ -7,12 +7,13 @@ import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useCallback, useMemo } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
-import type { AdminDataTableRowAction } from "@/components/balanse/data-table/admin-data-table/AdminDataTable.schema";
+import type { AdminDataTableRowAction } from "@/components/balanse/data-table/admin-data-table/AdminDataTable.meta";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { notify } from "@/modules/notifications/notify";
 import { useClassCatalogue } from "../class-catalogue-provider/ClassCatalogueProvider";
 import { ClassDatabaseAccess } from "../class-database-access/ClassDatabaseAccess";
-import type { ClassListPageProps } from "./ClassListPage.schema";
+
+export type ClassListPageProps = { empty?: boolean; loading?: boolean; error?: boolean };
 
 const CLASS_DEFAULTS_NOTE =
   "Session values override class defaults. Duration and price here are catalogue defaults, not the live session values.";

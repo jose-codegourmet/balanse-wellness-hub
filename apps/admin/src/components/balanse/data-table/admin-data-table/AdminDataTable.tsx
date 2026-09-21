@@ -34,15 +34,14 @@ import {
 } from "@tanstack/react-table";
 import Link from "next/link";
 import { type ReactNode, Suspense, useId, useMemo, useState } from "react";
-
-import { adminDataTableDefaultLabels } from "./AdminDataTable.defaults";
 import type {
   AdminDataTableDensity,
   AdminDataTableLabels,
   AdminDataTableLayout,
   AdminDataTableMobileRole,
   AdminDataTableProps,
-} from "./AdminDataTable.schema";
+} from "./AdminDataTable.meta";
+import { adminDataTableDefaultLabels } from "./AdminDataTable.stories-data";
 import { AdminDataTableColumnHeader } from "./AdminDataTableColumnHeader";
 import { AdminDataTablePagination } from "./AdminDataTablePagination";
 import { AdminDataTableRowActions } from "./AdminDataTableRowActions";
@@ -62,7 +61,7 @@ export type {
   AdminDataTableMobileRole,
   AdminDataTableProps,
   AdminDataTableRowAction,
-} from "./AdminDataTable.schema";
+} from "./AdminDataTable.meta";
 
 function mergeLabels(labels?: Partial<AdminDataTableLabels>): AdminDataTableLabels {
   return { ...adminDataTableDefaultLabels, ...labels };

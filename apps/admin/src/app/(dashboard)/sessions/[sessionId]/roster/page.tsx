@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { adminCustomersQuery, adminSessionRosterQuery } from "@/lib/query/queries";
-import { RosterPage } from "@/modules/admin/RosterPage";
+import { RosterPage } from "./_components/roster-page/RosterPage";
 
 export const metadata: Metadata = {
   title: "Session roster",

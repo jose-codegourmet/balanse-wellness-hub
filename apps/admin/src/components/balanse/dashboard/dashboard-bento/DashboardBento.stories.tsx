@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { DashboardTile } from "../dashboard-tile/DashboardTile";
-import { dashboardTileDefaultValues } from "../dashboard-tile/DashboardTile.defaults";
+import { dashboardTileDefaultValues } from "../dashboard-tile/DashboardTile.stories-data";
 import { DashboardBento } from "./DashboardBento";
-import { dashboardBentoDefaultValues } from "./DashboardBento.defaults";
+import { dashboardBentoDefaultValues } from "./DashboardBento.stories-data";
 
 const meta: Meta<typeof DashboardBento> = {
   title: "Admin/Components/DashboardBento",

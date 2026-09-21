@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { SalesSeriesChart } from "./SalesSeriesChart";
-import { salesSeriesChartDefaultValues } from "./SalesSeriesChart.defaults";
+import { salesSeriesChartDefaultValues } from "./SalesSeriesChart.stories-data";
 
 const meta: Meta<typeof SalesSeriesChart> = {
   title: "Admin/Components/SalesSeriesChart",

@@ -3,7 +3,7 @@ import { CoachStaffLink } from "./CoachStaffLink";
 import {
   coachStaffLinkDefaultValues,
   coachStaffLinkUnlinkedDefaultValues,
-} from "./CoachStaffLink.defaults";
+} from "./CoachStaffLink.stories-data";
 
 const meta = {
   title: "Admin/Components/CoachStaffLink",

@@ -1,11 +1,23 @@
 "use client";
+import type { PublicClass, PublicCoach } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import { createContext, useContext } from "react";
-import type {
-  ClassCataloguePort,
-  ClassCatalogueProviderProps,
-} from "./ClassCatalogueProvider.schema";
+
+export type ClassCatalogueData = {
+  classes: PublicClass[];
+  coaches: PublicCoach[];
+  canSave: boolean;
+};
+export type ClassCataloguePort = {
+  disconnect?: () => Promise<void>;
+  initialData: ClassCatalogueData;
+  load: () => Promise<ClassCatalogueData>;
+  save: (input: Omit<PublicClass, "id"> & { id?: string }) => Promise<PublicClass>;
+  connect: (input: { email: string; password: string }) => Promise<{ error?: string }>;
+};
+export type ClassCatalogueProviderProps = ClassCataloguePort & { children: ReactNode };
 
 const Context = createContext<ClassCataloguePort | null>(null);
 export function ClassCatalogueProvider({ children, ...port }: ClassCatalogueProviderProps) {

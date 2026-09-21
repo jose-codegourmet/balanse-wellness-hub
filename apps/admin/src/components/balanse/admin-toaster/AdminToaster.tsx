@@ -1,7 +1,7 @@
 "use client";
 
 import { Toaster } from "@/components/jabkit/toast";
-import type { AdminToasterProps } from "./AdminToaster.schema";
+import type { AdminToasterProps } from "./AdminToaster.meta";
 import "./toast.css";
 
 /** Longer than the Jabkit default so a confirmation survives a page transition. */

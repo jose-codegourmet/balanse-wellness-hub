@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 
 import { AdminQueueCard } from "../admin-queue-card/AdminQueueCard";
 import { AdminQueueList } from "./AdminQueueList";
-import { type AdminQueueDemoItem, adminQueueListDefaultValues } from "./AdminQueueList.defaults";
+import {
+  type AdminQueueDemoItem,
+  adminQueueListDefaultValues,
+} from "./AdminQueueList.stories-data";
 
 function makeItems(count: number): AdminQueueDemoItem[] {
   return Array.from({ length: count }, (_, index) => {
@@ -137,10 +140,6 @@ function LoadMoreDemo() {
 
 export const LoadMore: Story = {
   render: () => <LoadMoreDemo />,
-};
-
-export const Dark: Story = {
-  globals: { theme: "dark" },
 };
 
 export const Mobile360: Story = {

@@ -21,7 +21,7 @@ import type { Column, Table } from "@tanstack/react-table";
 import { ArrowUpDownIcon, ChevronDownIcon, SearchIcon, SlidersHorizontalIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-import type { AdminDataTableDensity, AdminDataTableLabels } from "./AdminDataTable.schema";
+import type { AdminDataTableDensity, AdminDataTableLabels } from "./AdminDataTable.meta";
 
 function facetColumnsOf<TData>(table: Table<TData>) {
   return table

@@ -2,9 +2,9 @@
 
 import { cn } from "@balanse/ui";
 import Link from "next/link";
-import type { CoachStaffLinkProps } from "./CoachStaffLink.schema";
+import type { CoachStaffLinkProps } from "./CoachStaffLink.meta";
 
-export type { CoachStaffLinkProps, CoachStaffLinkStaff } from "./CoachStaffLink.schema";
+export type { CoachStaffLinkProps, CoachStaffLinkStaff } from "./CoachStaffLink.meta";
 
 export function CoachStaffLink({ staff, className }: CoachStaffLinkProps) {
   return (

@@ -10,7 +10,7 @@ import {
 import { MoreHorizontalIcon } from "lucide-react";
 import Link from "next/link";
 
-import type { AdminDataTableLabels, AdminDataTableRowAction } from "./AdminDataTable.schema";
+import type { AdminDataTableLabels, AdminDataTableRowAction } from "./AdminDataTable.meta";
 
 export function AdminDataTableRowActions<TData>({
   row,

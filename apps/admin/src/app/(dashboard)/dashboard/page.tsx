@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { adminDashboardQuery } from "@/lib/query/queries";
-import { DashboardPage } from "@/modules/admin/DashboardPage";
+import { DashboardPage } from "./_components/dashboard-page/DashboardPage";
 
 export const metadata: Metadata = {
   title: "Dashboard",

@@ -1,7 +1,7 @@
 import { Badge } from "@balanse/ui";
 import Link from "next/link";
 import { DashboardTile } from "../dashboard-tile/DashboardTile";
-import type { NeedsAttentionTileProps } from "./NeedsAttentionTile.schema";
+import type { NeedsAttentionTileProps } from "./NeedsAttentionTile.meta";
 
 export function NeedsAttentionTile({ items }: NeedsAttentionTileProps) {
   const total = items.reduce((sum, item) => sum + item.count, 0);

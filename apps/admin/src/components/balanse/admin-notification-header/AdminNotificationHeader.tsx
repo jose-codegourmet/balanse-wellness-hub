@@ -15,7 +15,7 @@ import { Bell, CalendarClock, ChevronRight, CircleAlert, CreditCard, Ticket } fr
 import Link from "next/link";
 import { adminDashboardQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import type { AdminNotificationHeaderProps } from "./AdminNotificationHeader.schema";
+import type { AdminNotificationHeaderProps } from "./AdminNotificationHeader.meta";
 
 export function AdminNotificationHeader({
   pathname,

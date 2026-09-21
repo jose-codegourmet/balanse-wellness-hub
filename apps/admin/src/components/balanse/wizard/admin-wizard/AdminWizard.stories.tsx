@@ -1,10 +1,13 @@
 import { Input } from "@balanse/ui";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import type { ComponentProps } from "react";
-import { AdminForm, FormActions, FormField } from "@/modules/admin/forms/AdminForm";
-import { adminFormDemoSchema, adminFormDemoValues } from "@/modules/admin/forms/AdminForm.defaults";
+import { AdminForm, FormActions, FormField } from "@/modules/admin/forms/admin-form/AdminForm";
+import {
+  adminFormDemoSchema,
+  adminFormDemoValues,
+} from "@/modules/admin/forms/admin-form/AdminForm.defaults";
 import { AdminWizard, AdminWizardStepPanel } from "./AdminWizard";
-import { adminWizardDefaultValues, adminWizardSteps } from "./AdminWizard.defaults";
+import { adminWizardDefaultValues, adminWizardSteps } from "./AdminWizard.stories-data";
 
 const meta = {
   title: "Admin/Components/AdminWizard",
@@ -70,9 +73,4 @@ export const OverlayDesktop: Story = {
 export const OverlayMobile: Story = {
   parameters: { viewport: { defaultViewport: "mobile" } },
   render: (args) => <DemoWizard {...args} surface="overlay" layout="stack" />,
-};
-
-export const Dark: Story = {
-  globals: { theme: "dark" },
-  render: (args) => <DemoWizard {...args} />,
 };

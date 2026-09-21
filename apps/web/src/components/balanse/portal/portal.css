@@ -14,18 +14,34 @@
 /* The decoration only appears when the column has room for it, so the account
    footer never turns a short viewport into three competing stacked blocks. */
 @media (min-height: 800px) { .portal-sidebar-motto { display: block; } }
-.portal-sidebar-account { display: flex; align-items: center; gap: .7rem; min-width: 0; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+.portal-sidebar-account { display: flex; align-items: center; gap: .7rem; min-width: 0; width: 100%; padding-top: 1.25rem; border-top: 1px solid var(--border); }
 .portal-account-avatar { width: 2.4rem; height: 2.4rem; font-size: .85rem; }
-.portal-account-identity { display: grid; min-width: 0; }
+.portal-account-identity { display: grid; min-width: 0; flex: 1; }
 .portal-account-identity strong { font-size: .78rem; font-weight: 600; color: var(--foreground); }
 .portal-account-identity > span, .portal-account-identity strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .portal-account-identity > span { font-size: .68rem; margin-top: .15rem; }
+.portal-account-menu { min-width: 0; }
+.portal-account-menu-trigger { padding: 1.25rem .35rem .35rem; border: 0; border-top: 1px solid var(--border); border-radius: 0 0 .65rem .65rem; background: transparent; color: inherit; cursor: pointer; text-align: left; }
+.portal-account-menu-trigger:hover, .portal-account-menu-trigger:focus-visible, .portal-account-menu-trigger[data-popup-open], .portal-account-menu-trigger[data-open] { background: var(--background); }
+.portal-account-menu-trigger:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.portal-account-menu-chevron { flex-shrink: 0; color: var(--muted-foreground); transition: transform 180ms; }
+.portal-account-menu-trigger[data-popup-open] .portal-account-menu-chevron, .portal-account-menu-trigger[data-open] .portal-account-menu-chevron { transform: rotate(180deg); }
+.portal-account-menu-content { min-width: 13.5rem; padding: .35rem; }
+.portal-account-menu-content [data-slot="dropdown-menu-item"] { min-height: 2.4rem; gap: .75rem; padding-inline: .75rem; font-size: .75rem; color: var(--muted-foreground); }
+.portal-account-menu-content [data-slot="dropdown-menu-item"]:focus, .portal-account-menu-content [data-slot="dropdown-menu-item"]:hover { color: var(--foreground); }
 .portal-sidebar-actions { display: grid; gap: .25rem; }
 .portal-sidebar-actions a, .portal-logout-button { display: flex; align-items: center; justify-content: flex-start; gap: .75rem; width: 100%; min-height: 2.6rem; padding: .5rem 1rem; border-radius: .65rem; font-size: .75rem; font-weight: 400; color: var(--muted-foreground); }
 .portal-sidebar-actions a:hover, .portal-logout-button:hover { background: var(--background); color: var(--foreground); }
 .portal-sidebar-actions svg { flex-shrink: 0; }
+@media (min-width: 768px) {
+  .portal-account-static { display: none; }
+  .portal-sidebar-actions a.portal-sidebar-action-inline,
+  .portal-logout-button.portal-sidebar-action-inline { display: none; }
+}
+@media (max-width: 767px) {
+  .portal-account-menu { display: none; }
+}
 .portal-workspace { display: flex; flex-direction: column; min-width: 0; }
-.portal-workspace > main > section { padding-inline: clamp(1.25rem, 3vw, 3rem); }
 .portal-footer { margin: auto clamp(1.25rem, 3vw, 3rem) 0; padding: 1.5rem 0; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 1rem; font-size: .7rem; color: var(--muted-foreground); }
 .portal-mobile-header { display: none; }
 /* Shared page scaffolding. Every portal screen sits on the same measure and

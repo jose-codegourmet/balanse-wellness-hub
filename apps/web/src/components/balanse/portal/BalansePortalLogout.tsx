@@ -14,19 +14,36 @@ import {
   AlertDialogTitle,
 } from "@/components/jabkit/alert-dialog";
 import { Button } from "@/components/jabkit/button";
+import { cn } from "@/components/jabkit/lib/cn";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 /**
- * The portal's single logout entry point (FE-CUS-018). It lives in the sidebar
- * footer, so the trigger is deliberately quiet: logging out is routine and
- * fully reversible, and it must not compete with the nav items.
+ * The portal's single logout entry point (FE-CUS-018). The confirm lives here;
+ * desktop opens it from the account menu, and the drawer still shows a quiet
+ * trigger so logging out never competes with the nav items.
  *
  * Brand styling for the confirm dialog is applied through `portal.css`
  * classes; the vendored Jabkit `alert-dialog` stays pristine.
  */
-export function BalansePortalLogout({ initialOpen = false }: { initialOpen?: boolean }) {
+export function BalansePortalLogout({
+  initialOpen = false,
+  open: openProp,
+  onOpenChange,
+  className,
+}: {
+  initialOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  className?: string;
+}) {
   const { setPrincipal } = useMockPrincipal();
-  const [open, setOpen] = useState(initialOpen);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(initialOpen);
+  const open = openProp ?? uncontrolledOpen;
+
+  function setOpen(next: boolean) {
+    if (openProp === undefined) setUncontrolledOpen(next);
+    onOpenChange?.(next);
+  }
 
   function logOut() {
     setPrincipal({ role: "guest" });
@@ -40,7 +57,7 @@ export function BalansePortalLogout({ initialOpen = false }: { initialOpen?: boo
       <Button
         type="button"
         variant="ghost"
-        className="portal-logout-button"
+        className={cn("portal-logout-button", className)}
         onClick={() => setOpen(true)}
       >
         <LogOut size={17} strokeWidth={1.5} aria-hidden="true" />

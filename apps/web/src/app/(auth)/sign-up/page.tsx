@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CustomerSignUp } from "@/modules/auth/CustomerSignUp";
+import { CustomerSignUp } from "./_components/customer-sign-up/CustomerSignUp";
 
 export const metadata: Metadata = {
   title: "Sign up",

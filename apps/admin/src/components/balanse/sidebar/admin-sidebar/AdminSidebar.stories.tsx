@@ -2,9 +2,9 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
   sidebarSnapshotEmpty,
   sidebarSnapshotOverflow,
-} from "../admin-sidebar-nav/AdminSidebarNav.defaults";
+} from "../admin-sidebar-nav/AdminSidebarNav.stories-data";
 import { AdminSidebar } from "./AdminSidebar";
-import { adminSidebarDefaultValues } from "./AdminSidebar.defaults";
+import { adminSidebarDefaultValues } from "./AdminSidebar.stories-data";
 
 const meta: Meta<typeof AdminSidebar> = {
   title: "Admin/Components/AdminSidebar",
@@ -35,10 +35,6 @@ export const WithoutCounts: Story = {
 
 export const OverflowCount: Story = {
   args: { snapshot: sidebarSnapshotOverflow, pathname: "/payments" },
-};
-
-export const DarkTheme: Story = {
-  globals: { theme: "dark" },
 };
 
 export const MobileDrawerOpen: Story = {

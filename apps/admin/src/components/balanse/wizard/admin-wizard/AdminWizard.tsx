@@ -22,7 +22,7 @@ import type {
   AdminWizardProps,
   AdminWizardStep,
   AdminWizardStepPanelProps,
-} from "./AdminWizard.schema";
+} from "./AdminWizard.meta";
 
 export function AdminWizardStepPanel({ children }: AdminWizardStepPanelProps) {
   return <>{children}</>;
@@ -76,6 +76,7 @@ export function AdminWizard({
   const statusId = useId();
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  const onRequestCloseRef = useRef(onRequestClose);
   const mdUp = useMinWidth(BALANSE_BREAKPOINTS.tablet);
   const layout: AdminWizardLayout = layoutProp ?? (mdUp ? "step" : "stack");
   const overlayIsDialog = surface === "overlay" && mdUp;
@@ -84,6 +85,10 @@ export function AdminWizard({
   const [uncontrolled, setUncontrolled] = useState(defaultStep);
   const current = stepProp ?? uncontrolled;
   const [reached, setReached] = useState(() => (mode === "edit" ? steps.length : defaultStep));
+
+  useEffect(() => {
+    onRequestCloseRef.current = onRequestClose;
+  }, [onRequestClose]);
 
   useEffect(() => {
     if (mode === "edit") setReached(steps.length);
@@ -183,7 +188,7 @@ export function AdminWizard({
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
-        onRequestClose?.();
+        onRequestCloseRef.current?.();
       }
     }
     document.addEventListener("keydown", onKey);
@@ -191,7 +196,7 @@ export function AdminWizard({
       document.removeEventListener("keydown", onKey);
       if (previous instanceof HTMLElement) previous.focus();
     };
-  }, [overlayIsDialog, onRequestClose]);
+  }, [overlayIsDialog]);
 
   if (overlayIsDialog) {
     return (

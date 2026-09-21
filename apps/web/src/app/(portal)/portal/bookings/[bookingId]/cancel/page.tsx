@@ -1,6 +1,6 @@
 import { getMockAdapter } from "@balanse/mock";
 import type { Metadata } from "next";
-import { CancellationRequest } from "@/modules/customer/CancellationRequest";
+import { CancellationRequest } from "./_components/cancellation-request/CancellationRequest";
 
 export const metadata: Metadata = {
   title: "Request cancellation",

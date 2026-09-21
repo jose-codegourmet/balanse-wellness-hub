@@ -11,9 +11,8 @@ import {
 } from "@balanse/ui";
 import type { Table } from "@tanstack/react-table";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-
-import { ADMIN_DATA_TABLE_PAGE_SIZES } from "./AdminDataTable.defaults";
-import type { AdminDataTableLabels } from "./AdminDataTable.schema";
+import type { AdminDataTableLabels } from "./AdminDataTable.meta";
+import { ADMIN_DATA_TABLE_PAGE_SIZES } from "./AdminDataTable.stories-data";
 
 export function AdminDataTablePagination<TData>({
   table,

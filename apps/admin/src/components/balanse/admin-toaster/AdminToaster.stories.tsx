@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { type ReactNode, useState } from "react";
 import { notify } from "@/modules/notifications/notify";
 import { AdminToaster } from "./AdminToaster";
-import { adminToasterDefaultValues } from "./AdminToaster.defaults";
+import { adminToasterDefaultValues } from "./AdminToaster.stories-data";
 
 /**
  * `AdminToaster` is mounted once by `modules/providers/Providers`, which the

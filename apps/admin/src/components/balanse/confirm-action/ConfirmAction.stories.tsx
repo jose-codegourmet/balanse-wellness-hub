@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { ConfirmAction } from "./ConfirmAction";
-import { confirmActionDefaultValues } from "./ConfirmAction.defaults";
+import { confirmActionDefaultValues } from "./ConfirmAction.stories-data";
 
 const meta: Meta<typeof ConfirmAction> = {
   title: "Admin/Components/ConfirmAction",

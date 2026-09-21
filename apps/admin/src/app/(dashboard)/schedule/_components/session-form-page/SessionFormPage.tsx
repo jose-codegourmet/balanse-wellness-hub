@@ -30,7 +30,7 @@ import {
 import type {
   AdminWizardStep,
   AdminWizardSurface,
-} from "@/components/balanse/wizard/admin-wizard/AdminWizard.schema";
+} from "@/components/balanse/wizard/admin-wizard/AdminWizard.meta";
 import { adminNowIso, adminTodayYmd } from "@/lib/clock";
 import { useCancelAdminSession, useUpsertAdminSession } from "@/lib/query/mutations";
 import {
@@ -45,7 +45,7 @@ import {
   FormField,
   FormSection,
   useAdminFormContext,
-} from "@/modules/admin/forms/AdminForm";
+} from "@/modules/admin/forms/admin-form/AdminForm";
 import {
   BooleanBinding,
   CheckboxGroupBinding,

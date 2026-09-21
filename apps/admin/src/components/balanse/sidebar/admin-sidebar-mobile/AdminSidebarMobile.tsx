@@ -10,11 +10,11 @@ import {
   SheetTrigger,
 } from "@balanse/ui";
 import { Menu } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AdminNotificationHeader } from "@/components/balanse/admin-notification-header/AdminNotificationHeader";
 import { AdminSidebarFooter } from "../admin-sidebar-footer/AdminSidebarFooter";
 import { AdminSidebarNav } from "../admin-sidebar-nav/AdminSidebarNav";
-import type { AdminSidebarMobileProps } from "./AdminSidebarMobile.schema";
+import type { AdminSidebarMobileProps } from "./AdminSidebarMobile.meta";
 
 export function AdminSidebarMobile({
   pathname,
@@ -35,14 +35,9 @@ export function AdminSidebarMobile({
     onOpenChange?.(next);
   }
 
-  useEffect(() => {
-    if (controlled) return;
-    setUncontrolled(false);
-  }, [pathname, controlled]);
-
   return (
     <div className={className} {...props}>
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur md:hidden">
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/70 bg-background/85 px-4 shadow-sm shadow-primary/5 backdrop-blur-xl md:hidden">
         <BrandLockup showTagline={false} />
         <div className="flex items-center gap-2">
           <AdminNotificationHeader compact pathname={pathname} />
@@ -59,8 +54,11 @@ export function AdminSidebarMobile({
             >
               <Menu />
             </SheetTrigger>
-            <SheetContent className="w-64 gap-0 p-0 sm:max-w-64" side="left">
-              <SheetHeader className="h-16 justify-center border-b border-border px-4">
+            <SheetContent
+              className="w-72 gap-0 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground before:absolute before:inset-y-0 before:left-0 before:z-10 before:w-0.75 before:bg-(--balanse-gold) sm:max-w-72"
+              side="left"
+            >
+              <SheetHeader className="h-16 justify-center border-b border-sidebar-border px-4">
                 <SheetTitle className="sr-only">Admin navigation</SheetTitle>
                 <BrandLockup showTagline={false} />
               </SheetHeader>

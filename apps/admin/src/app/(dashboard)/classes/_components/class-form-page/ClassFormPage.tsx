@@ -13,7 +13,7 @@ import {
   FormField,
   FormSection,
   useAdminFormContext,
-} from "@/modules/admin/forms/AdminForm";
+} from "@/modules/admin/forms/admin-form/AdminForm";
 import {
   BooleanBinding,
   CheckboxGroupBinding,

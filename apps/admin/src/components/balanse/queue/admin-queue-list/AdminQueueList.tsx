@@ -4,7 +4,7 @@ import { Button, CardListSkeleton, cn, FeedbackState } from "@balanse/ui";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { type FocusEvent, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
-import type { AdminQueueListProps } from "./AdminQueueList.schema";
+import type { AdminQueueListProps } from "./AdminQueueList.meta";
 
 const DEFAULT_ESTIMATE = 168;
 const DEFAULT_THRESHOLD = 30;

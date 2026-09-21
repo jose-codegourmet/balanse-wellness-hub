@@ -14,7 +14,7 @@ import {
   Textarea,
 } from "@balanse/ui";
 import { useId, useState } from "react";
-import type { ConfirmActionProps } from "./ConfirmAction.schema";
+import type { ConfirmActionProps } from "./ConfirmAction.meta";
 
 export function ConfirmAction({
   triggerLabel,

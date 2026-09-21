@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { DashboardTile } from "./DashboardTile";
-import { dashboardTileDefaultValues } from "./DashboardTile.defaults";
+import { dashboardTileDefaultValues } from "./DashboardTile.stories-data";
 
 const meta: Meta<typeof DashboardTile> = {
   title: "Admin/Components/DashboardTile",

@@ -17,7 +17,8 @@ import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { adminCoachesQuery, adminStaffQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import type { StaffListPageProps } from "./StaffListPage.schema";
+
+export type StaffListPageProps = { empty?: boolean };
 
 export function StaffListPage({ empty }: StaffListPageProps) {
   const { principal } = useMockPrincipal();

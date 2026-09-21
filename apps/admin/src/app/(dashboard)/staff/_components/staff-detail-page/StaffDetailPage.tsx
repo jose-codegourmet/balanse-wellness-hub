@@ -20,7 +20,7 @@ import {
   FormField,
   FormSection,
   useAdminFormContext,
-} from "@/modules/admin/forms/AdminForm";
+} from "@/modules/admin/forms/admin-form/AdminForm";
 import { BooleanBinding, ChoiceBinding, TextBinding } from "@/modules/admin/forms/bindings";
 import { staffFormDefaultValues } from "@/modules/admin/forms/staff/staff-form.defaults";
 import {

@@ -1,7 +1,11 @@
+import type { CustomerProfileSectionId } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { ProfilePage } from "@/modules/customer/ProfilePage";
 import { getServerMockPrincipal } from "@/modules/session/server-principal";
-import type { ProfileSectionRouteProps } from "./ProfileSectionRoute.schema";
+import { ProfilePage } from "../profile-page/ProfilePage";
+
+export type ProfileSectionRouteProps = {
+  section: CustomerProfileSectionId;
+};
 
 /**
  * Shared loader for the `/portal/profile/*` submenu routes (FE-CUS-017). Each

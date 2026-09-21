@@ -2,7 +2,7 @@ import { TooltipProvider } from "@balanse/ui";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 import { AdminSidebarToggle } from "./AdminSidebarToggle";
-import { adminSidebarToggleDefaultValues } from "./AdminSidebarToggle.defaults";
+import { adminSidebarToggleDefaultValues } from "./AdminSidebarToggle.stories-data";
 
 const meta: Meta<typeof AdminSidebarToggle> = {
   title: "Admin/Components/AdminSidebarToggle",

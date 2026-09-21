@@ -1,9 +1,9 @@
 import { Button } from "@balanse/ui";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { AdminPageTabs } from "../admin-page-tabs/AdminPageTabs";
-import { adminPageTabsDefaultValues } from "../admin-page-tabs/AdminPageTabs.defaults";
+import { adminPageTabsDefaultValues } from "../admin-page-tabs/AdminPageTabs.stories-data";
 import { AdminPageShell } from "./AdminPageShell";
-import { adminPageShellDefaultValues } from "./AdminPageShell.defaults";
+import { adminPageShellDefaultValues } from "./AdminPageShell.stories-data";
 
 const meta: Meta<typeof AdminPageShell> = {
   title: "Admin/Components/AdminPageShell",
@@ -107,12 +107,4 @@ export const Desktop1280: Story = {
   parameters: {
     viewport: { defaultViewport: "desktop" },
   },
-};
-
-export const DarkTheme: Story = {
-  args: {
-    actions: <Button type="button">Add Class</Button>,
-    breadcrumb: [{ label: "Classes", href: "/classes" }, { label: "Vinyasa Flow" }],
-  },
-  globals: { theme: "dark" },
 };

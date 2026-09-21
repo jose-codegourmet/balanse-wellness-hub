@@ -1,9 +1,9 @@
 "use client";
 
 import { DashboardTile } from "@/components/balanse/dashboard/dashboard-tile/DashboardTile";
-import type { AdminStatStripProps } from "./AdminStatStrip.schema";
+import type { AdminStatStripProps } from "./AdminStatStrip.meta";
 
-export type { AdminStat, AdminStatStripProps } from "./AdminStatStrip.schema";
+export type { AdminStat, AdminStatStripProps } from "./AdminStatStrip.meta";
 
 export function AdminStatStrip({ stats }: AdminStatStripProps) {
   return (

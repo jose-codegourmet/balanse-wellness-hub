@@ -2,9 +2,19 @@
 
 import { CUSTOMER_NAV_ITEMS, customerInitials, isCustomerNavActive } from "@balanse/domain";
 import { BrandLockup } from "@balanse/ui";
-import { ArrowLeft, CalendarCheck2, CalendarDays, Flower2, Menu, UserRound, X } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarCheck2,
+  CalendarDays,
+  ChevronUp,
+  Flower2,
+  LogOut,
+  Menu,
+  UserRound,
+  X,
+} from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { BalansePortalLogout } from "@/components/balanse/portal/BalansePortalLogout";
 import { Button } from "@/components/jabkit/button";
@@ -15,6 +25,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/jabkit/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/jabkit/dropdown-menu/DropdownMenu";
 import "@/components/balanse/portal/portal.css";
 
 const icons = {
@@ -29,9 +45,30 @@ export type PortalAccount = {
   email: string;
 };
 
+function AccountIdentity({ account }: { account: PortalAccount }) {
+  return (
+    <>
+      <span className="profile-avatar portal-account-avatar" aria-hidden="true">
+        {customerInitials(account.fullName)}
+      </span>
+      <span className="portal-account-identity">
+        <strong>{account.fullName}</strong>
+        <span>{account.email}</span>
+      </span>
+    </>
+  );
+}
+
 export function BalansePortalNavigation({ account }: { account?: PortalAccount }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
+
+  function go(href: string) {
+    setOpen(false);
+    router.push(href);
+  }
   const links = (
     <nav aria-label="Customer portal" className="portal-nav-links">
       {CUSTOMER_NAV_ITEMS.map((item) => {
@@ -69,22 +106,61 @@ export function BalansePortalNavigation({ account }: { account?: PortalAccount }
           </span>
         </p>
         {account ? (
-          <div className="portal-sidebar-account">
-            <span className="profile-avatar portal-account-avatar" aria-hidden="true">
-              {customerInitials(account.fullName)}
-            </span>
-            <span className="portal-account-identity">
-              <strong>{account.fullName}</strong>
-              <span>{account.email}</span>
-            </span>
-          </div>
+          <>
+            <div className="portal-sidebar-account portal-account-static">
+              <AccountIdentity account={account} />
+            </div>
+            <div className="portal-account-menu">
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className="portal-sidebar-account portal-account-menu-trigger"
+                  aria-label={`${account.fullName} account menu`}
+                >
+                  <AccountIdentity account={account} />
+                  <ChevronUp
+                    className="portal-account-menu-chevron"
+                    size={16}
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                  />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  side="top"
+                  sideOffset={8}
+                  className="portal-account-menu-content"
+                >
+                  <DropdownMenuItem onClick={() => go("/portal/profile")}>
+                    <UserRound size={17} strokeWidth={1.5} aria-hidden="true" />
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => go("/")}>
+                    <ArrowLeft size={17} strokeWidth={1.5} aria-hidden="true" />
+                    Back to the studio
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLogoutOpen(true)}>
+                    <LogOut size={17} strokeWidth={1.5} aria-hidden="true" />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </>
         ) : null}
         <div className="portal-sidebar-actions">
-          <Link href="/" onClick={() => setOpen(false)}>
+          <Link
+            href="/"
+            className={account ? "portal-sidebar-action-inline" : undefined}
+            onClick={() => setOpen(false)}
+          >
             <ArrowLeft size={17} strokeWidth={1.5} aria-hidden="true" />
             <span>Back to the studio</span>
           </Link>
-          <BalansePortalLogout />
+          <BalansePortalLogout
+            open={logoutOpen}
+            onOpenChange={setLogoutOpen}
+            className={account ? "portal-sidebar-action-inline" : undefined}
+          />
         </div>
       </div>
     </>

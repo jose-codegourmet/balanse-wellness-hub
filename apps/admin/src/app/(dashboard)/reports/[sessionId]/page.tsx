@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { adminSessionReportQuery } from "@/lib/query/queries";
-import { ReportDrilldownPage } from "@/modules/admin/ReportsPage";
+import { ReportDrilldownPage } from "../_components/reports-page/ReportsPage";
 
 export const metadata: Metadata = {
   title: "Session report",

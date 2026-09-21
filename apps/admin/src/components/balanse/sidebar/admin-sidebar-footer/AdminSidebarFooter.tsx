@@ -11,10 +11,8 @@ import {
   AlertDialogHeader,
   AlertDialogMedia,
   AlertDialogTitle,
-  Button,
 } from "@balanse/ui";
-import { LogOut, Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+import { LogOut } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/jabkit/avatar/Avatar";
 import {
@@ -28,7 +26,7 @@ import {
 } from "@/components/jabkit/dropdown-menu/DropdownMenu";
 import { cn } from "@/components/jabkit/lib/cn";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import type { AdminSidebarFooterProps } from "./AdminSidebarFooter.schema";
+import type { AdminSidebarFooterProps } from "./AdminSidebarFooter.meta";
 
 const ROLE_LABELS: Record<string, string> = {
   admin: "Admin",
@@ -44,57 +42,36 @@ export function AdminSidebarFooter({
   ...props
 }: AdminSidebarFooterProps) {
   const { principal } = useMockPrincipal();
-  const { resolvedTheme, setTheme } = useTheme();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const dark = resolvedTheme === "dark";
   const email = MOCK_ADMIN_CREDENTIALS[0].email;
   const initials = email.slice(0, 1).toUpperCase();
   const roleLabel = ROLE_LABELS[principal.role] ?? principal.role;
 
   return (
-    <div className={cn("flex flex-col gap-2 p-3", className)} {...props}>
-      <Button
-        aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-        className={cn(
-          "h-10 w-full",
-          collapsed ? "justify-center px-0" : "justify-start gap-3 px-2",
-        )}
-        onClick={() => setTheme(dark ? "light" : "dark")}
-        type="button"
-        variant="ghost"
-      >
-        <span className="relative size-5">
-          <Sun
-            className={cn(
-              "absolute size-5 motion-safe:transition-[opacity,transform] motion-safe:duration-300",
-              dark ? "scale-50 opacity-0" : "scale-100 opacity-100",
-            )}
-          />
-          <Moon
-            className={cn(
-              "absolute size-5 motion-safe:transition-[opacity,transform] motion-safe:duration-300",
-              dark ? "scale-100 opacity-100" : "scale-50 opacity-0",
-            )}
-          />
-        </span>
-        {collapsed ? null : <span>Dark Mode</span>}
-      </Button>
-
+    <div
+      className={cn(
+        "relative flex shrink-0 flex-col gap-2 border-t border-sidebar-border bg-sidebar p-3",
+        className,
+      )}
+      {...props}
+    >
       <DropdownMenu>
         <DropdownMenuTrigger
           aria-label={`${roleLabel}, ${email}`}
           className={cn(
-            "inline-flex h-11 w-full items-center rounded-xl bg-card shadow-sm ring-1 ring-border outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "inline-flex h-12 w-full items-center rounded-lg bg-sidebar-accent text-sidebar-foreground ring-1 ring-sidebar-border outline-none transition-colors hover:bg-[color-mix(in_oklab,var(--sidebar-accent)_80%,var(--balanse-tan))] focus-visible:ring-2 focus-visible:ring-sidebar-ring",
             collapsed ? "justify-center px-0" : "gap-2 px-2",
           )}
         >
-          <Avatar size="sm">
-            <AvatarFallback>{initials}</AvatarFallback>
+          <Avatar className="ring-1 ring-sidebar-primary/30" size="sm">
+            <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground">
+              {initials}
+            </AvatarFallback>
           </Avatar>
           {collapsed ? null : (
             <span className="min-w-0 flex-1 truncate text-left">
-              <span className="block text-sm">{roleLabel}</span>
-              <span className="block truncate text-xs text-muted-foreground">{email}</span>
+              <span className="block text-sm font-medium">{roleLabel}</span>
+              <span className="block truncate text-xs text-sidebar-foreground/55">{email}</span>
             </span>
           )}
         </DropdownMenuTrigger>

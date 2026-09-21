@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 import { AdminSidebarFooter } from "./AdminSidebarFooter";
-import { adminSidebarFooterDefaultValues } from "./AdminSidebarFooter.defaults";
+import { adminSidebarFooterDefaultValues } from "./AdminSidebarFooter.stories-data";
 
 const meta: Meta<typeof AdminSidebarFooter> = {
   title: "Admin/Components/AdminSidebarFooter",
@@ -10,7 +10,7 @@ const meta: Meta<typeof AdminSidebarFooter> = {
   args: { ...adminSidebarFooterDefaultValues },
   decorators: [
     (Story) => (
-      <div className="w-64 border border-border bg-background">
+      <div className="w-64 border border-sidebar-border bg-sidebar">
         <Story />
       </div>
     ),
@@ -26,7 +26,7 @@ export const Collapsed: Story = {
   args: { collapsed: true },
   decorators: [
     (Story) => (
-      <div className="w-16 border border-border bg-background">
+      <div className="w-16 border border-sidebar-border bg-sidebar">
         <Story />
       </div>
     ),

@@ -3,7 +3,7 @@
 import type { VisibilityState } from "@tanstack/react-table";
 import { useCallback, useMemo, useSyncExternalStore } from "react";
 
-import type { AdminDataTableDensity } from "./AdminDataTable.schema";
+import type { AdminDataTableDensity } from "./AdminDataTable.meta";
 
 export type AdminDataTablePrefs = {
   columnVisibility: VisibilityState;

@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { adminPaymentsQueueInfiniteQuery } from "@/lib/query/queries";
-import { PaymentReviewPage } from "@/modules/admin/PaymentPages";
+import { PaymentReviewPage } from "./_components/payment-review-page/PaymentPages";
 
 export const metadata: Metadata = {
   title: "Payments",

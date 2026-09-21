@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { FaqsPage } from "@/modules/public/FaqsPage";
+import { FaqsPage } from "./_components/faqs-page/FaqsPage";
 
 export const metadata: Metadata = {
   title: "FAQs",

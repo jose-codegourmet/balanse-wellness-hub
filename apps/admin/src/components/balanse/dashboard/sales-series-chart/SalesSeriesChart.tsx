@@ -9,7 +9,7 @@ import {
   ChartTooltipContent,
 } from "@/components/jabkit/chart";
 import { DashboardTile } from "../dashboard-tile/DashboardTile";
-import type { SalesSeriesChartProps } from "./SalesSeriesChart.schema";
+import type { SalesSeriesChartProps } from "./SalesSeriesChart.meta";
 
 const chartConfig = {
   sales: {

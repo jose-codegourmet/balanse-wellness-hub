@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { useState } from "react";
 
 import { AdminScheduleCalendar } from "./AdminScheduleCalendar";
-import { adminScheduleCalendarDefaultValues } from "./AdminScheduleCalendar.defaults";
-import type { AdminCalendarView } from "./AdminScheduleCalendar.schema";
+import type { AdminCalendarView } from "./AdminScheduleCalendar.meta";
+import { adminScheduleCalendarDefaultValues } from "./AdminScheduleCalendar.stories-data";
 
 function StatefulCalendar({
   view,

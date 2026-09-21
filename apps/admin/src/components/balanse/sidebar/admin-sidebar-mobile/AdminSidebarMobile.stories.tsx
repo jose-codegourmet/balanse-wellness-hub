@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { sidebarSnapshotEmpty } from "../admin-sidebar-nav/AdminSidebarNav.defaults";
+import { sidebarSnapshotEmpty } from "../admin-sidebar-nav/AdminSidebarNav.stories-data";
 import { AdminSidebarMobile } from "./AdminSidebarMobile";
-import { adminSidebarMobileDefaultValues } from "./AdminSidebarMobile.defaults";
+import { adminSidebarMobileDefaultValues } from "./AdminSidebarMobile.stories-data";
 
 const meta: Meta<typeof AdminSidebarMobile> = {
   title: "Admin/Components/AdminSidebarMobile",
