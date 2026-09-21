@@ -3,6 +3,7 @@ import { requireCustomer, resolveActor, writeAudit } from "../auth";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { asString, forbidForeignAttendee, ok, readJson } from "../http";
+import { overlayDerivedQr } from "../payment-qrs";
 import {
   bookingStatusPayload,
   groupOwnBookings,
@@ -261,6 +262,13 @@ export async function postPaymentProof(deps: ApiDeps, req: Request, id: string):
   }
   const previousKey = booking.payments[0]?.proofObjectKey ?? null;
   const amount = booking.session.customerPrice;
+  const existingSnapshot = booking.payments[0]?.paymentQrCodeId ?? null;
+  const activeQr = existingSnapshot
+    ? null
+    : await deps.prisma.paymentQrCode.findFirst({
+        where: { isActive: true, archivedAt: null },
+      });
+  const paymentQrCodeId = existingSnapshot ?? activeQr?.id ?? null;
   const payment = booking.payments[0]
     ? await deps.prisma.payment.update({
         where: { id: booking.payments[0].id },
@@ -270,6 +278,7 @@ export async function postPaymentProof(deps: ApiDeps, req: Request, id: string):
           proofObjectKey: objectKey,
           submittedAt: deps.now(),
           amount,
+          ...(existingSnapshot ? {} : { paymentQrCodeId }),
         },
       })
     : await deps.prisma.payment.create({
@@ -280,6 +289,7 @@ export async function postPaymentProof(deps: ApiDeps, req: Request, id: string):
           proofObjectKey: objectKey,
           submittedAt: deps.now(),
           amount,
+          paymentQrCodeId,
         },
       });
   if (booking.status === "HELD_AWAITING_PAYMENT") {
@@ -314,7 +324,7 @@ export async function postPaymentProof(deps: ApiDeps, req: Request, id: string):
 
 export async function getPaymentInstructions(deps: ApiDeps, req: Request): Promise<Response> {
   requireCustomer(await resolveActor(deps, req));
-  const settings = await readSettings(deps);
+  const settings = await overlayDerivedQr(deps, await readSettings(deps));
   return ok({
     method: "GCASH",
     accountName: settings.payment.gcashAccountName,

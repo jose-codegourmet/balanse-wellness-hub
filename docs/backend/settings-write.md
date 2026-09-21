@@ -7,7 +7,7 @@
 | Section | Writable keys | Notes |
 | --- | --- | --- |
 | `business` | `business.name`, `business.phone`, `business.address` | `openingHours` is **read-only** (422 if sent). |
-| `payment` | `payment.gcashAccountName`, `payment.gcashNumber`, `payment.gcashQrObjectKey` | QR upload is BE-052. |
+| `payment` | `payment.gcashAccountName`, `payment.gcashNumber` | `gcashQrObjectKey` / `qrImageKey` are **read-only derived** from the active `payment_qr_codes` row (BE-056). QR upload is the collection API (legacy `POST /settings/qr` still confirms into that table). |
 | `content` | `content.about`, `content.email` | `contact.email` lives here; phone/address live on business. Nested patches are partial and safe across the two forms. |
 | `policies` | promote only | `POST /api/admin/settings/policies/{id}/promote` |
 
@@ -33,3 +33,7 @@ Constraints (also in BE-051): max 20, question ≤ 160, answer ≤ 2000 markdown
 Any `policy_documents` row can be promoted (id, slug, or title). Exactly one `isCurrent` per document: partial unique index `policy_document_versions_one_current`. New `version` must be `YYYY-MM`. Promotion **inserts** a version and flips `isCurrent`; it does **not** rewrite `booking_policy_acceptances` (those FK to the version row — structurally immutable). Undo is not supported; promote a newer `YYYY-MM`. Audit: `policy.promote` with actor, document, old version, new version.
 
 No coach-rate or financial-permission toggles.
+
+## Payment receive QRs (BE-056)
+
+First-class table `payment_qr_codes`. Exactly one active non-archived row (partial unique index). Admin collection routes are listed in [payment-qr-collection.md](./payment-qr-collection.md). `GET` settings includes `payment.qrs` and a derived `qrImageKey`.

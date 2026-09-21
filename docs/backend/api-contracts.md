@@ -1,6 +1,6 @@
 # API contract pack (BE-024)
 
-- Inventory: `packages/db/contracts/routes.ts` (BE-030…BE-043 plus BE-050–BE-054 amendments).
+- Inventory: `packages/db/contracts/routes.ts` (BE-030…BE-043 plus BE-050–BE-056 amendments).
 - Artifact: `packages/db/contracts/openapi.json` (generated).
 - Shared TS types: `@balanse/domain` (`CursorPage`, `ValidationFailedBody`, `FIELD_CONSTRAINTS`, `MetricSeries`, `SignedUploadIntent`).
 - Regenerate: `pnpm --filter @balanse/db db:openapi`
@@ -15,5 +15,7 @@ Amendments:
 | BE-052 | [uploads.md](./uploads.md) |
 | BE-053 | [settings-write.md](./settings-write.md) |
 | BE-054 | [dashboard-metrics.md](./dashboard-metrics.md) |
+| BE-055 | [staff-coach-unification.md](./staff-coach-unification.md) |
+| BE-056 | [payment-qr-collection.md](./payment-qr-collection.md) |
 
 HTTP handlers are implemented in `@balanse/api` and mounted on `apps/web` `/api/*`. FE screens still do not call them (no WIRE-*). See [api-routes.md](./api-routes.md).

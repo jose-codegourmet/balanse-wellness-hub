@@ -10,7 +10,46 @@ export const PUBLIC_FORBIDDEN_KEYS = [
   "customerId",
   "email",
   "contactNumber",
+  "staffMemberId",
+  "staffId",
 ] as const;
+
+export function presentStaff<T extends { coach?: { id: string } | null }>(staff: T) {
+  const { coach, ...rest } = staff;
+  return {
+    ...rest,
+    isCoach: Boolean(coach),
+    coachId: coach?.id ?? null,
+  };
+}
+
+export function presentCoach<T extends { staffMemberId?: string | null }>(coach: T) {
+  const { staffMemberId, ...rest } = coach;
+  return {
+    ...rest,
+    staffId: staffMemberId ?? null,
+  };
+}
+
+export function presentPaymentQr(row: {
+  id: string;
+  label: string;
+  imageKey: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  archivedAt: Date | null;
+}) {
+  return {
+    id: row.id,
+    label: row.label,
+    imageKey: row.imageKey,
+    isActive: row.isActive,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+    archivedAt: row.archivedAt?.toISOString() ?? null,
+  };
+}
 
 export function money(value: unknown): string {
   if (value == null) return "0.00";

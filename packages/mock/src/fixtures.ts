@@ -112,6 +112,7 @@ const coachRows: AdminCoach[] = [
     active: true,
     defaultRatePhp: 800,
     rateType: "PER_SESSION",
+    staffId: "staff-rex",
   },
   {
     id: "coach-ephraim",
@@ -710,6 +711,8 @@ export const staff: AdminStaff[] = [
     email: "rex@balanse.example",
     role: "ADMIN",
     status: "active",
+    isCoach: true,
+    coachId: "coach-rex",
   },
   {
     id: "staff-partner",
@@ -717,5 +720,7 @@ export const staff: AdminStaff[] = [
     email: "partner@balanse.example",
     role: "ADMIN",
     status: "active",
+    isCoach: false,
+    coachId: null,
   },
 ];

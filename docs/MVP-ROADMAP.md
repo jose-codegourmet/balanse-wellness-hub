@@ -320,6 +320,8 @@ Three buckets, all created in `INF-004` and secured in `BE-021`:
 | `BE-041` Admin reports | `GET /api/admin/reports/sales`, `/class-performance`, `/coach-costs`, `/sessions`, `/sessions/:id` | Admin reporting flow |
 | `BE-042` Admin staff & customers | `GET/POST/PATCH /api/admin/staff`, `GET /api/admin/customers`, `GET /api/admin/customers/:id` | `admin/03`, `admin/04` |
 | `BE-043` Admin settings & content | `GET/PUT /api/admin/settings`, `/api/admin/policies` | `admin/13-settings.md` |
+| `BE-055` Staff/coach unification | `POST/DELETE /api/admin/staff/:id/coach`; `isCoach`/`coachId`/`staffId` | `admin/03`, `admin/07` |
+| `BE-056` Payment QR collection | `/api/admin/settings/payment-qrs` (+ legacy `/settings/qr`) | `admin/13-settings.md` |
 
 ---
 
@@ -2602,6 +2604,8 @@ Every file under `docs/screen-specs/` and the FE ticket(s) that cover it.
 | BE-041 | Admin reports API | P4 |
 | BE-042 | Admin staff and customer management API | P4 |
 | BE-043 | Admin settings and public content API | P4 |
+| BE-055 | Staff/coach unification contract (`StaffMember` ↔ `Coach`) | P4 |
+| BE-056 | Payment-receive QR collection contract | P4 |
 
 ### FE foundation and shared
 

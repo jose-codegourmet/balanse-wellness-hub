@@ -30,6 +30,8 @@ export type PublicCoach = {
 export type AdminCoach = PublicCoach & {
   defaultRatePhp: number;
   rateType: CoachRateType;
+  /** BE-055 — staff capability link. Absent on older mock rows = not linked. */
+  staffId?: string | null;
 };
 
 export type PublicSession = {
@@ -102,8 +104,20 @@ export type CustomerBooking = {
 export type PaymentInstructions = {
   gcashName: string;
   gcashNumber: string;
+  /** Derived from the active `PaymentQrCode.imageKey` (BE-056). Read-only on writes. */
   qrImageKey: string | null;
   notes: string;
+};
+
+/** Admin receive-QR row (BE-056 / FE-ADM-040). */
+export type PaymentQrCode = {
+  id: string;
+  label: string;
+  imageKey: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  archivedAt: string | null;
 };
 
 export type AdminStaff = {
@@ -112,6 +126,9 @@ export type AdminStaff = {
   email: string;
   role: StaffRole;
   status: "active" | "disabled";
+  /** Derived from a linked Coach row (BE-055). Not a StaffRole value. */
+  isCoach?: boolean;
+  coachId?: string | null;
 };
 
 export type AdminCustomer = CustomerProfile & {

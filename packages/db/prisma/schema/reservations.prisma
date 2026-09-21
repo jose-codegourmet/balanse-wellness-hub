@@ -56,6 +56,7 @@ model BookingPolicyAcceptance {
 
 /// BE-010 — payment state is distinct from booking status.
 /// OQ-8: referenceNumber / payerName optional and unenforced.
+/// BE-056 — optional snapshot of the receive-QR that was active at first proof submit.
 model Payment {
   id              String        @id @default(cuid())
   bookingId       String
@@ -69,17 +70,39 @@ model Payment {
   adminNote       String?
   referenceNumber String?
   payerName       String?
+  /// Set once on first GCash proof submit; later re-uploads do not rewrite it.
+  paymentQrCodeId String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  booking    Booking      @relation(fields: [bookingId], references: [id])
-  reviewedBy StaffMember? @relation("PaymentReviewedBy", fields: [reviewedById], references: [id])
-  refunds    Refund[]
+  booking       Booking        @relation(fields: [bookingId], references: [id])
+  reviewedBy    StaffMember?   @relation("PaymentReviewedBy", fields: [reviewedById], references: [id])
+  paymentQrCode PaymentQrCode? @relation(fields: [paymentQrCodeId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  refunds       Refund[]
 
   @@index([status, createdAt])
   @@index([bookingId])
   @@index([method, status, createdAt])
+  @@index([paymentQrCodeId])
   @@map("payments")
+}
+
+/// BE-056 — GCash receive-QR collection. At most one active non-archived row
+/// (partial unique index in SQL). Payments may snapshot the row that was live.
+model PaymentQrCode {
+  id         String    @id @default(cuid())
+  label      String
+  imageKey   String    @unique
+  isActive   Boolean   @default(false)
+  archivedAt DateTime? @db.Timestamptz
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  payments Payment[]
+
+  @@index([isActive])
+  @@index([archivedAt])
+  @@map("payment_qr_codes")
 }
 
 /// BE-011 — manual refund state only. No wallet/credit/voucher.

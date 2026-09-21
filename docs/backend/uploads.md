@@ -16,7 +16,9 @@ Slug keys are **not** stable under rename and must not be overwritten by admin r
 3. `POST` the same path with `{ objectKey }` to confirm. Sets `coaches.photoKey`. Previous **admin** object is deleted immediately. Curated slug keys are left in Storage.
 4. `DELETE` sets `photoKey` null and deletes only an admin object.
 
-GCash QR: `POST` / `DELETE /api/admin/settings/qr` — same lifecycle, bucket `marketing-assets`, key `marketing-assets/settings/gcash-qr/<uuid>.<ext>`, types jpeg/png/webp/gif. Public-facing; no signed **read** URL.
+GCash QR: `POST` / `DELETE /api/admin/settings/qr` — same mint/confirm lifecycle, bucket `marketing-assets`, key `marketing-assets/settings/gcash-qr/<uuid>.<ext>`, types jpeg/png/webp/gif. Public-facing; no signed **read** URL.
+
+BE-056: prefer `POST /api/admin/settings/payment-qrs` (collection). Legacy `POST /settings/qr` confirm creates/activates a collection row and archives the previous active row; it **does not** delete the previous object (payments may snapshot it). Legacy `DELETE /settings/qr` is 422 `cannot_remove_active`. See [payment-qr-collection.md](./payment-qr-collection.md).
 
 Payment proofs stay private (`getAdminPaymentProofSignedUrl`).
 
@@ -32,4 +34,4 @@ Signed upload uses the **service role on the server only**. Never put a service-
 
 ## Audit
 
-`coach.photo.replace`, `coach.photo.remove`, `settings.qr.replace`, `settings.qr.remove`.
+`coach.photo.replace`, `coach.photo.remove`, `settings.qr.replace`, `payment_qr.create` / `update` / `activate` / `archive`. Legacy `settings.qr.remove` is no longer a successful path.

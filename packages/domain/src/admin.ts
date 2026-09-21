@@ -15,6 +15,7 @@ import type {
   AdminStaff,
   CustomerBooking,
   PaymentInstructions,
+  PaymentQrCode,
   PolicyAcceptance,
   PublicClass,
   PublicContent,
@@ -160,6 +161,8 @@ export type AdminSettings = PublicContent &
     businessName: string;
     openingHours: string;
     policyDocuments: PolicyDocumentVersion[];
+    /** BE-056 collection. `qrImageKey` stays the derived active key. */
+    paymentQrs?: PaymentQrCode[];
   };
 
 export type AdminCustomerDetail = AdminCustomer & {

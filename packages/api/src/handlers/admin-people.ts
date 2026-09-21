@@ -3,16 +3,20 @@ import { requireAdmin, resolveActor, writeAudit } from "../auth";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { asString, ok, pagination, readJson, searchParams } from "../http";
-import { bookingStatusPayload } from "../presenters";
+import { bookingStatusPayload, presentStaff } from "../presenters";
 import { CUSTOMER_SENSITIVE_READ_POLICY } from "../settings";
+import { fieldError, requireString, throwFields } from "../validation";
+
+const staffCoachInclude = { coach: { select: { id: true } } } as const;
 
 export async function getStaff(deps: ApiDeps, req: Request): Promise<Response> {
   requireAdmin(await resolveActor(deps, req));
   const items = await deps.prisma.staffMember.findMany({
     where: { isSystem: false },
     orderBy: { name: "asc" },
+    include: staffCoachInclude,
   });
-  return ok({ items });
+  return ok({ items: items.map(presentStaff) });
 }
 
 export async function postStaff(deps: ApiDeps, req: Request): Promise<Response> {
@@ -48,6 +52,7 @@ export async function postStaff(deps: ApiDeps, req: Request): Promise<Response> 
     where: { userId: profile.id },
     create: { userId: profile.id, name, email, role: "ADMIN", status: "ACTIVE" },
     update: { name, email, status: "ACTIVE" },
+    include: staffCoachInclude,
   });
   await writeAudit(deps, {
     entityType: "staff",
@@ -55,7 +60,7 @@ export async function postStaff(deps: ApiDeps, req: Request): Promise<Response> 
     action: "staff.provision",
     actor,
   });
-  return ok({ staff });
+  return ok({ staff: presentStaff(staff) });
 }
 
 export async function patchStaff(deps: ApiDeps, req: Request, id: string): Promise<Response> {
@@ -67,16 +72,34 @@ export async function patchStaff(deps: ApiDeps, req: Request, id: string): Promi
       ...(asString(body.name) ? { name: asString(body.name) } : {}),
       ...(asString(body.email) ? { email: asString(body.email) } : {}),
     },
+    include: staffCoachInclude,
   });
   await writeAudit(deps, { entityType: "staff", entityId: id, action: "staff.update", actor });
-  return ok({ staff });
+  return ok({ staff: presentStaff(staff) });
 }
 
 export async function disableStaff(deps: ApiDeps, req: Request, id: string): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
-  const staff = await deps.prisma.staffMember.update({
+  const existing = await deps.prisma.staffMember.findUnique({
     where: { id },
-    data: { status: "DISABLED" },
+    include: staffCoachInclude,
+  });
+  if (!existing || existing.isSystem) {
+    throw new ApiError(404, "staff_not_found", "Staff member not found.");
+  }
+  const staff = await deps.prisma.$transaction(async (tx) => {
+    const updated = await tx.staffMember.update({
+      where: { id },
+      data: { status: "DISABLED" },
+      include: staffCoachInclude,
+    });
+    if (existing.coach) {
+      await tx.coach.update({
+        where: { id: existing.coach.id },
+        data: { active: false },
+      });
+    }
+    return updated;
   });
   await writeAudit(deps, {
     entityType: "staff",
@@ -84,8 +107,92 @@ export async function disableStaff(deps: ApiDeps, req: Request, id: string): Pro
     action: "staff.disable",
     actor,
     afterStatus: "DISABLED",
+    metadata: {
+      coachId: existing.coach?.id ?? null,
+      coachDeactivated: Boolean(existing.coach),
+      sessionsUntouched: true,
+    },
   });
-  return ok({ staff, effectiveImmediately: true });
+  return ok({
+    staff: presentStaff(staff),
+    effectiveImmediately: true,
+    coachDeactivated: Boolean(existing.coach),
+  });
+}
+
+export async function linkStaffCoach(deps: ApiDeps, req: Request, id: string): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const body = await readJson(req);
+  const coachId = requireString(body, "coachId", 64);
+  const staff = await deps.prisma.staffMember.findUnique({
+    where: { id },
+    include: staffCoachInclude,
+  });
+  if (!staff || staff.isSystem) {
+    throw new ApiError(404, "staff_not_found", "Staff member not found.");
+  }
+  if (staff.status === "DISABLED") {
+    throwFields(
+      fieldError("staffId", "inactive_reference", "Disabled staff cannot be linked to a coach."),
+    );
+  }
+  const coach = await deps.prisma.coach.findUnique({ where: { id: coachId } });
+  if (!coach) throw new ApiError(404, "coach_not_found", "Coach not found.");
+  if (staff.coach && staff.coach.id !== coachId) {
+    throwFields(
+      fieldError("coachId", "already_linked", "This staff member is already linked to a coach."),
+    );
+  }
+  if (coach.staffMemberId && coach.staffMemberId !== staff.id) {
+    throwFields(
+      fieldError("coachId", "already_linked", "This coach is already linked to a staff member."),
+    );
+  }
+  const updatedCoach = await deps.prisma.coach.update({
+    where: { id: coachId },
+    data: { staffMemberId: staff.id },
+  });
+  await writeAudit(deps, {
+    entityType: "staff",
+    entityId: staff.id,
+    action: "staff.coach.link",
+    actor,
+    metadata: { coachId },
+  });
+  return ok({
+    staff: presentStaff({ ...staff, coach: { id: updatedCoach.id } }),
+    coach: {
+      id: updatedCoach.id,
+      staffId: updatedCoach.staffMemberId,
+    },
+  });
+}
+
+export async function unlinkStaffCoach(deps: ApiDeps, req: Request, id: string): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const staff = await deps.prisma.staffMember.findUnique({
+    where: { id },
+    include: staffCoachInclude,
+  });
+  if (!staff || staff.isSystem) {
+    throw new ApiError(404, "staff_not_found", "Staff member not found.");
+  }
+  if (staff.coach) {
+    await deps.prisma.coach.update({
+      where: { id: staff.coach.id },
+      data: { staffMemberId: null },
+    });
+  }
+  await writeAudit(deps, {
+    entityType: "staff",
+    entityId: staff.id,
+    action: "staff.coach.unlink",
+    actor,
+    metadata: { coachId: staff.coach?.id ?? null, coachPreserved: true },
+  });
+  return ok({
+    staff: presentStaff({ ...staff, coach: null }),
+  });
 }
 
 export async function getCustomers(deps: ApiDeps, req: Request): Promise<Response> {
