@@ -289,7 +289,6 @@ export const ADMIN_TOAST_COPY = {
     title: "Check-in not saved",
     description: "The guest could not be checked in. Try again.",
   },
-<<<<<<< HEAD
   "reschedule.approved": {
     id: "reschedule.approved",
     tone: "success",
