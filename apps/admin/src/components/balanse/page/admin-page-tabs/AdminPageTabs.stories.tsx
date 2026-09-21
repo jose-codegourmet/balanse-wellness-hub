@@ -49,7 +49,7 @@ const meta: Meta<typeof AdminPageTabs> = {
     docs: {
       description: {
         component:
-          'Responsive admin tabs. Line tabs at `md+`; sticky chip row below `md` when `mobileBehavior="tabs"`. Keyboard (Left/Right/Home/End) comes from Base UI Tabs.',
+          "Responsive admin tabs. Line tabs at md+; sticky chip row below md when mobileBehavior is tabs. Triggers are type=button so they do not submit parent forms. Keyboard: Left/Right/Home/End.",
       },
     },
   },
