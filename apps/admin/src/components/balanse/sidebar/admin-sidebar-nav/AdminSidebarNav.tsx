@@ -1,17 +1,12 @@
 "use client";
 
 import { ADMIN_NAV_ITEMS, isAdminNavActive } from "@balanse/domain";
-import { CountBadge, Separator, Tooltip, TooltipContent, TooltipTrigger } from "@balanse/ui";
+import { Separator, Tooltip, TooltipContent, TooltipTrigger } from "@balanse/ui";
 import Link from "next/link";
 import { useId } from "react";
 import { cn } from "@/components/jabkit/lib/cn";
-import { COUNT_ARIA_NOUN, countForItem, NAV_GROUPS, NAV_ICONS } from "../sidebar-nav";
+import { NAV_GROUPS, NAV_ICONS } from "../sidebar-nav";
 import type { AdminSidebarNavProps } from "./AdminSidebarNav.schema";
-
-function countAria(id: keyof typeof COUNT_ARIA_NOUN, raw: string) {
-  const noun = COUNT_ARIA_NOUN[id] ?? "items";
-  return `${raw} ${noun}`;
-}
 
 export function AdminSidebarNav({
   pathname,
@@ -49,7 +44,6 @@ export function AdminSidebarNav({
                 if (!item) return null;
                 const Icon = NAV_ICONS[item.id];
                 const active = isAdminNavActive(item, pathname);
-                const count = countForItem(item.id, snapshot);
                 const linkClass = cn(
                   "flex h-11 w-full items-center rounded-xl text-left text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   collapsed ? "justify-center px-0" : "gap-3 px-3",
@@ -61,28 +55,12 @@ export function AdminSidebarNav({
                   <>
                     <span className="relative inline-flex">
                       <Icon className={cn("size-5", active ? "text-primary" : "text-foreground")} />
-                      {collapsed && count ? (
-                        <CountBadge
-                          aria-label={countAria(item.id, count)}
-                          className="absolute -top-1.5 -right-2 h-4 min-w-4 px-0.5 text-[12px] leading-none"
-                          count={Number(count)}
-                          max={99}
-                        />
-                      ) : null}
                     </span>
                     {collapsed ? (
                       <span className="sr-only">{item.label}</span>
                     ) : (
                       <span className={active ? "text-primary" : undefined}>{item.label}</span>
                     )}
-                    {!collapsed && count ? (
-                      <CountBadge
-                        aria-label={countAria(item.id, count)}
-                        className="ml-auto"
-                        count={Number(count)}
-                        max={99}
-                      />
-                    ) : null}
                   </>
                 );
 

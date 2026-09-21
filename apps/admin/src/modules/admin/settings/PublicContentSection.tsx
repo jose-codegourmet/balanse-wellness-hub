@@ -127,12 +127,14 @@ export function PublicContentSection({
   faqsOverride,
   onDirtyChange,
   onSaved,
+  page = "all",
 }: {
   settings: AdminSettings;
   empty?: boolean;
   faqsOverride?: AdminSettings["faqs"];
   onDirtyChange?: (dirty: boolean) => void;
   onSaved?: () => void;
+  page?: "all" | "about" | "contact" | "faqs";
 }) {
   const update = useUpdateAdminSettings();
   const defaultValues = empty
@@ -164,24 +166,36 @@ export function PublicContentSection({
     >
       <DirtyBridge onDirtyChange={onDirtyChange} />
       <FormSection
-        title="Public content"
+        title={
+          page === "all"
+            ? "Public content"
+            : page === "about"
+              ? "About page"
+              : page === "contact"
+                ? "Contact details"
+                : "FAQs"
+        }
         description="Copy that appears on the public site. Saving here does not rewrite payment or business fields."
       >
         <div className="grid gap-4 lg:grid-cols-2">
-          <FormField name="about" label="About" wireAria>
-            {(field) => (
-              <RichTextBinding {...field} maxLength={FIELD_CONSTRAINTS.settings.about.max} />
-            )}
-          </FormField>
-          <FormField
-            name="contact.email"
-            label="Public contact email"
-            description="Shown on the public site. Distinct from the operational studio phone."
-          >
-            {(field) => <TextBinding {...field} type="email" />}
-          </FormField>
+          {page === "all" || page === "about" ? (
+            <FormField name="about" label="About" wireAria>
+              {(field) => (
+                <RichTextBinding {...field} maxLength={FIELD_CONSTRAINTS.settings.about.max} />
+              )}
+            </FormField>
+          ) : null}
+          {page === "all" || page === "contact" ? (
+            <FormField
+              name="contact.email"
+              label="Public contact email"
+              description="Shown on the public site. Distinct from the operational studio phone."
+            >
+              {(field) => <TextBinding {...field} type="email" />}
+            </FormField>
+          ) : null}
         </div>
-        <FaqListEditor />
+        {page === "all" || page === "faqs" ? <FaqListEditor /> : null}
       </FormSection>
       <FormActions submitLabel="Save public content" />
     </AdminForm>

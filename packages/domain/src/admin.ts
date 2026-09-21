@@ -152,6 +152,7 @@ export type PolicyDocumentVersion = {
   version: string;
   promotedAt: string;
   current: boolean;
+  body: string;
 };
 
 export type AdminSettings = PublicContent &

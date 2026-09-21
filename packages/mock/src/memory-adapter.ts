@@ -10,6 +10,7 @@ import type {
   PaymentMethod,
   PaymentQrCode,
   PolicyAcceptance,
+  PolicyDocumentVersion,
   PublicSession,
 } from "@balanse/domain";
 import {
@@ -98,6 +99,10 @@ const EMPTY_CURSOR_PAGE: CursorPage<CustomerBooking> = {
   nextCursor: null,
   totalCount: 0,
 };
+
+function currentBody(docs: PolicyDocumentVersion[], name: string): string {
+  return docs.find((doc) => doc.documentName === name && doc.current)?.body ?? "";
+}
 
 function livePaymentQrs(settings: AdminSettings): PaymentQrCode[] {
   return (settings.paymentQrs ?? []).filter((row) => row.archivedAt === null);
@@ -888,17 +893,54 @@ export function createMemoryAdapter(): MockDataAdapter {
         syncDerivedQr(settings);
         return clone(current);
       }),
+    upsertPolicyDocument: (input) =>
+      applyMockEffects(() => {
+        const existing = input.id
+          ? settings.policyDocuments.find((doc) => doc.id === input.id)
+          : undefined;
+        if (existing) {
+          existing.documentName = input.documentName.trim();
+          existing.version = input.version.trim();
+          existing.body = input.body;
+          if (input.current)
+            settings.policyDocuments = settings.policyDocuments.map((doc) => ({
+              ...doc,
+              current: doc.id === existing.id,
+            }));
+          return clone(existing);
+        }
+        const created = {
+          id: `policy-${globalThis.crypto?.randomUUID?.() ?? Date.now()}`,
+          documentName: input.documentName.trim(),
+          version: input.version.trim(),
+          promotedAt: MOCK_NOW_ISO,
+          current: input.current ?? false,
+          body: input.body,
+        };
+        settings.policyDocuments.push(created);
+        return clone(created);
+      }),
+    deletePolicyDocument: (id) =>
+      applyMockEffects(() => {
+        const target = settings.policyDocuments.find((doc) => doc.id === id);
+        if (!target) throw new Error("policy_not_found");
+        if (target.current) throw new Error("cannot_delete_current_policy");
+        settings.policyDocuments = settings.policyDocuments.filter((doc) => doc.id !== id);
+        return clone(settings);
+      }),
     promotePolicyVersion: (documentName, version) =>
       applyMockEffects(() => {
-        settings.policyDocuments = settings.policyDocuments.map((doc) =>
-          doc.documentName === documentName ? { ...doc, current: false } : doc,
-        );
+        const body = currentBody(settings.policyDocuments, documentName);
+        settings.policyDocuments = settings.policyDocuments.map((doc) => {
+          return doc.documentName === documentName ? { ...doc, current: false } : doc;
+        });
         settings.policyDocuments.push({
           id: `policy-${documentName.toLowerCase()}-${version}`,
           documentName,
           version,
           promotedAt: MOCK_NOW_ISO,
           current: true,
+          body,
         });
         return clone(settings);
       }),

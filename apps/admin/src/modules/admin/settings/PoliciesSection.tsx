@@ -3,98 +3,94 @@
 import {
   type AdminSettings,
   auditConfirmationCopy,
-  formatSessionDate,
   isPolicyVersion,
   type PolicyDocumentVersion,
 } from "@balanse/domain";
-import { Badge } from "@balanse/ui";
+import { Badge, Button } from "@balanse/ui";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import { adminNowIso } from "@/lib/clock";
-import { usePromotePolicyVersion } from "@/lib/query/mutations";
+import {
+  useDeletePolicyDocument,
+  usePromotePolicyVersion,
+  useUpsertPolicyDocument,
+} from "@/lib/query/mutations";
 import { notify } from "@/modules/notifications/notify";
-import { AdminForm, FormField, FormSection, useAdminFormContext } from "../forms/AdminForm";
-import { TextBinding } from "../forms/bindings";
+import {
+  AdminForm,
+  FormActions,
+  FormField,
+  FormSection,
+  useAdminFormContext,
+} from "../forms/AdminForm";
+import { RichTextBinding, TextBinding } from "../forms/bindings";
 import {
   type PolicyPromoteFormValues,
+  policyDocumentFormSchema,
   policyPromoteFormSchema,
 } from "../forms/settings/settings-form.schema";
-import { DirtyBridge } from "./DirtyBridge";
-
-function promoteFormId(documentName: string) {
-  return `promote-${documentName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`.replace(/-$/, "");
-}
 
 function nextPolicyVersion(current: string): string {
   const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(current.trim());
   if (!match) return "";
-  let year = Number(match[1]);
-  let month = Number(match[2]) + 1;
+  let year = Number(match[1]),
+    month = Number(match[2]) + 1;
   if (month > 12) {
     month = 1;
     year += 1;
   }
   return `${year}-${String(month).padStart(2, "0")}`;
 }
-
-function groupPolicyDocuments(docs: PolicyDocumentVersion[]) {
-  const names: string[] = [];
-  const grouped = new Map<string, PolicyDocumentVersion[]>();
+function groups(docs: PolicyDocumentVersion[]) {
+  const map = new Map<string, PolicyDocumentVersion[]>();
   for (const doc of docs) {
-    if (!grouped.has(doc.documentName)) {
-      names.push(doc.documentName);
-      grouped.set(doc.documentName, []);
-    }
-    grouped.get(doc.documentName)?.push(doc);
+    if (!map.has(doc.documentName)) map.set(doc.documentName, []);
+    map.get(doc.documentName)?.push(doc);
   }
-  return names.map((name) => ({
+  return [...map.entries()].map(([name, versions]) => ({
     name,
-    versions: [...(grouped.get(name) ?? [])].sort((a, b) => {
-      if (a.current !== b.current) return a.current ? -1 : 1;
-      return b.promotedAt.localeCompare(a.promotedAt);
-    }),
+    versions: [...versions].sort(
+      (a, b) => Number(b.current) - Number(a.current) || b.promotedAt.localeCompare(a.promotedAt),
+    ),
   }));
 }
-
-function PromotePolicyForm({
+function Promote({
   documentName,
   currentVersion,
-  invalidVersion = false,
-  onDirtyChange,
   onSaved,
 }: {
   documentName: string;
   currentVersion: string;
-  invalidVersion?: boolean;
-  onDirtyChange?: (documentName: string, dirty: boolean) => void;
-  onSaved?: () => void;
+  onSaved: () => void;
 }) {
   const promote = usePromotePolicyVersion();
-  const suggested = invalidVersion ? "not-a-version" : nextPolicyVersion(currentVersion);
-
+  const suggested = nextPolicyVersion(currentVersion);
   return (
     <AdminForm
-      id={promoteFormId(documentName)}
       schema={policyPromoteFormSchema}
       defaultValues={{ version: suggested }}
       onSubmit={async (values) => {
         try {
           await promote.mutateAsync({ documentName, version: values.version });
           notify.admin("policy.promoted");
-          onSaved?.();
+          onSaved();
         } catch (error) {
           notify.admin("policy.promote-failed");
           throw error;
         }
       }}
     >
-      <DirtyBridge onDirtyChange={(dirty) => onDirtyChange?.(documentName, dirty)} />
-      <PromotePolicyFields documentName={documentName} />
+      <div className="grid gap-3 md:grid-cols-[minmax(0,12rem)_auto] md:items-end">
+        <FormField name="version" label="New version">
+          {(field) => <TextBinding {...field} placeholder="yyyy-mm" />}
+        </FormField>
+        <PromoteButton documentName={documentName} />
+      </div>
     </AdminForm>
   );
 }
-
-function PromotePolicyFields({ documentName }: { documentName: string }) {
+function PromoteButton({ documentName }: { documentName: string }) {
   const { watch, requestSubmit } = useAdminFormContext<PolicyPromoteFormValues>();
   const version = String(watch("version") ?? "");
   const valid = isPolicyVersion(version);
@@ -103,117 +99,182 @@ function PromotePolicyFields({ documentName }: { documentName: string }) {
     "Admin",
     adminNowIso(),
   );
-
   return (
-    <div className="grid gap-3 md:grid-cols-[minmax(0,12rem)_auto] md:items-end">
-      <FormField
-        name="version"
-        label="New version"
-        description="Format yyyy-mm, matching the stored policy versions."
-      >
-        {(field) => <TextBinding {...field} placeholder="yyyy-mm" />}
-      </FormField>
-      <ConfirmAction
-        triggerLabel={`Promote ${documentName}`}
-        title={`Promote ${documentName}?`}
-        description={`${stamp} Customers accept the new version going forward. Existing acceptances stay historical.`}
-        confirmLabel="Promote version"
-        disabled={!valid}
-        onConfirm={() => {
-          requestSubmit();
-        }}
-      />
-    </div>
+    <ConfirmAction
+      triggerLabel={`Promote ${documentName}`}
+      title={`Promote ${documentName}?`}
+      description={`${stamp} Customers accept the new version going forward.`}
+      confirmLabel="Promote version"
+      disabled={!valid}
+      onConfirm={() => requestSubmit()}
+    />
   );
 }
-
+function PolicyEditor({
+  document,
+  onSaved,
+}: {
+  document?: PolicyDocumentVersion;
+  onSaved: () => void;
+}) {
+  const upsert = useUpsertPolicyDocument();
+  return (
+    <AdminForm
+      schema={policyDocumentFormSchema}
+      defaultValues={{
+        documentName: document?.documentName ?? "",
+        version: document?.version ?? "",
+        body: document?.body ?? "",
+        current: document?.current ?? false,
+      }}
+      onSubmit={async (values) => {
+        try {
+          await upsert.mutateAsync({ ...values, id: document?.id });
+          notify.admin("settings.saved");
+          onSaved();
+        } catch (error) {
+          notify.admin("settings.save-failed");
+          throw error;
+        }
+      }}
+    >
+      <FormSection
+        title={document ? "Edit policy" : "New policy"}
+        surface="card"
+        description="Use rich text for the policy customers will read."
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          <FormField name="documentName" label="Policy name">
+            {(field) => <TextBinding {...field} placeholder="e.g. Liability waiver" />}
+          </FormField>
+          <FormField name="version" label="Version">
+            {(field) => <TextBinding {...field} placeholder="yyyy-mm" />}
+          </FormField>
+        </div>
+        <FormField name="body" label="Policy text" wireAria>
+          {(field) => <RichTextBinding {...field} maxLength={10000} minRows={10} />}
+        </FormField>
+        <FormField name="current" label="Publish as current" orientation="horizontal">
+          {(field) => (
+            <input
+              type="checkbox"
+              checked={Boolean(field.value)}
+              onChange={(e) => field.onChange(e.target.checked)}
+              onBlur={field.onBlur}
+            />
+          )}
+        </FormField>
+        <FormActions submitLabel={document ? "Save policy" : "Create policy"} />
+      </FormSection>
+    </AdminForm>
+  );
+}
 export function PoliciesSection({
   settings,
-  invalidVersion = false,
-  onDirtyChange,
   onSaved,
+  view = "library",
+  policyId,
 }: {
   settings: AdminSettings;
   invalidVersion?: boolean;
   onDirtyChange?: (dirty: boolean) => void;
   onSaved?: () => void;
+  view?: "library" | "new";
+  policyId?: string;
 }) {
-  const groups = groupPolicyDocuments(settings.policyDocuments);
-  const [promoteDirty, setPromoteDirty] = useState<Record<string, boolean>>({});
-
-  function markPromoteDirty(documentName: string, next: boolean) {
-    setPromoteDirty((current) => {
-      if (current[documentName] === next) return current;
-      return { ...current, [documentName]: next };
-    });
-  }
-
+  const router = useRouter();
+  const [editing, setEditing] = useState<PolicyDocumentVersion | undefined>(() =>
+    settings.policyDocuments.find((doc) => doc.id === policyId),
+  );
+  const [creating, setCreating] = useState(view === "new");
   useEffect(() => {
-    onDirtyChange?.(Object.values(promoteDirty).some(Boolean));
-  }, [onDirtyChange, promoteDirty]);
-
+    setEditing(settings.policyDocuments.find((doc) => doc.id === policyId));
+  }, [policyId, settings.policyDocuments]);
+  const deletePolicy = useDeletePolicyDocument();
+  const save = () => {
+    setEditing(undefined);
+    setCreating(false);
+    onSaved?.();
+    router.push("/settings/policies");
+  };
+  const currentDocs = groups(settings.policyDocuments);
   return (
-    <FormSection
-      title="Policies & waivers"
-      description="Promotion applies to any policy document. Customers accept the new version going forward; existing acceptances remain historical (BE-009)."
-    >
-      <ul className="grid gap-4">
-        {groups.map((group) => {
-          const current = group.versions.find((doc) => doc.current) ?? group.versions[0];
-          return (
-            <li key={group.name} className="grid gap-3 rounded-xl border border-border p-4">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <h3 className="font-display text-xl">{group.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Current version {current?.version ?? "—"}.
-                  </p>
-                </div>
-                <Badge
-                  variant={current?.current ? "success" : "neutral"}
-                  appearance="soft"
-                  size="sm"
-                  dot
-                >
-                  {current?.current ? "Current" : "Inactive"}
-                </Badge>
-              </div>
-              <ul className="grid gap-2">
-                {group.versions.map((doc) => (
-                  <li
-                    key={doc.id}
-                    className="flex flex-wrap items-center justify-between gap-2 text-sm"
+    <div className="grid gap-6">
+      <FormSection
+        title="Policies & waivers"
+        description="Create, edit, publish, and retain historical policy versions. Customers accept the current version going forward."
+      >
+        <div className="flex justify-end">
+          <Button type="button" onClick={() => setCreating(true)}>
+            New policy
+          </Button>
+        </div>
+        <ul className="grid gap-4">
+          {currentDocs.map((group) => {
+            const current = group.versions[0];
+            return (
+              <li key={group.name} className="grid gap-3 rounded-xl border border-border p-4">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-display text-xl">{group.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Current version {current?.version ?? "—"}
+                    </p>
+                  </div>
+                  <Badge
+                    variant={current?.current ? "success" : "neutral"}
+                    appearance="soft"
+                    size="sm"
+                    dot
                   >
-                    <span>
+                    {current?.current ? "Current" : "Historical"}
+                  </Badge>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {group.versions.map((doc) => (
+                    <span key={doc.id} className="rounded-md bg-muted px-2 py-1 text-sm">
                       {doc.version}
-                      <span className="text-muted-foreground">
-                        {" "}
-                        · promoted {formatSessionDate(doc.promotedAt)}
-                      </span>
+                      {doc.current ? " · Current" : " · Historical"}
                     </span>
-                    <Badge
-                      variant={doc.current ? "success" : "neutral"}
-                      appearance="soft"
-                      size="sm"
-                    >
-                      {doc.current ? "Current" : "Historical"}
-                    </Badge>
-                  </li>
-                ))}
-              </ul>
-              {current ? (
-                <PromotePolicyForm
-                  documentName={group.name}
-                  currentVersion={current.version}
-                  invalidVersion={invalidVersion}
-                  onDirtyChange={markPromoteDirty}
-                  onSaved={onSaved}
-                />
-              ) : null}
-            </li>
-          );
-        })}
-      </ul>
-    </FormSection>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => router.push(`/settings/policies/${current.id}`)}
+                  >
+                    Edit current
+                  </Button>
+                  {!current?.current ? (
+                    <ConfirmAction
+                      triggerLabel="Delete"
+                      title="Delete this policy version?"
+                      description="This cannot be undone in the mock catalogue."
+                      confirmLabel="Delete"
+                      variant="destructive"
+                      onConfirm={async () => {
+                        if (!current) return;
+                        await deletePolicy.mutateAsync(current.id);
+                        onSaved?.();
+                      }}
+                    />
+                  ) : null}
+                  {current ? (
+                    <Promote
+                      documentName={group.name}
+                      currentVersion={current.version}
+                      onSaved={() => onSaved?.()}
+                    />
+                  ) : null}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </FormSection>
+      {creating ? <PolicyEditor onSaved={save} /> : null}
+      {editing ? <PolicyEditor document={editing} onSaved={save} /> : null}
+    </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import { AdminNotificationHeader } from "@/components/balanse/admin-notification-header/AdminNotificationHeader";
 import { AdminSidebar } from "@/components/balanse/sidebar/admin-sidebar/AdminSidebar";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
@@ -27,7 +28,10 @@ export function AdminShell({
         onSettings={() => router.push("/settings")}
         pathname={pathname}
       />
-      <div className="min-w-0 flex-1 overflow-x-clip bg-background">{children}</div>
+      <div className="min-w-0 flex-1 overflow-x-clip bg-background">
+        <AdminNotificationHeader pathname={pathname} />
+        {children}
+      </div>
     </div>
   );
 }

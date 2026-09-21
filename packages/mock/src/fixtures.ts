@@ -719,6 +719,7 @@ export const adminSettings: AdminSettings = {
       version: "2026-01",
       promotedAt: "2026-01-15T00:00:00.000Z",
       current: true,
+      body: "Please review the studio waiver before attending your first session.",
     },
     {
       id: "policy-gym-2026-01",
@@ -726,6 +727,7 @@ export const adminSettings: AdminSettings = {
       version: "2026-01",
       promotedAt: "2026-01-15T00:00:00.000Z",
       current: true,
+      body: "Please follow studio etiquette, safety guidance, and instructor direction during every class.",
     },
   ],
 };

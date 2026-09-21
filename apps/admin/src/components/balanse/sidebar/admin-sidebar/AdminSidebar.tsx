@@ -1,11 +1,8 @@
 "use client";
 
 import { BrandLockup, TooltipProvider } from "@balanse/ui";
-import { useQuery } from "@tanstack/react-query";
 import { useId } from "react";
 import { cn } from "@/components/jabkit/lib/cn";
-import { adminDashboardQuery } from "@/lib/query/queries";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { AdminSidebarFooter } from "../admin-sidebar-footer/AdminSidebarFooter";
 import { AdminSidebarMobile } from "../admin-sidebar-mobile/AdminSidebarMobile";
 import { AdminSidebarNav } from "../admin-sidebar-nav/AdminSidebarNav";
@@ -27,17 +24,13 @@ export function AdminSidebar({
   ...props
 }: AdminSidebarProps) {
   const navId = useId();
-  const { principal } = useMockPrincipal();
+
   const { collapsed, toggleCollapsed } = useSidebarCollapsed({
     defaultCollapsed,
     collapsed: collapsedProp,
     onCollapsedChange,
   });
-  const query = useQuery({
-    ...adminDashboardQuery(principal.role),
-    enabled: snapshotProp === undefined,
-  });
-  const snapshot = snapshotProp === undefined ? (query.data ?? null) : snapshotProp;
+  const snapshot = snapshotProp ?? null;
 
   return (
     <TooltipProvider>

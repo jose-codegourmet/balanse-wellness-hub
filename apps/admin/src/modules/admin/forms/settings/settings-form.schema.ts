@@ -90,6 +90,13 @@ export const publicContentFormSchema = z.object({
   faqs: settingsFormSchema.shape.faqs,
 });
 
+export const policyDocumentFormSchema = z.object({
+  documentName: z.string().trim().min(1, "Enter a policy name.").max(120),
+  version: policyVersionSchema,
+  body: z.string().trim().min(1, "Enter the policy text.").max(10000),
+  current: z.boolean(),
+});
+
 export const policyPromoteFormSchema = z.object({
   version: policyVersionSchema,
 });
@@ -98,3 +105,4 @@ export type BusinessProfileFormValues = z.infer<typeof businessProfileFormSchema
 export type PaymentInfoFormValues = z.infer<typeof paymentInfoFormSchema>;
 export type PublicContentFormValues = z.infer<typeof publicContentFormSchema>;
 export type PolicyPromoteFormValues = z.infer<typeof policyPromoteFormSchema>;
+export type PolicyDocumentFormValues = z.infer<typeof policyDocumentFormSchema>;

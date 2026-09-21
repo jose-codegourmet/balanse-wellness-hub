@@ -260,6 +260,25 @@ export function useArchivePaymentQr() {
   });
 }
 
+export function useUpsertPolicyDocument() {
+  const role = useAdminRole();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["upsertPolicyDocument"]>[0]) =>
+      getMockAdapter().upsertPolicyDocument(input),
+    onSuccess: () => invalidateForRole(queryClient, [adminKeys.settings.all(role)]),
+  });
+}
+
+export function useDeletePolicyDocument() {
+  const role = useAdminRole();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => getMockAdapter().deletePolicyDocument(id),
+    onSuccess: () => invalidateForRole(queryClient, [adminKeys.settings.all(role)]),
+  });
+}
+
 export function useUpdateAdminSettings() {
   const role = useAdminRole();
   const queryClient = useQueryClient();
