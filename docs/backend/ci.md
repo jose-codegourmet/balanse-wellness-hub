@@ -29,9 +29,11 @@ Does **not** run on push. Vercel Git deploys may no-op while ignore-build is `ex
 
 1. Add repository secrets: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID_WEB`, `VERCEL_PROJECT_ID_ADMIN` (see comments in the workflow file and project ids in `docs/backend/preview-and-staging.md`).
 2. Actions → **Deploy Production** → Run workflow.
-3. Choose `web`, `admin`, or `both` (default), optional git ref, and `prebuilt` (default) or `remote`.
+3. Choose `web`, `admin`, or `both` (default). Leave `ref` empty to deploy `main`. Use `prebuilt` (default) or `remote`.
 
-`prebuilt` is `vercel pull` → `vercel build --prod` → `vercel deploy --prebuilt --prod`. `remote` is `vercel deploy --prod` (Vercel builds the upload).
+CLI commands run from the **repository root** so workspace packages are included; each Vercel project’s Root Directory (`apps/web` / `apps/admin`) comes from project settings. `prebuilt` is `vercel pull` → `vercel build --prod` → `vercel deploy --prebuilt --prod`. `remote` is `vercel deploy --prod` (Vercel builds the upload).
+
+Reusable callers must pass the four secrets or use `secrets: inherit`. Deploy jobs use the GitHub `production` environment (add required reviewers there if you want an approval gate).
 
 ## Local equivalent
 

@@ -24,10 +24,11 @@
 #     Also listed in docs/backend/preview-and-staging.md.
 #
 # How to fill the IDs locally (do not commit `.vercel/`):
-#   cd apps/web && npx vercel@59.23.2 link --yes --project balanse-web
+#   From the repo root (not apps/web): npx vercel@59.23.2 link --yes --project balanse-web
 #   cat .vercel/project.json   # orgId + projectId
-#   Repeat under apps/admin for balanse-admin (same orgId).
+#   Repeat with --project balanse-admin (same orgId).
 #
+# workflow_call callers must pass secrets explicitly or use `secrets: inherit`.
 # This workflow does not change Vercel dashboard ignore-build settings.
 
 name: Deploy Production
@@ -45,7 +46,7 @@ on:
           - admin
         default: both
       ref:
-        description: Git ref to deploy (branch, tag, or SHA). Empty = the commit this workflow run was started from.
+        description: Git ref to deploy (branch, tag, or SHA). Empty = main.
         required: false
         type: string
         default: ""
@@ -65,7 +66,7 @@ on:
         type: string
         default: both
       ref:
-        description: Git ref to deploy (branch, tag, or SHA). Empty = caller SHA.
+        description: Git ref to deploy (branch, tag, or SHA). Empty = main.
         required: false
         type: string
         default: ""
@@ -85,7 +86,8 @@ on:
         required: false
 
 concurrency:
-  group: deploy-production-${{ github.workflow }}-${{ inputs.app || 'both' }}-${{ inputs.ref || github.sha }}
+  # One Production ship at a time so web-only and both cannot race on balanse-web.
+  group: deploy-production
   cancel-in-progress: false
 
 permissions:
@@ -183,7 +185,7 @@ jobs:
           if [ -n "${REF}" ]; then
             checkout_ref="${REF}"
           else
-            checkout_ref="${GITHUB_SHA}"
+            checkout_ref="main"
           fi
 
           echo "apps=${apps}" >> "${GITHUB_OUTPUT}"
@@ -196,6 +198,7 @@ jobs:
     needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    environment: production
     strategy:
       fail-fast: false
       matrix:
@@ -204,7 +207,6 @@ jobs:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ matrix.app == 'web' && secrets.VERCEL_PROJECT_ID_WEB || secrets.VERCEL_PROJECT_ID_ADMIN }}
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      APP_DIR: ${{ matrix.app == 'web' && 'apps/web' || 'apps/admin' }}
       PROJECT_NAME: ${{ matrix.app == 'web' && 'balanse-web' || 'balanse-admin' }}
     steps:
       - name: Checkout
@@ -227,33 +229,33 @@ jobs:
         run: npm install --global "vercel@${VERCEL_CLI_VERSION}"
 
       - name: Pull Vercel project settings
-        working-directory: ${{ env.APP_DIR }}
         run: |
           set -euo pipefail
           if [ -z "${VERCEL_PROJECT_ID}" ]; then
             echo "::error::VERCEL_PROJECT_ID is empty for ${PROJECT_NAME}."
             exit 1
           fi
-          vercel pull --yes --environment=production --token="${VERCEL_TOKEN}"
+          # Run from the repo root so monorepo workspace packages are in the upload
+          # and project rootDirectory (apps/web | apps/admin) comes from Vercel settings.
+          vercel pull --yes --environment=production
 
       - name: Build on the runner (prebuilt)
         if: needs.prepare.outputs.mode == 'prebuilt'
-        working-directory: ${{ env.APP_DIR }}
-        run: vercel build --prod --token="${VERCEL_TOKEN}" --yes
+        run: vercel build --prod --yes
 
       - name: Deploy to Production
         id: deploy
-        working-directory: ${{ env.APP_DIR }}
         run: |
           set -euo pipefail
           if [ "${{ needs.prepare.outputs.mode }}" = "prebuilt" ]; then
-            vercel deploy --prebuilt --prod --archive=tgz --token="${VERCEL_TOKEN}" --yes | tee /tmp/vercel-deploy.out
+            vercel deploy --prebuilt --prod --archive=tgz --yes | tee /tmp/vercel-deploy.out
           else
-            vercel deploy --prod --token="${VERCEL_TOKEN}" --yes | tee /tmp/vercel-deploy.out
+            vercel deploy --prod --yes | tee /tmp/vercel-deploy.out
           fi
-          url="$(tail -n 1 /tmp/vercel-deploy.out)"
+          url="$(grep -Eo 'https://[^[:space:]]+' /tmp/vercel-deploy.out | tail -n 1)"
           if [[ ! "${url}" =~ ^https:// ]]; then
-            echo "::error::Vercel CLI did not print a deployment URL as the last line. Output was: ${url}"
+            echo "::error::Vercel CLI did not print a deployment URL. Last lines:"
+            tail -n 20 /tmp/vercel-deploy.out
             exit 1
           fi
           echo "url=${url}" >> "${GITHUB_OUTPUT}"
@@ -261,7 +263,7 @@ jobs:
           {
             echo "## Deploy Result — ${PROJECT_NAME}"
             echo ""
-            echo "- **App**: \`${{ matrix.app }}\` (\`${APP_DIR}\`)"
+            echo "- **App**: \`${{ matrix.app }}\`"
             echo "- **Project**: \`${PROJECT_NAME}\`"
             echo "- **Target**: production"
             echo "- **Mode**: \`${{ needs.prepare.outputs.mode }}\`"
