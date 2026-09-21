@@ -116,7 +116,7 @@ const spec = {
     title: "Balanse Wellness Hub API (BE-024 contract pack)",
     version: "0.2.0",
     description:
-      "Machine-readable contract for the wiring phase (BE-024 plus BE-050–BE-054). Hold duration and cutoff are absent from admin settings. Money is whole pesos as decimal strings. Admin lists use CursorPage. Validation failures use ValidationFailed (422).",
+      "Machine-readable contract for the wiring phase (BE-024 plus BE-050–BE-056). Hold duration and cutoff are absent from admin settings. Money is whole pesos as decimal strings. Admin lists use CursorPage. Validation failures use ValidationFailed (422).",
   },
   paths,
   components: {

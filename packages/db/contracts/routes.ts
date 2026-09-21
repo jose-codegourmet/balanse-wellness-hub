@@ -1,4 +1,4 @@
-/** Route inventory for BE-024. Must match docs/MVP-ROADMAP.md §4.6. */
+/** Route inventory for BE-024. Must match docs/MVP-ROADMAP.md §4.6 (plus BE-050–056). */
 
 export type HttpMethod = "get" | "post" | "patch" | "put" | "delete";
 
@@ -64,6 +64,8 @@ export const API_CONTRACT_ROUTES: ContractRoute[] = [
   { ticket: "BE-042", method: "post", path: "/api/admin/staff" },
   { ticket: "BE-042", method: "patch", path: "/api/admin/staff/{id}" },
   { ticket: "BE-042", method: "post", path: "/api/admin/staff/{id}/disable" },
+  { ticket: "BE-055", method: "post", path: "/api/admin/staff/{id}/coach" },
+  { ticket: "BE-055", method: "delete", path: "/api/admin/staff/{id}/coach" },
   { ticket: "BE-042", method: "get", path: "/api/admin/customers" },
   { ticket: "BE-042", method: "get", path: "/api/admin/customers/{id}" },
   { ticket: "BE-043", method: "get", path: "/api/admin/settings" },
@@ -77,4 +79,9 @@ export const API_CONTRACT_ROUTES: ContractRoute[] = [
   { ticket: "BE-053", method: "post", path: "/api/admin/settings/policies/{id}/promote" },
   { ticket: "BE-054", method: "get", path: "/api/admin/dashboard" },
   { ticket: "BE-054", method: "get", path: "/api/admin/dashboard/metrics" },
+  { ticket: "BE-056", method: "get", path: "/api/admin/settings/payment-qrs" },
+  { ticket: "BE-056", method: "post", path: "/api/admin/settings/payment-qrs" },
+  { ticket: "BE-056", method: "patch", path: "/api/admin/settings/payment-qrs/{id}" },
+  { ticket: "BE-056", method: "post", path: "/api/admin/settings/payment-qrs/{id}/activate" },
+  { ticket: "BE-056", method: "delete", path: "/api/admin/settings/payment-qrs/{id}" },
 ];

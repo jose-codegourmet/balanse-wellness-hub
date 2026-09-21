@@ -26,6 +26,11 @@ function assertSeedAllowed(): void {
 const PLACEHOLDER_PRICE = "999.00";
 const PLACEHOLDER_RATE = "500.00";
 
+/** Seed coaches are teaching profiles only (`staffMemberId` stays null).
+ *  BE-055: `coach_rex` is the same human as mock `staff-rex` / photo slug
+ *  `rex-francis-regis`. Link after the staff account exists via
+ *  `POST /api/admin/staff/{id}/coach` — do not invent a staff row here
+ *  (staff requires `auth.users` + `profiles`). */
 const COACHES = [
   {
     id: "coach_rex",

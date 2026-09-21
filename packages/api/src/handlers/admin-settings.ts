@@ -2,7 +2,17 @@ import { FIELD_CONSTRAINTS, type SettingsSection, SIGNED_UPLOAD } from "@balanse
 import { requireAdmin, resolveActor, writeAudit } from "../auth";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
-import { asString, ok, readJson } from "../http";
+import { asString, ok, readJson, searchParams } from "../http";
+import {
+  activatePaymentQr,
+  createConfirmedPaymentQr,
+  findActivePaymentQr,
+  listPaymentQrs,
+  overlayDerivedQr,
+  persistDerivedQr,
+  serializePaymentQrs,
+} from "../payment-qrs";
+import { presentPaymentQr } from "../presenters";
 import {
   assertNoDeveloperConfig,
   mergeSettings,
@@ -10,10 +20,9 @@ import {
   type SettingsPayload,
   writeSettings,
 } from "../settings";
-import { confirmUpload, extensionFor, mintSignedUpload, retireAdminObject } from "../uploads";
+import { confirmUpload, extensionFor, mintSignedUpload } from "../uploads";
 import {
   fieldError,
-  optionalNullableString,
   optionalString,
   requireEmail,
   requirePhMobile,
@@ -28,10 +37,13 @@ export async function getAdminSettings(deps: ApiDeps, req: Request): Promise<Res
 }
 
 async function settingsPayload(deps: ApiDeps) {
-  const settings = await readSettings(deps);
-  const faqs = await deps.prisma.faqItem.findMany({
-    orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
-  });
+  const settings = await overlayDerivedQr(deps, await readSettings(deps));
+  const [faqs, paymentQrs] = await Promise.all([
+    deps.prisma.faqItem.findMany({
+      orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
+    }),
+    listPaymentQrs(deps, false),
+  ]);
   const policies = await deps.prisma.policyDocument.findMany({
     include: { versions: { orderBy: { createdAt: "desc" } } },
     orderBy: { title: "asc" },
@@ -39,7 +51,7 @@ async function settingsPayload(deps: ApiDeps) {
   const body = {
     section: {
       business: ["business.name", "contact.phone", "contact.address"],
-      payment: ["gcashAccountName", "gcashNumber", "gcashQrObjectKey"],
+      payment: ["gcashAccountName", "gcashNumber", "gcashQrObjectKey (read-only derived)"],
       content: ["about", "contact.email", "faqs"],
       policies: ["promote"],
     },
@@ -49,7 +61,11 @@ async function settingsPayload(deps: ApiDeps) {
       address: settings.business.address,
       openingHours: settings.business.openingHours,
     },
-    payment: settings.payment,
+    payment: {
+      ...settings.payment,
+      qrImageKey: settings.payment.gcashQrObjectKey || null,
+      qrs: serializePaymentQrs(paymentQrs),
+    },
     content: {
       about: settings.content.about,
       email: settings.business.email,
@@ -144,16 +160,18 @@ export async function patchAdminSettings(deps: ApiDeps, req: Request): Promise<R
       next.payment.gcashNumber = gcashNumberRaw;
       changed.push("gcashNumber");
     }
-    const qrKey = optionalNullableString(body, "payment.gcashQrObjectKey");
-    if (qrKey === null) {
-      await retireAdminObject(deps, "marketing-assets", next.payment.gcashQrObjectKey);
-      next.payment.gcashQrObjectKey = "";
-      next.payment.gcashQrPublicUrl = "";
-      changed.push("qr_image_key");
-    } else if (qrKey) {
-      next.payment.gcashQrObjectKey = qrKey;
-      next.payment.gcashQrPublicUrl = deps.storage.publicUrl("marketing-assets", qrKey);
-      changed.push("qr_image_key");
+    if (
+      hasPath(body, "payment.gcashQrObjectKey") ||
+      hasPath(body, "payment.qrImageKey") ||
+      hasPath(body, "qrImageKey")
+    ) {
+      throwFields(
+        fieldError(
+          "payment.gcashQrObjectKey",
+          "read_only",
+          "qrImageKey is derived from the active payment QR. Use /api/admin/settings/payment-qrs.",
+        ),
+      );
     }
   }
 
@@ -197,7 +215,6 @@ export async function postSettingsQr(deps: ApiDeps, req: Request): Promise<Respo
   const body = await readJson(req);
   const contentType = asString(body.contentType);
   const objectKey = asString(body.objectKey);
-  const current = await readSettings(deps);
   if (!objectKey) {
     if (!contentType)
       throwFields(fieldError("contentType", "required", "contentType is required."));
@@ -214,39 +231,156 @@ export async function postSettingsQr(deps: ApiDeps, req: Request): Promise<Respo
     );
   }
   await confirmUpload(deps, objectKey);
-  const previous = current.payment.gcashQrObjectKey;
-  if (previous && previous !== objectKey) {
-    await retireAdminObject(deps, "marketing-assets", previous);
+  const label =
+    optionalString(body, "label", FIELD_CONSTRAINTS.settings.paymentQr.label.max) ?? "GCash";
+  const previous = await findActivePaymentQr(deps);
+  const created = await createConfirmedPaymentQr(deps, { label, imageKey: objectKey });
+  const activated = (await activatePaymentQr(deps, created.id)) ?? created;
+  if (previous && previous.id !== activated.id) {
+    await deps.prisma.paymentQrCode.update({
+      where: { id: previous.id },
+      data: { isActive: false, archivedAt: deps.now() },
+    });
   }
-  current.payment.gcashQrObjectKey = objectKey;
-  current.payment.gcashQrPublicUrl = deps.storage.publicUrl("marketing-assets", objectKey);
-  await writeSettings(deps, current);
+  const payment = (await persistDerivedQr(deps)).payment;
   await writeAudit(deps, {
     entityType: "settings",
     entityId: "public_settings",
     action: "settings.qr.replace",
     actor,
-    metadata: { previous, objectKey },
+    metadata: {
+      previous: previous?.imageKey ?? null,
+      objectKey,
+      qrId: activated.id,
+      previousArchived: previous && previous.id !== activated.id ? previous.id : null,
+    },
   });
   return ok({
-    payment: current.payment,
+    payment,
+    qr: presentPaymentQr(activated),
   });
 }
 
 export async function deleteSettingsQr(deps: ApiDeps, req: Request): Promise<Response> {
+  requireAdmin(await resolveActor(deps, req));
+  throwFields(
+    fieldError(
+      "id",
+      "cannot_remove_active",
+      "The active receive QR cannot be removed. Activate another QR, then DELETE /api/admin/settings/payment-qrs/{id}.",
+    ),
+  );
+}
+
+export async function getPaymentQrs(deps: ApiDeps, req: Request): Promise<Response> {
+  requireAdmin(await resolveActor(deps, req));
+  const includeArchived = searchParams(req).get("includeArchived") === "true";
+  const items = serializePaymentQrs(await listPaymentQrs(deps, includeArchived));
+  return ok({ items, activeId: items.find((row) => row.isActive)?.id ?? null });
+}
+
+export async function postPaymentQr(deps: ApiDeps, req: Request): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
-  const current = await readSettings(deps);
-  await retireAdminObject(deps, "marketing-assets", current.payment.gcashQrObjectKey);
-  current.payment.gcashQrObjectKey = "";
-  current.payment.gcashQrPublicUrl = "";
-  await writeSettings(deps, current);
+  const body = await readJson(req);
+  const contentType = asString(body.contentType);
+  const objectKey = asString(body.objectKey);
+  if (!objectKey) {
+    if (!contentType)
+      throwFields(fieldError("contentType", "required", "contentType is required."));
+    const path = `marketing-assets/settings/gcash-qr/${crypto.randomUUID()}.${extensionFor(contentType)}`;
+    return ok(
+      await mintSignedUpload(deps, actor, {
+        bucket: "marketing-assets",
+        purpose: "gcash_qr",
+        entityId: "payment_qr_codes",
+        contentType,
+        allowed: new Set(SIGNED_UPLOAD.gcashQrTypes),
+        objectKey: path,
+      }),
+    );
+  }
+  const label = requireString(body, "label", FIELD_CONSTRAINTS.settings.paymentQr.label.max);
+  await confirmUpload(deps, objectKey);
+  const created = await createConfirmedPaymentQr(deps, { label, imageKey: objectKey });
+  if (created.isActive) await persistDerivedQr(deps);
   await writeAudit(deps, {
-    entityType: "settings",
-    entityId: "public_settings",
-    action: "settings.qr.remove",
+    entityType: "payment_qr",
+    entityId: created.id,
+    action: "payment_qr.create",
+    actor,
+    metadata: { objectKey, isActive: created.isActive },
+  });
+  return ok({ qr: presentPaymentQr(created) });
+}
+
+export async function patchPaymentQr(deps: ApiDeps, req: Request, id: string): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const existing = await deps.prisma.paymentQrCode.findUnique({ where: { id } });
+  if (!existing || existing.archivedAt) {
+    throw new ApiError(404, "payment_qr_not_found", "Payment QR not found.");
+  }
+  const body = await readJson(req);
+  const label = optionalString(body, "label", FIELD_CONSTRAINTS.settings.paymentQr.label.max);
+  const updated = await deps.prisma.paymentQrCode.update({
+    where: { id },
+    data: {
+      ...(label !== undefined ? { label } : {}),
+    },
+  });
+  await writeAudit(deps, {
+    entityType: "payment_qr",
+    entityId: id,
+    action: "payment_qr.update",
     actor,
   });
-  return ok({ payment: current.payment });
+  return ok({ qr: presentPaymentQr(updated) });
+}
+
+export async function activatePaymentQrHandler(
+  deps: ApiDeps,
+  req: Request,
+  id: string,
+): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const activated = await activatePaymentQr(deps, id);
+  if (!activated) throw new ApiError(404, "payment_qr_not_found", "Payment QR not found.");
+  await persistDerivedQr(deps);
+  await writeAudit(deps, {
+    entityType: "payment_qr",
+    entityId: id,
+    action: "payment_qr.activate",
+    actor,
+  });
+  return ok({ qr: presentPaymentQr(activated) });
+}
+
+export async function archivePaymentQr(deps: ApiDeps, req: Request, id: string): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const existing = await deps.prisma.paymentQrCode.findUnique({ where: { id } });
+  if (!existing || existing.archivedAt) {
+    throw new ApiError(404, "payment_qr_not_found", "Payment QR not found.");
+  }
+  if (existing.isActive) {
+    throwFields(
+      fieldError(
+        "id",
+        "cannot_remove_active",
+        "Activate another QR before archiving the active one.",
+      ),
+    );
+  }
+  const archived = await deps.prisma.paymentQrCode.update({
+    where: { id },
+    data: { isActive: false, archivedAt: deps.now() },
+  });
+  await writeAudit(deps, {
+    entityType: "payment_qr",
+    entityId: id,
+    action: "payment_qr.archive",
+    actor,
+    metadata: { imageKeyKept: archived.imageKey },
+  });
+  return ok({ qr: presentPaymentQr(archived) });
 }
 
 export async function postFaq(deps: ApiDeps, req: Request): Promise<Response> {

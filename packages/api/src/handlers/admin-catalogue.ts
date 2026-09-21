@@ -3,7 +3,7 @@ import { requireAdmin, resolveActor, writeAudit } from "../auth";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { asString, ok, pagination, readJson, searchParams } from "../http";
-import { money } from "../presenters";
+import { money, presentCoach } from "../presenters";
 import { updateSessionCapacity } from "../sql";
 import {
   assertOwnedCoachPhotoKey,
@@ -82,7 +82,7 @@ export async function patchAdminClass(deps: ApiDeps, req: Request, id: string): 
 export async function getAdminCoaches(deps: ApiDeps, req: Request): Promise<Response> {
   requireAdmin(await resolveActor(deps, req));
   const items = await deps.prisma.coach.findMany({ orderBy: { name: "asc" } });
-  return ok({ items });
+  return ok({ items: items.map(presentCoach) });
 }
 
 export async function postAdminCoach(deps: ApiDeps, req: Request): Promise<Response> {
@@ -113,7 +113,7 @@ export async function postAdminCoach(deps: ApiDeps, req: Request): Promise<Respo
     action: "coach.create",
     actor,
   });
-  return ok({ coach: created });
+  return ok({ coach: presentCoach(created) });
 }
 
 export async function patchAdminCoach(deps: ApiDeps, req: Request, id: string): Promise<Response> {
@@ -142,7 +142,7 @@ export async function patchAdminCoach(deps: ApiDeps, req: Request, id: string): 
     },
   });
   await writeAudit(deps, { entityType: "coach", entityId: id, action: "coach.update", actor });
-  return ok({ coach: updated });
+  return ok({ coach: presentCoach(updated) });
 }
 
 export async function postCoachPhoto(deps: ApiDeps, req: Request, id: string): Promise<Response> {
@@ -222,7 +222,15 @@ export async function getAdminSessions(deps: ApiDeps, req: Request): Promise<Res
       include: { gymClass: true, coach: true },
     }),
   ]);
-  return ok({ page, pageSize, total, items });
+  return ok({
+    page,
+    pageSize,
+    total,
+    items: items.map((item) => ({
+      ...item,
+      coach: item.coach ? presentCoach(item.coach) : null,
+    })),
+  });
 }
 
 export async function postAdminSession(deps: ApiDeps, req: Request): Promise<Response> {

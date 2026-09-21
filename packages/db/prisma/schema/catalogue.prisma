@@ -1,4 +1,5 @@
 /// BE-004 — public profile + internal rate. One photo key (not a collection).
+/// BE-055 — optional 1:1 staff link. `isCoach` is derived from this FK, not StaffRole.
 model Coach {
   id            String        @id @default(cuid())
   name          String
@@ -10,11 +11,14 @@ model Coach {
   rateType      CoachRateType
   /// Seed/demo rates are placeholders (OQ-PRICE). Not authoritative.
   isPlaceholder Boolean       @default(false)
+  /// Nullable staff capability link. Clearing this must never delete the coach.
+  staffMemberId String?       @unique
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  classLinks ClassCoach[]
-  sessions   GymSession[]
+  staffMember StaffMember? @relation(fields: [staffMemberId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  classLinks  ClassCoach[]
+  sessions    GymSession[]
 
   @@index([active])
   @@index([photoKey])

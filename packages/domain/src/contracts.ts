@@ -1,6 +1,7 @@
 /**
- * Shared HTTP contracts for BE-050–BE-054 (admin queues, validation, uploads,
- * settings writes, dashboard metrics). FE mocks may adopt the same shapes.
+ * Shared HTTP contracts for BE-050–BE-056 (admin queues, validation, uploads,
+ * settings writes, dashboard metrics, staff/coach link, payment QR collection).
+ * FE mocks may adopt the same shapes.
  */
 
 /** One envelope for every paginated admin list (BE-050). */
@@ -56,6 +57,9 @@ export const VALIDATION_ERROR_CODES = [
   "read_only",
   "unknown_section",
   "faq_limit",
+  "qr_limit",
+  "already_linked",
+  "cannot_remove_active",
   "duplicate_value",
   "developer_config_forbidden",
 ] as const;
@@ -93,6 +97,13 @@ export const FIELD_CONSTRAINTS = {
     active: { required: false, type: "boolean" },
     defaultRate: { required: true, min: 0, unit: MONEY_UNIT, adminOnly: true },
     rateType: { required: true, enum: ["PER_SESSION", "PER_HOUR"], adminOnly: true },
+    staffId: { required: false, nullable: true, derivedFrom: "staffMemberId" },
+  },
+  staff: {
+    name: { required: true, max: 80 },
+    email: { required: true, format: "email" },
+    coachId: { required: false, nullable: true },
+    isCoach: { readOnly: true, derivedFrom: "coach" },
   },
   session: {
     classId: { required: true },
@@ -114,7 +125,12 @@ export const FIELD_CONSTRAINTS = {
     "contact.email": { required: true, format: "email", max: 120 },
     gcashName: { required: true, max: 80 },
     gcashNumber: { required: true, format: "ph_mobile" },
-    qrImageKey: { required: false, nullable: true },
+    qrImageKey: { required: false, nullable: true, readOnly: true, derived: true },
+    paymentQr: {
+      label: { required: true, max: 80 },
+      imageKey: { required: true },
+      maxItems: 12,
+    },
     about: { required: true, max: 4000, format: "markdown" },
     openingHours: { readOnly: true },
     policyVersion: { format: "yyyy-mm" },

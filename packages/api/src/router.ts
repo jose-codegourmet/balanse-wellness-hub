@@ -28,8 +28,10 @@ import {
   getCustomer,
   getCustomers,
   getStaff,
+  linkStaffCoach,
   patchStaff,
   postStaff,
+  unlinkStaffCoach,
 } from "./handlers/admin-people";
 import {
   getClassPerformance,
@@ -48,12 +50,17 @@ import {
 } from "./handlers/admin-requests";
 import { getSessionRoster, postCheckIn, postNoShow } from "./handlers/admin-roster";
 import {
+  activatePaymentQrHandler,
+  archivePaymentQr,
   deleteFaq,
   deleteSettingsQr,
   getAdminSettings,
+  getPaymentQrs,
   patchAdminSettings,
   patchFaq,
+  patchPaymentQr,
   postFaq,
+  postPaymentQr,
   postSettingsQr,
   promotePolicy,
   reorderFaqs,
@@ -183,12 +190,23 @@ const handlers: Record<string, RouteHandler> = {
   "POST /api/admin/staff": (deps, req) => postStaff(deps, req),
   "PATCH /api/admin/staff/{id}": (deps, req, params) => patchStaff(deps, req, params.id),
   "POST /api/admin/staff/{id}/disable": (deps, req, params) => disableStaff(deps, req, params.id),
+  "POST /api/admin/staff/{id}/coach": (deps, req, params) => linkStaffCoach(deps, req, params.id),
+  "DELETE /api/admin/staff/{id}/coach": (deps, req, params) =>
+    unlinkStaffCoach(deps, req, params.id),
   "GET /api/admin/customers": (deps, req) => getCustomers(deps, req),
   "GET /api/admin/customers/{id}": (deps, req, params) => getCustomer(deps, req, params.id),
   "GET /api/admin/settings": (deps, req) => getAdminSettings(deps, req),
   "PATCH /api/admin/settings": (deps, req) => patchAdminSettings(deps, req),
   "POST /api/admin/settings/qr": (deps, req) => postSettingsQr(deps, req),
   "DELETE /api/admin/settings/qr": (deps, req) => deleteSettingsQr(deps, req),
+  "GET /api/admin/settings/payment-qrs": (deps, req) => getPaymentQrs(deps, req),
+  "POST /api/admin/settings/payment-qrs": (deps, req) => postPaymentQr(deps, req),
+  "PATCH /api/admin/settings/payment-qrs/{id}": (deps, req, params) =>
+    patchPaymentQr(deps, req, params.id),
+  "POST /api/admin/settings/payment-qrs/{id}/activate": (deps, req, params) =>
+    activatePaymentQrHandler(deps, req, params.id),
+  "DELETE /api/admin/settings/payment-qrs/{id}": (deps, req, params) =>
+    archivePaymentQr(deps, req, params.id),
   "POST /api/admin/settings/faqs": (deps, req) => postFaq(deps, req),
   "PATCH /api/admin/settings/faqs/{id}": (deps, req, params) => patchFaq(deps, req, params.id),
   "DELETE /api/admin/settings/faqs/{id}": (deps, req, params) => deleteFaq(deps, req, params.id),

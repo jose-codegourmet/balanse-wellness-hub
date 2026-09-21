@@ -23,5 +23,7 @@
 | [uploads.md](./uploads.md) | BE-052 |
 | [settings-write.md](./settings-write.md) | BE-053 |
 | [dashboard-metrics.md](./dashboard-metrics.md) | BE-054 |
-| [api-routes.md](./api-routes.md) | BE-030–BE-043 + BE-050–054 |
+| [staff-coach-unification.md](./staff-coach-unification.md) | BE-055 |
+| [payment-qr-collection.md](./payment-qr-collection.md) | BE-056 |
+| [api-routes.md](./api-routes.md) | BE-030–BE-043 + BE-050–056 |
 | [human-steps.md](./human-steps.md) | dashboard-only |

@@ -20,6 +20,9 @@ Authorisation: `public.is_admin()` → active `staff_members.role = ADMIN` and `
 | `developer_config` | — | — | — (postgres only) |
 | `faqs` | select | select | all |
 | `pending_uploads` | — | — | all |
+| `payment_qr_codes` | — | — | all (BE-056) |
+| `payment_qr_codes_public` | select active (`id`, `imageKey`) | select | select |
+| `coaches.staffMemberId` | — (not on `coaches_public`) | — | admin write (BE-055) |
 
 Negative guarantees:
 
@@ -27,5 +30,7 @@ Negative guarantees:
 - Anon cannot read bookings, payments, coach rates, or reports.
 - Customer cannot persist `CONFIRMED`, `CHECKED_IN`, or refund rows.
 - Coach rate columns are not granted through `coaches_public`.
+- There is no coach principal. Linking `Coach.staffMemberId` grants **no** extra Data API access (BE-055).
+- Archived / labeled receive QRs are not granted through `payment_qr_codes_public` (BE-056).
 
 `session_roster_metrics` and report functions are revoked from Data API roles.

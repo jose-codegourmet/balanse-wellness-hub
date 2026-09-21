@@ -31,6 +31,8 @@ Shape:
 
 `path` is the FE field path (dotted / indexed). `code` is from `VALIDATION_ERROR_CODES`.
 
+BE-055 / BE-056 additions: `already_linked`, `cannot_remove_active`, `qr_limit`. Staff-disabled link uses existing `inactive_reference`.
+
 ## Invariants
 
 - `sessions.endsAt > startsAt` is a **database CHECK**. Max duration 8 hours is validator-only.

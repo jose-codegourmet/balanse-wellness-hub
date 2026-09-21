@@ -10,10 +10,10 @@ packages/db/prisma/schema/
   app-meta.prisma        # INF baseline (`app_meta`)
   enums.prisma           # BE-001
   config.prisma          # BE-019
-  identities.prisma      # BE-002 / BE-003
-  catalogue.prisma       # BE-004 / BE-005 / BE-006
+  identities.prisma      # BE-002 / BE-003 / BE-055 (StaffMember.coach)
+  catalogue.prisma       # BE-004 / BE-005 / BE-006 / BE-055 (Coach.staffMemberId)
   policies.prisma        # BE-007
-  reservations.prisma    # BE-008…BE-015
+  reservations.prisma    # BE-008…BE-015 / BE-056 (PaymentQrCode)
   audit.prisma           # BE-016
 packages/db/prisma/migrations/
   migration_lock.toml

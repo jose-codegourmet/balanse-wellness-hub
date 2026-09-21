@@ -18,7 +18,7 @@ Admin review signed URLs are **not** minted in this schema PR; the SQL policy al
 
 Replacing a coach photo: one `photoKey` column. Application (BE-038 / BE-052) deletes the previous **admin-upload** object and updates the column in one handler. Curated `coach-photos/<slug>` Assets-track keys are never deleted by replace/remove. Schema cannot multi-statement storage+row atomically across APIs.
 
-Admin-uploaded keys are `coach-photos/<coachId>/<uuid>.ext`. Public reads need no signed URL. Writes are admin-only. GCash QR lives in `marketing-assets` (same public-read / admin-write). Payment proofs stay private. See [uploads.md](./uploads.md).
+Admin-uploaded keys are `coach-photos/<coachId>/<uuid>.ext`. Public reads need no signed URL. Writes are admin-only. GCash receive QRs live in `marketing-assets/settings/gcash-qr/` (same public-read / admin-write). Archived QR objects are kept for payment snapshots (BE-056). Payment proofs stay private. See [uploads.md](./uploads.md) and [payment-qr-collection.md](./payment-qr-collection.md).
 
 ## Human-only
 

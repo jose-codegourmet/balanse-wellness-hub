@@ -21,6 +21,7 @@ model Profile {
 
 /// BE-003 — admin authorisation. Rate/report access derives from this role.
 /// Only authorised admins reach coach rates, sales, refunds, and capacity reports.
+/// BE-055 — optional 1:1 coach capability (`coach`); not a StaffRole value.
 model StaffMember {
   id        String      @id @default(cuid())
   userId    String      @unique @db.Uuid
@@ -34,6 +35,8 @@ model StaffMember {
   updatedAt DateTime    @updatedAt
 
   profile               Profile                  @relation(fields: [userId], references: [id])
+  /// Teaching profile when this staff member is also a coach (derived `isCoach`).
+  coach                 Coach?
   reviewedPayments      Payment[]                @relation("PaymentReviewedBy")
   refundsMarkedPending  Refund[]                 @relation("RefundMarkedPendingBy")
   refundsMarkedRefunded Refund[]                 @relation("RefundMarkedRefundedBy")

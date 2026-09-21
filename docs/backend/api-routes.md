@@ -1,4 +1,4 @@
-# API routes (BE-030–BE-043)
+# API routes (BE-030–BE-043 + BE-050–056)
 
 HTTP handlers live in `@balanse/api` and are mounted on `apps/web` at `/api/*` (`src/app/api/[[...path]]/route.ts`). Screens stay mock-only this phase — no FE `fetch` to these routes (`WIRE-*` later).
 
@@ -42,6 +42,12 @@ Field names match `docs/screen-specs/admin/14-sales-inventory-reports.md` (Gross
 ## Settings
 
 Four independently saveable sections (BE-053): business profile, payment, public content, policy promote. Hold duration and booking cutoff are **absent**. Nested `contact.phone`/`address` vs `contact.email` are partial-safe. FAQs are rows in `faqs` with `sortOrder`. New policy versions are inserted; prior versions stay immutable (`isCurrent` flips; partial unique index). See [settings-write.md](./settings-write.md).
+
+Payment receive QRs are a first-class collection (BE-056): `GET/POST /api/admin/settings/payment-qrs`, `PATCH` / `POST …/activate` / `DELETE` on `/{id}`. Exactly one active non-archived row. `qrImageKey` / `gcashQrObjectKey` are read-only derived. See [payment-qr-collection.md](./payment-qr-collection.md).
+
+## Staff / coach capability (BE-055)
+
+`POST` / `DELETE /api/admin/staff/{id}/coach` links a teaching profile to a staff account. `isCoach` / `coachId` appear on staff payloads; `staffId` on admin coach payloads. Not a `StaffRole` value. See [staff-coach-unification.md](./staff-coach-unification.md).
 
 ## Admin lists (BE-050)
 
