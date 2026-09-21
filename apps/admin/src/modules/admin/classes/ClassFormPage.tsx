@@ -6,6 +6,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Path } from "react-hook-form";
+import {
+  type CoachOptionCoach,
+  toCoachChoiceOption,
+} from "@/components/balanse/coach/coach-option/CoachOption";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import {
   AdminWizard,
@@ -153,7 +157,7 @@ function ClassWizardFields({
   isNew: boolean;
   classId: string;
   className?: string;
-  coaches: { id: string; name: string }[];
+  coaches: CoachOptionCoach[];
   surface: AdminWizardSurface;
   step?: number;
   onLeaveList: () => void;
@@ -260,10 +264,7 @@ function ClassWizardFields({
         </FormField>
         <FormField name="associatedCoachIds" label="Associated coaches (optional)">
           {(field) => (
-            <CheckboxGroupBinding
-              {...field}
-              options={coaches.map((coach) => ({ value: coach.id, label: coach.name }))}
-            />
+            <CheckboxGroupBinding {...field} options={coaches.map(toCoachChoiceOption)} />
           )}
         </FormField>
       </AdminWizardStepPanel>

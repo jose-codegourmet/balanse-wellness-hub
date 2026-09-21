@@ -9,11 +9,15 @@ import {
   sessionStatusLabel,
 } from "@balanse/domain";
 import { Badge, Button } from "@balanse/ui";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { CoachOption } from "@/components/balanse/coach/coach-option/CoachOption";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import { adminNowIso } from "@/lib/clock";
 import { useCancelAdminSession } from "@/lib/query/mutations";
+import { adminCoachesQuery } from "@/lib/query/queries";
 import { notify } from "@/modules/notifications/notify";
+import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { editSessionHref, rosterHref } from "./schedule-href";
 
 type Inventory = ReturnType<typeof computeSessionInventory>;
@@ -30,6 +34,9 @@ export function SelectedSessionPanel({
   onSelectSession: (id: string) => void;
 }) {
   const cancel = useCancelAdminSession();
+  const { principal } = useMockPrincipal();
+  const coachesQuery = useQuery(adminCoachesQuery(principal.role));
+  const coach = coachesQuery.data?.find((row) => row.id === session.coachId);
   const canCancel = session.status !== "CANCELLED";
 
   return (
@@ -61,9 +68,14 @@ export function SelectedSessionPanel({
         {session.className} · {formatSessionDate(session.startsAt)} ·{" "}
         {formatSessionTime(session.startsAt)}–{formatSessionTime(session.endsAt)}
       </p>
-      <p className="text-sm text-muted-foreground">
-        {session.coachName} · {sessionStatusLabel(session.status)}
-      </p>
+      <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+        {coach ? (
+          <CoachOption coach={coach} layout="row" className="min-w-0 flex-1 text-foreground" />
+        ) : (
+          session.coachName
+        )}
+        <span>· {sessionStatusLabel(session.status)}</span>
+      </div>
       <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
         <InventoryStat label="Capacity" value={session.capacity} />
         <InventoryStat label="Confirmed" value={inventory.confirmed} />

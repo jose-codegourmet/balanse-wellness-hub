@@ -56,6 +56,8 @@ Mark a primary link cell so the row is keyboard-reachable without `onRowClick`, 
 
 `layout` is `"auto"` by default (cards below 768, table at tablet+). Pin `"table"` or `"cards"` in Storybook. Columns without `mobile` meta become labelled key/value rows so nothing disappears. Use `role: "hidden"` only when the column is already represented (e.g. a Review link that duplicates `primaryLink`).
 
+`loading` renders `TablePageSkeleton` with the same `layout` rule (`chrome="content"`) so a client refetch matches the route `loading.tsx` body.
+
 ## Gotchas
 
 - `tableId` is required. It namespaces URL keys (`staff_page`, `staff_sort`, `staff_q`, `staff_facets`) and `localStorage` prefs (`balanse-admin-table:<tableId>:prefs`). The three `/reports` tables must stay `reports-classes`, `reports-coaches`, and `reports-sessions` or they collide
