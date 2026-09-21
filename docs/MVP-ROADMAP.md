@@ -84,12 +84,16 @@ This phase runs **two independent lanes in parallel** and deliberately does **no
 | FE public screens | `FE-PUB-001` – `FE-PUB-005` | 5 |
 | FE customer screens | `FE-CUS-001` – `FE-CUS-013` | 13 |
 | FE admin screens | `FE-ADM-001` – `FE-ADM-014` | 14 |
+| FE shared systems (later polish; epics #179, #197) | `FE-SHR-006` – `FE-SHR-013` | 8 |
+| FE admin polish (epic #197) | `FE-ADM-015` – `FE-ADM-032` | 18 |
 | Assets — foundations | `ASSET-001` – `ASSET-002` | 2 |
 | Assets — coach headshots | `ASSET-010` – `ASSET-015` | 6 |
 | Assets — marketing imagery | `ASSET-020` – `ASSET-023` | 4 |
 | Assets — Storage handoff | `ASSET-030` | 1 |
 | Later-phase wiring stubs | `WIRE-001` – `WIRE-013` | 13 |
 | **Total build-now tickets** | | **108** |
+
+The **108** total is the original inventory. `FE-SHR-006`–`013` and `FE-ADM-015`–`032` are later polish (epics #179 / #197) and are **not** folded into that number. Admin work did not stop at `FE-ADM-014`.
 
 ### 1.5 Ticket format used throughout
 
@@ -1734,6 +1738,8 @@ apps/admin (port 9001)
 ### 6.3 Admin screens
 
 > Additional standing rule for this whole subsection: coach compensation, coach cost, and financial report data are **admin-only** [R67, R68]. Admin screens may show them; no component built here may be reused on a public or customer surface without stripping those fields.
+>
+> Ticket range: original mocks `FE-ADM-001`–`014`, then polish `FE-ADM-015`–`032` plus `FE-SHR-007`–`013` (epic #197). The polish IDs are listed after `FE-ADM-014`.
 
 #### FE-ADM-001 — Admin login
 
@@ -1961,6 +1967,40 @@ apps/admin (port 9001)
   - [ ] Empty state when the selected range has no data.
 - **Out of scope:** Exports, scheduled reports, BI, accounting integrations.
 - **Phase:** P4
+
+#### Admin polish wave (epic #197) — `FE-ADM-015`–`032` and `FE-SHR-007`–`013`
+
+The tickets above are the original mocked admin screens. They are not the end of admin FE work. Epic #197 polished the existing surfaces under the mock harness (no `WIRE-*`). Historical definitions for `FE-ADM-001`–`014` stay as written.
+
+| ID | Issue | Title |
+| --- | --- | --- |
+| FE-SHR-007 | #198 | Component authoring standard + `docs/component-guide.md` |
+| FE-SHR-008 | #199 | Field primitives hardening |
+| FE-SHR-009 | #200 | `DatePicker` / `DateRangePicker` / `TimePicker` |
+| FE-SHR-010 | #201 | `RichTextarea` |
+| FE-SHR-011 | #202 | `Badge` + `StatusBadge` (+ `CountBadge`) |
+| FE-SHR-012 | #203 | Page-skeleton kit |
+| FE-ADM-015 | #204 | React Query data layer + prefetch |
+| FE-ADM-016 | #205 | Collapsible sidebar + shell |
+| FE-ADM-017 | #207 | `AdminDataTable` v2 |
+| FE-ADM-018 | #208 | `AdminPageShell` + `loading.tsx` |
+| FE-ADM-019 | #209 | Admin form kit |
+| FE-ADM-020 | #210 | Virtualized notification queues |
+| FE-ADM-021 | #211 | Admin Storybook split |
+| FE-ADM-022 | #212 | `/dashboard` bento |
+| FE-ADM-023 | #213 | `/payments` queue |
+| FE-ADM-024 | #214 | `/cancellations` queue |
+| FE-ADM-025 | #215 | `/reschedules` queue |
+| FE-ADM-026 | #216 | `/classes` list |
+| FE-ADM-027 | #217 | Class form wizard |
+| FE-ADM-028 | #218 | `/coaches` list + imagery |
+| FE-ADM-029 | #219 | Coach form tabs |
+| FE-ADM-030 | #220 | Schedule + add-session wizard |
+| FE-ADM-031 | #221 | `/customers` + roster stats |
+| FE-ADM-032 | #222 | `/settings` IA |
+| FE-SHR-013 | #223 | OpenSpec + `docs/metas/` closeout |
+
+What actually shipped (and what did not) is recorded in `docs/metas/fe-admin-polish.md` and `openspec/specs/fe-admin-screens.md`. Related BE contract tickets: `BE-050`–`BE-054` (#224–#228).
 
 ---
 
@@ -2584,6 +2624,14 @@ Every file under `docs/screen-specs/` and the FE ticket(s) that cover it.
 | FE-SHR-003 | Empty, loading, and error state library | P1 |
 | FE-SHR-004 | Marketing asset integration layer | P2 |
 | FE-SHR-005 | Responsive calendar component (mock) | P2 |
+| FE-SHR-006 | Portal toast system (epic #179) | later |
+| FE-SHR-007 | Component authoring standard | later |
+| FE-SHR-008 | Field primitives hardening | later |
+| FE-SHR-009 | DatePicker / DateRangePicker / TimePicker | later |
+| FE-SHR-010 | RichTextarea | later |
+| FE-SHR-011 | Badge + StatusBadge redesign | later |
+| FE-SHR-012 | Page-skeleton kit | later |
+| FE-SHR-013 | OpenSpec closeout for admin polish | later |
 
 ### FE screens
 
@@ -2621,6 +2669,24 @@ Every file under `docs/screen-specs/` and the FE ticket(s) that cover it.
 | FE-ADM-012 | Session roster and check-in | P4 |
 | FE-ADM-013 | Settings | P4 |
 | FE-ADM-014 | Sales and inventory reports | P4 |
+| FE-ADM-015 | React Query data layer + prefetch | later |
+| FE-ADM-016 | Collapsible admin sidebar + shell | later |
+| FE-ADM-017 | AdminDataTable v2 | later |
+| FE-ADM-018 | AdminPageShell + route skeletons | later |
+| FE-ADM-019 | Admin form kit | later |
+| FE-ADM-020 | Virtualized notification queues | later |
+| FE-ADM-021 | Admin Storybook split | later |
+| FE-ADM-022 | Dashboard bento | later |
+| FE-ADM-023 | Payments notification queue | later |
+| FE-ADM-024 | Cancellations notification queue | later |
+| FE-ADM-025 | Reschedules notification queue | later |
+| FE-ADM-026 | Classes list redesign | later |
+| FE-ADM-027 | Class form wizard | later |
+| FE-ADM-028 | Coaches list + imagery | later |
+| FE-ADM-029 | Coach form tabs | later |
+| FE-ADM-030 | Schedule + add-session wizard | later |
+| FE-ADM-031 | Customers list + roster stats | later |
+| FE-ADM-032 | Settings reorganize | later |
 
 ### Assets
 

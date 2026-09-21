@@ -1,0 +1,13 @@
+# Spec: FE admin screens
+
+## Requirements
+
+1. Admin lives in `apps/admin` (port 9001). Screens read data only through the React Query factories in `apps/admin/src/lib/query/`, which call `getMockAdapter()`. Screens do not `fetch` `/api/*` and do not import fixture files.
+2. Route inventory after the polish wave: `/login`; `/dashboard`; `/schedule` and `/schedule/new` (desktop intercept `@modal`); `/bookings` and `/bookings/[bookingId]`; `/payments`; `/cancellations`; `/reschedules`; `/customers` and `/customers/[customerId]`; `/coaches` and `/coaches/[coachId]` plus `/coaches/new`; `/classes` and `/classes/[classId]` plus `/classes/new` (desktop intercept `@modal`); `/staff` and `/staff/[staffId]`; `/reports` and `/reports/[sessionId]`; `/sessions/[sessionId]/roster`; `/settings`. Dev-only: `/dev/kit`, `/dev/tokens`.
+3. Admin nav is the 12-item `ADMIN_NAV_ITEMS` list (Dashboard, Schedule, Bookings, Payments, Cancellations, Reschedules, Customers, Coaches, Classes, Reports, Staff, Settings). The collapsible shell groups them as Operations / Directory / Studio; Reports remains between Classes and Staff in the catalog. The sidebar is not rendered in `apps/web`.
+4. Login is email/password only. Copy includes the administrator help line. There is no sign-up, no forgot-password, and no Google button on admin.
+5. Coach rates, coach cost, and financial report figures are admin-principal-only. Query keys are rooted at `["admin", role]`. Public/customer types and `apps/web` never receive rate or cost fields.
+6. Shared composition: `AdminPageShell` (title, breadcrumb, actions, stats, tabs); `AdminDataTable` for lists; `AdminQueueList` + `AdminQueueCard` for payments/cancellations/reschedules; `AdminWizard` for class and session create/edit (desktop modal / mobile page); `AdminPageTabs` for coach and settings; `@balanse/ui` field family + admin form kit for write forms.
+7. Forms use `react-hook-form` + `zodResolver`. Schema and `defaultValues` are colocated under `modules/admin/forms/`. Constraints derive from `@balanse/domain` `FIELD_CONSTRAINTS`. Validation/server errors surface through `FieldError` / `FormMessage`. Writes go through `lib/query/mutations.ts` and `notify.admin` on the redesigned surfaces. Photo and GCash QR still use `MockImageUpload` (pending keys, no Storage).
+8. Per-route `loading.tsx` files render the matching page-skeleton shell. The dashboard segment has one shared `error.tsx`; routes do not carry custom error copy.
+9. Mock harness remains on. `MockRuntimeOptions` knobs are `latencyMs`, `failNext`, `failPublicSessions`, `sessionBecameFullId`, `failProofUpload`, `emptyAdminQueues`. Queue fixtures include ~120 generated rows (`buildGeneratedQueueBookings` in `packages/mock`).

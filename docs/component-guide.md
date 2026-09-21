@@ -224,3 +224,20 @@ Vendored Jabkit under `src/components/jabkit/` stays pristine and is exempt.
 - Jabkit: [`docs/engineering/jabkit.md`](./engineering/jabkit.md)
 - FE screen checklist: [`docs/engineering/fe-screen-ticket-checklist.md`](./engineering/fe-screen-ticket-checklist.md)
 - Package how-to: [`packages/ui/docs/development.md`](../packages/ui/docs/development.md)
+
+## Changelog
+
+### Admin polish wave 0 (`FE-SHR-007`–`012`, epic #197)
+
+Primitives added or materially changed in `@balanse/ui` during this wave. Find them here instead of grepping:
+
+| Primitive | Path | Ticket |
+| --- | --- | --- |
+| `DatePicker` | `packages/ui/src/components/date-picker/` | `FE-SHR-009` / #200 |
+| `DateRangePicker` | same folder as `DatePicker` | `FE-SHR-009` / #200 |
+| `TimePicker` | `packages/ui/src/components/time-picker/` | `FE-SHR-009` / #200 |
+| `RichTextarea` | `packages/ui/src/components/rich-textarea/` | `FE-SHR-010` / #201 |
+| `CountBadge` | `packages/ui/src/components/badge/CountBadge.tsx` | `FE-SHR-011` / #202 |
+| Page-skeleton shells | `packages/ui/src/balanse/feedback/skeletons/` (`TablePageSkeleton`, `CardListSkeleton`, `FormPageSkeleton`, `BentoSkeleton`, `DetailPageSkeleton`, `CalendarSkeleton`) | `FE-SHR-012` / #203 |
+
+`Badge` and `StatusBadge` were redesigned in place (`FE-SHR-011` / #202). Field primitives (`Button`, `Field`, `Input`, `Textarea`, `Checkbox`, `Switch`, `RadioGroup`, `NativeSelect`) were hardened in `FE-SHR-008` / #199. Wave closeout: `docs/metas/fe-admin-polish.md`.
