@@ -7,11 +7,24 @@ import {
   formatSessionDate,
   formatSessionTime,
 } from "@balanse/domain";
-import { Label, NativeSelect } from "@balanse/ui";
+import {
+  type ChoiceOption,
+  Combobox,
+  ComboboxCollection,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  choiceOptionFilterText,
+  Label,
+  NativeSelect,
+} from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { toCoachChoiceOption } from "@/components/balanse/coach/coach-option/CoachOption";
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { ReportsOverview } from "@/components/balanse/reports-overview/ReportsOverview";
@@ -132,6 +145,12 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
   );
 
   const noData = reports.sessionPerformance.length === 0;
+  const coachFilterOptions = useMemo<ChoiceOption[]>(
+    () => [{ value: "all", label: "All coaches" }, ...coaches.map(toCoachChoiceOption)],
+    [coaches],
+  );
+  const selectedCoachFilter =
+    coachFilterOptions.find((option) => option.value === coachId) ?? coachFilterOptions[0];
 
   return (
     <AdminPageShell title="Reports">
@@ -163,18 +182,36 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="report-coach">Coach</Label>
-          <NativeSelect
-            id="report-coach"
-            value={coachId}
-            onChange={(event) => setCoachId(event.target.value)}
+          <Combobox
+            items={coachFilterOptions}
+            value={selectedCoachFilter}
+            onValueChange={(next) => setCoachId(next?.value ?? "all")}
+            itemToStringLabel={(item) => choiceOptionFilterText(item)}
           >
-            <option value="all">All coaches</option>
-            {coaches.map((row) => (
-              <option key={row.id} value={row.id}>
-                {row.name}
-              </option>
-            ))}
-          </NativeSelect>
+            <ComboboxInput
+              id="report-coach"
+              placeholder="Search coach…"
+              leading={selectedCoachFilter?.leading}
+              className="w-full"
+            />
+            <ComboboxContent>
+              <ComboboxEmpty>No coach found.</ComboboxEmpty>
+              <ComboboxList>
+                <ComboboxCollection>
+                  {(item) => (
+                    <ComboboxItem
+                      key={item.value}
+                      value={item}
+                      leading={item.leading}
+                      description={item.description}
+                    >
+                      {item.label}
+                    </ComboboxItem>
+                  )}
+                </ComboboxCollection>
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="report-status">Session Status</Label>

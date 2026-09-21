@@ -8,6 +8,7 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
+  choiceOptionFilterText,
 } from "@balanse/ui";
 import type { FormFieldRenderProps } from "../AdminForm.schema";
 import type { ChoiceOption } from "./ChoiceBinding";
@@ -35,7 +36,7 @@ export function ComboboxBinding({
       items={options}
       value={selected}
       onValueChange={(next) => onChange(next?.value ?? "")}
-      itemToStringLabel={(item) => item.label}
+      itemToStringLabel={(item) => choiceOptionFilterText(item)}
     >
       <ComboboxInput
         name={name}
