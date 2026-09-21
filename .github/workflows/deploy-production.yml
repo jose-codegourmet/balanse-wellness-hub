@@ -222,10 +222,11 @@ jobs:
           version: 11.0.8
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
-          cache: pnpm
+          # This job never runs `pnpm install`; caching the store fails the post step.
+          package-manager-cache: false
 
       - name: Install Vercel CLI
         run: npm install --global "vercel@${VERCEL_CLI_VERSION}"
