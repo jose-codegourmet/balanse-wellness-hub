@@ -422,7 +422,7 @@ function AdminDataTableInner<TData>({
                 ))}
               </ul>
             )}
-            {error || loading ? null : (
+            {error ? null : (
               <div className="mt-4 overflow-hidden rounded-xl border border-border bg-card">
                 <AdminDataTablePagination
                   table={table}
