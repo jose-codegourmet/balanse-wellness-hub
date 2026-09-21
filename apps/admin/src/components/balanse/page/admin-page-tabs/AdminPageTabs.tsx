@@ -1,7 +1,7 @@
 "use client";
 
-import { cn, Tabs, TabsContent, TabsList, TabsTrigger, useIsMobile } from "@balanse/ui";
-import { useEffect, useRef } from "react";
+import { cn, useIsMobile } from "@balanse/ui";
+import { type KeyboardEvent, useEffect, useRef } from "react";
 import type { AdminPageTabsProps } from "./AdminPageTabs.schema";
 
 export function AdminPageTabs({
@@ -20,9 +20,7 @@ export function AdminPageTabs({
 
   useEffect(() => {
     if (!chips) return;
-    const active = listRef.current?.querySelector<HTMLElement>(
-      "[data-slot='tabs-trigger'][data-active]",
-    );
+    const active = listRef.current?.querySelector<HTMLElement>('[aria-selected="true"]');
     active?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
   }, [chips, value]);
 
@@ -31,54 +29,91 @@ export function AdminPageTabs({
     onValueChange(next);
   }
 
-  const chipTriggers = tabs.map((tab) => (
-    <TabsTrigger
-      key={tab.id}
-      value={tab.id}
-      className={cn(
-        "snap-start shrink-0 rounded-full border border-border bg-transparent px-3 py-1.5 text-sm after:hidden data-active:bg-primary data-active:font-medium data-active:text-primary-foreground data-active:shadow-none",
-        tab.error &&
-          "border-destructive text-destructive data-active:bg-destructive data-active:text-destructive-foreground",
-      )}
-      onClick={() => selectTab(tab.id)}
-    >
-      {tab.label}
-      {tab.error ? <span className="size-1.5 rounded-full bg-current" aria-hidden /> : null}
-    </TabsTrigger>
-  ));
+  function onListKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const ids = tabs.map((tab) => tab.id);
+    const index = Math.max(0, ids.indexOf(value));
+    if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+      event.preventDefault();
+      const delta = event.key === "ArrowRight" ? 1 : -1;
+      const next = ids[(index + delta + ids.length) % ids.length];
+      if (next) selectTab(next);
+      return;
+    }
+    if (event.key === "Home") {
+      event.preventDefault();
+      const next = ids[0];
+      if (next) selectTab(next);
+      return;
+    }
+    if (event.key === "End") {
+      event.preventDefault();
+      const next = ids[ids.length - 1];
+      if (next) selectTab(next);
+    }
+  }
 
-  const lineTriggers = tabs.map((tab) => (
-    <TabsTrigger
-      key={tab.id}
-      value={tab.id}
-      className="data-active:font-semibold data-active:text-foreground"
-      onClick={() => selectTab(tab.id)}
-    >
-      {tab.label}
-      {tab.error ? <span className="size-1.5 rounded-full bg-destructive" aria-hidden /> : null}
-    </TabsTrigger>
-  ));
+  const triggers = tabs.map((tab) => {
+    const selected = tab.id === value;
+    return (
+      <button
+        key={tab.id}
+        type="button"
+        role="tab"
+        aria-selected={selected}
+        tabIndex={selected ? 0 : -1}
+        className={
+          chips
+            ? cn(
+                "snap-start shrink-0 rounded-full border border-border bg-transparent px-3 py-1.5 text-sm",
+                selected && "bg-primary font-medium text-primary-foreground",
+                tab.error &&
+                  "border-destructive text-destructive data-[selected=true]:bg-destructive data-[selected=true]:text-destructive-foreground",
+                selected && tab.error && "bg-destructive text-destructive-foreground",
+              )
+            : cn(
+                "relative inline-flex items-center gap-1.5 border-transparent px-1.5 py-0.5 text-sm font-medium text-foreground/60",
+                "after:absolute after:inset-x-0 after:bottom-[-5px] after:h-0.5 after:bg-foreground after:opacity-0",
+                selected && "font-semibold text-foreground after:opacity-100",
+              )
+        }
+        data-selected={selected ? "true" : undefined}
+        onClick={() => selectTab(tab.id)}
+      >
+        {tab.label}
+        {tab.error ? <span className="size-1.5 rounded-full bg-current" aria-hidden /> : null}
+      </button>
+    );
+  });
 
   return (
-    <Tabs value={value} onValueChange={selectTab} className={cn("gap-4", className)}>
+    <div className={cn("grid gap-4", className)}>
       {hideList ? null : chips ? (
         <div className="sticky top-0 z-20 -mx-4 border-b border-border bg-background px-4 py-3">
-          <div ref={listRef} className="min-w-0 overflow-x-auto">
-            <TabsList
-              variant="line"
-              aria-label={label}
-              className="h-auto w-max max-w-none flex-nowrap justify-start gap-2 scroll-px-1 snap-x snap-mandatory rounded-none bg-transparent p-0"
-            >
-              {chipTriggers}
-            </TabsList>
+          <div
+            ref={listRef}
+            role="tablist"
+            aria-label={label}
+            className="flex w-max max-w-none flex-nowrap gap-2 overflow-x-auto scroll-px-1 snap-x snap-mandatory"
+            onKeyDown={onListKeyDown}
+          >
+            {triggers}
           </div>
         </div>
       ) : (
-        <TabsList variant="line" aria-label={label}>
-          {lineTriggers}
-        </TabsList>
+        <div
+          role="tablist"
+          aria-label={label}
+          className="inline-flex w-fit items-center gap-1 border-b border-transparent"
+          onKeyDown={onListKeyDown}
+        >
+          {triggers}
+        </div>
       )}
-      {children ? <TabsContent value={value}>{children}</TabsContent> : null}
-    </Tabs>
+      {children ? (
+        <div role="tabpanel" className="flex-1 text-sm outline-none">
+          {children}
+        </div>
+      ) : null}
+    </div>
   );
 }
