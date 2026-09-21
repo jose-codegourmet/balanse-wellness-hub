@@ -20,14 +20,16 @@ export function BooleanBinding({
   const checked = value === true;
   if (as === "switch") {
     return (
-      <Switch
-        ref={ref}
-        name={name}
-        size={size}
-        checked={checked}
-        onBlur={onBlur}
-        onCheckedChange={(next) => onChange(next === true)}
-      />
+      <div data-slot="switch" className="flex min-h-11 items-center justify-end">
+        <Switch
+          ref={ref}
+          name={name}
+          size={size}
+          checked={checked}
+          onBlur={onBlur}
+          onCheckedChange={(next) => onChange(next === true)}
+        />
+      </div>
     );
   }
   return (

@@ -35,6 +35,10 @@ export type FormFieldProps<TValues extends FieldValues = FieldValues> = {
    */
   wireAria?: boolean;
   disabled?: boolean;
+  required?: boolean;
+  optional?: boolean;
+  maxLength?: number;
+  span?: "auto" | "full";
   orientation?: "vertical" | "horizontal" | "responsive";
   children: (field: FormFieldRenderProps) => ReactNode;
 };
@@ -43,6 +47,9 @@ export type FormSectionProps = {
   title: string;
   description?: string;
   children: ReactNode;
+  action?: ReactNode;
+  columns?: 1 | 2;
+  surface?: "plain" | "card";
 };
 
 export type FormActionsProps = {
@@ -60,4 +67,10 @@ export type FormActionsProps = {
    * `AdminForm`'s `id`.
    */
   formId?: string;
+  /**
+   * Page forms stick the bar below `md`. Wizard footers already stick —
+   * pass `false` so bars do not stack.
+   */
+  sticky?: boolean;
+  destructive?: ReactNode;
 };

@@ -31,6 +31,19 @@ Recipe for every admin write form:
 
 `CheckboxGroupBinding` uses `@balanse/ui` `CheckboxGroup` / `CheckboxGroupItem`. Options may include optional `leading` and `description`.
 
+## Layout
+
+- `FormSection` supports `surface="card"`, an optional header `action`, and `columns={2}` on `md+`. Mark a field `span="full"` to cross both columns.
+- `FormField` owns required (`*`), optional (`(optional)`), and text `maxLength` counters. `RichTextBinding` keeps the RichTextarea counter — pass `FIELD_CONSTRAINTS` as `maxLength` there; do not also set `FormField maxLength`.
+- `FormActions` is right-aligned, primary last, sticky below `md`. Wizard footers pass `sticky={false}` so bars do not stack. Use `destructive` for cancel-session style actions.
+
+## ChoiceBinding rule
+
+- ≤ 4 short labels → radio
+- ≤ 12 → `Select`
+- Searchable or long lists → `ComboboxBinding`
+- `as` still overrides. Default is no longer `native-select`.
+
 ## RichTextarea max length
 
 `RICH_TEXTAREA_MAX_LENGTH` is `2000`. That conflicts with `coach.shortBio.max = 1000` and `settings.about.max = 4000`. Pass `maxLength` per field and let the form schema be authoritative.

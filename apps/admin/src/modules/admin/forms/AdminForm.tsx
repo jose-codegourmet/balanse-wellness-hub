@@ -179,34 +179,62 @@ export function FormField<TValues extends FieldValues = FieldValues>({
   description,
   wireAria = false,
   disabled = false,
+  required = false,
+  optional = false,
+  maxLength,
+  span = "auto",
   orientation = "vertical",
   children,
 }: FormFieldProps<TValues>) {
-  const { control, formState } = useFormContext<TValues>();
+  const { control, formState, watch } = useFormContext<TValues>();
+  const watched = watch(name);
+  const currentLength = typeof watched === "string" ? watched.length : 0;
 
   return (
-    <Controller
-      name={name}
-      control={control}
-      render={({ field, fieldState }) => (
-        <Field
-          invalid={!!fieldState.error}
-          disabled={formState.isSubmitting || disabled}
-          orientation={orientation}
-        >
-          <FieldLabel>{label}</FieldLabel>
-          <FormFieldControl
-            name={String(name)}
-            label={label}
-            wireAria={wireAria}
-            field={field}
-            render={children}
-          />
-          {description ? <FieldDescription>{description}</FieldDescription> : null}
-          <FieldError errors={[fieldState.error]} />
-        </Field>
-      )}
-    />
+    <div className={span === "full" ? "md:col-span-2" : undefined}>
+      <Controller
+        name={name}
+        control={control}
+        render={({ field, fieldState }) => (
+          <Field
+            invalid={!!fieldState.error}
+            disabled={formState.isSubmitting || disabled}
+            orientation={orientation}
+          >
+            <FieldLabel>
+              {label}
+              {required ? (
+                <span className="text-destructive" aria-hidden>
+                  {" "}
+                  *
+                </span>
+              ) : null}
+              {optional ? (
+                <span className="ml-1 font-normal text-muted-foreground">(optional)</span>
+              ) : null}
+            </FieldLabel>
+            <FormFieldControl
+              name={String(name)}
+              label={label}
+              wireAria={wireAria}
+              field={field}
+              render={children}
+            />
+            {description || maxLength ? (
+              <FieldDescription>
+                {description}
+                {maxLength ? (
+                  <span className={description ? " ml-2 tabular-nums" : "tabular-nums"}>
+                    {currentLength}/{maxLength}
+                  </span>
+                ) : null}
+              </FieldDescription>
+            ) : null}
+            <FieldError errors={[fieldState.error]} />
+          </Field>
+        )}
+      />
+    </div>
   );
 }
 
@@ -255,12 +283,34 @@ function FormFieldControl({
   return <>{render(props)}</>;
 }
 
-export function FormSection({ title, description, children }: FormSectionProps) {
+export function FormSection({
+  title,
+  description,
+  children,
+  action,
+  columns = 1,
+  surface = "plain",
+}: FormSectionProps) {
   return (
-    <section className="grid gap-4">
-      <h2 className="font-display text-2xl">{title}</h2>
-      {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
-      <FieldGroup>{children}</FieldGroup>
+    <section
+      data-slot="form-section"
+      data-surface={surface}
+      className={
+        surface === "card"
+          ? "grid gap-4 rounded-xl border border-border bg-card p-4 md:p-6"
+          : "grid gap-4"
+      }
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="grid gap-1">
+          <h2 className="font-display text-2xl">{title}</h2>
+          {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
+        </div>
+        {action}
+      </div>
+      <FieldGroup className={columns === 2 ? "md:grid md:grid-cols-2 md:gap-x-4" : undefined}>
+        {children}
+      </FieldGroup>
     </section>
   );
 }
@@ -274,6 +324,8 @@ export function FormActions({
   children,
   guard: guardProp,
   formId,
+  sticky = true,
+  destructive,
 }: FormActionsProps) {
   const { formState, requestSubmit } = useAdminFormContext();
   const ownedGuard = useUnsavedChangesGuard(formState.isDirty);
@@ -282,24 +334,34 @@ export function FormActions({
   return (
     <div
       data-slot="form-actions"
-      className={["flex flex-wrap items-center gap-2", className].filter(Boolean).join(" ")}
+      className={[
+        "flex flex-wrap items-center justify-end gap-2",
+        sticky
+          ? "max-md:sticky max-md:bottom-0 max-md:z-10 max-md:-mx-4 max-md:border-t max-md:border-border max-md:bg-background/95 max-md:p-4 max-md:backdrop-blur md:justify-end"
+          : null,
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
+      {destructive ? <div className="mr-auto">{destructive}</div> : null}
       {children}
-      {hideSubmit ? null : (
-        <Button
-          type="button"
-          form={formId}
-          loading={formState.isSubmitting}
-          onClick={() => requestSubmit()}
-        >
-          {submitLabel}
-        </Button>
-      )}
       {cancelHref ? (
         <Button type="button" variant="outline" onClick={() => guard.requestLeave(cancelHref)}>
           {cancelLabel}
         </Button>
       ) : null}
+      {hideSubmit ? null : (
+        <Button
+          type="button"
+          form={formId}
+          loading={formState.isSubmitting}
+          disabled={formState.isSubmitting}
+          onClick={() => requestSubmit()}
+        >
+          {submitLabel}
+        </Button>
+      )}
       <AlertDialog
         open={guard.pendingHref !== null}
         onOpenChange={(open) => !open && guard.dismiss()}

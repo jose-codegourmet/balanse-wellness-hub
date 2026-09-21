@@ -16,13 +16,23 @@ import type { FormFieldRenderProps } from "../AdminForm.schema";
 
 export type { ChoiceOption };
 
+export type ChoiceBindingAs = "radio" | "native-select" | "select";
+
 export type ChoiceBindingProps = FormFieldRenderProps & {
-  as?: "radio" | "native-select" | "select";
+  as?: ChoiceBindingAs;
   options: ChoiceOption[];
 };
 
+/** ≤4 short labels → radio; ≤12 → Select; longer/searchable → ComboboxBinding. */
+export function resolveChoiceAs(options: ChoiceOption[], as?: ChoiceBindingAs): ChoiceBindingAs {
+  if (as) return as;
+  const short = options.every((option) => option.label.length <= 24);
+  if (options.length <= 4 && short) return "radio";
+  return "select";
+}
+
 export function ChoiceBinding({
-  as = "native-select",
+  as,
   options,
   value,
   onChange,
@@ -30,9 +40,10 @@ export function ChoiceBinding({
   name,
   ref,
 }: ChoiceBindingProps) {
+  const resolved = resolveChoiceAs(options, as);
   const stringValue = value == null ? "" : String(value);
 
-  if (as === "radio") {
+  if (resolved === "radio") {
     return (
       <RadioGroup
         name={name}
@@ -53,14 +64,14 @@ export function ChoiceBinding({
     );
   }
 
-  if (as === "select") {
+  if (resolved === "select") {
     return (
       <Select
         name={name}
         value={stringValue || null}
         onValueChange={(next) => onChange(next ?? "")}
       >
-        <SelectTrigger ref={ref} onBlur={onBlur}>
+        <SelectTrigger ref={ref} onBlur={onBlur} className="w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -84,6 +95,7 @@ export function ChoiceBinding({
     <NativeSelect
       ref={ref}
       name={name}
+      className="w-full"
       value={stringValue}
       onBlur={onBlur}
       onChange={(event) => onChange(event.target.value)}

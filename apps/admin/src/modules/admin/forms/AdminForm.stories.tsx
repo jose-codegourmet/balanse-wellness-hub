@@ -105,3 +105,57 @@ export const FormLevelRootError: Story = {
     </AdminForm>
   ),
 };
+
+export const TwoColumnCard: Story = {
+  render: () => (
+    <AdminForm
+      schema={adminFormDemoSchema}
+      defaultValues={adminFormDemoValues}
+      onSubmit={async () => undefined}
+    >
+      <FormSection
+        title="Basics"
+        description="Short fields pair on md+."
+        columns={2}
+        surface="card"
+      >
+        <FormField name="name" label="Name" required>
+          {(field) => <Input {...field} value={String(field.value ?? "")} />}
+        </FormField>
+        <FormField name="notes" label="Notes" optional maxLength={80}>
+          {(field) => <Input {...field} value={String(field.value ?? "")} />}
+        </FormField>
+      </FormSection>
+      <FormActions submitLabel="Save" cancelHref="/classes" />
+    </AdminForm>
+  ),
+  parameters: { viewport: { defaultViewport: "desktop" } },
+};
+
+export const MobileActions360: Story = {
+  render: () => (
+    <AdminForm
+      schema={adminFormDemoSchema}
+      defaultValues={adminFormDemoValues}
+      onSubmit={async () => undefined}
+    >
+      <DemoFields />
+      <FormActions submitLabel="Save" cancelHref="/classes" />
+    </AdminForm>
+  ),
+  parameters: { viewport: { defaultViewport: "mobile" } },
+};
+
+export const ValidationFailed: Story = {
+  render: () => (
+    <AdminForm
+      schema={adminFormDemoSchema}
+      defaultValues={adminFormDemoValues}
+      onSubmit={async () => undefined}
+    >
+      <DemoFields />
+      <FormActions submitLabel="Save" />
+      <AutoSubmit />
+    </AdminForm>
+  ),
+};
