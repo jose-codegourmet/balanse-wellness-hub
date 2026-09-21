@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  choiceOptionFilterText,
   Combobox,
   ComboboxCollection,
   ComboboxContent,
@@ -35,7 +36,7 @@ export function ComboboxBinding({
       items={options}
       value={selected}
       onValueChange={(next) => onChange(next?.value ?? "")}
-      itemToStringLabel={(item) => item.label}
+      itemToStringLabel={(item) => choiceOptionFilterText(item)}
     >
       <ComboboxInput
         name={name}

@@ -18,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { Path } from "react-hook-form";
+import { toCoachChoiceOption } from "@/components/balanse/coach/coach-option/CoachOption";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import {
@@ -122,7 +123,7 @@ export function SessionFormPage({
   const router = useRouter();
 
   const classes = (classesQuery.data ?? []).filter((row) => row.active);
-  const coaches = (coachesQuery.data ?? []).filter((row) => row.active);
+  const coaches = coachesQuery.data ?? [];
   const existing = isNew ? undefined : sessionsQuery.data?.find((row) => row.id === sessionId);
   const ymd = isManilaYmd(date) ? date : adminTodayYmd();
   const consumed = isNew
@@ -420,7 +421,7 @@ function SessionWizardFields({
             <ComboboxBinding
               {...field}
               placeholder="Search coach…"
-              options={coaches.map((row) => ({ value: row.id, label: row.name }))}
+              options={coaches.map(toCoachChoiceOption)}
               onChange={(next) => {
                 const coachId = String(next ?? "");
                 field.onChange(coachId);

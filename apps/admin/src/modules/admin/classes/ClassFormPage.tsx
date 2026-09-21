@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Path } from "react-hook-form";
+import { toCoachChoiceOption } from "@/components/balanse/coach/coach-option/CoachOption";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import {
   AdminWizard,
@@ -262,7 +263,7 @@ function ClassWizardFields({
           {(field) => (
             <CheckboxGroupBinding
               {...field}
-              options={coaches.map((coach) => ({ value: coach.id, label: coach.name }))}
+              options={coaches.map(toCoachChoiceOption)}
             />
           )}
         </FormField>
