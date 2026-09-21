@@ -38,6 +38,7 @@ Both apps consume `@balanse/ui` at runtime. No other workspace *package* (`packa
 | Directory | Purpose |
 |---|---|
 | `src/components/` | One folder per component (63 today; see `src/index.ts`) |
+| `src/hooks/` | Shared viewport hooks (`useMediaQuery`, `useBreakpoint`, `useMinWidth`, `useIsMobile`) |
 | `src/components/table/data-table/` | `DataTable` wrapper around TanStack Table |
 | `src/components/motion/scroll-reveal/` | `ScrollReveal` motion component |
 | `src/lib/utils.ts` | `cn()` utility |

@@ -2,12 +2,15 @@
 
 import { resetMockRuntime, setMockRuntime } from "@balanse/mock";
 import { isMockHarnessEnabled } from "@balanse/mock/session";
+import { MockHarnessAffordance } from "@balanse/ui";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
+// Collapse store is duplicated with apps/web MockSessionHarness (sessionStorage +
+// event contract from #258). Collapsed chrome is shared MockHarnessAffordance.
 const HARNESS_COLLAPSE_KEY = "balanse-mock-harness-collapsed";
 const HARNESS_COLLAPSE_EVENT = "balanse-mock-harness-collapsed";
 const HARNESS_PANEL_ID = "mock-session-harness-panel";
@@ -102,25 +105,35 @@ export function MockSessionHarness() {
   }
 
   const { collapsed, persistCollapsed } = useMockHarnessCollapsed();
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const hideRef = useRef<HTMLButtonElement>(null);
+  const restoreTriggerFocus = useRef(false);
+  const restoreHideFocus = useRef(false);
+
+  useEffect(() => {
+    if (collapsed && restoreTriggerFocus.current) {
+      triggerRef.current?.focus();
+      restoreTriggerFocus.current = false;
+    }
+    if (!collapsed && restoreHideFocus.current) {
+      hideRef.current?.focus();
+      restoreHideFocus.current = false;
+    }
+  }, [collapsed]);
 
   if (!enabled) return null;
 
   return (
     <>
       {collapsed ? (
-        <div className="pointer-events-none fixed inset-x-0 bottom-20 z-50 flex justify-end px-3 md:top-3 md:bottom-auto">
-          <button
-            type="button"
-            aria-expanded={false}
-            aria-controls={HARNESS_PANEL_ID}
-            aria-label="Expand mock session harness"
-            className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-accent bg-accent px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-accent-foreground shadow-md"
-            onClick={() => persistCollapsed(false)}
-          >
-            Mock harness
-            <ChevronUp className="size-3.5" aria-hidden="true" />
-          </button>
-        </div>
+        <MockHarnessAffordance
+          ref={triggerRef}
+          panelId={HARNESS_PANEL_ID}
+          onClick={() => {
+            restoreHideFocus.current = true;
+            persistCollapsed(false);
+          }}
+        />
       ) : null}
       <aside
         id={HARNESS_PANEL_ID}
@@ -133,12 +146,16 @@ export function MockSessionHarness() {
             Mock harness — not production
           </p>
           <button
+            ref={hideRef}
             type="button"
             aria-expanded={true}
             aria-controls={HARNESS_PANEL_ID}
             aria-label="Collapse mock session harness"
             className="inline-flex items-center gap-1 rounded-md border border-accent-foreground/30 px-2 py-1 text-xs font-semibold uppercase tracking-wide"
-            onClick={() => persistCollapsed(true)}
+            onClick={() => {
+              restoreTriggerFocus.current = true;
+              persistCollapsed(true);
+            }}
           >
             Hide
             <ChevronDown className="size-3.5" aria-hidden="true" />

@@ -17,6 +17,7 @@ import {
 } from "@balanse/domain";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "../../components/button/Button";
+import { useBreakpoint } from "../../hooks/use-breakpoint/UseBreakpoint";
 import { cn } from "../../lib/utils";
 import { FeedbackState } from "../feedback/FeedbackState";
 import { CalendarSkeleton } from "../feedback/skeletons";
@@ -52,7 +53,7 @@ const AVAILABILITY_COPY: Record<PublicSession["availability"], string> = {
   past_cutoff: "Closed",
 };
 
-function detectView(width: number): CalendarView {
+export function detectView(width: number): CalendarView {
   if (width >= BALANSE_BREAKPOINTS.desktop) return "month";
   if (width >= BALANSE_BREAKPOINTS.tablet) return "week";
   return "day";
@@ -82,7 +83,7 @@ export function ScheduleCalendar({
   initialCoachFilter = "all",
   coaches = [],
 }: ScheduleCalendarProps) {
-  const [width, setWidth] = useState<number>(BALANSE_BREAKPOINTS.desktop);
+  const breakpoint = useBreakpoint();
   const [classFilter, setClassFilter] = useState<string>(initialClassFilter);
   const [coachFilter, setCoachFilter] = useState<string>(initialCoachFilter);
   const [selectedDay, setSelectedDay] = useState(() => manilaYmd(nowIso));
@@ -100,15 +101,8 @@ export function ScheduleCalendar({
     setCoachFilter(initialCoachFilter);
   }, [initialCoachFilter]);
 
-  useEffect(() => {
-    if (view !== "auto") return;
-    const update = () => setWidth(window.innerWidth);
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [view]);
-
-  const resolvedView: CalendarView = view === "auto" ? detectView(width) : view;
+  const resolvedView: CalendarView =
+    view === "auto" ? detectView(BALANSE_BREAKPOINTS[breakpoint]) : view;
   const today = manilaYmd(nowIso);
 
   const filtered = useMemo(

@@ -13,6 +13,7 @@ import {
 import { CalendarIcon, XIcon } from "lucide-react";
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
+import { useMinWidth } from "../../hooks/use-breakpoint/UseBreakpoint";
 import { cn } from "../../lib/utils";
 import { Calendar } from "../calendar/Calendar";
 import {
@@ -96,7 +97,8 @@ function isYmdBlocked(
 }
 
 function useTwoMonthPanel(containerRef: React.RefObject<HTMLElement | null>) {
-  const [twoMonths, setTwoMonths] = React.useState(false);
+  const [containerWide, setContainerWide] = React.useState(false);
+  const viewportWide = useMinWidth(BALANSE_BREAKPOINTS.tablet);
 
   React.useEffect(() => {
     const node = containerRef.current;
@@ -105,24 +107,18 @@ function useTwoMonthPanel(containerRef: React.RefObject<HTMLElement | null>) {
     }
 
     const update = () => {
-      const containerWide = node.getBoundingClientRect().width >= BALANSE_BREAKPOINTS.tablet;
-      const viewportWide = window.matchMedia(
-        `(min-width: ${BALANSE_BREAKPOINTS.tablet}px)`,
-      ).matches;
-      setTwoMonths(containerWide && viewportWide);
+      setContainerWide(node.getBoundingClientRect().width >= BALANSE_BREAKPOINTS.tablet);
     };
 
     const observer = new ResizeObserver(update);
     observer.observe(node);
-    window.addEventListener("resize", update);
     update();
     return () => {
       observer.disconnect();
-      window.removeEventListener("resize", update);
     };
   }, [containerRef]);
 
-  return twoMonths;
+  return containerWide && viewportWide;
 }
 
 function resolveToday(today?: DatePickerValues): DatePickerValues {

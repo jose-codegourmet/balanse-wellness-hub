@@ -1,7 +1,7 @@
 "use client";
 
 import { BALANSE_BREAKPOINTS } from "@balanse/config";
-import { Button } from "@balanse/ui";
+import { Button, useMinWidth } from "@balanse/ui";
 import { XIcon } from "lucide-react";
 import {
   Children,
@@ -28,19 +28,7 @@ export function AdminWizardStepPanel({ children }: AdminWizardStepPanelProps) {
   return <>{children}</>;
 }
 
-export function useMinWidth(px: number) {
-  const [matches, setMatches] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia(`(min-width: ${px}px)`);
-    const sync = () => setMatches(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, [px]);
-
-  return matches;
-}
+export { useMinWidth };
 
 function panelsByStepId(children: AdminWizardProps["children"]) {
   const map = new Map<string, ReactNode>();
