@@ -9,4 +9,6 @@ export const adminPageTabsDefaultValues: Partial<AdminPageTabsProps> = {
     { id: "history", label: "History" },
   ],
   value: "pending",
+  mobileBehavior: "tabs",
+  label: "Page sections",
 };

@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
 } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { AdminPageTabs } from "@/components/balanse/page/admin-page-tabs/AdminPageTabs";
 import { useTabParam } from "@/components/balanse/page/useTabParam";
@@ -22,7 +22,7 @@ import { BusinessProfileSection } from "./BusinessProfileSection";
 import { PaymentInfoSection } from "./PaymentInfoSection";
 import { PoliciesSection } from "./PoliciesSection";
 import { PublicContentSection } from "./PublicContentSection";
-import { SETTINGS_TAB_LABELS, SETTINGS_TABS, settingsSectionHref } from "./settings-tabs";
+import { SETTINGS_TAB_LABELS, SETTINGS_TABS } from "./settings-tabs";
 
 export type SettingsPageProps = {
   /** Storybook / URL fallback. Live routes still prefer `?tab=`. */
@@ -89,53 +89,31 @@ export function SettingsPage({
     setPendingTab(null);
   }
 
+  useEffect(() => {
+    const raw = window.location.hash.replace(/^#settings-/, "");
+    if (SETTINGS_SECTIONS.includes(raw as SettingsSection)) {
+      setTab(raw as SettingsSection);
+    }
+  }, [setTab]);
+
   return (
     <AdminPageShell
       title="Settings"
       description="Each section saves on its own. Payment, public copy, and policies stay independent."
       tabs={
-        <div className="hidden md:block">
-          <AdminPageTabs
-            tabs={SETTINGS_TABS}
-            value={tab}
-            onValueChange={(next) => requestTab(next as SettingsSection)}
-          />
-        </div>
+        <AdminPageTabs
+          tabs={SETTINGS_TABS}
+          value={tab}
+          onValueChange={(next) => requestTab(next as SettingsSection)}
+          mobileBehavior="tabs"
+          label="Settings sections"
+        />
       }
     >
-      <nav
-        aria-label="Settings sections"
-        className="sticky top-0 z-10 -mx-4 border-b border-border bg-background px-4 py-3 md:hidden"
-      >
-        <ul className="flex flex-wrap gap-2">
-          {SETTINGS_TABS.map((item) => (
-            <li key={item.id}>
-              <a
-                href={settingsSectionHref(item.id)}
-                className={
-                  item.id === tab
-                    ? "rounded-full bg-primary px-3 py-1 text-sm font-medium text-primary-foreground"
-                    : "rounded-full border border-border px-3 py-1 text-sm"
-                }
-                onClick={(event) => {
-                  event.preventDefault();
-                  requestTab(item.id);
-                  document.getElementById(`settings-${item.id}`)?.scrollIntoView({
-                    block: "start",
-                  });
-                }}
-              >
-                {item.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
       <div className="mt-6 grid gap-10">
         <section
           id="settings-business"
-          className={tab === "business" ? undefined : "hidden max-md:block"}
+          className={tab === "business" ? undefined : "hidden"}
         >
           <BusinessProfileSection
             key={`business-${epoch.business}`}
@@ -147,7 +125,7 @@ export function SettingsPage({
         </section>
         <section
           id="settings-payment"
-          className={tab === "payment" ? undefined : "hidden max-md:block"}
+          className={tab === "payment" ? undefined : "hidden"}
         >
           <PaymentInfoSection
             key={`payment-${epoch.payment}`}
@@ -159,7 +137,7 @@ export function SettingsPage({
         </section>
         <section
           id="settings-content"
-          className={tab === "content" ? undefined : "hidden max-md:block"}
+          className={tab === "content" ? undefined : "hidden"}
         >
           <PublicContentSection
             key={`content-${epoch.content}`}
@@ -172,7 +150,7 @@ export function SettingsPage({
         </section>
         <section
           id="settings-policies"
-          className={tab === "policies" ? undefined : "hidden max-md:block"}
+          className={tab === "policies" ? undefined : "hidden"}
         >
           <PoliciesSection
             key={`policies-${epoch.policies}`}

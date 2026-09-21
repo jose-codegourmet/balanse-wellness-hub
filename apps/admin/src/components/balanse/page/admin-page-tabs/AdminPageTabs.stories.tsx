@@ -2,6 +2,41 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { useState } from "react";
 import { AdminPageTabs } from "./AdminPageTabs";
 import { adminPageTabsDefaultValues } from "./AdminPageTabs.defaults";
+import type { AdminPageTab } from "./AdminPageTabs.schema";
+
+function TabsDemo({
+  tabs,
+  value: initial,
+  mobileBehavior,
+  label,
+}: {
+  tabs: readonly AdminPageTab[];
+  value?: string;
+  mobileBehavior?: "tabs" | "stack";
+  label?: string;
+}) {
+  const [value, setValue] = useState(value ?? tabs[0]?.id ?? "pending");
+  return (
+    <AdminPageTabs
+      tabs={tabs}
+      value={value}
+      onValueChange={setValue}
+      mobileBehavior={mobileBehavior}
+      label={label}
+    >
+      <p className="text-sm text-muted-foreground">Panel for {value}.</p>
+    </AdminPageTabs>
+  );
+}
+
+const overflowTabs: AdminPageTab[] = [
+  { id: "photo", label: "Profile photo" },
+  { id: "profile", label: "Public profile" },
+  { id: "financials", label: "Internal financials" },
+  { id: "sessions", label: "Upcoming sessions" },
+  { id: "staff", label: "Linked staff account" },
+  { id: "history", label: "Change history" },
+];
 
 const meta: Meta<typeof AdminPageTabs> = {
   title: "Admin/Components/AdminPageTabs",
@@ -14,7 +49,7 @@ const meta: Meta<typeof AdminPageTabs> = {
     docs: {
       description: {
         component:
-          'Wrapper over `@balanse/ui` Tabs (Base UI). The primitive supplies `role="tablist"`, `aria-controls` ↔ `role="tabpanel"`, roving `tabIndex`, and Left/Right/Home/End. Active state uses weight plus the line indicator so it is not colour-only.',
+          'Responsive admin tabs. Line tabs at `md+`; sticky chip row below `md` when `mobileBehavior="tabs"`. Keyboard (Left/Right/Home/End) comes from Base UI Tabs.',
       },
     },
   },
@@ -24,14 +59,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  render: (args) => {
-    const [value, setValue] = useState(args.value);
-    return (
-      <AdminPageTabs {...args} value={value} onValueChange={setValue}>
-        <p className="text-sm text-muted-foreground">Panel for {value}.</p>
-      </AdminPageTabs>
-    );
-  },
+  render: (args) => <TabsDemo tabs={args.tabs ?? []} value={args.value} />,
 };
 
 export const Payments: Story = {
@@ -43,14 +71,45 @@ export const Payments: Story = {
     ],
     value: "gcash",
   },
-  render: (args) => {
-    const [value, setValue] = useState(args.value);
-    return (
-      <AdminPageTabs {...args} value={value} onValueChange={setValue}>
-        <p className="text-sm text-muted-foreground">Queue for {value}.</p>
-      </AdminPageTabs>
-    );
+  render: (args) => <TabsDemo tabs={args.tabs ?? []} value={args.value} />,
+};
+
+export const ErroredTab: Story = {
+  args: {
+    tabs: [
+      { id: "photo", label: "Profile photo" },
+      { id: "profile", label: "Public profile", error: true },
+      { id: "financials", label: "Internal financials" },
+    ],
+    value: "photo",
   },
+  render: (args) => <TabsDemo tabs={args.tabs ?? []} value={args.value} />,
+};
+
+export const Overflowing360: Story = {
+  args: { tabs: overflowTabs, value: "financials" },
+  render: (args) => <TabsDemo tabs={args.tabs ?? []} value={args.value} />,
+  parameters: { viewport: { defaultViewport: "mobile" } },
+};
+
+export const Overflowing768: Story = {
+  args: { tabs: overflowTabs, value: "financials" },
+  render: (args) => <TabsDemo tabs={args.tabs ?? []} value={args.value} />,
+  parameters: { viewport: { defaultViewport: "tablet" } },
+};
+
+export const Overflowing1280: Story = {
+  args: { tabs: overflowTabs, value: "financials" },
+  render: (args) => <TabsDemo tabs={args.tabs ?? []} value={args.value} />,
+  parameters: { viewport: { defaultViewport: "desktop" } },
+};
+
+export const StackOnMobile: Story = {
+  args: { mobileBehavior: "stack" },
+  render: (args) => (
+    <TabsDemo tabs={args.tabs ?? []} value={args.value} mobileBehavior="stack" />
+  ),
+  parameters: { viewport: { defaultViewport: "mobile" } },
 };
 
 export const KeyboardNavigation: Story = {
@@ -58,16 +117,9 @@ export const KeyboardNavigation: Story = {
     docs: {
       description: {
         story:
-          "Focus a tab, then use Left/Right to move, Home/End to jump to the first or last tab, and Enter/Space to activate. Do not re-implement this in the wrapper — it comes from Base UI Tabs.",
+          "Focus a tab, then use Left/Right to move, Home/End to jump to the first or last tab, and Enter/Space to activate.",
       },
     },
   },
-  render: (args) => {
-    const [value, setValue] = useState(args.value);
-    return (
-      <AdminPageTabs {...args} value={value} onValueChange={setValue}>
-        <p className="text-sm text-muted-foreground">Use arrow keys on the tab list.</p>
-      </AdminPageTabs>
-    );
-  },
+  render: (args) => <TabsDemo tabs={args.tabs ?? []} value={args.value} />,
 };
