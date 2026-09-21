@@ -10,6 +10,7 @@ import {
   formatSessionRange,
   paymentStatusLabel,
   refundStatusLabel,
+  sessionDisplayName,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { Button, Input, Label, NativeSelect, StatusBadge } from "@balanse/ui";
@@ -63,7 +64,7 @@ export function BookingListPage() {
       {
         id: "class",
         header: "Class",
-        accessorFn: (row) => row.session.className,
+        accessorFn: (row) => sessionDisplayName(row.session),
         enableColumnFilter: true,
         meta: { enableFaceting: true, facetLabel: "Class", mobile: { role: "subtitle" } },
       },
@@ -185,7 +186,7 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
     >
       <p className="font-medium">{name}</p>
       <p className="text-sm text-muted-foreground">
-        {booking.session.className} ·{" "}
+        {sessionDisplayName(booking.session)} ·{" "}
         {formatSessionRange(booking.session.startsAt, booking.session.endsAt)}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">

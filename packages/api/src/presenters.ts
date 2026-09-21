@@ -6,6 +6,8 @@ export const PUBLIC_FORBIDDEN_KEYS = [
   "rateType",
   "coachRate",
   "coachRateType",
+  "coachAssignments",
+  "coachRatePhp",
   "profileId",
   "customerId",
   "email",

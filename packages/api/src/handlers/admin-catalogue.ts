@@ -1,10 +1,10 @@
-import { FIELD_CONSTRAINTS, SIGNED_UPLOAD } from "@balanse/domain";
+import type { Prisma } from "@balanse/db";
+import { classSlug, FIELD_CONSTRAINTS, SIGNED_UPLOAD } from "@balanse/domain";
 import { requireAdmin, resolveActor, writeAudit } from "../auth";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { asString, ok, pagination, readJson, searchParams } from "../http";
-import { money, presentCoach } from "../presenters";
-import { updateSessionCapacity } from "../sql";
+import { presentCoach } from "../presenters";
 import {
   assertOwnedCoachPhotoKey,
   confirmUpload,
@@ -41,6 +41,7 @@ export async function postAdminClass(deps: ApiDeps, req: Request): Promise<Respo
   const created = await deps.prisma.gymClass.create({
     data: {
       name,
+      slug: classSlug(name),
       shortDescription,
       defaultDurationMinutes: defaultDurationMinutes === undefined ? null : defaultDurationMinutes,
       defaultCustomerPrice: defaultCustomerPrice ?? null,
@@ -219,7 +220,7 @@ export async function getAdminSessions(deps: ApiDeps, req: Request): Promise<Res
       skip,
       take: pageSize,
       orderBy: { startsAt: "asc" },
-      include: { gymClass: true, coach: true },
+      include: { gymClass: true, coaches: { include: { coach: true } } },
     }),
   ]);
   return ok({
@@ -228,7 +229,10 @@ export async function getAdminSessions(deps: ApiDeps, req: Request): Promise<Res
     total,
     items: items.map((item) => ({
       ...item,
-      coach: item.coach ? presentCoach(item.coach) : null,
+      coaches: item.coaches.map((assignment) => ({
+        ...assignment,
+        coach: presentCoach(assignment.coach),
+      })),
     })),
   });
 }
@@ -236,42 +240,42 @@ export async function getAdminSessions(deps: ApiDeps, req: Request): Promise<Res
 export async function postAdminSession(deps: ApiDeps, req: Request): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
   const body = await readJson(req);
+  assertAssignmentFields(body);
   const classId = requireString(body, "classId", 64);
   const startsAt = requireString(body, "startsAt", 40);
   const endsAt = requireString(body, "endsAt", 40);
   const capacity = intValue(body, "capacity", 1, 200, true) as number;
   const customerPrice = moneyValue(body, "customerPrice", true) as string;
+  const coachIds = parseCoachIds(body.coachIds);
   assertSessionWindow(startsAt, endsAt);
-  const coachId = requireString(body, "coachId", 64);
-  const coach = await deps.prisma.coach.findUnique({ where: { id: coachId } });
-  if (!coach) throw new ApiError(404, "coach_not_found", "Coach not found.");
-  if (!coach.active) {
-    throwFields(fieldError("coachId", "inactive_reference", "Coach must be active."));
-  }
-  const gymClass = await deps.prisma.gymClass.findUnique({ where: { id: classId } });
-  if (!gymClass) throw new ApiError(404, "class_not_found", "Class not found.");
-  if (!gymClass.active) {
-    throwFields(fieldError("classId", "inactive_reference", "Class must be active."));
-  }
-  const created = await deps.prisma.gymSession.create({
-    data: {
-      classId,
-      coachId: coach.id,
-      startsAt: new Date(startsAt),
-      endsAt: new Date(endsAt),
-      capacity,
-      status: asString(body.status) === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
-      customerPrice,
-      coachRate: coach.defaultRate,
-      coachRateType: coach.rateType,
-    },
+  const created = await deps.prisma.$transaction(async (tx) => {
+    await assertActiveClass(tx, classId);
+    const coaches = await resolveSessionCoaches(tx, coachIds);
+    return tx.gymSession.create({
+      data: {
+        classId,
+        startsAt: new Date(startsAt),
+        endsAt: new Date(endsAt),
+        capacity,
+        customerPrice,
+        status: asString(body.status) === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
+        coaches: {
+          create: coaches.map((coach) => ({
+            coachId: coach.id,
+            coachRate: coach.defaultRate,
+            coachRateType: coach.rateType,
+          })),
+        },
+      },
+      include: { coaches: { include: { coach: true } } },
+    });
   });
   await writeAudit(deps, {
     entityType: "session",
     entityId: created.id,
     action: "session.create",
     actor,
-    metadata: { coachRate: money(created.coachRate), coachRateType: created.coachRateType },
+    metadata: { coachIds },
   });
   return ok({ session: created });
 }
@@ -282,47 +286,115 @@ export async function patchAdminSession(
   id: string,
 ): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
-  const session = await deps.prisma.gymSession.findUnique({ where: { id } });
-  if (!session) throw new ApiError(404, "session_not_found", "Session not found.");
   const body = await readJson(req);
-  if ("coachRate" in body || "coachRatePhp" in body || "coachRateType" in body) {
-    throw new ApiError(422, "validation_failed", "Session rate snapshots are immutable.", {
-      fieldErrors: [
-        fieldError(
-          "coachRate",
-          "read_only",
-          "Updating a coach default rate never rewrites session snapshots.",
-        ),
-      ],
-    });
-  }
+  assertAssignmentFields(body);
+  const coachIds = "coachIds" in body ? parseCoachIds(body.coachIds) : undefined;
   const startsAt = optionalString(body, "startsAt", 40);
   const endsAt = optionalString(body, "endsAt", 40);
-  if (startsAt || endsAt) {
+  const classId = "classId" in body ? requireString(body, "classId", 64) : undefined;
+  const capacity = intValue(body, "capacity", 1, 200, false);
+  const customerPrice = moneyValue(body, "customerPrice", false);
+  const updated = await deps.prisma.$transaction(async (tx) => {
+    // Serialize assignment replacement and capacity changes on the same session.
+    await tx.$queryRawUnsafe("SELECT id FROM public.sessions WHERE id = $1 FOR UPDATE", id);
+    const session = await tx.gymSession.findUnique({ where: { id }, include: { coaches: true } });
+    if (!session) throw new ApiError(404, "session_not_found", "Session not found.");
     assertSessionWindow(
       startsAt ?? session.startsAt.toISOString(),
       endsAt ?? session.endsAt.toISOString(),
     );
-  }
-  const capacity = intValue(body, "capacity", 1, 200, false);
-  if (typeof capacity === "number") {
-    await updateSessionCapacity(deps, id, capacity);
-  }
-  const customerPrice = moneyValue(body, "customerPrice", false);
-  const updated = await deps.prisma.gymSession.update({
-    where: { id },
-    data: {
-      ...(startsAt ? { startsAt: new Date(startsAt) } : {}),
-      ...(endsAt ? { endsAt: new Date(endsAt) } : {}),
-      ...(customerPrice !== undefined && customerPrice !== null ? { customerPrice } : {}),
-      ...(asString(body.status) === "DRAFT" || asString(body.status) === "PUBLISHED"
-        ? { status: asString(body.status) as "DRAFT" | "PUBLISHED" }
-        : {}),
-      ...(asString(body.coachId) !== undefined ? { coachId: asString(body.coachId) || null } : {}),
-    },
+    if (classId && classId !== session.classId) await assertActiveClass(tx, classId);
+    if (coachIds) {
+      const retained = new Set(session.coaches.map((row) => row.coachId));
+      const coaches = await resolveSessionCoaches(tx, coachIds, retained);
+      await tx.sessionCoach.deleteMany({ where: { sessionId: id, coachId: { notIn: coachIds } } });
+      for (const coach of coaches) {
+        if (!retained.has(coach.id)) {
+          await tx.sessionCoach.create({
+            data: {
+              sessionId: id,
+              coachId: coach.id,
+              coachRate: coach.defaultRate,
+              coachRateType: coach.rateType,
+            },
+          });
+        }
+      }
+    }
+    if (typeof capacity === "number") {
+      await tx.$queryRawUnsafe("SELECT public.update_session_capacity($1, $2)", id, capacity);
+    }
+    return tx.gymSession.update({
+      where: { id },
+      data: {
+        ...(classId ? { classId } : {}),
+        ...(startsAt ? { startsAt: new Date(startsAt) } : {}),
+        ...(endsAt ? { endsAt: new Date(endsAt) } : {}),
+        ...(customerPrice != null ? { customerPrice } : {}),
+        ...(asString(body.status) === "DRAFT" || asString(body.status) === "PUBLISHED"
+          ? { status: asString(body.status) as "DRAFT" | "PUBLISHED" }
+          : {}),
+      },
+      include: { coaches: { include: { coach: true } } },
+    });
   });
   await writeAudit(deps, { entityType: "session", entityId: id, action: "session.update", actor });
   return ok({ session: updated });
+}
+
+function assertAssignmentFields(body: Record<string, unknown>): void {
+  for (const key of [
+    "coachId",
+    "coachRate",
+    "coachRatePhp",
+    "coachRateType",
+    "coaches",
+    "coachAssignments",
+  ]) {
+    if (key in body)
+      throwFields(
+        fieldError(key, "read_only", "Send coachIds; each coach's rate is captured by the server."),
+      );
+  }
+}
+
+function parseCoachIds(value: unknown): string[] {
+  if (!Array.isArray(value) || value.length === 0) {
+    throwFields(fieldError("coachIds", "required", "Choose at least one coach."));
+  }
+  if (value.some((id) => typeof id !== "string" || !id.trim() || id.length > 64)) {
+    throwFields(
+      fieldError("coachIds", "invalid_type", "Each coach ID must be a non-empty string."),
+    );
+  }
+  const ids = (value as string[]).map((id) => id.trim());
+  if (new Set(ids).size !== ids.length) {
+    throwFields(fieldError("coachIds", "invalid_format", "Choose each coach only once."));
+  }
+  return ids;
+}
+
+async function resolveSessionCoaches(
+  tx: Prisma.TransactionClient,
+  ids: string[],
+  retained = new Set<string>(),
+) {
+  const coaches = await tx.coach.findMany({ where: { id: { in: ids } } });
+  if (coaches.length !== ids.length)
+    throwFields(fieldError("coachIds", "invalid_format", "One or more coaches no longer exist."));
+  if (coaches.some((coach) => !coach.active && !retained.has(coach.id))) {
+    throwFields(
+      fieldError("coachIds", "inactive_reference", "Newly assigned coaches must be active."),
+    );
+  }
+  return coaches;
+}
+
+async function assertActiveClass(tx: Prisma.TransactionClient, id: string) {
+  const gymClass = await tx.gymClass.findUnique({ where: { id } });
+  if (!gymClass) throw new ApiError(404, "class_not_found", "Class not found.");
+  if (!gymClass.active)
+    throwFields(fieldError("classId", "inactive_reference", "Class must be active."));
 }
 
 export async function postCancelSession(

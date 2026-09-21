@@ -1,3 +1,4 @@
+import { isPhMobile, PH_MOBILE_ERROR } from "./contracts";
 import type { BookingStatus, PaymentMethod, PaymentStatus } from "./enums";
 import { BOOKING_STATUSES } from "./enums";
 import { effectiveHoldDeadline } from "./format";
@@ -204,6 +205,7 @@ export function validateCustomerSignUp(
   if (!input.email.trim()) errors.email = "Email is required.";
   else if (!EMAIL_RE.test(input.email.trim())) errors.email = "Enter a valid email.";
   if (!input.contactNumber.trim()) errors.contactNumber = "Contact number is required.";
+  else if (!isPhMobile(input.contactNumber)) errors.contactNumber = PH_MOBILE_ERROR;
   if (!input.password) errors.password = "Password is required.";
   else if (input.password.length < 8) errors.password = "Use at least 8 characters.";
   if (!input.confirmPassword) errors.confirmPassword = "Confirm your password.";
@@ -232,6 +234,7 @@ export function validateCustomerProfile(
   if (!input.email.trim()) errors.email = "Email is required.";
   else if (!EMAIL_RE.test(input.email.trim())) errors.email = "Enter a valid email.";
   if (!input.contactNumber.trim()) errors.contactNumber = "Contact number is required.";
+  else if (!isPhMobile(input.contactNumber)) errors.contactNumber = PH_MOBILE_ERROR;
   if (Object.keys(errors).length > 0) return { ok: false, errors };
   return { ok: true };
 }

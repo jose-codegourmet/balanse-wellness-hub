@@ -9,6 +9,7 @@ import {
   FIELD_CONSTRAINTS,
   formatSessionDate,
   formatSessionTime,
+  sessionDisplayName,
 } from "@balanse/domain";
 import { CardListSkeleton, FormPageSkeleton } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
@@ -133,7 +134,8 @@ export function CoachFormPage({ coachId, initialTab }: CoachFormPageProps) {
     if (!sessionsQuery.data || isNew) return [];
     const nowIso = adminNowIso();
     return sessionsQuery.data.filter(
-      (session) => session.coachId === coachId && session.startsAt >= nowIso,
+      (session) =>
+        session.coaches.some((coach) => coach.id === coachId) && session.startsAt >= nowIso,
     );
   }, [coachId, isNew, sessionsQuery.data]);
 
@@ -351,7 +353,7 @@ function CoachFormFields({
             <ul className="mt-3 space-y-2">
               {upcoming.map((session) => (
                 <li key={session.id} className="rounded-xl border border-border p-3 text-sm">
-                  {session.className} · {formatSessionDate(session.startsAt)} ·{" "}
+                  {sessionDisplayName(session)} · {formatSessionDate(session.startsAt)} ·{" "}
                   {formatSessionTime(session.startsAt)}
                 </li>
               ))}

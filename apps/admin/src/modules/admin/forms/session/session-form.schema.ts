@@ -1,5 +1,4 @@
 import {
-  COACH_RATE_TYPES,
   canApproveReschedule,
   FIELD_CONSTRAINTS,
   manilaYmd,
@@ -38,8 +37,12 @@ export function checkCanApproveReschedule(target: PublicSession) {
 }
 
 const sessionFields = {
+  name: z.string().trim().max(120, "Use 120 characters or fewer."),
   classId: z.string().min(1, "Choose a class."),
-  coachId: z.string().min(1, "Choose a coach."),
+  coachIds: z
+    .array(z.string().min(1))
+    .min(1, "Choose at least one coach.")
+    .refine((ids) => new Set(ids).size === ids.length, "Choose each coach only once."),
   startsAt: z.string().min(1, "Set a start time."),
   endsAt: z.string().min(1, "Set an end time."),
   /** Mock field name. Integer pesos — not `customerPrice` / `php_decimal`. */
@@ -51,12 +54,6 @@ const sessionFields = {
     .max(FIELD_CONSTRAINTS.session.capacity.max),
   bookable: z.boolean(),
   status: z.enum(SESSION_STATUSES),
-  /**
-   * Admin-only snapshot. Changing a coach's default rate later must not rewrite
-   * existing sessions (`SESSION_RATE_SNAPSHOT_NOTE`).
-   */
-  coachRatePhp: z.coerce.number().int().min(0),
-  coachRateType: z.enum(COACH_RATE_TYPES),
 };
 
 function refineSession(

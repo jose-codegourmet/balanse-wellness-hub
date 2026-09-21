@@ -6,6 +6,7 @@ import {
   formatRatioPercent,
   formatSessionDate,
   formatSessionTime,
+  sessionDisplayName,
 } from "@balanse/domain";
 import {
   type ChoiceOption,
@@ -240,6 +241,10 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
             getRowId={(row) => row.classId}
             searchPlaceholder="Search classes"
           />
+          <p className="text-sm text-muted-foreground">
+            Coach costs use each coach’s saved rate. Related revenue includes the full class session
+            for each coach and should not be added across coaches.
+          </p>
           <AdminDataTable
             tableId="reports-coaches"
             title="Coach Costs"
@@ -268,7 +273,7 @@ export function ReportDrilldownPage({ sessionId }: { sessionId: string }) {
   const row = query.data;
   if (!row) return null;
 
-  const title = `${row.className} — ${formatSessionDate(row.startsAt)} — ${formatSessionTime(row.startsAt)}`;
+  const title = `${sessionDisplayName(row)} — ${formatSessionDate(row.startsAt)} — ${formatSessionTime(row.startsAt)}`;
 
   return (
     <AdminPageShell

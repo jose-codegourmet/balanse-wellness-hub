@@ -38,7 +38,7 @@ export type PublicCtaBlockId =
   | "coaches-close";
 
 export const SCHEDULE_HREF = landingScheduleHref();
-export const CLASSES_HREF = "/#classes";
+export const CLASSES_HREF = "/classes";
 
 /** The one action every public page repeats. Keep the wording identical everywhere. */
 export const PRIMARY_SCHEDULE_ACTION: PublicCtaAction = {

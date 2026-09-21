@@ -8,10 +8,12 @@ Styled single-line text input for forms, with a shared `sm | md | lg` size scale
 
 ## When to use
 
-- Standard text, email, password, number fields
+- Standard text, email, or number fields
 
 ## When NOT to use
 
+- Password fields → use **PasswordInput** instead
+- Philippine mobile numbers → use **PhPhoneInput** instead
 - Inputs with icons/buttons → use **InputGroup** instead
 - OTP digits → use **InputOTP** instead
 - Multi-line → use **Textarea** instead

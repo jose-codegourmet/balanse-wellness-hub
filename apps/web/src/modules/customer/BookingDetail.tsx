@@ -1,5 +1,10 @@
 import type { CustomerBooking, CustomerProfile } from "@balanse/domain";
-import { customerBookingActions, paymentMethodLabel, paymentStatusLabel } from "@balanse/domain";
+import {
+  customerBookingActions,
+  paymentMethodLabel,
+  paymentStatusLabel,
+  sessionDisplayName,
+} from "@balanse/domain";
 import { Alert, AlertDescription, AlertTitle, StatusBadge } from "@balanse/ui";
 import { Hourglass, Info, Wallet } from "lucide-react";
 import Link from "next/link";
@@ -87,7 +92,7 @@ export function BookingDetail({
           </p>
         </div>
         <div className="booking-ticket-body">
-          <h2 className="booking-summary-title font-display">{session.className}</h2>
+          <h2 className="booking-summary-title font-display">{sessionDisplayName(session)}</h2>
           <BookingFacts booking={booking} />
           {profile ? (
             <dl className="booking-identity">

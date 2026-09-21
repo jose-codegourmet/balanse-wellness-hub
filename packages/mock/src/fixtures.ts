@@ -18,9 +18,12 @@ import {
   BOOKING_STATUSES,
   coachPhotoKey,
   flattenFaqs,
+  sessionCoachCost,
   snapshotRateFromCoach,
   teachesBio,
 } from "@balanse/domain";
+
+import { classContent } from "./class-content";
 
 /** Frozen "now" so Storybook and screenshots stay deterministic. Wed 10:50 Asia/Manila. */
 export const MOCK_NOW_ISO = "2026-09-16T02:50:00.000Z";
@@ -100,7 +103,7 @@ export const publicClasses: PublicClass[] = [
     defaultPricePhp: 500,
     active: true,
   },
-];
+].map((row) => ({ ...row, ...classContent[row.id] }));
 
 const coachRows: AdminCoach[] = [
   {
@@ -236,17 +239,24 @@ export function toPublicCoach(coach: AdminCoach): PublicCoach {
 export const publicCoaches: PublicCoach[] = coachRows.map(toPublicCoach);
 
 function session(
-  partial: Omit<PublicSession, "className" | "coachName"> & {
+  partial: Omit<PublicSession, "className" | "coachName" | "coaches"> & {
     className?: string;
     coachName?: string;
+    coachIds: string[];
   },
 ): PublicSession {
   const cls = publicClasses.find((c) => c.id === partial.classId);
-  const coach = publicCoaches.find((c) => c.id === partial.coachId);
+  const assigned = partial.coachIds.map((id) => {
+    const coach = publicCoaches.find((row) => row.id === id);
+    if (!coach) throw new Error(`Unknown fixture coach: ${id}`);
+    return coach;
+  });
+  const { coachIds: _ids, ...fields } = partial;
   return {
-    ...partial,
+    ...fields,
+    coaches: assigned.map(({ id, name, photoKey }) => ({ id, name, photoKey })),
     className: partial.className ?? cls?.name ?? "Class",
-    coachName: partial.coachName ?? coach?.name ?? "Coach",
+    coachName: partial.coachName ?? assigned.map((coach) => coach.name).join(", "),
   };
 }
 
@@ -256,7 +266,7 @@ export const publicSessions: PublicSession[] = [
   session({
     id: "session-past-open",
     classId: "class-calisthenics",
-    coachId: "coach-rex",
+    coachIds: ["coach-rex"],
     startsAt: "2026-09-14T00:00:00.000Z",
     endsAt: "2026-09-14T01:30:00.000Z",
     pricePhp: 550,
@@ -269,7 +279,7 @@ export const publicSessions: PublicSession[] = [
   session({
     id: "session-wed-cutoff",
     classId: "class-calisthenics",
-    coachId: "coach-rex",
+    coachIds: ["coach-rex", "coach-ephraim"],
     startsAt: "2026-09-16T03:00:00.000Z",
     endsAt: "2026-09-16T04:30:00.000Z",
     pricePhp: 550,
@@ -282,7 +292,7 @@ export const publicSessions: PublicSession[] = [
   session({
     id: "session-wed-open",
     classId: "class-caliyoga",
-    coachId: "coach-rex",
+    coachIds: ["coach-rex"],
     startsAt: "2026-09-16T07:00:00.000Z",
     endsAt: "2026-09-16T08:30:00.000Z",
     pricePhp: 550,
@@ -295,7 +305,7 @@ export const publicSessions: PublicSession[] = [
   session({
     id: "session-wed-nearly",
     classId: "class-yoga",
-    coachId: "coach-wolf",
+    coachIds: ["coach-wolf"],
     startsAt: "2026-09-16T08:30:00.000Z",
     endsAt: "2026-09-16T10:00:00.000Z",
     pricePhp: 500,
@@ -308,7 +318,7 @@ export const publicSessions: PublicSession[] = [
   session({
     id: "session-sat-full",
     classId: "class-kickboxing",
-    coachId: "coach-rachelle",
+    coachIds: ["coach-rachelle"],
     startsAt: "2026-09-19T01:30:00.000Z",
     endsAt: "2026-09-19T03:00:00.000Z",
     pricePhp: 600,
@@ -321,7 +331,7 @@ export const publicSessions: PublicSession[] = [
   session({
     id: "session-fri-cancelled",
     classId: "class-groundworks",
-    coachId: "coach-ephraim",
+    coachIds: ["coach-ephraim"],
     startsAt: "2026-09-18T03:00:00.000Z",
     endsAt: "2026-09-18T04:30:00.000Z",
     pricePhp: 550,
@@ -334,7 +344,7 @@ export const publicSessions: PublicSession[] = [
   session({
     id: "session-sun-alec",
     classId: "class-calisthenics",
-    coachId: "coach-alec",
+    coachIds: ["coach-alec"],
     startsAt: "2026-09-20T03:00:00.000Z",
     endsAt: "2026-09-20T04:30:00.000Z",
     pricePhp: 550,
@@ -347,7 +357,7 @@ export const publicSessions: PublicSession[] = [
   session({
     id: "session-sun-dance",
     classId: "class-dance",
-    coachId: "coach-mikaela",
+    coachIds: ["coach-mikaela"],
     startsAt: "2026-09-20T07:00:00.000Z",
     endsAt: "2026-09-20T08:30:00.000Z",
     pricePhp: 500,
@@ -360,7 +370,7 @@ export const publicSessions: PublicSession[] = [
   session({
     id: "session-thu-early",
     classId: "class-yoga",
-    coachId: "coach-wolf",
+    coachIds: ["coach-wolf"],
     startsAt: "2026-09-17T00:00:00.000Z",
     endsAt: "2026-09-17T01:30:00.000Z",
     pricePhp: 500,
@@ -644,13 +654,19 @@ export const bookings: CustomerBooking[] = BOOKING_STATUSES.map((status, index) 
 ]);
 
 export const adminSessions: AdminSession[] = publicSessions.map((row) => {
-  const coach = adminCoaches.find((c) => c.id === row.coachId) ?? adminCoaches[0];
-  const snap = snapshotRateFromCoach(coach);
+  const coachAssignments = row.coaches.map((coach) => {
+    const source = adminCoaches.find((c) => c.id === coach.id);
+    if (!source) throw new Error(`Unknown fixture coach: ${coach.id}`);
+    return { coachId: source.id, ...snapshotRateFromCoach(source) };
+  });
   return {
     ...row,
     bookable: row.reservable,
-    coachRatePhp: row.id === "session-wed-open" ? 800 : snap.coachRatePhp,
-    coachRateType: snap.coachRateType,
+    coachAssignments,
+    coachRatePhp: coachAssignments.reduce(
+      (sum, assignment) => sum + sessionCoachCost(assignment, row),
+      0,
+    ),
   };
 });
 
@@ -673,21 +689,20 @@ export const publicContent: PublicContent = {
 };
 
 export const adminClasses: AdminClass[] = [
-  ...publicClasses.map((row) => ({
-    ...row,
-    associatedCoachIds: adminCoaches
-      .filter((coach) => coach.specialties.includes(row.name))
-      .map((coach) => coach.id),
-  })),
+  ...publicClasses,
   {
     id: "class-open-studio",
+    slug: "open-studio",
+    description: "",
+    coachIds: [],
+    heroImage: null,
+    galleryImages: [],
     name: "Open Studio",
     shortDescription:
       "Unstructured floor time with session-level duration and price. This longer description exercises truncation on the catalogue table.",
     defaultDurationMinutes: null,
     defaultPricePhp: null,
     active: false,
-    associatedCoachIds: adminCoaches.map((coach) => coach.id),
   },
 ];
 

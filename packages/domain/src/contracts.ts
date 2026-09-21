@@ -82,7 +82,6 @@ export const FIELD_CONSTRAINTS = {
     defaultDurationMinutes: { required: false, min: 1, max: 240 },
     defaultCustomerPrice: { required: false, min: 0, unit: MONEY_UNIT },
     active: { required: false, type: "boolean" },
-    associatedCoachIds: { required: false, mayBeEmpty: true },
   },
   coach: {
     name: { required: true, max: 80 },
@@ -107,7 +106,7 @@ export const FIELD_CONSTRAINTS = {
   },
   session: {
     classId: { required: true },
-    coachId: { required: true, allowInactive: false },
+    coachIds: { required: true, minItems: 1, unique: true, allowInactive: false },
     startsAt: { required: true },
     endsAt: { required: true, after: "startsAt" },
     maxDurationHours: 8,
@@ -115,8 +114,7 @@ export const FIELD_CONSTRAINTS = {
     capacity: { required: true, min: 1, max: 200, notBelowConsumed: true },
     bookable: { required: false, type: "boolean" },
     status: { required: false, enum: ["DRAFT", "PUBLISHED", "CANCELLED"] },
-    coachRate: { required: false, adminOnly: true, snapshot: true },
-    coachRateType: { required: false, adminOnly: true, snapshot: true },
+    coachAssignments: { adminOnly: true, readOnly: true, snapshot: true },
   },
   settings: {
     businessName: { required: true, max: 80 },
@@ -143,6 +141,9 @@ export const FIELD_CONSTRAINTS = {
 } as const;
 
 export const PH_MOBILE_RE = /^(09|\+639)\d{9}$/;
+/** Type-in mask for PH mobile numbers. */
+export const PH_MOBILE_PLACEHOLDER = "09XX XXX XXXX";
+export const PH_MOBILE_ERROR = "Enter a PH mobile number.";
 export const POLICY_VERSION_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
 export const EMAIL_FORMAT_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -191,8 +192,43 @@ export type AdminQueueRow = {
   customerName: string;
 };
 
+/** Strip spacing and punctuation to `09XXXXXXXXX` or `+639XXXXXXXXX`. */
+export function compactPhMobile(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (trimmed.startsWith("+")) {
+    return `+${trimmed.slice(1).replace(/\D/g, "")}`;
+  }
+  return trimmed.replace(/\D/g, "");
+}
+
 export function isPhMobile(value: string): boolean {
-  return PH_MOBILE_RE.test(value.trim());
+  return PH_MOBILE_RE.test(compactPhMobile(value));
+}
+
+/**
+ * Mask a typed or pasted value as `09XX XXX XXXX`.
+ * Accepts `09…`, `9…`, `+63 9…`, and `63 9…`; rejects other country codes.
+ */
+export function maskPhMobileInput(raw: string): string {
+  if (!raw.trim()) return "";
+  const digits = raw.replace(/\D/g, "");
+  let national = digits.startsWith("63")
+    ? digits.slice(2)
+    : digits.startsWith("0")
+      ? digits.slice(1)
+      : digits;
+  if (national && national[0] !== "9") {
+    national = national.replace(/^[^9]+/, "");
+  }
+  national = national.slice(0, 10);
+  if (!national) {
+    return digits.startsWith("0") || raw.trim().startsWith("0") ? "0" : "";
+  }
+  const local = `0${national}`;
+  if (local.length <= 4) return local;
+  if (local.length <= 7) return `${local.slice(0, 4)} ${local.slice(4)}`;
+  return `${local.slice(0, 4)} ${local.slice(4, 7)} ${local.slice(7)}`;
 }
 
 export function isPolicyVersion(value: string): boolean {

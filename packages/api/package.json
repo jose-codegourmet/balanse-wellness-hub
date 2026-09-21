@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./class-catalogue": "./src/class-catalogue.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

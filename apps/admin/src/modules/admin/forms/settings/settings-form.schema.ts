@@ -1,4 +1,10 @@
-import { EMAIL_FORMAT_RE, FIELD_CONSTRAINTS, isPhMobile, isPolicyVersion } from "@balanse/domain";
+import {
+  EMAIL_FORMAT_RE,
+  FIELD_CONSTRAINTS,
+  isPhMobile,
+  isPolicyVersion,
+  PH_MOBILE_ERROR,
+} from "@balanse/domain";
 import { z } from "zod";
 
 export const policyVersionSchema = z.string().refine(isPolicyVersion, {
@@ -16,7 +22,8 @@ export const settingsFormSchema = z.object({
       .string()
       .trim()
       .min(1, "Enter a phone number.")
-      .max(FIELD_CONSTRAINTS.settings["contact.phone"].max),
+      .max(FIELD_CONSTRAINTS.settings["contact.phone"].max)
+      .refine(isPhMobile, { message: PH_MOBILE_ERROR }),
     address: z
       .string()
       .trim()
@@ -34,8 +41,8 @@ export const settingsFormSchema = z.object({
     .trim()
     .min(1, "Enter the GCash name.")
     .max(FIELD_CONSTRAINTS.settings.gcashName.max),
-  gcashNumber: z.string().refine((value) => isPhMobile(value.replace(/\s+/g, "")), {
-    message: "Enter a PH mobile number.",
+  gcashNumber: z.string().refine(isPhMobile, {
+    message: PH_MOBILE_ERROR,
     params: { validationCode: "invalid_format" },
   }),
   qrImageKey: z.string().nullable().default(null),

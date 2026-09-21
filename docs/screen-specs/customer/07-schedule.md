@@ -14,3 +14,5 @@ Selected session panel
 ```
 
 Because the user is already authenticated, Reserve goes directly to booking form. Existing personal bookings may be marked on the calendar.
+
+Sessions display all assigned coaches. Filtering by a coach matches any assignment, but booking always reserves the class session. Every session has at least one coach.

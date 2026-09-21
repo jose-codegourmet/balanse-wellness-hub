@@ -72,6 +72,50 @@ for (const route of API_CONTRACT_ROUTES) {
           ],
         }
       : {}),
+    ...((route.path === "/api/admin/sessions" && route.method === "post") ||
+    (route.path === "/api/admin/sessions/{id}" && route.method === "patch")
+      ? {
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  ...(route.method === "post"
+                    ? {
+                        required: [
+                          "classId",
+                          "coachIds",
+                          "startsAt",
+                          "endsAt",
+                          "capacity",
+                          "customerPrice",
+                        ],
+                      }
+                    : {}),
+                  properties: {
+                    classId: { type: "string" },
+                    coachIds: {
+                      type: "array",
+                      minItems: 1,
+                      uniqueItems: true,
+                      items: { type: "string", minLength: 1, maxLength: 64 },
+                      description:
+                        "At least one coach. New assignments snapshot the active coach’s current rate; retained assignments keep their saved rates.",
+                    },
+                    startsAt: { type: "string", format: "date-time" },
+                    endsAt: { type: "string", format: "date-time" },
+                    capacity: { type: "integer", minimum: 1, maximum: 200 },
+                    customerPrice: { type: "string", pattern: "^[0-9]+$" },
+                    status: { type: "string", enum: ["DRAFT", "PUBLISHED"] },
+                  },
+                  additionalProperties: false,
+                },
+              },
+            },
+          },
+        }
+      : {}),
     responses: {
       "200": {
         description: "Success",
@@ -114,7 +158,7 @@ const spec = {
   openapi: "3.1.0",
   info: {
     title: "Balanse Wellness Hub API (BE-024 contract pack)",
-    version: "0.2.0",
+    version: "0.3.0",
     description:
       "Machine-readable contract for the wiring phase (BE-024 plus BE-050–BE-056). Hold duration and cutoff are absent from admin settings. Money is whole pesos as decimal strings. Admin lists use CursorPage. Validation failures use ValidationFailed (422).",
   },

@@ -4,6 +4,7 @@ export { ChoiceBinding } from "./ChoiceBinding";
 export { ComboboxBinding } from "./ComboboxBinding";
 export { DateBinding } from "./DateBinding";
 export { ImageBinding } from "./ImageBinding";
+export { PhPhoneBinding } from "./PhPhoneBinding";
 export { RichTextBinding } from "./RichTextBinding";
 export { TagListBinding } from "./TagListBinding";
 export { TextareaBinding } from "./TextareaBinding";

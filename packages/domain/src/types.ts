@@ -11,7 +11,15 @@ import type {
 export type PublicClass = {
   id: string;
   name: string;
+  slug: string;
+  customPageUrl?: string | null;
   shortDescription: string;
+  /** Safe Markdown subset; rendered as React nodes, never raw HTML. */
+  description: string;
+  /** Optional marketing roster. Session assignments remain independently required. */
+  coachIds: string[];
+  heroImage: string | null;
+  galleryImages: string[];
   defaultDurationMinutes: number | null;
   defaultPricePhp: number | null;
   active: boolean;
@@ -36,9 +44,12 @@ export type AdminCoach = PublicCoach & {
 
 export type PublicSession = {
   id: string;
+  /** Optional occurrence title. Empty means use the class name. */
+  name?: string | null;
   classId: string;
   className: string;
-  coachId: string;
+  coaches: Pick<PublicCoach, "id" | "name" | "photoKey">[];
+  /** Derived display label for all assigned coaches. */
   coachName: string;
   startsAt: string;
   endsAt: string;

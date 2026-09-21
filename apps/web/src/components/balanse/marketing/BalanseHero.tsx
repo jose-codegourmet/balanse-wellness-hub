@@ -1,4 +1,4 @@
-import { MarketingImage } from "@balanse/ui";
+import { MarketingImage, ScrollReveal } from "@balanse/ui";
 import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/jabkit/button";
 import type { Hero33Feature } from "@/components/jabkit/hero-33/Hero33.types";
@@ -38,31 +38,35 @@ export function BalanseHero({
         className,
       )}
     >
-      <div>
-        {eyebrow ? <p className="marketing-eyebrow mb-5">{eyebrow}</p> : null}
-        <Heading className="font-display text-4xl font-normal leading-[1.12] tracking-[-0.035em] lg:text-5xl">
-          {titleLines.join(" ")}
-        </Heading>
-        {features.length ? (
-          <p className="marketing-copy max-w-lg">{features[0].description.replace(/\n/g, " ")}</p>
-        ) : null}
-        <div className="mt-7 flex flex-wrap items-center gap-5">
-          {primaryAction ? (
-            <Button asChild className="rounded-full px-6">
-              <a href={primaryAction.href}>
-                {primaryAction.label}
-                <ArrowUpRight className="ml-3 size-4" aria-hidden="true" />
+      <ScrollReveal>
+        <div>
+          {eyebrow ? <p className="marketing-eyebrow mb-5">{eyebrow}</p> : null}
+          <Heading className="font-display text-4xl font-normal leading-[1.12] tracking-[-0.035em] lg:text-5xl">
+            {titleLines.join(" ")}
+          </Heading>
+          {features.length ? (
+            <p className="marketing-copy max-w-lg">{features[0].description.replace(/\n/g, " ")}</p>
+          ) : null}
+          <div className="mt-7 flex flex-wrap items-center gap-5">
+            {primaryAction ? (
+              <Button asChild className="rounded-full px-6">
+                <a href={primaryAction.href}>
+                  {primaryAction.label}
+                  <ArrowUpRight className="ml-3 size-4" aria-hidden="true" />
+                </a>
+              </Button>
+            ) : null}
+            {secondaryAction ? (
+              <a href={secondaryAction.href} className="marketing-text-link">
+                {secondaryAction.label}
               </a>
-            </Button>
-          ) : null}
-          {secondaryAction ? (
-            <a href={secondaryAction.href} className="marketing-text-link">
-              {secondaryAction.label}
-            </a>
-          ) : null}
+            ) : null}
+          </div>
         </div>
-      </div>
-      <MarketingImage assetId={assetId} loading="eager" className="!rounded-sm" />
+      </ScrollReveal>
+      <ScrollReveal delay={0.08}>
+        <MarketingImage assetId={assetId} loading="eager" className="!rounded-sm" />
+      </ScrollReveal>
     </section>
   );
 }

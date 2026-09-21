@@ -35,8 +35,10 @@ const specialtyFacetFilter: FilterFn<CoachListRow> = (row, _columnId, filterValu
 };
 
 function countUpcoming(sessions: AdminSession[], coachId: string, nowIso: string): number {
-  return sessions.filter((session) => session.coachId === coachId && session.startsAt >= nowIso)
-    .length;
+  return sessions.filter(
+    (session) =>
+      session.coaches.some((coach) => coach.id === coachId) && session.startsAt >= nowIso,
+  ).length;
 }
 
 export function CoachListPage({

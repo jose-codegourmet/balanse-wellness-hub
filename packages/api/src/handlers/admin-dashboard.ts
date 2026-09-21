@@ -109,7 +109,7 @@ async function operationalSnapshot(deps: ApiDeps) {
         LEFT JOIN bookings b ON b."sessionId" = s.id, today
         WHERE (s."startsAt" AT TIME ZONE 'Asia/Manila')::date = today.d
           AND s.status = 'PUBLISHED') AS todays_occupancy,
-      (SELECT COALESCE(SUM(s."coachRate"), 0) FROM sessions s, today
+      (SELECT COALESCE(SUM(app_private.session_coach_cost(s.id)), 0) FROM sessions s, today
         WHERE (s."startsAt" AT TIME ZONE 'Asia/Manila')::date = today.d
           AND s.status IN ('PUBLISHED', 'CANCELLED')) AS coach_cost_today
   `);
@@ -118,7 +118,10 @@ async function operationalSnapshot(deps: ApiDeps) {
     where: {
       status: { in: ["PUBLISHED", "CANCELLED"] },
     },
-    include: { gymClass: true, coach: true },
+    include: {
+      gymClass: true,
+      coaches: { select: { coach: { select: { id: true, name: true, photoKey: true } } } },
+    },
     orderBy: { startsAt: "asc" },
     take: 40,
   });
@@ -143,7 +146,8 @@ async function operationalSnapshot(deps: ApiDeps) {
       .map((session) => ({
         id: session.id,
         className: session.gymClass.name,
-        coachName: session.coach?.name ?? null,
+        coachName: session.coaches.map(({ coach }) => coach.name).join(" & "),
+        coaches: session.coaches.map(({ coach }) => coach),
         startsAt: session.startsAt.toISOString(),
         endsAt: session.endsAt.toISOString(),
         capacity: session.capacity,
@@ -189,7 +193,7 @@ async function dashboardSeries(deps: ApiDeps, windowDays: number): Promise<Metri
           AND (s."startsAt" AT TIME ZONE 'Asia/Manila')::date = days.day
       ) AS session_count,
       COALESCE((
-        SELECT SUM(s."coachRate") FROM sessions s
+        SELECT SUM(app_private.session_coach_cost(s.id)) FROM sessions s
         WHERE s.status IN ('PUBLISHED', 'CANCELLED')
           AND (s."startsAt" AT TIME ZONE 'Asia/Manila')::date = days.day
       ), 0) AS coach_cost

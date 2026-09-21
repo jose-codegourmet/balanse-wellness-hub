@@ -135,6 +135,7 @@ export async function patchAdminSettings(deps: ApiDeps, req: Request): Promise<R
       changed.push("business.name");
     }
     if (phone !== undefined) {
+      if (phone) requirePhMobile({ business: { phone } }, "business.phone");
       next.business.phone = phone;
       changed.push("contact.phone");
     }
@@ -154,7 +155,7 @@ export async function patchAdminSettings(deps: ApiDeps, req: Request): Promise<R
       changed.push("gcashName");
     }
     if (gcashNumberRaw !== undefined) {
-      if (gcashNumberRaw && !/^(09|\+639)\d{9}$/.test(gcashNumberRaw)) {
+      if (gcashNumberRaw) {
         requirePhMobile({ payment: { gcashNumber: gcashNumberRaw } }, "payment.gcashNumber");
       }
       next.payment.gcashNumber = gcashNumberRaw;

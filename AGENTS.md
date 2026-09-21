@@ -1,6 +1,6 @@
 # Agent Instructions — Balansé Wellness Hub
 
-Read this file first. Product truth lives in `docs/MVP-ROADMAP.md` and `docs/screen-specs/`. This phase is **mocks only** for screens: no `fetch` to `/api/*`, no Supabase client calls from UI.
+Read this file first. Product truth lives in `docs/MVP-ROADMAP.md` and `docs/screen-specs/`. This phase is **mocks only** for screens except the explicitly authorized database-backed class catalogue (2026-09-21). Class routes use server-side Supabase calls and verified admin server actions; other screens remain on MockDataAdapter. No direct Supabase client calls from UI. See `docs/backend/class-catalogue.md`.
 
 ## Layout
 
@@ -36,7 +36,7 @@ Wrap each component in its own `kebab-case` folder. The five colocated files liv
 
 ## Data
 
-Screens obtain data only through `getMockAdapter()` (`MockDataAdapter`). Do not import fixture files from screen components. Coach rates exist only on admin coach types.
+Screens obtain data through `getMockAdapter()` (`MockDataAdapter`), except class catalogue routes in configured database mode. Do not import fixture files from screen components. Coach rates exist only on admin coach types.
 
 ## Tests
 

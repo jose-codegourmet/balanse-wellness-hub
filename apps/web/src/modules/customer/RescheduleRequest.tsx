@@ -7,6 +7,7 @@ import {
   formatSessionTimeRange,
   manilaYmd,
   sessionAvailabilityLabel,
+  sessionDisplayName,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { Alert, AlertDescription, AlertTitle, FeedbackState } from "@balanse/ui";
@@ -153,7 +154,7 @@ export function RescheduleRequest({
                                 />
                                 <span className="reschedule-option-body">
                                   <span className="reschedule-option-title">
-                                    {session.className}
+                                    {sessionDisplayName(session)}
                                   </span>
                                   <span className="reschedule-option-meta">
                                     {formatSessionTimeRange(session.startsAt, session.endsAt)} ·{" "}
@@ -179,7 +180,7 @@ export function RescheduleRequest({
                     <>
                       <span className="reschedule-review-leg">
                         <span>Current</span>
-                        <strong>{booking.session.className}</strong>
+                        <strong>{sessionDisplayName(booking.session)}</strong>
                         <small>
                           {formatSessionDate(booking.session.startsAt)} ·{" "}
                           {formatSessionTimeRange(booking.session.startsAt, booking.session.endsAt)}
@@ -192,7 +193,7 @@ export function RescheduleRequest({
                       />
                       <span className="reschedule-review-leg">
                         <span>Preferred</span>
-                        <strong>{selected.className}</strong>
+                        <strong>{sessionDisplayName(selected)}</strong>
                         <small>
                           {formatSessionDate(selected.startsAt)} ·{" "}
                           {formatSessionTimeRange(selected.startsAt, selected.endsAt)} ·{" "}

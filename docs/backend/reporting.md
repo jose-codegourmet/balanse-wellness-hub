@@ -14,7 +14,9 @@ Definitions:
 
 - Gross sales = `customerPrice` of `CONFIRMED` + `CHECKED_IN` (not held, not waitlisted).
 - Refunds = `refunds.amount` where `status = REFUNDED`.
-- Coach cost = **session snapshot** `coachRate`, never `coaches.defaultRate`.
+- Coach cost = sum of **assignment snapshots** `session_coaches.coachRate`, never current `coaches.defaultRate`. `PER_HOUR` rates multiply session duration in hours; each cost rounds to two decimal places.
+- Coach filters match any assigned coach without duplicating class/session revenue. Coach-cost rows show only the selected coach when filtered.
+- Related revenue is the full session revenue for each assigned coach and is **not additive across coaches**.
 - Occupancy = confirmed / capacity; attendance utilisation = checked_in / capacity.
 - No field named `profit`.
 

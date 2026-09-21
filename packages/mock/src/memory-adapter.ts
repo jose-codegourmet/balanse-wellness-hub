@@ -28,6 +28,7 @@ import {
   filterPaymentQueue,
   formatPeso,
   manilaYmd,
+  sessionCoachCost,
   sliceCursorPage,
   toPublicSession,
   validateSessionCapacity,
@@ -39,8 +40,6 @@ import {
   MOCK_NOW_ISO,
   MOCK_PROOF_PREVIEW_URL,
   paymentInstructions,
-  publicClasses,
-  publicCoaches,
   publicContent,
   policyAcceptances as seedAcceptances,
   bookings as seedBookings,
@@ -239,8 +238,10 @@ export function createMemoryAdapter(): MockDataAdapter {
         },
         { publicSessions: true },
       ),
-    getPublicCoaches: () => applyMockEffects(() => publicCoaches.map((c) => clone(c))),
-    getPublicClasses: () => applyMockEffects(() => publicClasses.map((c) => clone(c))),
+    getPublicCoaches: () =>
+      applyMockEffects(() => coaches.filter((c) => c.active).map(toPublicCoach)),
+    getPublicClasses: () =>
+      applyMockEffects(() => classes.filter((c) => c.active).map((c) => clone(c))),
     getPublicContent: () => applyMockEffects(() => clone(publicContent)),
 
     getMe: (customerId) =>
@@ -436,20 +437,33 @@ export function createMemoryAdapter(): MockDataAdapter {
     getAdminClasses: () => applyMockEffects(() => classes.map((c) => clone(c))),
     upsertAdminClass: (input) =>
       applyMockEffects(() => {
+        if (classes.some((row) => row.id !== input.id && row.slug === input.slug))
+          throw new Error("That class page URL is already in use.");
+        if (input.coachIds.some((id) => !coaches.some((coach) => coach.id === id)))
+          throw new Error("Choose valid coaches.");
         if (input.id) {
           const existing = classes.find((c) => c.id === input.id);
           if (!existing) throw new Error("Class not found");
           Object.assign(existing, input);
+          for (const session of sessions)
+            if (session.classId === existing.id) session.className = existing.name;
+          for (const booking of bookings)
+            if (booking.session.classId === existing.id) booking.session.className = existing.name;
           return clone(existing);
         }
         const created: AdminClass = {
-          id: `class-${input.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+          id: `class-${input.slug}-${crypto.randomUUID()}`,
           name: input.name,
+          slug: input.slug,
+          customPageUrl: input.customPageUrl ?? null,
+          description: input.description,
+          coachIds: [...input.coachIds],
+          heroImage: input.heroImage,
+          galleryImages: [...input.galleryImages],
           shortDescription: input.shortDescription,
           defaultDurationMinutes: input.defaultDurationMinutes,
           defaultPricePhp: input.defaultPricePhp,
           active: input.active,
-          associatedCoachIds: input.associatedCoachIds,
         };
         classes = [created, ...classes];
         return clone(created);
@@ -482,7 +496,36 @@ export function createMemoryAdapter(): MockDataAdapter {
     upsertAdminSession: (input) =>
       applyMockEffects(() => {
         const cls = classes.find((c) => c.id === input.classId);
-        const coach = coaches.find((c) => c.id === input.coachId);
+        const previous = sessions.find((s) => s.id === input.id);
+        if (!cls || (!cls.active && previous?.classId !== cls.id))
+          throw new Error("Choose an active class.");
+        if (!Array.isArray(input.coachIds) || input.coachIds.length === 0)
+          throw new Error("Choose at least one coach.");
+        if (new Set(input.coachIds).size !== input.coachIds.length)
+          throw new Error("Choose each coach only once.");
+        const assigned = input.coachIds.map((id) => {
+          const coach = coaches.find((row) => row.id === id);
+          if (!coach || (!coach.active && !previous?.coaches.some((row) => row.id === id)))
+            throw new Error("Choose active coaches.");
+          return coach;
+        });
+        const coachAssignments = assigned.map(
+          (coach) =>
+            previous?.coachAssignments.find((row) => row.coachId === coach.id) ?? {
+              coachId: coach.id,
+              coachRatePhp: coach.defaultRatePhp,
+              coachRateType: coach.rateType,
+            },
+        );
+        const coachFields = {
+          coaches: assigned.map(({ id, name, photoKey }) => ({ id, name, photoKey })),
+          coachName: assigned.map((coach) => coach.name).join(", "),
+          coachAssignments,
+          coachRatePhp: coachAssignments.reduce(
+            (sum, row) => sum + sessionCoachCost(row, input),
+            0,
+          ),
+        };
         if (input.id) {
           const existing = sessions.find((s) => s.id === input.id);
           if (!existing) throw new Error("Session not found");
@@ -497,9 +540,9 @@ export function createMemoryAdapter(): MockDataAdapter {
           if (!capacityCheck.ok) throw new Error(capacityCheck.error);
           Object.assign(existing, {
             classId: input.classId,
+            name: input.name === undefined ? existing.name : input.name?.trim() || null,
             className: cls?.name ?? existing.className,
-            coachId: input.coachId,
-            coachName: coach?.name ?? existing.coachName,
+            ...coachFields,
             startsAt: input.startsAt,
             endsAt: input.endsAt,
             pricePhp: input.pricePhp,
@@ -507,17 +550,17 @@ export function createMemoryAdapter(): MockDataAdapter {
             bookable: input.bookable,
             reservable: input.bookable && input.status === "PUBLISHED",
             status: input.status,
-            coachRatePhp: input.coachRatePhp,
-            coachRateType: input.coachRateType,
           });
+          for (const booking of bookings.filter((row) => row.sessionId === existing.id))
+            booking.session = asPublic(existing);
           return clone(existing);
         }
         const created: AdminSession = {
-          id: `session-${input.startsAt.slice(0, 10)}-${input.classId}`,
+          id: `session-${crypto.randomUUID()}`,
           classId: input.classId,
+          name: input.name?.trim() || null,
           className: cls?.name ?? "Class",
-          coachId: input.coachId,
-          coachName: coach?.name ?? "Coach",
+          ...coachFields,
           startsAt: input.startsAt,
           endsAt: input.endsAt,
           pricePhp: input.pricePhp,
@@ -527,8 +570,6 @@ export function createMemoryAdapter(): MockDataAdapter {
           availability: "open",
           status: input.status,
           bookable: input.bookable,
-          coachRatePhp: input.coachRatePhp,
-          coachRateType: input.coachRateType,
         };
         sessions = [created, ...sessions];
         return clone(created);

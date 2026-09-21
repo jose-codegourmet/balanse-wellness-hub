@@ -6,6 +6,7 @@ import {
   type computeSessionInventory,
   formatSessionDate,
   formatSessionTime,
+  sessionDisplayName,
   sessionStatusLabel,
 } from "@balanse/domain";
 import { Badge, Button } from "@balanse/ui";
@@ -36,7 +37,9 @@ export function SelectedSessionPanel({
   const cancel = useCancelAdminSession();
   const { principal } = useMockPrincipal();
   const coachesQuery = useQuery(adminCoachesQuery(principal.role));
-  const coach = coachesQuery.data?.find((row) => row.id === session.coachId);
+  const assignedCoaches = session.coaches.map(
+    (coach) => coachesQuery.data?.find((row) => row.id === coach.id) ?? coach,
+  );
   const canCancel = session.status !== "CANCELLED";
 
   return (
@@ -55,7 +58,7 @@ export function SelectedSessionPanel({
                   onClick={() => onSelectSession(row.id)}
                 >
                   <span className="min-w-0 truncate">
-                    {row.className} · {formatSessionTime(row.startsAt)}
+                    {sessionDisplayName(row)} · {formatSessionTime(row.startsAt)}
                   </span>
                   {active ? <Badge>Selected</Badge> : null}
                 </button>
@@ -65,15 +68,18 @@ export function SelectedSessionPanel({
         </ul>
       ) : null}
       <p className="mt-3 text-sm">
-        {session.className} · {formatSessionDate(session.startsAt)} ·{" "}
+        {sessionDisplayName(session)} · {formatSessionDate(session.startsAt)} ·{" "}
         {formatSessionTime(session.startsAt)}–{formatSessionTime(session.endsAt)}
       </p>
-      <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-        {coach ? (
-          <CoachOption coach={coach} layout="row" className="min-w-0 flex-1 text-foreground" />
-        ) : (
-          session.coachName
-        )}
+      <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+        {assignedCoaches.map((coach) => (
+          <CoachOption
+            key={coach.id}
+            coach={coach}
+            layout="row"
+            className="min-w-0 flex-1 text-foreground"
+          />
+        ))}
         <span>· {sessionStatusLabel(session.status)}</span>
       </div>
       <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">

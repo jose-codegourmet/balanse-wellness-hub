@@ -8,6 +8,7 @@ import {
   formatSessionTime,
   localDateFromYmd,
   manilaYmd,
+  sessionDisplayName,
   startOfManilaMonth,
   startOfManilaWeekMonday,
   ymdFromLocalDate,
@@ -81,7 +82,7 @@ export function AdminScheduleCalendar({
       const events = byDay.get(ymd) ?? [];
       events.push({
         id: session.id,
-        name: session.className,
+        name: sessionDisplayName(session),
         time: formatSessionTime(session.startsAt),
       });
       byDay.set(ymd, events);
@@ -391,7 +392,7 @@ function SessionChip({
       )}
       onClick={onSelect}
     >
-      <span className="font-medium">{session.className}</span>
+      <span className="font-medium">{sessionDisplayName(session)}</span>
       <span className="text-xs text-muted-foreground">
         {formatSessionTime(session.startsAt)} · {session.coachName}
       </span>

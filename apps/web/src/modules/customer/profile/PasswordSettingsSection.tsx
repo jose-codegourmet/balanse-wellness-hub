@@ -6,7 +6,7 @@ import {
   PASSWORD_MIN_LENGTH,
   validateMockPasswordChange,
 } from "@balanse/domain";
-import { Input, Label } from "@balanse/ui";
+import { Label, PasswordInput } from "@balanse/ui";
 import { Info, Lock } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/jabkit/button";
@@ -74,9 +74,8 @@ export function PasswordSettingsSection({
           <legend className="sr-only">Change password</legend>
           <div className="grid gap-1.5">
             <Label htmlFor="password-current">Current password</Label>
-            <Input
+            <PasswordInput
               id="password-current"
-              type="password"
               value={values.currentPassword}
               autoComplete="current-password"
               aria-invalid={Boolean(errors.currentPassword)}
@@ -91,9 +90,8 @@ export function PasswordSettingsSection({
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="password-new">New password</Label>
-            <Input
+            <PasswordInput
               id="password-new"
-              type="password"
               value={values.newPassword}
               autoComplete="new-password"
               aria-invalid={Boolean(errors.newPassword)}
@@ -114,9 +112,8 @@ export function PasswordSettingsSection({
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="password-confirm">Confirm new password</Label>
-            <Input
+            <PasswordInput
               id="password-confirm"
-              type="password"
               value={values.confirmPassword}
               autoComplete="new-password"
               aria-invalid={Boolean(errors.confirmPassword)}

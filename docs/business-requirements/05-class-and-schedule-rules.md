@@ -44,7 +44,7 @@ The system should not apply a one-booking-per-day restriction.
 
 ## Coach assignment
 
-A session may be assigned to a coach.
+Classes are independent catalogue entries and may have an optional marketing coach roster. Every scheduled session must independently have at least one coach and may have multiple coaches; the marketing roster does not constrain these assignments. Customers reserve the class session, not an individual coach. Sessions may have a custom name; blank names fall back to the current class name. Public class pages expose only customer prices, never coach compensation.
 
 MVP schedule changes are controlled by admin.
 
@@ -96,10 +96,10 @@ Coach compensation is internal admin-only information.
 A scheduled session should store snapshots of the financial values required for historical reporting:
 
 - customer/session price,
-- coach rate,
-- coach rate type.
+- each assigned coach’s saved rate,
+- each assigned coach’s saved rate type.
 
-Historical reports must use the session snapshot rather than the coach's current profile.
+Historical reports must use each assignment’s snapshot rather than the coach's current profile. Retained assignments keep their rates when a session is edited. Total session cost sums all assigned coaches, with hourly rates multiplied by the session duration.
 
 Example:
 

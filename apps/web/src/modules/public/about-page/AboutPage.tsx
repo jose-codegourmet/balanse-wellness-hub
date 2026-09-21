@@ -53,56 +53,64 @@ export function AboutPage({ coaches }: AboutPageProps) {
   return (
     <article className="about-page">
       <section data-about-block="about" className="about-intro marketing-container">
-        <div className="about-intro-top">
-          <p className="marketing-eyebrow">About Balansé · Cebu City</p>
-          <span className="about-small-note">A little movement. A little more you.</span>
-        </div>
-        <div className="about-intro-copy">
-          <h1>
-            Come for the movement.
-            <br />
-            <em>Stay for the feeling.</em>
-          </h1>
-          <div>
-            <p>
-              A space to build strength, find your balance, and feel part of something. This is
-              Balansé.
-            </p>
-            <Link href="/#schedule" className="about-button">
-              Find your next class <ArrowUpRight aria-hidden="true" size={18} />
-            </Link>
+        <ScrollReveal>
+          <div className="about-intro-top">
+            <p className="marketing-eyebrow">About Balansé · Cebu City</p>
+            <span className="about-small-note">A little movement. A little more you.</span>
           </div>
-        </div>
-        <div className="about-hero-photos">
-          <MarketingImage
-            assetId="about-b"
-            frameRatio="16:9"
-            loading="eager"
-            className="about-main-photo"
-            sizes="(max-width: 767px) 100vw, 75vw"
-          />
-          <div className="about-photo-aside">
-            <MarketingImage
-              assetId="about-a"
-              frameRatio="4:5"
-              loading="eager"
-              className="about-detail-photo"
-              sizes="(max-width: 767px) 40vw, 25vw"
-            />
-            <p>
-              A space to slow down.
+        </ScrollReveal>
+        <ScrollReveal delay={0.06}>
+          <div className="about-intro-copy">
+            <h1>
+              Come for the movement.
               <br />
-              Room to grow.
-            </p>
+              <em>Stay for the feeling.</em>
+            </h1>
+            <div>
+              <p>
+                A space to build strength, find your balance, and feel part of something. This is
+                Balansé.
+              </p>
+              <Link href="/#schedule" className="about-button">
+                Find your next class <ArrowUpRight aria-hidden="true" size={18} />
+              </Link>
+            </div>
           </div>
-          <a href="#our-approach" className="about-round-link" aria-label="Discover our approach">
-            <ArrowDown size={25} strokeWidth={1.3} aria-hidden="true" />
-          </a>
-        </div>
-        <div className="about-intro-footer">
-          <span>Movement / Wellness / Community</span>
-          <span>Find your own balance.</span>
-        </div>
+        </ScrollReveal>
+        <ScrollReveal delay={0.12}>
+          <div className="about-hero-photos">
+            <MarketingImage
+              assetId="about-b"
+              frameRatio="16:9"
+              loading="eager"
+              className="about-main-photo"
+              sizes="(max-width: 767px) 100vw, 75vw"
+            />
+            <div className="about-photo-aside">
+              <MarketingImage
+                assetId="about-a"
+                frameRatio="4:5"
+                loading="eager"
+                className="about-detail-photo"
+                sizes="(max-width: 767px) 40vw, 25vw"
+              />
+              <p>
+                A space to slow down.
+                <br />
+                Room to grow.
+              </p>
+            </div>
+            <a href="#our-approach" className="about-round-link" aria-label="Discover our approach">
+              <ArrowDown size={25} strokeWidth={1.3} aria-hidden="true" />
+            </a>
+          </div>
+        </ScrollReveal>
+        <ScrollReveal delay={0.16}>
+          <div className="about-intro-footer">
+            <span>Movement / Wellness / Community</span>
+            <span>Find your own balance.</span>
+          </div>
+        </ScrollReveal>
       </section>
       <section
         id="our-approach"
@@ -141,34 +149,38 @@ export function AboutPage({ coaches }: AboutPageProps) {
       </section>
       <section data-about-block="what-you-can-do" className="about-classes">
         <div className="marketing-container about-classes-inner">
-          <div>
-            <p className="marketing-eyebrow">02 / Find your movement</p>
-            <h2>
-              Some days, strength.
-              <br />
-              Some days, <em>stillness.</em>
-            </h2>
-            <p className="about-body">
-              Follow your curiosity. Try a different pace. Explore the classes on our weekly
-              calendar.
-            </p>
-            <MarketingImage
-              assetId="about-d"
-              frameRatio="4:3"
-              className="about-class-photo"
-              sizes="(max-width: 767px) 100vw, 40vw"
-            />
-          </div>
+          <ScrollReveal>
+            <div>
+              <p className="marketing-eyebrow">02 / Find your movement</p>
+              <h2>
+                Some days, strength.
+                <br />
+                Some days, <em>stillness.</em>
+              </h2>
+              <p className="about-body">
+                Follow your curiosity. Try a different pace. Explore the classes on our weekly
+                calendar.
+              </p>
+              <MarketingImage
+                assetId="about-d"
+                frameRatio="4:3"
+                className="about-class-photo"
+                sizes="(max-width: 767px) 100vw, 40vw"
+              />
+            </div>
+          </ScrollReveal>
           <ul className="about-class-list">
             {ABOUT_CLASS_FAMILIES.map((name, index) => {
               const Icon = classIcons[index];
               return (
                 <li key={name}>
-                  <Link href="/#schedule">
-                    <Icon size={22} strokeWidth={1.35} aria-hidden="true" />
-                    <span>{name}</span>
-                    <ArrowUpRight className="about-class-arrow" size={20} aria-hidden="true" />
-                  </Link>
+                  <ScrollReveal delay={index * 0.04}>
+                    <Link href="/#schedule">
+                      <Icon size={22} strokeWidth={1.35} aria-hidden="true" />
+                      <span>{name}</span>
+                      <ArrowUpRight className="about-class-arrow" size={20} aria-hidden="true" />
+                    </Link>
+                  </ScrollReveal>
                 </li>
               );
             })}
@@ -176,24 +188,27 @@ export function AboutPage({ coaches }: AboutPageProps) {
         </div>
       </section>
       <section data-about-block="meet-the-team" className="about-team marketing-container">
-        <div className="about-team-heading">
-          <div>
-            <p className="marketing-eyebrow">03 / The people behind the practice</p>
-            <h2>
-              Good energy.
-              <br />
-              <em>Familiar faces.</em>
-            </h2>
+        <ScrollReveal>
+          <div className="about-team-heading">
+            <div>
+              <p className="marketing-eyebrow">03 / The people behind the practice</p>
+              <h2>
+                Good energy.
+                <br />
+                <em>Familiar faces.</em>
+              </h2>
+            </div>
+            <div>
+              <p className="about-body">
+                Meet the coaches bringing their own disciplines, perspectives, and energy to
+                Balansé.
+              </p>
+              <Link href="/coaches" className="marketing-text-link">
+                Meet all the coaches <ArrowUpRight size={16} aria-hidden="true" />
+              </Link>
+            </div>
           </div>
-          <div>
-            <p className="about-body">
-              Meet the coaches bringing their own disciplines, perspectives, and energy to Balansé.
-            </p>
-            <Link href="/coaches" className="marketing-text-link">
-              Meet all the coaches <ArrowUpRight size={16} aria-hidden="true" />
-            </Link>
-          </div>
-        </div>
+        </ScrollReveal>
         <ul className="about-coaches">
           {coaches.slice(0, 3).map((coach, index) => {
             const card = publicCoachCardFields(coach);
@@ -220,52 +235,58 @@ export function AboutPage({ coaches }: AboutPageProps) {
         </ul>
       </section>
       <section data-about-block="how-booking-works" className="about-booking marketing-container">
-        <div className="about-booking-heading">
-          <p className="marketing-eyebrow">04 / Make time for yourself</p>
-          <h2>
-            Your first class,
-            <br />
-            <em>four simple steps.</em>
-          </h2>
-        </div>
+        <ScrollReveal>
+          <div className="about-booking-heading">
+            <p className="marketing-eyebrow">04 / Make time for yourself</p>
+            <h2>
+              Your first class,
+              <br />
+              <em>four simple steps.</em>
+            </h2>
+          </div>
+        </ScrollReveal>
         <ol className="about-steps">
           {BOOKING_STEPS.map((step, index) => {
             const Icon = bookingIcons[index];
             return (
               <li key={step}>
-                <div className="about-step-top">
-                  <Icon size={23} strokeWidth={1.4} aria-hidden="true" />
-                  <span>0{index + 1}</span>
-                </div>
-                <h3>{step}</h3>
-                <p>{bookingCopy[index]}</p>
+                <ScrollReveal delay={index * 0.06}>
+                  <div className="about-step-top">
+                    <Icon size={23} strokeWidth={1.4} aria-hidden="true" />
+                    <span>0{index + 1}</span>
+                  </div>
+                  <h3>{step}</h3>
+                  <p>{bookingCopy[index]}</p>
+                </ScrollReveal>
               </li>
             );
           })}
         </ol>
       </section>
       <section data-about-block="view-schedule" className="about-close marketing-container">
-        <div className="about-close-panel">
-          <MarketingImage
-            assetId="about-c"
-            decorative
-            frameRatio="3:1"
-            className="about-close-texture"
-          />
-          <div className="about-close-content">
-            <Flower2 size={38} strokeWidth={1.1} aria-hidden="true" />
-            <p className="marketing-eyebrow">See you at the studio</p>
-            <h2>
-              A little time.
-              <br />
-              <em>Just for you.</em>
-            </h2>
-            <p>Start with one class. See how you feel.</p>
-            <Link href="/#schedule" className="about-button">
-              View the schedule <ArrowUpRight size={18} aria-hidden="true" />
-            </Link>
+        <ScrollReveal>
+          <div className="about-close-panel">
+            <MarketingImage
+              assetId="about-c"
+              decorative
+              frameRatio="3:1"
+              className="about-close-texture"
+            />
+            <div className="about-close-content">
+              <Flower2 size={38} strokeWidth={1.1} aria-hidden="true" />
+              <p className="marketing-eyebrow">See you at the studio</p>
+              <h2>
+                A little time.
+                <br />
+                <em>Just for you.</em>
+              </h2>
+              <p>Start with one class. See how you feel.</p>
+              <Link href="/#schedule" className="about-button">
+                View the schedule <ArrowUpRight size={18} aria-hidden="true" />
+              </Link>
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
     </article>
   );

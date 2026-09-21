@@ -1,7 +1,7 @@
 "use client";
 
 import type { CustomerBooking } from "@balanse/domain";
-import { formatPeso, formatSessionDate } from "@balanse/domain";
+import { formatPeso, formatSessionDate, sessionDisplayName } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { Button, Label, LocalizedSkeleton, Textarea } from "@balanse/ui";
 import { useRouter } from "next/navigation";
@@ -29,7 +29,7 @@ export function CancellationRequest({
     <div className="mx-auto max-w-3xl space-y-8 px-4 py-12">
       <h1 className="font-display text-3xl">Request cancellation</h1>
       <p className="text-sm">
-        {booking.session.className} · {formatSessionDate(booking.session.startsAt)} ·{" "}
+        {sessionDisplayName(booking.session)} · {formatSessionDate(booking.session.startsAt)} ·{" "}
         {formatPeso(booking.session.pricePhp)}
       </p>
       <p className="text-sm">

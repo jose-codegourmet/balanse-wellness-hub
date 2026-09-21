@@ -13,6 +13,7 @@ import {
   MANUAL_REFUND_NOTE,
   paymentMethodLabel,
   paymentStatusLabel,
+  sessionDisplayName,
 } from "@balanse/domain";
 import {
   Badge,
@@ -216,7 +217,7 @@ function PaymentQueueCard({
     >
       <AdminQueueCard
         who={row.customerName}
-        what={`${row.session.className} · ${formatSessionDate(row.session.startsAt)}`}
+        what={`${sessionDisplayName(row.session)} · ${formatSessionDate(row.session.startsAt)}`}
         when={queueAge(row, nowIso)}
         status={row.status}
         emphasis

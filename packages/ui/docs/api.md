@@ -51,6 +51,8 @@ Exported from `src/index.ts`:
 | Form | `Form`, `FormControl`, `FormDescription`, `FormField`, `FormItem`, `FormLabel`, `FormMessage`, `useFormField` |
 | Hover Card | `HoverCard`, `HoverCardContent`, `HoverCardTrigger` |
 | Input | `Input` |
+| Password Input | `PasswordInput` |
+| PH Phone Input | `PhPhoneInput` |
 | Input Group | `InputGroup`, `InputGroupAddon`, `InputGroupButton`, `InputGroupInput`, `InputGroupText`, `InputGroupTextarea` |
 | Input OTP | `InputOTP`, `InputOTPGroup`, `InputOTPSeparator`, `InputOTPSlot` |
 | Item | `Item`, `ItemActions`, `ItemContent`, `ItemDescription`, `ItemFooter`, `ItemGroup`, `ItemHeader`, `ItemMedia`, `ItemSeparator`, `ItemTitle` |

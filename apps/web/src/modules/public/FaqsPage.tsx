@@ -1,7 +1,7 @@
 "use client";
 
 import { FAQ_GROUPS, filterFaqs, flattenFaqs } from "@balanse/domain";
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, Input } from "@balanse/ui";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, Input, ScrollReveal } from "@balanse/ui";
 import { useMemo, useState } from "react";
 import { BalanseCtaSection } from "@/components/balanse/marketing/BalanseCtaSection";
 import { BalanseFaqSection } from "@/components/balanse/marketing/BalanseFaqSection";
@@ -28,39 +28,45 @@ export function FaqsPage({ initialQuery = "" }: { initialQuery?: string }) {
       />
 
       {/* Matches the Jabkit faq12 container so the field lines up with the rail. */}
-      <div className="mx-auto max-w-6xl px-5 pt-12 sm:px-8 md:pt-16 lg:px-10">
-        <label className="block text-sm font-medium" htmlFor="faq-search">
-          Search
-        </label>
-        <Input
-          id="faq-search"
-          type="search"
-          value={query}
-          className="mt-2 max-w-md"
-          placeholder="Search questions"
-          onChange={(event) => setQuery(event.target.value)}
-        />
-      </div>
+      <ScrollReveal>
+        <div className="mx-auto max-w-6xl px-5 pt-12 sm:px-8 md:pt-16 lg:px-10">
+          <label className="block text-sm font-medium" htmlFor="faq-search">
+            Search
+          </label>
+          <Input
+            id="faq-search"
+            type="search"
+            value={query}
+            className="mt-2 max-w-md"
+            placeholder="Search questions"
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </div>
+      </ScrollReveal>
 
       {visibleGroups.length === 0 ? (
-        <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 lg:px-10">
-          <Empty className="border border-dashed border-border bg-card">
-            <EmptyHeader>
-              <EmptyTitle>No matching questions</EmptyTitle>
-              <EmptyDescription>
-                Nothing in the FAQ list matches that search. Clear the field to see every group.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        </div>
+        <ScrollReveal>
+          <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 lg:px-10">
+            <Empty className="border border-dashed border-border bg-card">
+              <EmptyHeader>
+                <EmptyTitle>No matching questions</EmptyTitle>
+                <EmptyDescription>
+                  Nothing in the FAQ list matches that search. Clear the field to see every group.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          </div>
+        </ScrollReveal>
       ) : (
-        <BalanseFaqSection
-          groups={visibleGroups}
-          kicker="Booking, payment, waitlist, changes, walk-ins"
-          title="Everything the studio gets asked"
-          description="Pick a topic on the rail. Answers are canonical — booking, payment, and cancellation all work exactly as described here."
-          className="[&>div]:py-12 md:[&>div]:py-16"
-        />
+        <ScrollReveal delay={0.08}>
+          <BalanseFaqSection
+            groups={visibleGroups}
+            kicker="Booking, payment, waitlist, changes, walk-ins"
+            title="Everything the studio gets asked"
+            description="Pick a topic on the rail. Answers are canonical — booking, payment, and cancellation all work exactly as described here."
+            className="[&>div]:py-12 md:[&>div]:py-16"
+          />
+        </ScrollReveal>
       )}
 
       <p className="sr-only">{flattenFaqs().length} canonical questions.</p>

@@ -27,3 +27,5 @@
 | [payment-qr-collection.md](./payment-qr-collection.md) | BE-056 |
 | [api-routes.md](./api-routes.md) | BE-030–BE-043 + BE-050–056 |
 | [human-steps.md](./human-steps.md) | dashboard-only |
+
+- [Session coach assignments](./session-coach-assignments.md) — independent classes, required multi-coach sessions, per-coach snapshots, migration rollout.

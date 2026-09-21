@@ -4,7 +4,7 @@ import type { AdminSettings } from "@balanse/domain";
 import { useUpdateAdminSettings } from "@/lib/query/mutations";
 import { notify } from "@/modules/notifications/notify";
 import { AdminForm, FormActions, FormField, FormSection } from "../forms/AdminForm";
-import { TextBinding } from "../forms/bindings";
+import { PhPhoneBinding, TextBinding } from "../forms/bindings";
 import { businessProfileFormDefaultValues } from "../forms/settings/settings-form.defaults";
 import {
   type BusinessProfileFormValues,
@@ -75,9 +75,9 @@ export function BusinessProfileSection({
         <FormField
           name="contact.phone"
           label="Operational phone"
-          description="Studio phone for staff and bookings — not the public inbox."
+          description="Philippine mobile for staff and bookings — not the public inbox."
         >
-          {(field) => <TextBinding {...field} type="tel" />}
+          {(field) => <PhPhoneBinding {...field} />}
         </FormField>
         <FormField name="contact.address" label="Studio address" span="full">
           {(field) => <TextBinding {...field} />}

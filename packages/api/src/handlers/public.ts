@@ -33,7 +33,9 @@ async function publicSessionDto(
     status: string;
     customerPrice: unknown;
     gymClass: { id: string; name: string };
-    coach: { id: string; name: string; photoKey: string | null; specialties: string[] } | null;
+    coaches: {
+      coach: { id: string; name: string; photoKey: string | null; specialties: string[] };
+    }[];
   },
   consumed: number,
   pastCutoff: boolean,
@@ -49,7 +51,7 @@ async function publicSessionDto(
     startsAt: session.startsAt.toISOString(),
     endsAt: session.endsAt.toISOString(),
     class: session.gymClass,
-    coach: session.coach,
+    coaches: session.coaches.map(({ coach }) => coach),
     customerPrice: money(session.customerPrice),
     capacity: session.capacity,
     remainingSlots,
@@ -86,7 +88,9 @@ export async function getPublicSessions(deps: ApiDeps, req: Request): Promise<Re
       status: true,
       customerPrice: true,
       gymClass: { select: { id: true, name: true } },
-      coach: { select: { id: true, name: true, photoKey: true, specialties: true } },
+      coaches: {
+        select: { coach: { select: { id: true, name: true, photoKey: true, specialties: true } } },
+      },
     },
   });
   const consumed = await sessionsConsumedCapacity(
@@ -118,7 +122,9 @@ export async function getPublicSession(
       status: true,
       customerPrice: true,
       gymClass: { select: { id: true, name: true } },
-      coach: { select: { id: true, name: true, photoKey: true, specialties: true } },
+      coaches: {
+        select: { coach: { select: { id: true, name: true, photoKey: true, specialties: true } } },
+      },
     },
   });
   if (!session || session.status === "DRAFT") {

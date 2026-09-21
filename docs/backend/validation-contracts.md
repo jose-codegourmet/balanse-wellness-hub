@@ -37,7 +37,8 @@ BE-055 / BE-056 additions: `already_linked`, `cannot_remove_active`, `qr_limit`.
 
 - `sessions.endsAt > startsAt` is a **database CHECK**. Max duration 8 hours is validator-only.
 - Capacity vs consumption is **transactional**: `public.update_session_capacity` locks the session row and compares `app_private.session_consumed_capacity` (holds + confirmed + in-flight requests — same as BE-017). This is stricter than “confirmed only”.
-- Coach `defaultRate` / `rateType` updates **cannot** rewrite `sessions.coachRate` / `coachRateType`. Those columns are a write-time snapshot; there is no UPDATE trigger or cascade from `coaches`. Sending snapshot fields on session PATCH is 422 `read_only`.
+- Coach `defaultRate` / `rateType` updates **cannot** rewrite `session_coaches.coachRate` / `coachRateType`. Those columns are a write-time snapshot; there is no UPDATE trigger or cascade from `coaches`. Sending snapshot fields on session POST/PATCH is 422 `read_only`.
+- Session POST requires `coachIds`: a non-empty array of distinct coach IDs. PATCH can omit it to preserve assignments, but cannot send an empty array. New assignments require active coaches; retained inactive coaches remain valid. Singular `coachId` is rejected. See [session-coach-assignments.md](./session-coach-assignments.md).
 - Session create copies the current coach default into the snapshot once. Inactive class/coach references are rejected.
 - Specialties are **free-text tags** (max 12 × 40), not a closed vocabulary — the FE tag input is correct.
 - Class `name` is unique per studio (`classes.name` `@unique`).

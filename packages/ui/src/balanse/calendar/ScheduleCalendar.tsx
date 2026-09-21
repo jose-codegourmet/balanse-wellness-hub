@@ -12,6 +12,7 @@ import {
   type PublicClass,
   type PublicCoach,
   type PublicSession,
+  sessionDisplayName,
   startOfManilaMonth,
   startOfManilaWeekMonday,
 } from "@balanse/domain";
@@ -112,7 +113,8 @@ export function ScheduleCalendar({
   const coachName =
     coachFilter !== "all"
       ? (coaches.find((coach) => coach.id === coachFilter)?.name ??
-        sessions.find((session) => session.coachId === coachFilter)?.coachName ??
+        sessions.flatMap((session) => session.coaches).find((coach) => coach.id === coachFilter)
+          ?.name ??
         "Coach")
       : null;
 
@@ -339,7 +341,7 @@ export function ScheduleCalendar({
                       )}
                       onClick={() => setSelectedId(session.id)}
                     >
-                      <span className="font-medium">{session.className}</span>
+                      <span className="font-medium">{sessionDisplayName(session)}</span>
                       <span className="text-sm text-muted-foreground">
                         {formatSessionTime(session.startsAt)} · {session.coachName}
                       </span>
@@ -368,7 +370,7 @@ export function ScheduleCalendar({
               />
             ) : selected ? (
               <>
-                <h2 className="font-display text-xl">{selected.className}</h2>
+                <h2 className="font-display text-xl">{sessionDisplayName(selected)}</h2>
                 <dl className="mt-3 space-y-1 text-sm">
                   <div className="flex justify-between gap-3">
                     <dt>Time</dt>

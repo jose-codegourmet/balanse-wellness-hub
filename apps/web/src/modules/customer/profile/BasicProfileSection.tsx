@@ -3,7 +3,7 @@
 import type { CustomerProfile } from "@balanse/domain";
 import { PROFILE_FIELDS_NOTE, validateCustomerProfile } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Input, Label } from "@balanse/ui";
+import { Input, Label, PhPhoneInput } from "@balanse/ui";
 import { ArrowUpRight, LoaderCircle, Mail, Phone, UserRound } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/jabkit/button";
@@ -101,9 +101,8 @@ export function BasicProfileSection({
           <Label htmlFor="profile-contact">
             <Phone size={14} aria-hidden="true" /> Contact number
           </Label>
-          <Input
+          <PhPhoneInput
             id="profile-contact"
-            type="tel"
             value={contactNumber}
             autoComplete="tel"
             aria-invalid={Boolean(errors.contactNumber)}

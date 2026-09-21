@@ -1,6 +1,11 @@
 "use client";
 
-import { formatPeso, formatSessionDate, formatSessionTime } from "@balanse/domain";
+import {
+  formatPeso,
+  formatSessionDate,
+  formatSessionTime,
+  sessionDisplayName,
+} from "@balanse/domain";
 import { CalendarSkeleton, FeedbackState, type ScheduleCalendarProps } from "@balanse/ui";
 import { ArrowLeft, ArrowRight, Check, Clock3 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -28,7 +33,8 @@ export function BalanseQuickBooking({
       (session) =>
         new Date(session.startsAt) > new Date(nowIso) &&
         (session.reservable || session.availability === "full_with_waitlist") &&
-        (initialCoachFilter === "all" || session.coachId === initialCoachFilter) &&
+        (initialCoachFilter === "all" ||
+          session.coaches.some((coach) => coach.id === initialCoachFilter)) &&
         session.id !== sessionBecameFullId,
     )
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
@@ -126,7 +132,7 @@ export function BalanseQuickBooking({
                     {formatSessionDate(session.startsAt)} · {formatSessionTime(session.startsAt)}
                   </strong>
                   <span>
-                    {session.className} with {session.coachName}
+                    {sessionDisplayName(session)} with {session.coachName}
                   </span>
                 </span>
                 <span className="quick-session-price">
@@ -162,7 +168,7 @@ export function BalanseQuickBooking({
                 ? "Waitlist request"
                 : "Your selected class"}
             </p>
-            <h4>{selected.className}</h4>
+            <h4>{sessionDisplayName(selected)}</h4>
             <p>with {selected.coachName}</p>
             <div>
               <Clock3 size={16} aria-hidden="true" />

@@ -42,7 +42,7 @@ export const ADMIN_ROLE_CAPABILITY_NOTE =
   "Admin role: coach compensation rates, sales reports, refund totals, coach-cost reports, and capacity/utilization reporting. Coach compensation stays internal.";
 
 export const SESSION_RATE_SNAPSHOT_NOTE =
-  "Coach rate and rate type are stored on this session. Changing a coach’s default rate later does not rewrite this snapshot.";
+  "Each assigned coach has a stored rate and rate type. Existing assignments keep their snapshots; newly assigned coaches use their current default rates.";
 
 export const COACH_DEFAULT_RATE_NOTE =
   "Changing the default rate does not rewrite existing session snapshots.";
@@ -131,22 +131,20 @@ export function safeAdminPath(
 export type AdminSession = PublicSession & {
   bookable: boolean;
   coachRatePhp: number;
-  coachRateType: CoachRateType;
+  coachAssignments: { coachId: string; coachRatePhp: number; coachRateType: CoachRateType }[];
 };
 
 export function toPublicSession(session: AdminSession): PublicSession {
   const {
     bookable: _bookable,
     coachRatePhp: _rate,
-    coachRateType: _type,
+    coachAssignments: _assignments,
     ...publicSession
   } = session;
   return publicSession;
 }
 
-export type AdminClass = PublicClass & {
-  associatedCoachIds: string[];
-};
+export type AdminClass = PublicClass;
 
 export type PolicyDocumentVersion = {
   id: string;
@@ -450,6 +448,7 @@ export type CoachCostRow = {
 };
 
 export type SessionPerformanceRow = {
+  name?: string | null;
   sessionId: string;
   startsAt: string;
   className: string;
@@ -460,6 +459,7 @@ export type SessionPerformanceRow = {
 };
 
 export type SessionReportDrilldown = {
+  name?: string | null;
   sessionId: string;
   className: string;
   startsAt: string;
@@ -492,7 +492,11 @@ export function sessionInReportRange(session: PublicSession, filters: AdminRepor
   if (filters.classId && filters.classId !== "all" && session.classId !== filters.classId) {
     return false;
   }
-  if (filters.coachId && filters.coachId !== "all" && session.coachId !== filters.coachId) {
+  if (
+    filters.coachId &&
+    filters.coachId !== "all" &&
+    !session.coaches.some((coach) => coach.id === filters.coachId)
+  ) {
     return false;
   }
   if (
@@ -584,6 +588,7 @@ export function computeAdminReports(
     const noShows = rows.filter((b) => b.status === "NO_SHOW").length;
     sessionPerformance.push({
       sessionId: session.id,
+      name: session.name,
       startsAt: session.startsAt,
       className: session.className,
       capacity: session.capacity,
@@ -606,17 +611,23 @@ export function computeAdminReports(
     classRow.occupancy += occupancyRatio(inventory.confirmed, session.capacity);
     classMap.set(session.classId, classRow);
 
-    const coachRow = coachMap.get(session.coachId) ?? {
-      coachId: session.coachId,
-      coachName: session.coachName,
-      sessions: 0,
-      coachCostPhp: 0,
-      relatedRevenuePhp: 0,
-    };
-    coachRow.sessions += 1;
-    coachRow.coachCostPhp += session.coachRatePhp;
-    coachRow.relatedRevenuePhp += revenuePhp;
-    coachMap.set(session.coachId, coachRow);
+    for (const assignment of session.coachAssignments) {
+      if (filters.coachId && filters.coachId !== "all" && assignment.coachId !== filters.coachId)
+        continue;
+      const coachRow = coachMap.get(assignment.coachId) ?? {
+        coachId: assignment.coachId,
+        coachName:
+          session.coaches.find((coach) => coach.id === assignment.coachId)?.name ?? "Coach",
+        sessions: 0,
+        coachCostPhp: 0,
+        relatedRevenuePhp: 0,
+      };
+      coachRow.sessions += 1;
+      coachRow.coachCostPhp += sessionCoachCost(assignment, session);
+      // Revenue relates to the shared session; it is not additive across coaches.
+      coachRow.relatedRevenuePhp += revenuePhp;
+      coachMap.set(assignment.coachId, coachRow);
+    }
   }
 
   const classPerformance = [...classMap.values()].map((row) => ({
@@ -651,6 +662,7 @@ export function computeSessionDrilldown(
     .reduce((sum, b) => sum + b.session.pricePhp, 0);
   return {
     sessionId: session.id,
+    name: session.name,
     className: session.className,
     startsAt: session.startsAt,
     capacity: session.capacity,
@@ -832,12 +844,25 @@ export function buildAdminDashboard(
   };
 }
 
-export function snapshotRateFromCoach(
-  coach: AdminCoach,
-): Pick<AdminSession, "coachRatePhp" | "coachRateType"> {
+export function snapshotRateFromCoach(coach: AdminCoach): {
+  coachRatePhp: number;
+  coachRateType: CoachRateType;
+} {
   return { coachRatePhp: coach.defaultRatePhp, coachRateType: coach.rateType };
 }
 
 export { HOLD_DURATION_HOURS };
 
 export const ALL_BOOKING_STATUSES_FOR_TABLE = BOOKING_STATUSES;
+
+export function sessionCoachCost(
+  assignment: { coachRatePhp: number; coachRateType: CoachRateType },
+  session: Pick<PublicSession, "startsAt" | "endsAt">,
+): number {
+  const hours = (Date.parse(session.endsAt) - Date.parse(session.startsAt)) / 36e5;
+  return (
+    Math.round(
+      assignment.coachRatePhp * (assignment.coachRateType === "PER_HOUR" ? hours : 1) * 100,
+    ) / 100
+  );
+}

@@ -135,8 +135,18 @@ export async function getRescheduleRequests(deps: ApiDeps, req: Request): Promis
       orderBy: [{ requestedAt: "desc" }, { id: "desc" }],
       include: {
         booking: { include: { profile: true } },
-        fromSession: { include: { gymClass: true, coach: true } },
-        targetSession: { include: { gymClass: true, coach: true } },
+        fromSession: {
+          include: {
+            gymClass: true,
+            coaches: { select: { coach: { select: { id: true, name: true, photoKey: true } } } },
+          },
+        },
+        targetSession: {
+          include: {
+            gymClass: true,
+            coaches: { select: { coach: { select: { id: true, name: true, photoKey: true } } } },
+          },
+        },
       },
     }),
   ]);

@@ -17,7 +17,7 @@ Grain: one **Asia/Manila** calendar day (`YYYY-MM-DD`). Window: trailing **14** 
 | `gross_sales` | Sum of `payments.amount` where status is `VERIFIED` or `CASH_RECEIVED` and booking is not `WAITLISTED` / `HELD_AWAITING_PAYMENT` — same as `countsTowardGrossSales()`. |
 | `occupancy` | `CONFIRMED` + `CHECKED_IN` / session capacity that day (published sessions). |
 | `session_count` | Sessions starting that Manila day with status `PUBLISHED` or `CANCELLED`. |
-| `coach_cost` | Sum of session snapshot `coachRate` (never `coaches.defaultRate`). **Admin-only field** — omit the key entirely for a non-admin principal. |
+| `coach_cost` | Sum of all assignment snapshot costs (hourly rates multiplied by duration; never current `coaches.defaultRate`). **Admin-only field** — omit the key entirely for a non-admin principal. |
 
 Labels stay in `REPORT_TERMS`. No field named `profit`.
 

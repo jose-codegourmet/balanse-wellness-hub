@@ -1,5 +1,5 @@
 import { type PublicCtaBlockId, publicCtaBlock } from "@balanse/domain";
-import { MarketingImage } from "@balanse/ui";
+import { MarketingImage, ScrollReveal } from "@balanse/ui";
 import {
   ArrowUpRight,
   GaugeIcon,
@@ -55,34 +55,42 @@ export function BalanseCtaSection({
       data-cta-id={block.id}
       className={cn("balanse-cta marketing-container pb-16 md:pb-24", className)}
     >
-      {assetId ? <MarketingImage assetId={assetId} className="mb-8 !rounded-sm md:mb-10" /> : null}
-      <div className="balanse-cta-body">
-        <div className="balanse-cta-copy">
-          <p className="marketing-eyebrow">{block.eyebrow}</p>
-          <h2 className="marketing-title mt-3">{block.title}</h2>
-          <p className="marketing-copy max-w-lg">{block.body}</p>
-        </div>
-        {/* Exactly one primary action. Any secondary action on the block stays
+      {assetId ? (
+        <ScrollReveal>
+          <MarketingImage assetId={assetId} className="mb-8 !rounded-sm md:mb-10" />
+        </ScrollReveal>
+      ) : null}
+      <ScrollReveal delay={assetId ? 0.08 : 0}>
+        <div className="balanse-cta-body">
+          <div className="balanse-cta-copy">
+            <p className="marketing-eyebrow">{block.eyebrow}</p>
+            <h2 className="marketing-title mt-3">{block.title}</h2>
+            <p className="marketing-copy max-w-lg">{block.body}</p>
+          </div>
+          {/* Exactly one primary action. Any secondary action on the block stays
             in the footer nav rather than competing here. */}
-        <Button asChild className="balanse-cta-action rounded-full px-7">
-          <a href={primary.href}>
-            {primary.label}
-            <ArrowUpRight className="ml-4 size-4" aria-hidden="true" />
-          </a>
-        </Button>
-      </div>
+          <Button asChild className="balanse-cta-action rounded-full px-7">
+            <a href={primary.href}>
+              {primary.label}
+              <ArrowUpRight className="ml-4 size-4" aria-hidden="true" />
+            </a>
+          </Button>
+        </div>
+      </ScrollReveal>
       {features.length > 0 ? (
-        <ul className="balanse-cta-features">
-          {features.map((feature) => {
-            const Icon = FEATURE_ICONS[feature.icon ?? "sparkles"];
-            return (
-              <li key={feature.label}>
-                <Icon aria-hidden="true" size={16} strokeWidth={1.75} />
-                <span>{feature.label}</span>
-              </li>
-            );
-          })}
-        </ul>
+        <ScrollReveal delay={0.12}>
+          <ul className="balanse-cta-features">
+            {features.map((feature) => {
+              const Icon = FEATURE_ICONS[feature.icon ?? "sparkles"];
+              return (
+                <li key={feature.label}>
+                  <Icon aria-hidden="true" size={16} strokeWidth={1.75} />
+                  <span>{feature.label}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </ScrollReveal>
       ) : null}
     </section>
   );

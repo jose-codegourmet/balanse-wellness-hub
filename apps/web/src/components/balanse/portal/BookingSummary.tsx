@@ -5,6 +5,7 @@ import {
   formatPeso,
   formatSessionDate,
   formatSessionTimeRange,
+  sessionDisplayName,
 } from "@balanse/domain";
 import { StatusBadge } from "@balanse/ui";
 import type { ReactNode } from "react";
@@ -127,7 +128,9 @@ export function BookingSummary({
       <header className="booking-summary-head">
         <div className="booking-summary-identity">
           {eyebrow ? <p className="portal-eyebrow">{eyebrow}</p> : null}
-          <Heading className="booking-summary-title font-display">{session.className}</Heading>
+          <Heading className="booking-summary-title font-display">
+            {sessionDisplayName(session)}
+          </Heading>
         </div>
         <StatusBadge status={bookingStatusKey(booking)} />
       </header>

@@ -13,6 +13,7 @@ import {
   type PublicSession,
   type ScheduleGridView,
   scheduleGridDays,
+  sessionDisplayName,
 } from "@balanse/domain";
 import {
   CalendarSkeleton,
@@ -160,7 +161,7 @@ export function BalanseBookingCalendar({
   const periodEmpty = !entries.length;
   const coachName =
     coaches.find((coach) => coach.id === coachFilter)?.name ??
-    sessions.find((session) => session.coachId === coachFilter)?.coachName;
+    sessions.flatMap((session) => session.coaches).find((coach) => coach.id === coachFilter)?.name;
   const title =
     resolvedView === "day"
       ? dateLabel(date, { weekday: "short", month: "short", day: "numeric" })
@@ -205,13 +206,7 @@ export function BalanseBookingCalendar({
       : session.reservable
         ? slotsAria(session)
         : `${AVAILABILITY[session.availability]}, ${spots(session)}`;
-    const avatar = (
-      <CoachAvatar
-        photoKey={coachPhotoById.get(session.coachId) ?? null}
-        name={session.coachName}
-        className="booking-event-avatar"
-      />
-    );
+    const avatar = <CalendarDays className="size-4 shrink-0" aria-hidden="true" />;
     const slots =
       !statusCopy && session.reservable ? (
         <span className="booking-event-slots">
@@ -244,13 +239,13 @@ export function BalanseBookingCalendar({
         className={cn("booking-event", variant === "timed" && "booking-event-timed")}
         style={style}
         onClick={() => openSession(session)}
-        aria-label={`${session.className}, ${formatSessionDate(session.startsAt)}, ${formatSessionTime(session.startsAt)} to ${formatSessionTime(session.endsAt)}, ${session.coachName}, ${availabilityLabel}`}
+        aria-label={`${sessionDisplayName(session)}, ${formatSessionDate(session.startsAt)}, ${formatSessionTime(session.startsAt)} to ${formatSessionTime(session.endsAt)}, ${session.coachName}, ${availabilityLabel}`}
       >
         {variant === "chip" ? (
           <>
             <span className="booking-event-lead">{avatar}</span>
             <span className="booking-event-body">
-              <span className="booking-event-name">{session.className}</span>
+              <span className="booking-event-name">{sessionDisplayName(session)}</span>
               {time}
               {status}
               {slots}
@@ -258,7 +253,7 @@ export function BalanseBookingCalendar({
           </>
         ) : (
           <>
-            <span className="booking-event-name">{session.className}</span>
+            <span className="booking-event-name">{sessionDisplayName(session)}</span>
             {time}
             <span className="booking-event-coach">
               {avatar}
@@ -520,7 +515,7 @@ export function BalanseBookingCalendar({
                 </span>
               </div>
               <DialogTitle className="booking-session-title pr-8 font-display text-2xl font-normal">
-                {selected.className}
+                {sessionDisplayName(selected)}
               </DialogTitle>
               <div className="booking-session-meta">
                 <CalendarDays className="booking-session-icon" aria-hidden="true" />
@@ -531,18 +526,20 @@ export function BalanseBookingCalendar({
               {selectedDescription ? (
                 <p className="booking-session-blurb">{selectedDescription}</p>
               ) : null}
-              <div className="booking-session-coach">
-                <CoachAvatar
-                  photoKey={coachPhotoById.get(selected.coachId) ?? null}
-                  name={selected.coachName}
-                  size="lg"
-                  className="booking-session-avatar"
-                />
-                <div>
-                  <p className="booking-session-coach-name">{selected.coachName}</p>
-                  <p className="booking-session-coach-role">Coach</p>
+              {selected.coaches.map((coach) => (
+                <div key={coach.id} className="booking-session-coach">
+                  <CoachAvatar
+                    photoKey={coachPhotoById.get(coach.id) ?? coach.photoKey}
+                    name={coach.name}
+                    size="lg"
+                    className="booking-session-avatar"
+                  />
+                  <div>
+                    <p className="booking-session-coach-name">{coach.name}</p>
+                    <p className="booking-session-coach-role">Coach</p>
+                  </div>
                 </div>
-              </div>
+              ))}
               <dl className="booking-session-stats">
                 <div>
                   <dt>

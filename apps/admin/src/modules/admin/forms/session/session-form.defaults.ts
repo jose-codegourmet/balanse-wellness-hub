@@ -4,46 +4,32 @@ import { toSessionIso } from "./session-form.schema";
 
 export const sessionFormDefaultValues: SessionFormValues = {
   classId: "",
-  coachId: "",
+  name: "",
+  coachIds: [],
   startsAt: "",
   endsAt: "",
   pricePhp: 0,
   capacity: 1,
   bookable: true,
   status: "DRAFT",
-  coachRatePhp: 0,
-  coachRateType: "PER_SESSION",
 };
 
 const DEFAULT_START = SESSION_SLOTS_MANILA[0];
 const DEFAULT_END = SESSION_SLOTS_MANILA[1];
 
 export function sessionFormValuesFromSession(
-  session: Pick<
-    SessionFormValues,
-    | "classId"
-    | "coachId"
-    | "startsAt"
-    | "endsAt"
-    | "pricePhp"
-    | "capacity"
-    | "bookable"
-    | "status"
-    | "coachRatePhp"
-    | "coachRateType"
-  >,
+  session: import("@balanse/domain").AdminSession,
 ): SessionFormValues {
   return {
     classId: session.classId,
-    coachId: session.coachId,
+    name: session.name ?? "",
+    coachIds: session.coaches.map((coach) => coach.id),
     startsAt: session.startsAt,
     endsAt: session.endsAt,
     pricePhp: session.pricePhp,
     capacity: session.capacity,
     bookable: session.bookable,
     status: session.status,
-    coachRatePhp: session.coachRatePhp,
-    coachRateType: session.coachRateType,
   };
 }
 

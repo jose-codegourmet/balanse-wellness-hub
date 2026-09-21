@@ -19,7 +19,7 @@ Recipe for every admin write form:
 | `coachRate` | `coachRatePhp` | |
 | `MONEY_UNIT = "php_decimal"` | integer pesos | `z.coerce.number().int()`. Blank optionals → `null`, not `0` |
 
-`class.name.unique` and `session.coachId.allowInactive` are server-only. The 422 must carry `duplicate_value` / `inactive_reference` on those paths.
+`class.name.unique` and `session.coachIds.allowInactive` are server-only. The 422 must carry `duplicate_value` / `inactive_reference` on those paths.
 
 ## Aria split
 

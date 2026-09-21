@@ -1,6 +1,7 @@
 "use client";
 
 import type { PublicClass, PublicCoach, PublicSession } from "@balanse/domain";
+import { ScrollReveal } from "@balanse/ui";
 import { ArrowUpRight, CalendarDays, MapPin, MoveRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -38,32 +39,34 @@ export function BalanseBookingHero({
         />
       </div>
       <div className="guided-hero marketing-container" data-mode={mode}>
-        <div className="guided-hero-copy" data-section="hero-copy">
-          <p className="marketing-eyebrow">Movement. Wellness. Community.</p>
-          <h1 id="home-hero-title">
-            A little movement.
-            <br />
-            <em>A little more you.</em>
-          </h1>
-          <p className="guided-hero-description">
-            Make space for strength, stillness, and everything in between. Your next practice begins
-            here.
-          </p>
-          <div className="guided-hero-location">
-            <MapPin size={15} strokeWidth={1.5} aria-hidden="true" /> Your wellness space in Cebu
-            City
-          </div>
-          <div className="guided-hero-footnote">
-            <span>
-              Find your practice.
+        <ScrollReveal>
+          <div className="guided-hero-copy" data-section="hero-copy">
+            <p className="marketing-eyebrow">Movement. Wellness. Community.</p>
+            <h1 id="home-hero-title">
+              A little movement.
               <br />
-              We’ll meet you there.
-            </span>
-            <Link href="/coaches">
-              Meet the coaches <ArrowUpRight size={16} aria-hidden="true" />
-            </Link>
+              <em>A little more you.</em>
+            </h1>
+            <p className="guided-hero-description">
+              Make space for strength, stillness, and everything in between. Your next practice
+              begins here.
+            </p>
+            <div className="guided-hero-location">
+              <MapPin size={15} strokeWidth={1.5} aria-hidden="true" /> Your wellness space in Cebu
+              City
+            </div>
+            <div className="guided-hero-footnote">
+              <span>
+                Find your practice.
+                <br />
+                We’ll meet you there.
+              </span>
+              <Link href="/coaches">
+                Meet the coaches <ArrowUpRight size={16} aria-hidden="true" />
+              </Link>
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
         <section
           id="schedule"
           data-section="calendar-hero"

@@ -7,9 +7,10 @@ import {
   formatSessionDate,
   formatSessionRange,
   REQUIRED_POLICY_DOCUMENTS,
+  sessionDisplayName,
 } from "@balanse/domain";
 import { getMockAdapter, MOCK_NOW_ISO } from "@balanse/mock";
-import { Button, Input, Label, LocalizedSkeleton } from "@balanse/ui";
+import { Button, Input, Label, LocalizedSkeleton, PhPhoneInput } from "@balanse/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { notify } from "@/modules/notifications/notify";
@@ -51,7 +52,7 @@ export function BookingForm({
         <dl className="mt-3 grid gap-2 text-sm">
           <div className="flex justify-between gap-4">
             <dt>Class</dt>
-            <dd>{session.className}</dd>
+            <dd>{sessionDisplayName(session)}</dd>
           </div>
           <div className="flex justify-between gap-4">
             <dt>Date</dt>
@@ -99,9 +100,8 @@ export function BookingForm({
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="book-contact">Contact</Label>
-            <Input
+            <PhPhoneInput
               id="book-contact"
-              type="tel"
               value={contactNumber}
               autoComplete="tel"
               onChange={(event) => setContactNumber(event.target.value)}

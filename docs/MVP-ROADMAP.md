@@ -12,6 +12,8 @@
 
 **Document version:** 1.0 · **Last updated:** 2026-09-19
 
+**2026-09-21 product amendment — coach assignments:** Classes are standalone catalogue entries with an optional marketing coach roster. This roster is separate from scheduled staffing: every scheduled session (including drafts) requires at least one coach and may have multiple. Customers book the scheduled class session, not a coach. Each session assignment holds an immutable compensation snapshot; retained assignments preserve it. Sessions support an optional custom name, falling back to the class name when blank. Public class pages include generated hero imagery, assigned coaches, rich-text about content, zoomable galleries, customer rates, and booking. Current marketing content and custom titles remain in the mock UI lane; no live backend wiring is added. See [class pages](screen-specs/public/10-class-pages.md) and [session coach assignments](backend/session-coach-assignments.md) for scope and rollout details.
+
 ---
 
 ## Table of contents
@@ -2709,7 +2711,5 @@ Every file under `docs/screen-specs/` and the FE ticket(s) that cover it.
 | ASSET-022 | Contact page imagery (Assets A–B) | P2 |
 | ASSET-023 | FAQ header accent (Asset A) | P2 |
 | ASSET-030 | Upload approved assets into Supabase Storage | P4 |
-
-
 
 

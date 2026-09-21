@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useUpdateAdminSettings } from "@/lib/query/mutations";
 import { notify } from "@/modules/notifications/notify";
 import { AdminForm, FormActions, FormField, FormSection } from "../forms/AdminForm";
-import { TextBinding } from "../forms/bindings";
+import { PhPhoneBinding, TextBinding } from "../forms/bindings";
 import { paymentInfoFormDefaultValues } from "../forms/settings/settings-form.defaults";
 import {
   type PaymentInfoFormValues,
@@ -69,8 +69,12 @@ export function PaymentInfoSection({
         <FormField name="gcashName" label="GCash name">
           {(field) => <TextBinding {...field} />}
         </FormField>
-        <FormField name="gcashNumber" label="GCash number">
-          {(field) => <TextBinding {...field} type="tel" inputMode="tel" />}
+        <FormField
+          name="gcashNumber"
+          label="GCash number"
+          description="Philippine mobile (09XX XXX XXXX)."
+        >
+          {(field) => <PhPhoneBinding {...field} />}
         </FormField>
       </FormSection>
       <FormActions submitLabel="Save payment info" />

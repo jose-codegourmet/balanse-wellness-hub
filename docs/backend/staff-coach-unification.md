@@ -46,7 +46,7 @@ Clearing the link is `UPDATE coaches SET "staffMemberId" = NULL`.
 | --- | --- |
 | Unlink (`DELETE /api/admin/staff/{id}/coach`) | Sets `staffMemberId` null. **Never** deletes `Coach`. |
 | Delete `StaffMember` (no API today) | `ON DELETE SET NULL` on `coaches.staffMemberId`. |
-| Delete `Coach` (no API today) | Reverse relation disappears. `GymSession.coachId` stays `ON DELETE SET NULL` (existing). `ClassCoach.coachId` is unchanged. |
+| Delete `Coach` (no API today) | Reverse relation disappears. Coach deletion is restricted while session assignments reference the coach. Classes have no coach association. |
 | `ON UPDATE` | `CASCADE` (cuid ids do not change). |
 
 **Never** `ON DELETE CASCADE` from staff → coach. That would wipe `class_coaches` and leave sessions without a teaching profile.
@@ -57,7 +57,7 @@ Clearing the link is `UPDATE coaches SET "staffMemberId" = NULL`.
 
 1. `staff_members.status = DISABLED` (existing: next `resolveActor` is not admin).
 2. If a coach is linked, set `coaches.active = false`.
-3. **Sessions are untouched** — `sessions.coachId`, snapshots, and bookings stay as they are.
+3. **Sessions are untouched** — session coach assignments, snapshots, and bookings stay as they are.
 4. New session create still rejects an inactive coach (`inactive_reference`, existing BE-051 rule).
 
 Unlink does **not** deactivate the coach.

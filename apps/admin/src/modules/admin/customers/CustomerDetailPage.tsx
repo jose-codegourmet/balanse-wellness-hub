@@ -6,6 +6,7 @@ import {
   formatSessionDate,
   paymentStatusLabel,
   refundStatusLabel,
+  sessionDisplayName,
 } from "@balanse/domain";
 import { Badge, StatusBadge } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -34,7 +35,8 @@ function BookingBlock({
             <li key={booking.id} className="rounded-xl border border-border p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <Link className="underline underline-offset-4" href={`/bookings/${booking.id}`}>
-                  {booking.session.className} · {formatSessionDate(booking.session.startsAt)}
+                  {sessionDisplayName(booking.session)} ·{" "}
+                  {formatSessionDate(booking.session.startsAt)}
                 </Link>
                 <StatusBadge status={booking.status} surface="admin" />
               </div>
@@ -106,7 +108,7 @@ export function CustomerDetailPage({ customerId }: { customerId: string }) {
               <li key={booking.id} className="rounded-xl border border-border p-3 text-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <Link className="underline underline-offset-4" href={`/bookings/${booking.id}`}>
-                    {booking.session.className}
+                    {sessionDisplayName(booking.session)}
                   </Link>
                   <StatusBadge status={booking.status} surface="admin" />
                 </div>

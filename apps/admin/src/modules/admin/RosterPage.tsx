@@ -9,6 +9,7 @@ import {
   NO_REFUND_ON_NOSHOW_NOTE,
   occupancyRatio,
   paymentStatusLabel,
+  sessionDisplayName,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { StatusBadge } from "@balanse/ui";
@@ -34,7 +35,7 @@ export function RosterPage({ sessionId }: { sessionId: string }) {
     await rosterQuery.refetch();
   }
 
-  const title = `${roster.session.className} — ${formatSessionDate(roster.session.startsAt)} — ${formatSessionTime(roster.session.startsAt)}`;
+  const title = `${sessionDisplayName(roster.session)} — ${formatSessionDate(roster.session.startsAt)} — ${formatSessionTime(roster.session.startsAt)}`;
 
   return (
     <AdminPageShell

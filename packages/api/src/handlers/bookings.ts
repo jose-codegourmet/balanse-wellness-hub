@@ -26,7 +26,10 @@ import {
 
 const bookingInclude = {
   session: {
-    include: { gymClass: true, coach: { select: { id: true, name: true, photoKey: true } } },
+    include: {
+      gymClass: true,
+      coaches: { select: { coach: { select: { id: true, name: true, photoKey: true } } } },
+    },
   },
   payments: { orderBy: { createdAt: "desc" as const } },
   refunds: { orderBy: { createdAt: "desc" as const } },
@@ -70,7 +73,8 @@ function presentBooking(booking: Awaited<ReturnType<typeof loadOwnBooking>>) {
       startsAt: booking.session.startsAt.toISOString(),
       endsAt: booking.session.endsAt.toISOString(),
       className: booking.session.gymClass.name,
-      coachName: booking.session.coach?.name ?? null,
+      coachName: booking.session.coaches.map(({ coach }) => coach.name).join(" & "),
+      coaches: booking.session.coaches.map(({ coach }) => coach),
       customerPrice: money(booking.session.customerPrice),
     },
     ...bookingStatusPayload(booking.status, refund?.status),

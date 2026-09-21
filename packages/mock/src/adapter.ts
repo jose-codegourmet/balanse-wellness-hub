@@ -94,11 +94,16 @@ export type MockDataAdapter = {
   upsertAdminClass: (input: {
     id?: string;
     name: string;
+    slug: string;
+    customPageUrl?: string | null;
+    description: string;
+    coachIds: string[];
+    heroImage: string | null;
+    galleryImages: string[];
     shortDescription: string;
     defaultDurationMinutes: number | null;
     defaultPricePhp: number | null;
     active: boolean;
-    associatedCoachIds: string[];
   }) => Promise<AdminClass>;
   getAdminCoaches: () => Promise<AdminCoach[]>;
   upsertAdminCoach: (input: {
@@ -115,15 +120,14 @@ export type MockDataAdapter = {
   upsertAdminSession: (input: {
     id?: string;
     classId: string;
-    coachId: string;
+    name?: string | null;
+    coachIds: string[];
     startsAt: string;
     endsAt: string;
     pricePhp: number;
     capacity: number;
     bookable: boolean;
     status: SessionStatus;
-    coachRatePhp: number;
-    coachRateType: AdminSession["coachRateType"];
   }) => Promise<AdminSession>;
   cancelAdminSession: (id: string) => Promise<AdminSession>;
   getAdminCancellationRequests: {

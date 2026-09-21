@@ -1,7 +1,7 @@
 "use client";
 
 import { ADMIN_LOGIN_HELP, safeAdminPath, validateAdminLogin } from "@balanse/domain";
-import { BrandLockup, Button, Input, Label, LocalizedSkeleton } from "@balanse/ui";
+import { BrandLockup, Button, Input, Label, LocalizedSkeleton, PasswordInput } from "@balanse/ui";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -78,10 +78,9 @@ export function AdminLogin({
               </div>
               <div className="grid gap-1.5">
                 <Label htmlFor="admin-password">Password</Label>
-                <Input
+                <PasswordInput
                   id="admin-password"
                   name="password"
-                  type="password"
                   autoComplete="current-password"
                   value={password}
                   aria-invalid={Boolean(errors.password)}

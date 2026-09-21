@@ -2,6 +2,7 @@ import {
   BOOKING_CUTOFF_MINUTES_BEFORE_START,
   BOOKING_HOLD_DURATION_HOURS,
   CONTACT_DETAILS,
+  classSlug,
 } from "@balanse/domain";
 import { PrismaClient } from "@prisma/client";
 
@@ -196,6 +197,7 @@ async function main(): Promise<void> {
       create: {
         id: klass.id,
         name: klass.name,
+        slug: classSlug(klass.name),
         shortDescription: `PLACEHOLDER description for ${klass.name}.`,
         defaultDurationMinutes: 60,
         defaultCustomerPrice: PLACEHOLDER_PRICE,
@@ -208,18 +210,6 @@ async function main(): Promise<void> {
         isPlaceholder: true,
       },
     });
-  }
-
-  for (const coach of COACHES) {
-    for (const spec of coach.specialties) {
-      const klass = CLASSES.find((item) => item.name === spec);
-      if (!klass) continue;
-      await prisma.classCoach.upsert({
-        where: { classId_coachId: { classId: klass.id, coachId: coach.id } },
-        create: { classId: klass.id, coachId: coach.id },
-        update: {},
-      });
-    }
   }
 
   const waiver = await prisma.policyDocument.upsert({
@@ -276,22 +266,22 @@ async function main(): Promise<void> {
         create: {
           id,
           classId: slot.classId,
-          coachId: slot.coachId,
           startsAt,
           endsAt,
           capacity: 12,
           status: "PUBLISHED",
           customerPrice: PLACEHOLDER_PRICE,
-          coachRate: PLACEHOLDER_RATE,
-          coachRateType: "PER_SESSION",
+          coaches: {
+            create: [
+              { coachId: slot.coachId, coachRate: PLACEHOLDER_RATE, coachRateType: "PER_SESSION" },
+            ],
+          },
           isPlaceholder: true,
         },
         update: {
-          coachId: slot.coachId,
           startsAt,
           endsAt,
           customerPrice: PLACEHOLDER_PRICE,
-          coachRate: PLACEHOLDER_RATE,
           isPlaceholder: true,
         },
       });

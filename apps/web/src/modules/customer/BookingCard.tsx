@@ -6,6 +6,7 @@ import {
   formatSessionDate,
   formatSessionTimeRange,
   needsAttentionKind,
+  sessionDisplayName,
 } from "@balanse/domain";
 import { StatusBadge } from "@balanse/ui";
 import { ArrowUpRight, CircleAlert, Hourglass, Wallet } from "lucide-react";
@@ -44,7 +45,7 @@ export function BookingCard({ booking }: { booking: CustomerBooking }) {
     <article className="booking-card" data-mood={bookingMood(booking)}>
       <div className="booking-card-head">
         <div className="booking-card-identity">
-          <h3 className="font-display">{session.className}</h3>
+          <h3 className="font-display">{sessionDisplayName(session)}</h3>
           <p className="booking-card-when">
             {formatSessionDate(session.startsAt)} ·{" "}
             {formatSessionTimeRange(session.startsAt, session.endsAt)}

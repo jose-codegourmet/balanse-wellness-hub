@@ -9,6 +9,7 @@ import {
   formatSessionTimeRange,
   type PublicSession,
   RESCHEDULE_HISTORY_NOTE,
+  sessionDisplayName,
 } from "@balanse/domain";
 import {
   Badge,
@@ -117,7 +118,9 @@ function SessionMoveSide({
       <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</p>
       {session ? (
         <>
-          <p className="mt-2 text-pretty font-medium wrap-break-word">{session.className}</p>
+          <p className="mt-2 text-pretty font-medium wrap-break-word">
+            {sessionDisplayName(session)}
+          </p>
           <p className="text-pretty wrap-break-word text-muted-foreground">
             {formatSessionDate(session.startsAt)}
           </p>
@@ -208,15 +211,15 @@ function RescheduleRequestCard({
     >
       <AdminQueueCard
         who={row.customerName}
-        what={`${row.session.className} · ${formatSessionDate(row.session.startsAt)}`}
+        what={`${sessionDisplayName(row.session)} · ${formatSessionDate(row.session.startsAt)}`}
         when={requestAge(row, nowIso)}
         status={row.status}
         emphasis
         body={
           <div className="grid gap-3">
             <p className="sr-only">
-              Requested move from {row.session.className} to{" "}
-              {target?.className ?? "an unspecified session"}
+              Requested move from {sessionDisplayName(row.session)} to{" "}
+              {target ? sessionDisplayName(target) : "an unspecified session"}
             </p>
             <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-stretch">
               <SessionMoveSide label="From" session={row.session} />

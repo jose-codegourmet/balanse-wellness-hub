@@ -8,6 +8,7 @@ import {
   MANUAL_REFUND_NOTE,
   paymentStatusLabel,
   SLOT_LOCKED_UNTIL_CANCEL_NOTE,
+  sessionDisplayName,
 } from "@balanse/domain";
 import { Badge, cn, FeedbackState, StatusBadge } from "@balanse/ui";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -93,7 +94,7 @@ function CancellationRequestCard({
     >
       <AdminQueueCard
         who={row.customerName}
-        what={`${row.session.className} · ${formatSessionDate(row.session.startsAt)}`}
+        what={`${sessionDisplayName(row.session)} · ${formatSessionDate(row.session.startsAt)}`}
         when={requestAge(row, nowIso)}
         status={row.status}
         emphasis

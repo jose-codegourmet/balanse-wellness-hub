@@ -284,7 +284,11 @@ export function filterPublicSessions(
     if (filters.classId && filters.classId !== "all" && session.classId !== filters.classId) {
       return false;
     }
-    if (filters.coachId && filters.coachId !== "all" && session.coachId !== filters.coachId) {
+    if (
+      filters.coachId &&
+      filters.coachId !== "all" &&
+      !session.coaches.some((coach) => coach.id === filters.coachId)
+    ) {
       return false;
     }
     return true;

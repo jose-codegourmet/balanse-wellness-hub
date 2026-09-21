@@ -9,7 +9,10 @@ export async function getSessionRoster(deps: ApiDeps, req: Request, id: string):
   requireAdmin(await resolveActor(deps, req));
   const session = await deps.prisma.gymSession.findUnique({
     where: { id },
-    include: { gymClass: true, coach: true },
+    include: {
+      gymClass: true,
+      coaches: { select: { coach: { select: { id: true, name: true, photoKey: true } } } },
+    },
   });
   if (!session) throw new ApiError(404, "session_not_found", "Session not found.");
   const bookings = await deps.prisma.booking.findMany({
@@ -41,7 +44,8 @@ export async function getSessionRoster(deps: ApiDeps, req: Request, id: string):
     session: {
       id: session.id,
       className: session.gymClass.name,
-      coachName: session.coach?.name ?? null,
+      coachName: session.coaches.map(({ coach }) => coach.name).join(" & "),
+      coaches: session.coaches.map(({ coach }) => coach),
       startsAt: session.startsAt.toISOString(),
     },
     confirmed: present(["CONFIRMED", "CHECKED_IN"]),

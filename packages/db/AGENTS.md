@@ -40,7 +40,7 @@ Both apps consume `@balanse/db` at runtime. No other workspace *package* (`packa
 | `src/index.ts` | Public exports |
 | `prisma.config.ts` | Schema path and seed command for the Prisma CLI |
 | `prisma/schema/` | Multi-file Prisma schema |
-| `prisma/schema/migrations/` | Prisma migrations |
+| `prisma/migrations/` | Prisma migrations |
 | `prisma/seed.ts` | Seed script |
 | `prisma/constants/` | Seed data constants |
 
@@ -89,3 +89,11 @@ Update this file and `packages/db/docs/` when:
 - A new consumer appears.
 - Migration or seed commands change.
 - The pooled vs direct URL guidance changes.
+
+## Session coach model
+
+Classes have an optional marketing roster through `ClassMarketingCoach`; this does not assign session staff. `GymSession.coaches` contains one or more `SessionCoach` assignments, each with immutable rate snapshots. Deferred migration constraints enforce the minimum of one coach; new assignments require an active coach. See `docs/backend/session-coach-assignments.md` at the repository root for migration/backfill and public projection rules.
+
+## Class marketing catalogue
+
+`GymClass` includes slug, custom page redirect, rich-text content, cover and gallery fields. `ClassMarketingCoach` stores the public teaching roster. The additive `20260921130000_class_marketing_catalogue` SQL was applied to the shared project through Supabase; reconcile migration history before any full Prisma deployment. See `docs/backend/class-catalogue.md`.

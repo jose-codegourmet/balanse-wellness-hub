@@ -58,10 +58,10 @@ export type CustomerProfileSection = {
   dataSection: "profile" | "account" | "password" | "policy-history";
 };
 
-/** Public set. Schedule and Classes resolve to the landing calendar (OQ-NAV). */
+/** Public set. Classes have their own catalogue; Schedule opens the booking calendar. */
 export const PUBLIC_NAV_ITEMS: readonly PublicNavItem[] = [
   { id: "schedule", label: "Schedule", href: "/#schedule" },
-  { id: "classes", label: "Classes", href: "/#classes" },
+  { id: "classes", label: "Classes", href: "/classes" },
   { id: "coaches", label: "Coaches", href: "/coaches" },
   { id: "about", label: "About", href: "/about" },
   { id: "faqs", label: "FAQs", href: "/faqs" },
