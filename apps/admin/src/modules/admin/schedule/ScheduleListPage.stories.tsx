@@ -31,3 +31,13 @@ export const Loading: Story = {
 export const Dark: Story = {
   globals: { theme: "dark" },
 };
+
+export const WeekView: Story = {
+  args: { view: "week", selectedDay: "2026-09-16" },
+  parameters: { viewport: { defaultViewport: "tablet" } },
+};
+
+export const DayView: Story = {
+  args: { view: "day", selectedDay: "2026-09-16" },
+  parameters: { viewport: { defaultViewport: "mobile" } },
+};

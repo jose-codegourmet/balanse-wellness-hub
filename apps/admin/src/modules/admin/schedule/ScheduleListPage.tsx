@@ -1,33 +1,79 @@
 "use client";
 
-import {
-  computeSessionInventory,
-  formatSessionTime,
-  localDateFromYmd,
-  manilaYmd,
-  startOfManilaMonth,
-  ymdFromLocalDate,
-} from "@balanse/domain";
+import { computeSessionInventory, manilaYmd } from "@balanse/domain";
 import { Button, DetailPageSkeleton, FeedbackState } from "@balanse/ui";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { Suspense, useState } from "react";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
-import { FullscreenCalendar } from "@/components/jabkit/fullscreen-calendar";
-import type { FullscreenCalendarDay } from "@/components/jabkit/fullscreen-calendar/FullscreenCalendar.types";
+import { useTabParam } from "@/components/balanse/page/useTabParam";
+import {
+  AdminScheduleCalendar,
+  type AdminScheduleCalendarView,
+} from "@/components/balanse/schedule-calendar/AdminScheduleCalendar";
 import { adminTodayYmd } from "@/lib/clock";
 import { adminBookingsQuery, adminSessionsQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { SelectedSessionPanel } from "./SelectedSessionPanel";
 import { createSessionHref } from "./schedule-href";
 
+const SCHEDULE_VIEWS = ["auto", "month", "week", "day"] as const;
+
 export function ScheduleListPage({
   empty,
   selectedDay: selectedDayProp,
+  view: viewProp,
 }: {
   empty?: boolean;
   selectedDay?: string;
+  view?: AdminScheduleCalendarView;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <ScheduleListPageInner
+          empty={empty}
+          selectedDay={selectedDayProp}
+          view={viewProp ?? "auto"}
+        />
+      }
+    >
+      <ScheduleViewBridge empty={empty} selectedDay={selectedDayProp} view={viewProp} />
+    </Suspense>
+  );
+}
+
+function ScheduleViewBridge({
+  empty,
+  selectedDay,
+  view: viewProp,
+}: {
+  empty?: boolean;
+  selectedDay?: string;
+  view?: AdminScheduleCalendarView;
+}) {
+  const [urlView, setUrlView] = useTabParam("view", SCHEDULE_VIEWS, "auto");
+  return (
+    <ScheduleListPageInner
+      empty={empty}
+      selectedDay={selectedDay}
+      view={viewProp ?? urlView}
+      onViewChange={viewProp ? undefined : setUrlView}
+    />
+  );
+}
+
+function ScheduleListPageInner({
+  empty,
+  selectedDay: selectedDayProp,
+  view,
+  onViewChange,
+}: {
+  empty?: boolean;
+  selectedDay?: string;
+  view: AdminScheduleCalendarView;
+  onViewChange?: (next: AdminScheduleCalendarView) => void;
 }) {
   const router = useRouter();
   const { principal } = useMockPrincipal();
@@ -36,27 +82,8 @@ export function ScheduleListPage({
   const sessions = empty ? [] : sessionsQuery.data;
   const bookings = bookingsQuery.data ?? [];
   const todayYmd = adminTodayYmd();
-  const [cursor, setCursor] = useState(() => startOfManilaMonth(todayYmd));
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState(() => selectedDayProp ?? todayYmd);
-
-  const calendarData = useMemo<FullscreenCalendarDay[]>(() => {
-    const byDay = new Map<string, FullscreenCalendarDay["events"]>();
-    for (const session of sessions ?? []) {
-      const ymd = manilaYmd(session.startsAt);
-      const events = byDay.get(ymd) ?? [];
-      events.push({
-        id: session.id,
-        name: session.className,
-        time: formatSessionTime(session.startsAt),
-      });
-      byDay.set(ymd, events);
-    }
-    return [...byDay.entries()].map(([ymd, events]) => ({
-      day: localDateFromYmd(ymd),
-      events,
-    }));
-  }, [sessions]);
 
   const daySessions = (sessions ?? []).filter(
     (session) => manilaYmd(session.startsAt) === selectedDay,
@@ -76,21 +103,20 @@ export function ScheduleListPage({
       {sessions.length === 0 ? <FeedbackState id="admin.no-sessions" /> : null}
       <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start xl:gap-6">
         <div className="overflow-hidden rounded-xl border border-border">
-          <FullscreenCalendar
-            className="min-h-0"
-            data={calendarData}
-            today={localDateFromYmd(todayYmd)}
-            defaultMonth={localDateFromYmd(cursor)}
-            defaultSelectedDay={localDateFromYmd(selectedDay)}
-            addEventLabel="Create Session"
-            onMonthChange={(month) => setCursor(startOfManilaMonth(ymdFromLocalDate(month)))}
-            onSelectDay={(day) => {
-              const ymd = ymdFromLocalDate(day);
+          <AdminScheduleCalendar
+            sessions={sessions ?? []}
+            todayYmd={todayYmd}
+            selectedDay={selectedDay}
+            selectedSessionId={selected?.id ?? null}
+            view={view}
+            onViewChange={(next) => onViewChange?.(next)}
+            onSelectDay={(ymd) => {
               setSelectedDay(ymd);
               const match = (sessions ?? []).find((session) => manilaYmd(session.startsAt) === ymd);
               setSelectedId(match?.id ?? null);
             }}
-            onAddEvent={(day) => router.push(createSessionHref(ymdFromLocalDate(day)))}
+            onSelectSession={setSelectedId}
+            onCreateSession={(ymd) => router.push(createSessionHref(ymd))}
           />
         </div>
         <div className="mt-8 xl:sticky xl:top-8 xl:mt-0">
