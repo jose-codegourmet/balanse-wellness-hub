@@ -5,3 +5,9 @@ export { CardListSkeleton } from "./CardListSkeleton";
 export { DetailPageSkeleton } from "./DetailPageSkeleton";
 export { FormPageSkeleton } from "./FormPageSkeleton";
 export { TablePageSkeleton } from "./TablePageSkeleton";
+export type {
+  TablePageSkeletonChrome,
+  TablePageSkeletonLayout,
+  TablePageSkeletonLeadingCell,
+  TablePageSkeletonProps,
+} from "./TablePageSkeleton.schema";

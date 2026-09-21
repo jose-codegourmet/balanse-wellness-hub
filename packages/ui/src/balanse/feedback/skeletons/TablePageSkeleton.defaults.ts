@@ -5,4 +5,6 @@ export const tablePageSkeletonDefaultValues: TablePageSkeletonProps = {
   rows: 4,
   columns: 5,
   leadingCell: "bar",
+  layout: "auto",
+  chrome: "page",
 };
