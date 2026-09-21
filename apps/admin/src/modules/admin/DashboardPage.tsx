@@ -177,6 +177,33 @@ export function DashboardPage({
   return (
     <AdminPageShell title="Dashboard" description="Operations first. Analytics stay secondary.">
       <DashboardBento>
+        <DashboardTile span="metric">
+          <p className="text-sm text-muted-foreground">Today&apos;s Sales</p>
+          <p className="mt-2 font-display text-2xl tabular-nums">
+            {formatPeso(data.todaysSalesPhp)}
+          </p>
+        </DashboardTile>
+        <DashboardTile span="metric">
+          <p className="text-sm text-muted-foreground">Pending Refunds</p>
+          <p className="mt-2 font-display text-2xl tabular-nums">
+            {formatPeso(data.pendingRefundsPhp)}
+          </p>
+        </DashboardTile>
+        <DashboardTile span="metric">
+          <p className="text-sm text-muted-foreground">Today&apos;s Occupancy</p>
+          <p className="mt-2 font-display text-2xl tabular-nums">
+            {formatRatioPercent(data.todaysOccupancy)}
+          </p>
+        </DashboardTile>
+        {canViewCoachCost ? (
+          <DashboardTile span="metric">
+            <p className="text-sm text-muted-foreground">Coach Cost Today</p>
+            <p className="mt-2 font-display text-2xl tabular-nums">
+              {formatPeso(data.coachCostTodayPhp)}
+            </p>
+          </DashboardTile>
+        ) : null}
+
         <NeedsAttentionTile items={attention} />
 
         <DashboardTile span="schedule" className="p-4 md:p-5">
@@ -207,33 +234,6 @@ export function DashboardPage({
         <AdminStatStrip stats={stats} />
 
         {data.series?.gross_sales ? <SalesSeriesChart series={data.series.gross_sales} /> : null}
-
-        <DashboardTile span="metric">
-          <p className="text-sm text-muted-foreground">Today&apos;s Sales</p>
-          <p className="mt-2 font-display text-2xl tabular-nums">
-            {formatPeso(data.todaysSalesPhp)}
-          </p>
-        </DashboardTile>
-        <DashboardTile span="metric">
-          <p className="text-sm text-muted-foreground">Pending Refunds</p>
-          <p className="mt-2 font-display text-2xl tabular-nums">
-            {formatPeso(data.pendingRefundsPhp)}
-          </p>
-        </DashboardTile>
-        <DashboardTile span="metric">
-          <p className="text-sm text-muted-foreground">Today&apos;s Occupancy</p>
-          <p className="mt-2 font-display text-2xl tabular-nums">
-            {formatRatioPercent(data.todaysOccupancy)}
-          </p>
-        </DashboardTile>
-        {canViewCoachCost ? (
-          <DashboardTile span="metric">
-            <p className="text-sm text-muted-foreground">Coach Cost Today</p>
-            <p className="mt-2 font-display text-2xl tabular-nums">
-              {formatPeso(data.coachCostTodayPhp)}
-            </p>
-          </DashboardTile>
-        ) : null}
       </DashboardBento>
     </AdminPageShell>
   );

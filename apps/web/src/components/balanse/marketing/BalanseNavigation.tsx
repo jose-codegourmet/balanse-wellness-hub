@@ -6,8 +6,8 @@ import {
   PUBLIC_NAV_ITEMS,
   publicAuthItem,
 } from "@balanse/domain";
-import { BrandLockup, MarketingImage } from "@balanse/ui";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { Avatar, AvatarFallback, BrandLockup, MarketingImage } from "@balanse/ui";
+import { ArrowUpRight, Menu, UserRound, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/jabkit/button";
@@ -40,6 +40,7 @@ export function BalanseNavigation({
     setOpen(false);
   }
   const auth = publicAuthItem(principalRole);
+  const authActive = isPublicNavActive(auth, pathname, hash);
   const items = PUBLIC_NAV_ITEMS.filter((item) => item.id !== "auth");
   const close = () => setOpen(false);
 
@@ -62,6 +63,28 @@ export function BalanseNavigation({
             <span className="sr-only"> home</span>
           </Link>
           <div className="flex items-center gap-3">
+            <Link
+              href={auth.href}
+              aria-current={authActive ? "page" : undefined}
+              aria-label={principalRole === "guest" ? "Login" : "Open profile"}
+              className={cn(
+                "inline-flex min-h-10 items-center justify-center rounded-full border text-xs font-semibold uppercase tracking-[0.12em] transition-colors focus-visible:outline-2 focus-visible:outline-ring",
+                principalRole === "guest" ? "px-3 sm:px-4" : "size-10 p-0",
+                authActive
+                  ? "border-accent bg-secondary/70 text-foreground"
+                  : "border-border text-foreground hover:bg-secondary/50",
+              )}
+            >
+              {principalRole === "guest" ? (
+                auth.label
+              ) : (
+                <Avatar aria-hidden="true">
+                  <AvatarFallback className="bg-secondary text-foreground">
+                    <UserRound className="size-4" strokeWidth={1.5} />
+                  </AvatarFallback>
+                </Avatar>
+              )}
+            </Link>
             <DialogTrigger
               render={
                 <Button
