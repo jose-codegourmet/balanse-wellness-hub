@@ -1,0 +1,272 @@
+# Deploy Balansé apps to Vercel Production.
+#
+# Dispatch-only (and reusable via workflow_call). Does not run on every push —
+# Git-triggered Vercel deploys are a no-op while projects use
+# commandForIgnoringBuildStep: `exit 0`. This workflow uses the Vercel CLI
+# (pull → build --prod → deploy --prebuilt --prod), which is not gated by
+# the Git ignore-build step.
+#
+# Required GitHub Actions secrets (Settings → Secrets and variables → Actions):
+#
+#   VERCEL_TOKEN
+#     Create at https://vercel.com/account/tokens (scope: the josecodegourmets-projects team).
+#
+#   VERCEL_ORG_ID
+#     Team / org id (`orgId` in `.vercel/project.json` after `vercel link`).
+#     Team slug: josecodegourmets-projects
+#
+#   VERCEL_PROJECT_ID_WEB
+#     Vercel project id for `balanse-web` (root directory `apps/web`).
+#     Also listed in docs/backend/preview-and-staging.md.
+#
+#   VERCEL_PROJECT_ID_ADMIN
+#     Vercel project id for `balanse-admin` (root directory `apps/admin`).
+#     Also listed in docs/backend/preview-and-staging.md.
+#
+# How to fill the IDs locally (do not commit `.vercel/`):
+#   From the repo root (not apps/web): npx vercel@59.23.2 link --yes --project balanse-web
+#   cat .vercel/project.json   # orgId + projectId
+#   Repeat with --project balanse-admin (same orgId).
+#
+# workflow_call callers must pass secrets explicitly or use `secrets: inherit`.
+# This workflow does not change Vercel dashboard ignore-build settings.
+
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      app:
+        description: Which app(s) to deploy to Production
+        required: true
+        type: choice
+        options:
+          - both
+          - web
+          - admin
+        default: both
+      ref:
+        description: Git ref to deploy (branch, tag, or SHA). Empty = main.
+        required: false
+        type: string
+        default: ""
+      mode:
+        description: prebuilt = GHA vercel build + deploy --prebuilt (default). remote = vercel deploy --prod (Vercel builds).
+        required: true
+        type: choice
+        options:
+          - prebuilt
+          - remote
+        default: prebuilt
+  workflow_call:
+    inputs:
+      app:
+        description: Which app(s) to deploy (web | admin | both)
+        required: false
+        type: string
+        default: both
+      ref:
+        description: Git ref to deploy (branch, tag, or SHA). Empty = main.
+        required: false
+        type: string
+        default: ""
+      mode:
+        description: prebuilt | remote
+        required: false
+        type: string
+        default: prebuilt
+    secrets:
+      VERCEL_TOKEN:
+        required: true
+      VERCEL_ORG_ID:
+        required: true
+      VERCEL_PROJECT_ID_WEB:
+        required: false
+      VERCEL_PROJECT_ID_ADMIN:
+        required: false
+
+concurrency:
+  # One Production ship at a time so web-only and both cannot race on balanse-web.
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  VERCEL_CLI_VERSION: 59.23.2
+
+jobs:
+  prepare:
+    name: Validate secrets and plan
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.plan.outputs.apps }}
+      checkout_ref: ${{ steps.plan.outputs.checkout_ref }}
+      mode: ${{ steps.plan.outputs.mode }}
+    steps:
+      - name: Fail if required secrets are missing
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID_WEB: ${{ secrets.VERCEL_PROJECT_ID_WEB }}
+          VERCEL_PROJECT_ID_ADMIN: ${{ secrets.VERCEL_PROJECT_ID_ADMIN }}
+          APP: ${{ inputs.app }}
+        run: |
+          set -euo pipefail
+          app="${APP:-both}"
+          missing=()
+
+          if [ -z "${VERCEL_TOKEN}" ]; then
+            missing+=("VERCEL_TOKEN")
+          fi
+          if [ -z "${VERCEL_ORG_ID}" ]; then
+            missing+=("VERCEL_ORG_ID")
+          fi
+
+          case "${app}" in
+            web)
+              if [ -z "${VERCEL_PROJECT_ID_WEB}" ]; then
+                missing+=("VERCEL_PROJECT_ID_WEB")
+              fi
+              ;;
+            admin)
+              if [ -z "${VERCEL_PROJECT_ID_ADMIN}" ]; then
+                missing+=("VERCEL_PROJECT_ID_ADMIN")
+              fi
+              ;;
+            both)
+              if [ -z "${VERCEL_PROJECT_ID_WEB}" ]; then
+                missing+=("VERCEL_PROJECT_ID_WEB")
+              fi
+              if [ -z "${VERCEL_PROJECT_ID_ADMIN}" ]; then
+                missing+=("VERCEL_PROJECT_ID_ADMIN")
+              fi
+              ;;
+            *)
+              echo "::error::Invalid app input '${app}'. Use web, admin, or both."
+              exit 1
+              ;;
+          esac
+
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error::Missing required GitHub Actions secrets: ${missing[*]}"
+            echo "Add them under Settings → Secrets and variables → Actions."
+            echo "See comments at the top of .github/workflows/deploy-production.yml"
+            exit 1
+          fi
+
+          echo "Secrets present for app=${app}."
+
+      - name: Build deploy plan
+        id: plan
+        env:
+          APP: ${{ inputs.app }}
+          REF: ${{ inputs.ref }}
+          MODE: ${{ inputs.mode }}
+        run: |
+          set -euo pipefail
+          app="${APP:-both}"
+          mode="${MODE:-prebuilt}"
+          case "${mode}" in
+            prebuilt|remote) ;;
+            *)
+              echo "::error::Invalid mode '${mode}'. Use prebuilt or remote."
+              exit 1
+              ;;
+          esac
+
+          case "${app}" in
+            web) apps='["web"]' ;;
+            admin) apps='["admin"]' ;;
+            both) apps='["web","admin"]' ;;
+          esac
+
+          if [ -n "${REF}" ]; then
+            checkout_ref="${REF}"
+          else
+            checkout_ref="main"
+          fi
+
+          echo "apps=${apps}" >> "${GITHUB_OUTPUT}"
+          echo "checkout_ref=${checkout_ref}" >> "${GITHUB_OUTPUT}"
+          echo "mode=${mode}" >> "${GITHUB_OUTPUT}"
+          echo "Plan: apps=${apps} ref=${checkout_ref} mode=${mode}"
+
+  deploy:
+    name: Deploy ${{ matrix.app }}
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: production
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJSON(needs.prepare.outputs.apps) }}
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ matrix.app == 'web' && secrets.VERCEL_PROJECT_ID_WEB || secrets.VERCEL_PROJECT_ID_ADMIN }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      PROJECT_NAME: ${{ matrix.app == 'web' && 'balanse-web' || 'balanse-admin' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.checkout_ref }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.0.8
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install Vercel CLI
+        run: npm install --global "vercel@${VERCEL_CLI_VERSION}"
+
+      - name: Pull Vercel project settings
+        run: |
+          set -euo pipefail
+          if [ -z "${VERCEL_PROJECT_ID}" ]; then
+            echo "::error::VERCEL_PROJECT_ID is empty for ${PROJECT_NAME}."
+            exit 1
+          fi
+          # Run from the repo root so monorepo workspace packages are in the upload
+          # and project rootDirectory (apps/web | apps/admin) comes from Vercel settings.
+          vercel pull --yes --environment=production
+
+      - name: Build on the runner (prebuilt)
+        if: needs.prepare.outputs.mode == 'prebuilt'
+        run: vercel build --prod --yes
+
+      - name: Deploy to Production
+        id: deploy
+        run: |
+          set -euo pipefail
+          if [ "${{ needs.prepare.outputs.mode }}" = "prebuilt" ]; then
+            vercel deploy --prebuilt --prod --archive=tgz --yes | tee /tmp/vercel-deploy.out
+          else
+            vercel deploy --prod --yes | tee /tmp/vercel-deploy.out
+          fi
+          url="$(grep -Eo 'https://[^[:space:]]+' /tmp/vercel-deploy.out | tail -n 1)"
+          if [[ ! "${url}" =~ ^https:// ]]; then
+            echo "::error::Vercel CLI did not print a deployment URL. Last lines:"
+            tail -n 20 /tmp/vercel-deploy.out
+            exit 1
+          fi
+          echo "url=${url}" >> "${GITHUB_OUTPUT}"
+          echo "Deployed ${PROJECT_NAME} → ${url}"
+          {
+            echo "## Deploy Result — ${PROJECT_NAME}"
+            echo ""
+            echo "- **App**: \`${{ matrix.app }}\`"
+            echo "- **Project**: \`${PROJECT_NAME}\`"
+            echo "- **Target**: production"
+            echo "- **Mode**: \`${{ needs.prepare.outputs.mode }}\`"
+            echo "- **Commit**: \`${{ needs.prepare.outputs.checkout_ref }}\`"
+            echo "- **URL**: ${url}"
+          } >> "${GITHUB_STEP_SUMMARY}"
