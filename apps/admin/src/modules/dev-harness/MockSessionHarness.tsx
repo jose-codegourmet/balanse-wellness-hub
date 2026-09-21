@@ -3,9 +3,55 @@
 import { resetMockRuntime, setMockRuntime } from "@balanse/mock";
 import { isMockHarnessEnabled } from "@balanse/mock/session";
 import { useQueryClient } from "@tanstack/react-query";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+
+const HARNESS_COLLAPSE_KEY = "balanse-mock-harness-collapsed";
+const HARNESS_COLLAPSE_EVENT = "balanse-mock-harness-collapsed";
+const HARNESS_PANEL_ID = "mock-session-harness-panel";
+const MOBILE_QUERY = "(max-width: 767px)";
+
+function readHarnessCollapsed(): boolean {
+  try {
+    const stored = sessionStorage.getItem(HARNESS_COLLAPSE_KEY);
+    if (stored === "true") return true;
+    if (stored === "false") return false;
+  } catch {
+    // sessionStorage may be unavailable (private mode)
+  }
+  return window.matchMedia(MOBILE_QUERY).matches;
+}
+
+function subscribeHarnessCollapsed(onStoreChange: () => void) {
+  window.addEventListener(HARNESS_COLLAPSE_EVENT, onStoreChange);
+  const media = window.matchMedia(MOBILE_QUERY);
+  media.addEventListener("change", onStoreChange);
+  return () => {
+    window.removeEventListener(HARNESS_COLLAPSE_EVENT, onStoreChange);
+    media.removeEventListener("change", onStoreChange);
+  };
+}
+
+function useMockHarnessCollapsed() {
+  const collapsed = useSyncExternalStore(
+    subscribeHarnessCollapsed,
+    readHarnessCollapsed,
+    () => true,
+  );
+
+  function persistCollapsed(next: boolean) {
+    try {
+      sessionStorage.setItem(HARNESS_COLLAPSE_KEY, String(next));
+    } catch {
+      // sessionStorage may be unavailable (private mode)
+    }
+    window.dispatchEvent(new Event(HARNESS_COLLAPSE_EVENT));
+  }
+
+  return { collapsed, persistCollapsed };
+}
 
 const CUSTOMERS = [
   { id: "cust-ana", label: "Ana Delgado" },
@@ -55,140 +101,176 @@ export function MockSessionHarness() {
     void queryClient.resetQueries();
   }
 
+  const { collapsed, persistCollapsed } = useMockHarnessCollapsed();
+
   if (!enabled) return null;
 
   return (
-    <aside
-      aria-label="Mock session harness"
-      className="sticky top-0 z-50 border-b border-accent bg-accent px-3 py-2 text-accent-foreground"
-    >
-      <p className="text-xs font-semibold uppercase tracking-wide">Mock harness — not production</p>
-      <div className="mt-2 flex flex-wrap gap-3 text-sm">
-        <label className="flex items-center gap-2">
-          Principal
-          <select
+    <>
+      {collapsed ? (
+        <div className="pointer-events-none fixed inset-x-0 bottom-20 z-50 flex justify-end px-3 md:top-3 md:bottom-auto">
+          <button
+            type="button"
+            aria-expanded={false}
+            aria-controls={HARNESS_PANEL_ID}
+            aria-label="Expand mock session harness"
+            className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-accent bg-accent px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-accent-foreground shadow-md"
+            onClick={() => persistCollapsed(false)}
+          >
+            Mock harness
+            <ChevronUp className="size-3.5" aria-hidden="true" />
+          </button>
+        </div>
+      ) : null}
+      <aside
+        id={HARNESS_PANEL_ID}
+        hidden={collapsed}
+        aria-label="Mock session harness"
+        className="sticky top-0 z-50 border-b border-accent bg-accent px-3 py-2 text-accent-foreground"
+      >
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs font-semibold uppercase tracking-wide">
+            Mock harness — not production
+          </p>
+          <button
+            type="button"
+            aria-expanded={true}
+            aria-controls={HARNESS_PANEL_ID}
+            aria-label="Collapse mock session harness"
+            className="inline-flex items-center gap-1 rounded-md border border-accent-foreground/30 px-2 py-1 text-xs font-semibold uppercase tracking-wide"
+            onClick={() => persistCollapsed(true)}
+          >
+            Hide
+            <ChevronDown className="size-3.5" aria-hidden="true" />
+          </button>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-3 text-sm">
+          <label className="flex items-center gap-2">
+            Principal
+            <select
+              className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
+              value={principal.role}
+              onChange={(event) => {
+                clearAdminCache();
+                setPrincipal({ role: event.target.value as typeof principal.role });
+                router.refresh();
+              }}
+            >
+              <option value="guest">Guest</option>
+              <option value="customer">Customer</option>
+              <option value="admin">Admin</option>
+            </select>
+          </label>
+          <label className="flex items-center gap-2">
+            Customer
+            <select
+              className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
+              value={principal.customerId}
+              onChange={(event) => {
+                clearAdminCache();
+                setPrincipal({ customerId: event.target.value });
+                router.refresh();
+              }}
+            >
+              {CUSTOMERS.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex items-center gap-2">
+            Showcase booking
+            <select
+              className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
+              value={principal.showcaseBookingId}
+              onChange={(event) => {
+                clearAdminCache();
+                setPrincipal({ showcaseBookingId: event.target.value });
+                router.refresh();
+              }}
+            >
+              {BOOKINGS.map((id) => (
+                <option key={id} value={id}>
+                  {id}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex items-center gap-2">
+            Calendar scenario
+            <select
+              data-testid="harness-scenario"
+              className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
+              value={scenario}
+              onChange={(event) => {
+                const next = event.target.value as Scenario;
+                setScenario(next);
+                setLatencyMs(0);
+                resetMockRuntime();
+                if (next === "schedule-failed") {
+                  applyRuntimeAndRefetch({ failPublicSessions: true });
+                } else if (next === "session-became-full") {
+                  applyRuntimeAndRefetch({ sessionBecameFullId: "session-wed-open" });
+                } else if (next === "empty-admin-queues") {
+                  applyRuntimeAndRefetch({ emptyAdminQueues: true });
+                } else {
+                  void queryClient.resetQueries();
+                }
+              }}
+            >
+              <option value="normal">Normal</option>
+              <option value="schedule-failed">Schedule failed to load</option>
+              <option value="session-became-full">Session became full while viewed</option>
+              <option value="empty-admin-queues">Empty admin queues</option>
+            </select>
+          </label>
+          <label className="flex items-center gap-2">
+            Admin queue
+            <select
+              className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
+              defaultValue=""
+              onChange={(event) => {
+                const href = event.target.value;
+                if (href) router.push(href);
+              }}
+            >
+              <option value="">Jump to…</option>
+              {QUEUES.map((queue) => (
+                <option key={queue.id} value={queue.href}>
+                  {queue.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex items-center gap-2">
+            Adapter latency
+            <select
+              data-testid="harness-latency"
+              className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
+              value={latencyMs}
+              onChange={(event) => {
+                const next = Number(event.target.value);
+                setLatencyMs(next);
+                applyRuntimeAndRefetch({ latencyMs: next });
+              }}
+            >
+              <option value={0}>0 ms</option>
+              <option value={1500}>1500 ms</option>
+            </select>
+          </label>
+          <button
+            type="button"
+            data-testid="harness-fail-next"
             className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
-            value={principal.role}
-            onChange={(event) => {
-              clearAdminCache();
-              setPrincipal({ role: event.target.value as typeof principal.role });
-              router.refresh();
+            onClick={() => {
+              applyRuntimeAndRefetch({ failNext: true });
             }}
           >
-            <option value="guest">Guest</option>
-            <option value="customer">Customer</option>
-            <option value="admin">Admin</option>
-          </select>
-        </label>
-        <label className="flex items-center gap-2">
-          Customer
-          <select
-            className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
-            value={principal.customerId}
-            onChange={(event) => {
-              clearAdminCache();
-              setPrincipal({ customerId: event.target.value });
-              router.refresh();
-            }}
-          >
-            {CUSTOMERS.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex items-center gap-2">
-          Showcase booking
-          <select
-            className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
-            value={principal.showcaseBookingId}
-            onChange={(event) => {
-              clearAdminCache();
-              setPrincipal({ showcaseBookingId: event.target.value });
-              router.refresh();
-            }}
-          >
-            {BOOKINGS.map((id) => (
-              <option key={id} value={id}>
-                {id}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex items-center gap-2">
-          Calendar scenario
-          <select
-            data-testid="harness-scenario"
-            className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
-            value={scenario}
-            onChange={(event) => {
-              const next = event.target.value as Scenario;
-              setScenario(next);
-              setLatencyMs(0);
-              resetMockRuntime();
-              if (next === "schedule-failed") {
-                applyRuntimeAndRefetch({ failPublicSessions: true });
-              } else if (next === "session-became-full") {
-                applyRuntimeAndRefetch({ sessionBecameFullId: "session-wed-open" });
-              } else if (next === "empty-admin-queues") {
-                applyRuntimeAndRefetch({ emptyAdminQueues: true });
-              } else {
-                void queryClient.resetQueries();
-              }
-            }}
-          >
-            <option value="normal">Normal</option>
-            <option value="schedule-failed">Schedule failed to load</option>
-            <option value="session-became-full">Session became full while viewed</option>
-            <option value="empty-admin-queues">Empty admin queues</option>
-          </select>
-        </label>
-        <label className="flex items-center gap-2">
-          Admin queue
-          <select
-            className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
-            defaultValue=""
-            onChange={(event) => {
-              const href = event.target.value;
-              if (href) router.push(href);
-            }}
-          >
-            <option value="">Jump to…</option>
-            {QUEUES.map((queue) => (
-              <option key={queue.id} value={queue.href}>
-                {queue.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex items-center gap-2">
-          Adapter latency
-          <select
-            data-testid="harness-latency"
-            className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
-            value={latencyMs}
-            onChange={(event) => {
-              const next = Number(event.target.value);
-              setLatencyMs(next);
-              applyRuntimeAndRefetch({ latencyMs: next });
-            }}
-          >
-            <option value={0}>0 ms</option>
-            <option value={1500}>1500 ms</option>
-          </select>
-        </label>
-        <button
-          type="button"
-          data-testid="harness-fail-next"
-          className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
-          onClick={() => {
-            applyRuntimeAndRefetch({ failNext: true });
-          }}
-        >
-          Fail next adapter call
-        </button>
-      </div>
-    </aside>
+            Fail next adapter call
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }
