@@ -27,7 +27,7 @@ export function AdminShell({
         onSettings={() => router.push("/settings")}
         pathname={pathname}
       />
-      <div className="min-w-0 flex-1 overflow-x-hidden bg-background">{children}</div>
+      <div className="min-w-0 flex-1 overflow-x-clip bg-background">{children}</div>
     </div>
   );
 }

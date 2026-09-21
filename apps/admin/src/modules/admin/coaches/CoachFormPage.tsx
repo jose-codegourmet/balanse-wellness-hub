@@ -237,22 +237,20 @@ function CoachFormFields({
   const tabs = tabIds.map((id) => ({
     id,
     label: tabHasError(id, formState.errors) ? `${TAB_LABELS[id]} · errors` : TAB_LABELS[id],
+    error: tabHasError(id, formState.errors),
   }));
 
   return (
     <>
-      <div className="hidden md:block">
-        <AdminPageTabs
-          tabs={tabs}
-          value={tab}
-          onValueChange={(next) => setTab(next as CoachFormTabId)}
-        />
-      </div>
+      <AdminPageTabs
+        tabs={tabs}
+        value={tab}
+        onValueChange={(next) => setTab(next as CoachFormTabId)}
+        mobileBehavior="tabs"
+        label="Coach profile"
+      />
 
-      <section
-        data-slot="coach-photo"
-        className={tab === "photo" ? undefined : "hidden max-md:block"}
-      >
+      <section data-slot="coach-photo" className={tab === "photo" ? undefined : "hidden"}>
         <FormSection title="Profile photo" surface="card">
           <FormField name="photoKey" label="Profile photo" wireAria>
             {(field) => (
@@ -267,10 +265,7 @@ function CoachFormFields({
         </FormSection>
       </section>
 
-      <section
-        data-slot="coach-profile"
-        className={tab === "profile" ? undefined : "hidden max-md:block"}
-      >
+      <section data-slot="coach-profile" className={tab === "profile" ? undefined : "hidden"}>
         <FormSection title="Public profile" surface="card">
           <FormField name="name" label="Name" required>
             {(field) => <TextBinding {...field} />}
@@ -300,7 +295,7 @@ function CoachFormFields({
           className={
             tab === "financials"
               ? "rounded-xl border border-dashed border-border bg-muted/40 p-4"
-              : "hidden max-md:block rounded-xl border border-dashed border-border bg-muted/40 p-4"
+              : "hidden rounded-xl border border-dashed border-border bg-muted/40 p-4"
           }
         >
           <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
@@ -330,10 +325,7 @@ function CoachFormFields({
       ) : null}
 
       {!isNew ? (
-        <section
-          data-slot="coach-sessions"
-          className={tab === "sessions" ? undefined : "hidden max-md:block"}
-        >
+        <section data-slot="coach-sessions" className={tab === "sessions" ? undefined : "hidden"}>
           <h2 className="font-display text-2xl">Upcoming sessions</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Read-only. Coach schedules are not edited here.

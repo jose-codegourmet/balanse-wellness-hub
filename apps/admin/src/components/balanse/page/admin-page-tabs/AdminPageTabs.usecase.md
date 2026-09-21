@@ -4,17 +4,19 @@
 
 ## Purpose
 
-Admin page tab strip with the `@balanse/ui` Tabs ARIA contract. Used by `/bookings` and `/payments`.
+Admin page tab strip with the `@balanse/ui` Tabs ARIA contract. Line tabs at `md+`. Below `md`, a sticky horizontally scrolling chip row that **switches panels** (`mobileBehavior="tabs"`, default).
 
 ## When to use
 
-- Mutually exclusive queues or filters that are already modelled as tabs (`ADMIN_BOOKING_TABS`, `AdminPaymentTab`)
+- Mutually exclusive queues or filters (`ADMIN_BOOKING_TABS`, `AdminPaymentTab`)
+- Coach profile and Settings sections
 - Any admin screen that needs a labelled tablist plus one panel
 
 ## When NOT to use
 
 - Independent filters (checkboxes, date fields)
 - Navigation between routes — use links
+- The class / session wizard — `AdminWizard` is a different pattern
 - A single view with no alternate panel
 
 ## Examples
@@ -29,10 +31,21 @@ Admin page tab strip with the `@balanse/ui` Tabs ARIA contract. Used by `/bookin
 </AdminPageTabs>
 ```
 
+```tsx
+<AdminPageTabs
+  mobileBehavior="tabs"
+  tabs={tabs}
+  value={tab}
+  onValueChange={setTab}
+  label="Coach profile"
+/>
+```
+
 ## Gotchas
 
 - Keep tab **ids and labels** from `@balanse/domain` (or the existing local payment `TABS` const). Do not rename them here.
-- Put the filtered table (or queue) in `AdminPageTabs` children so the active tab owns a `role="tabpanel"`.
-- Seed `/bookings` from `?tab=` via `useTabParam(param, tabs, defaultId)` (colocated). Leave other query keys (`tableId` prefixes from FE-ADM-017) alone.
-- Active state must stay visible without colour: line indicator + heavier weight.
+- Put the filtered table (or queue) in `AdminPageTabs` children so the active tab owns a `role="tabpanel"`. Coach / Settings keep fields mounted with `hidden` (not `hidden max-md:block`) so RHF values survive chip switches.
+- Seed from `?tab=` via `useTabParam(param, tabs, defaultId)`.
+- `tab.error` paints a destructive chip/dot. `onSubmitError` still jumps `?tab=` to the first invalid tab.
+- `mobileBehavior="stack"` hides the tablist below `md` for screens that genuinely want a long scroll.
 - Keyboard handling (Left/Right/Home/End, roving tabindex) is provided by Base UI — do not duplicate it.
