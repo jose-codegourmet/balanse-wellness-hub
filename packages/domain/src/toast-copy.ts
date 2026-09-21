@@ -156,6 +156,10 @@ export const ADMIN_TOAST_IDS = [
   "class.save-failed",
   "coach.saved",
   "coach.save-failed",
+  "staff.saved",
+  "staff.save-failed",
+  "staff.disabled",
+  "staff.disable-failed",
   "form.validation-failed",
   "cancellation.completed",
   "cancellation.rejected",
@@ -216,6 +220,31 @@ export const ADMIN_TOAST_COPY = {
     tone: "error",
     title: "Coach not saved",
     description: "Those changes could not be saved. Try again.",
+  },
+  "staff.saved": {
+    id: "staff.saved",
+    tone: "success",
+    title: "Staff saved",
+    description: "The staff list is updated. Coach profiles stay in history when unlinked.",
+  },
+  "staff.save-failed": {
+    id: "staff.save-failed",
+    tone: "error",
+    title: "Staff not saved",
+    description: "Those changes could not be saved. Try again.",
+  },
+  "staff.disabled": {
+    id: "staff.disabled",
+    tone: "success",
+    title: "Staff access disabled",
+    description:
+      "This account cannot reach the admin portal. Linked coaches go inactive; sessions stay assigned.",
+  },
+  "staff.disable-failed": {
+    id: "staff.disable-failed",
+    tone: "error",
+    title: "Staff not disabled",
+    description: "Access could not be disabled. Try again.",
   },
   "form.validation-failed": {
     id: "form.validation-failed",

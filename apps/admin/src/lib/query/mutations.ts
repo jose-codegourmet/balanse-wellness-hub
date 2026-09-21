@@ -171,7 +171,8 @@ export function useUpsertAdminCoach() {
   return useMutation({
     mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["upsertAdminCoach"]>[0]) =>
       getMockAdapter().upsertAdminCoach(input),
-    onSuccess: () => invalidateForRole(queryClient, [adminKeys.coaches.all(role)]),
+    onSuccess: () =>
+      invalidateForRole(queryClient, [adminKeys.coaches.all(role), adminKeys.staff.all(role)]),
   });
 }
 
@@ -204,13 +205,17 @@ export function useCancelAdminSession() {
   });
 }
 
+function staffCoachKeys(role: MockRole): QueryKey[] {
+  return [adminKeys.staff.all(role), adminKeys.coaches.all(role)];
+}
+
 export function useUpsertAdminStaff() {
   const role = useAdminRole();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["upsertAdminStaff"]>[0]) =>
       getMockAdapter().upsertAdminStaff(input),
-    onSuccess: () => invalidateForRole(queryClient, [adminKeys.staff.all(role)]),
+    onSuccess: () => invalidateForRole(queryClient, staffCoachKeys(role)),
   });
 }
 
@@ -219,7 +224,7 @@ export function useDisableAdminStaff() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => getMockAdapter().disableAdminStaff(id),
-    onSuccess: () => invalidateForRole(queryClient, [adminKeys.staff.all(role)]),
+    onSuccess: () => invalidateForRole(queryClient, staffCoachKeys(role)),
   });
 }
 

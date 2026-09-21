@@ -167,3 +167,5 @@ Audit: `staff.coach.link`, `staff.coach.unlink`, `staff.disable` (metadata inclu
 | Mock `staff-rex` ↔ `coach-rex` | Documented backfill pair; IDs differ (kebab vs seed `coach_rex`) |
 
 If the FE mock later diverges, **this contract wins**.
+
+`FE-ADM-038` mock unlink (clearing `isCoach` on `upsertAdminStaff`) also sets `coach.active = false` so session history stays on an inactive teaching profile. HTTP `DELETE /api/admin/staff/{id}/coach` still only clears the link. Disable-staff deactivates a linked coach on both layers.

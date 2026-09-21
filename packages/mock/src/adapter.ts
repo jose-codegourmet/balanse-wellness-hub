@@ -165,6 +165,8 @@ export type MockDataAdapter = {
     email: string;
     role: AdminStaff["role"];
     status: AdminStaff["status"];
+    /** Capability flag. Setting it links/creates a coach; clearing unlinks and deactivates. */
+    isCoach?: boolean;
   }) => Promise<AdminStaff>;
   disableAdminStaff: (id: string) => Promise<AdminStaff>;
   getAdminCustomers: (filters?: {

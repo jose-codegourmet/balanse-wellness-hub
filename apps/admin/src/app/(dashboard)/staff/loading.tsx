@@ -4,7 +4,7 @@ import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/Admin
 export default function Loading() {
   return (
     <AdminPageShell title="Staff Management">
-      <TablePageSkeleton label="Loading staff" rows={6} columns={4} />
+      <TablePageSkeleton label="Loading staff" rows={6} columns={5} leadingCell="avatar" />
     </AdminPageShell>
   );
 }

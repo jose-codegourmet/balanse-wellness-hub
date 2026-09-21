@@ -2,7 +2,7 @@ import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { prefetchAdmin } from "@/lib/query/prefetch";
-import { adminCoachesQuery, adminSessionsQuery } from "@/lib/query/queries";
+import { adminCoachesQuery, adminSessionsQuery, adminStaffQuery } from "@/lib/query/queries";
 import { CoachFormPage } from "@/modules/admin/coaches/CoachFormPage";
 
 export const metadata: Metadata = {
@@ -14,7 +14,11 @@ export default async function Page({ params }: { params: Promise<{ coachId: stri
   const { coachId } = await params;
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [adminCoachesQuery(principal.role), adminSessionsQuery(principal.role)],
+    [
+      adminCoachesQuery(principal.role),
+      adminSessionsQuery(principal.role),
+      adminStaffQuery(principal.role),
+    ],
     <CoachFormPage coachId={coachId} />,
   );
 }

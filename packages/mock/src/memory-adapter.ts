@@ -4,6 +4,7 @@ import type {
   AdminPaymentTab,
   AdminSession,
   AdminSettings,
+  AdminStaff,
   CursorPage,
   CustomerBooking,
   PaymentMethod,
@@ -132,6 +133,70 @@ export function createMemoryAdapter(): MockDataAdapter {
   let coaches = seedCoaches.map((c) => clone(c));
   let staffRows = seedStaff.map((s) => clone(s));
   let settings = clone(seedSettings);
+
+  function slugPerson(name: string): string {
+    return (
+      name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "coach"
+    );
+  }
+
+  function unlinkStaffCoach(staff: AdminStaff) {
+    const coach = staff.coachId ? coaches.find((row) => row.id === staff.coachId) : undefined;
+    if (coach) {
+      coach.staffId = null;
+      // FE-ADM-038: never delete a teaching profile; keep session history via inactive coach.
+      coach.active = false;
+    }
+    staff.isCoach = false;
+    staff.coachId = null;
+  }
+
+  function linkStaffCoach(staff: AdminStaff) {
+    if (staff.coachId) {
+      const existing = coaches.find((row) => row.id === staff.coachId);
+      if (existing) {
+        if (existing.staffId && existing.staffId !== staff.id) {
+          throw new Error("This coach is already linked to a staff member.");
+        }
+        existing.staffId = staff.id;
+        existing.active = true;
+        staff.isCoach = true;
+        staff.coachId = existing.id;
+        return;
+      }
+    }
+    const byName = coaches.find(
+      (row) => !row.staffId && row.name.trim().toLowerCase() === staff.name.trim().toLowerCase(),
+    );
+    if (byName) {
+      byName.staffId = staff.id;
+      byName.active = true;
+      staff.isCoach = true;
+      staff.coachId = byName.id;
+      return;
+    }
+    let id = `coach-${slugPerson(staff.name)}`;
+    if (coaches.some((row) => row.id === id)) {
+      id = `coach-${slugPerson(staff.name)}-${staff.id.replace(/^staff-/, "")}`;
+    }
+    const created: AdminCoach = {
+      id,
+      name: staff.name,
+      specialties: [],
+      shortBio: "",
+      photoKey: null,
+      active: true,
+      defaultRatePhp: 0,
+      rateType: "PER_SESSION",
+      staffId: staff.id,
+    };
+    coaches = [created, ...coaches];
+    staff.isCoach = true;
+    staff.coachId = created.id;
+  }
   settings.paymentQrs = settings.paymentQrs ?? [];
   syncDerivedQr(settings);
 
@@ -407,6 +472,7 @@ export function createMemoryAdapter(): MockDataAdapter {
         const created: AdminCoach = {
           id: `coach-${input.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
           ...input,
+          staffId: null,
         };
         coaches = [created, ...coaches];
         return clone(created);
@@ -623,7 +689,15 @@ export function createMemoryAdapter(): MockDataAdapter {
         if (input.id) {
           const existing = staffRows.find((s) => s.id === input.id);
           if (!existing) throw new Error("Staff not found");
-          Object.assign(existing, input);
+          existing.name = input.name;
+          existing.email = input.email;
+          existing.role = input.role;
+          existing.status = input.status;
+          if (input.isCoach === true) {
+            linkStaffCoach(existing);
+          } else if (input.isCoach === false) {
+            unlinkStaffCoach(existing);
+          }
           return clone(existing);
         }
         const created = {
@@ -632,7 +706,12 @@ export function createMemoryAdapter(): MockDataAdapter {
           email: input.email,
           role: input.role,
           status: input.status,
+          isCoach: false,
+          coachId: null,
         };
+        if (input.isCoach) {
+          linkStaffCoach(created);
+        }
         staffRows = [created, ...staffRows];
         return clone(created);
       }),
@@ -641,6 +720,10 @@ export function createMemoryAdapter(): MockDataAdapter {
         const existing = staffRows.find((s) => s.id === id);
         if (!existing) throw new Error("Staff not found");
         existing.status = "disabled";
+        if (existing.coachId) {
+          const coach = coaches.find((row) => row.id === existing.coachId);
+          if (coach) coach.active = false;
+        }
         return clone(existing);
       }),
     getAdminCustomers: (filters) =>

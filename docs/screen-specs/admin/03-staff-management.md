@@ -2,16 +2,20 @@
 
 ```text
 STAFF MANAGEMENT                    [Add Staff]
-Name | Role | Status | Action
-Rex  | Admin| Active | View/Edit
+Name (avatar if coach) | Role            | Coach | Status | Action
+Rex                    | Admin · Coach   | Coach | Active | View/Edit
+Partner                | Admin           |  —    | Active | View/Edit
 
 STAFF DETAIL
 Name
 Email
-Role
+Role (Admin — authorisation only)
 Status
+[This staff member is a coach]  → link to /coaches/[coachId]
 [Save] [Disable Access]
 ```
+
+Role text comes from `staffCapabilityLabel` in `@balanse/domain` (`Admin` / `Admin · Coach`). Do not hardcode `"Admin"`. The Coach column is a faceted filter on the `isCoach` capability.
 
 No public admin registration.
 

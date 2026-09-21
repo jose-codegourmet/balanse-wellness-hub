@@ -30,8 +30,8 @@ export type PublicCoach = {
 export type AdminCoach = PublicCoach & {
   defaultRatePhp: number;
   rateType: CoachRateType;
-  /** BE-055 — staff capability link. Absent on older mock rows = not linked. */
-  staffId?: string | null;
+  /** BE-055 — linked `StaffMember.id`, or `null` when the coach is teaching-only. */
+  staffId: string | null;
 };
 
 export type PublicSession = {
@@ -127,8 +127,8 @@ export type AdminStaff = {
   role: StaffRole;
   status: "active" | "disabled";
   /** Derived from a linked Coach row (BE-055). Not a StaffRole value. */
-  isCoach?: boolean;
-  coachId?: string | null;
+  isCoach: boolean;
+  coachId: string | null;
 };
 
 export type AdminCustomer = CustomerProfile & {

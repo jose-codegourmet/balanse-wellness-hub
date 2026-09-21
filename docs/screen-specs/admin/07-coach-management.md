@@ -24,7 +24,7 @@ Possible rate types:
 
 These fields are admin-only.
 
-Admin coach payloads also include optional `staffId` (BE-055): the linked staff account, if any. Public coach cards must not show it. See `docs/backend/staff-coach-unification.md`.
+Admin coach payloads also include optional `staffId` (BE-055): the linked staff account, if any. Public coach cards must not show it. Coach detail shows a staff-link row on the public-profile tab (`linked account` or `not linked to a staff account`). Coach-only people (no staff login) stay valid. See `docs/backend/staff-coach-unification.md`.
 
 Do not show coach compensation on:
 
