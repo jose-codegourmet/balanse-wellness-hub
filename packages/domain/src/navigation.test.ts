@@ -34,12 +34,13 @@ describe("FE-SHR-001 navigation catalogs", () => {
     expect(CUSTOMER_NAV_ITEMS).toHaveLength(4);
   });
 
-  it("keeps the admin set at 12 items with Reports between Classes and Staff", () => {
+  it("keeps the admin set with Payment QR after Payments and Reports between Classes and Staff", () => {
     expect(ADMIN_NAV_ITEMS.map((item) => item.label)).toEqual([
       "Dashboard",
       "Schedule",
       "Bookings",
       "Payments",
+      "Payment QR",
       "Cancellations",
       "Reschedules",
       "Customers",
@@ -49,7 +50,7 @@ describe("FE-SHR-001 navigation catalogs", () => {
       "Staff",
       "Settings",
     ]);
-    expect(ADMIN_NAV_ITEMS).toHaveLength(12);
+    expect(ADMIN_NAV_ITEMS).toHaveLength(13);
   });
 
   it("does not leak admin-only destinations into public or customer catalogs", () => {

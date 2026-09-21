@@ -26,7 +26,6 @@ export const businessProfileFormDefaultValues: BusinessProfileFormValues = {
 export const paymentInfoFormDefaultValues: PaymentInfoFormValues = {
   gcashName: "",
   gcashNumber: "",
-  qrImageKey: null,
 };
 
 export const publicContentFormDefaultValues: PublicContentFormValues = {

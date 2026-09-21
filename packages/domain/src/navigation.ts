@@ -22,6 +22,7 @@ export type AdminNavId =
   | "schedule"
   | "bookings"
   | "payments"
+  | "payment-qr"
   | "cancellations"
   | "reschedules"
   | "customers"
@@ -109,6 +110,7 @@ export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
   { id: "schedule", label: "Schedule", href: "/schedule" },
   { id: "bookings", label: "Bookings", href: "/bookings" },
   { id: "payments", label: "Payments", href: "/payments" },
+  { id: "payment-qr", label: "Payment QR", href: "/payment-qr" },
   { id: "cancellations", label: "Cancellations", href: "/cancellations" },
   { id: "reschedules", label: "Reschedules", href: "/reschedules" },
   { id: "customers", label: "Customers", href: "/customers" },

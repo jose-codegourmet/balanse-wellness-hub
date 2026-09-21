@@ -20,6 +20,7 @@ export const FEEDBACK_STATE_IDS = [
   "admin.no-staff",
   "admin.no-classes",
   "admin.no-coaches",
+  "admin.no-payment-qrs",
 ] as const;
 
 export type FeedbackStateId = (typeof FEEDBACK_STATE_IDS)[number];
@@ -145,5 +146,11 @@ export const FEEDBACK_STATE_DEFAULTS: Record<FeedbackStateId, FeedbackStateCopy>
     kind: "empty",
     title: "No coaches yet",
     description: "Add a coach to assign sessions and publish the schedule.",
+  },
+  "admin.no-payment-qrs": {
+    id: "admin.no-payment-qrs",
+    kind: "empty",
+    title: "No payment QR yet",
+    description: "Upload the GCash or InstaPay QR customers use to pay the studio.",
   },
 };

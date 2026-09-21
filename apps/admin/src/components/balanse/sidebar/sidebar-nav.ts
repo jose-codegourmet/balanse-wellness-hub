@@ -5,6 +5,7 @@ import {
   CreditCard,
   Dumbbell,
   LayoutDashboard,
+  QrCode,
   Repeat,
   Settings,
   Ticket,
@@ -18,6 +19,7 @@ export const NAV_ICONS: Record<AdminNavItem["id"], typeof LayoutDashboard> = {
   schedule: CalendarDays,
   bookings: Ticket,
   payments: CreditCard,
+  "payment-qr": QrCode,
   cancellations: UserX,
   reschedules: Repeat,
   customers: Users,
@@ -31,7 +33,15 @@ export const NAV_ICONS: Record<AdminNavItem["id"], typeof LayoutDashboard> = {
 export const NAV_GROUPS: { label: string; ids: AdminNavItem["id"][] }[] = [
   {
     label: "Operations",
-    ids: ["dashboard", "schedule", "bookings", "payments", "cancellations", "reschedules"],
+    ids: [
+      "dashboard",
+      "schedule",
+      "bookings",
+      "payments",
+      "payment-qr",
+      "cancellations",
+      "reschedules",
+    ],
   },
   { label: "Directory", ids: ["customers", "coaches", "classes", "staff"] },
   { label: "Studio", ids: ["reports", "settings"] },

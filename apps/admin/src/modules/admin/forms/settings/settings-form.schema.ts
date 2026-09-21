@@ -73,7 +73,6 @@ export const businessProfileFormSchema = z.object({
 export const paymentInfoFormSchema = settingsFormSchema.pick({
   gcashName: true,
   gcashNumber: true,
-  qrImageKey: true,
 });
 
 export const publicContentFormSchema = z.object({

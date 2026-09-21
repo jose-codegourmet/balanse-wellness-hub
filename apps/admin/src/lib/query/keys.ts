@@ -34,6 +34,7 @@ export const adminKeys = {
   sessions: { all: (role: MockRole) => [...adminKeys.all(role), "sessions"] as const },
   staff: { all: (role: MockRole) => [...adminKeys.all(role), "staff"] as const },
   settings: { all: (role: MockRole) => [...adminKeys.all(role), "settings"] as const },
+  paymentQrs: { all: (role: MockRole) => [...adminKeys.all(role), "payment-qrs"] as const },
 
   customers: {
     all: (role: MockRole) => [...adminKeys.all(role), "customers"] as const,

@@ -49,6 +49,15 @@ export function GcashProofPage({
           <dd>{instructions.gcashNumber}</dd>
         </div>
       </dl>
+      {instructions.qrImageKey ? (
+        <div
+          role="img"
+          aria-label="QR code used to receive this GCash payment"
+          className="mx-auto flex aspect-square w-full max-w-xs items-center justify-center rounded-xl border border-border bg-muted/30 p-4 text-center text-sm text-muted-foreground"
+        >
+          Scan the studio GCash QR
+        </div>
+      ) : null}
       <p className="text-sm text-muted-foreground">{instructions.notes}</p>
       <p className="text-sm">
         Send the session amount, then upload a screenshot. Uploading proof does not confirm the

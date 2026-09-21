@@ -20,5 +20,6 @@
 - No customers found
 - No sessions scheduled
 - No staff found
+- No payment QRs uploaded
 
 Prefer localized skeletons/errors over full-page spinners.

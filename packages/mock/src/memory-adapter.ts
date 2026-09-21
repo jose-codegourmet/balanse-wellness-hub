@@ -3,9 +3,11 @@ import type {
   AdminCoach,
   AdminPaymentTab,
   AdminSession,
+  AdminSettings,
   CursorPage,
   CustomerBooking,
   PaymentMethod,
+  PaymentQrCode,
   PolicyAcceptance,
   PublicSession,
 } from "@balanse/domain";
@@ -21,6 +23,7 @@ import {
   computeHoldExpiresAt,
   computeSessionDrilldown,
   computeSessionInventory,
+  FIELD_CONSTRAINTS,
   filterPaymentQueue,
   formatPeso,
   manilaYmd,
@@ -96,6 +99,30 @@ const EMPTY_CURSOR_PAGE: CursorPage<CustomerBooking> = {
   totalCount: 0,
 };
 
+function livePaymentQrs(settings: AdminSettings): PaymentQrCode[] {
+  return (settings.paymentQrs ?? []).filter((row) => row.archivedAt === null);
+}
+
+function syncDerivedQr(settings: AdminSettings): void {
+  const rows = settings.paymentQrs ?? [];
+  if (rows.length === 0 && settings.qrImageKey) {
+    const now = MOCK_NOW_ISO;
+    settings.paymentQrs = [
+      {
+        id: "pqr-legacy",
+        label: "GCash — main",
+        imageKey: settings.qrImageKey,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+        archivedAt: null,
+      },
+    ];
+  }
+  const active = livePaymentQrs(settings).find((row) => row.isActive) ?? null;
+  settings.qrImageKey = active?.imageKey ?? null;
+}
+
 export function createMemoryAdapter(): MockDataAdapter {
   let bookings = seedBookings.map((b) => clone(b));
   let sessions = seedSessions.map((s) => clone(s));
@@ -105,6 +132,8 @@ export function createMemoryAdapter(): MockDataAdapter {
   let coaches = seedCoaches.map((c) => clone(c));
   let staffRows = seedStaff.map((s) => clone(s));
   let settings = clone(seedSettings);
+  settings.paymentQrs = settings.paymentQrs ?? [];
+  syncDerivedQr(settings);
 
   const findBooking = (id: string) => bookings.find((b) => b.id === id) ?? null;
 
@@ -232,7 +261,16 @@ export function createMemoryAdapter(): MockDataAdapter {
         },
         { proofUpload: true },
       ),
-    getPaymentInstructions: () => applyMockEffects(() => clone(paymentInstructions)),
+    getPaymentInstructions: () =>
+      applyMockEffects(() => {
+        syncDerivedQr(settings);
+        return clone({
+          ...paymentInstructions,
+          gcashName: settings.gcashName,
+          gcashNumber: settings.gcashNumber,
+          qrImageKey: settings.qrImageKey,
+        });
+      }),
     createCancellationRequest: (bookingId, reason) =>
       applyMockEffects(() => {
         const booking = findBooking(bookingId);
@@ -649,11 +687,82 @@ export function createMemoryAdapter(): MockDataAdapter {
           policyAcceptances: clone(acceptances[id] ?? []),
         };
       }),
-    getAdminSettings: () => applyMockEffects(() => clone(settings)),
+    getAdminSettings: () =>
+      applyMockEffects(() => {
+        syncDerivedQr(settings);
+        return clone(settings);
+      }),
     updateAdminSettings: (patch) =>
       applyMockEffects(() => {
+        const nextKey = patch.qrImageKey;
         settings = { ...settings, ...patch, contact: { ...settings.contact, ...patch.contact } };
+        if (nextKey && !livePaymentQrs(settings).some((row) => row.imageKey === nextKey)) {
+          settings.qrImageKey = nextKey;
+        }
+        syncDerivedQr(settings);
         return clone(settings);
+      }),
+    listPaymentQrs: (includeArchived = false) =>
+      applyMockEffects(() => {
+        syncDerivedQr(settings);
+        const items = (settings.paymentQrs ?? []).filter(
+          (row) => includeArchived || row.archivedAt === null,
+        );
+        const activeId = items.find((row) => row.isActive && row.archivedAt === null)?.id ?? null;
+        return clone({ items, activeId });
+      }),
+    upsertPaymentQr: (input) =>
+      applyMockEffects(() => {
+        syncDerivedQr(settings);
+        const rows = settings.paymentQrs ?? [];
+        if (input.id) {
+          const current = rows.find((row) => row.id === input.id);
+          if (!current || current.archivedAt) throw new Error("payment_qr_not_found");
+          current.label = input.label;
+          current.imageKey = input.imageKey;
+          current.updatedAt = MOCK_NOW_ISO;
+          syncDerivedQr(settings);
+          return clone(current);
+        }
+        const live = livePaymentQrs(settings);
+        if (live.length >= FIELD_CONSTRAINTS.settings.paymentQr.maxItems) {
+          throw new Error("qr_limit");
+        }
+        const created: PaymentQrCode = {
+          id: `pqr-${globalThis.crypto?.randomUUID?.() ?? String(rows.length + 1)}`,
+          label: input.label,
+          imageKey: input.imageKey,
+          isActive: live.length === 0,
+          createdAt: MOCK_NOW_ISO,
+          updatedAt: MOCK_NOW_ISO,
+          archivedAt: null,
+        };
+        settings.paymentQrs = [...rows, created];
+        syncDerivedQr(settings);
+        return clone(created);
+      }),
+    activatePaymentQr: (id) =>
+      applyMockEffects(() => {
+        const rows = settings.paymentQrs ?? [];
+        const current = rows.find((row) => row.id === id);
+        if (!current || current.archivedAt) throw new Error("payment_qr_not_found");
+        for (const row of rows) {
+          row.isActive = row.id === id;
+          if (row.id === id) row.updatedAt = MOCK_NOW_ISO;
+        }
+        syncDerivedQr(settings);
+        return clone(current);
+      }),
+    archivePaymentQr: (id) =>
+      applyMockEffects(() => {
+        const current = (settings.paymentQrs ?? []).find((row) => row.id === id);
+        if (!current || current.archivedAt) throw new Error("payment_qr_not_found");
+        if (current.isActive) throw new Error("cannot_remove_active");
+        current.archivedAt = MOCK_NOW_ISO;
+        current.isActive = false;
+        current.updatedAt = MOCK_NOW_ISO;
+        syncDerivedQr(settings);
+        return clone(current);
       }),
     promotePolicyVersion: (documentName, version) =>
       applyMockEffects(() => {
