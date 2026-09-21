@@ -6,6 +6,8 @@
 
 Composition helpers for labeling, laying out, and showing errors around form controls. `Field` owns a context that wires `aria-invalid` and `aria-describedby` onto participating controls.
 
+Visual rhythm is always **label → control → description → error**. `orientation="horizontal"` is for switch/checkbox rows: the control and label sit on one line; description and error wrap full width so they do not break the column.
+
 ## When to use
 
 - Consistent label/description/error structure around Input/Select/Checkbox/Switch/etc.
@@ -62,3 +64,4 @@ Controls should apply `id`, `aria-invalid`, and `aria-describedby` from that obj
 - `useFieldContext()` is safe on bare `<Input>` call sites — it returns `undefined`.
 - 44px mobile touch target is an opt-in: `className="max-sm:min-h-11"` on the control. Do not inflate `md` (`h-8`). The admin form kit (#209) should use this recipe for dense-to-touch upgrades.
 - Size scale for participating controls is `sm | md | lg`. `md` matches today's default rendering.
+- New controls must adopt `controlSurfaceVariants` / `controlIndicatorStates` from `packages/ui/src/lib/control-surface.ts` (FE-SHR-016). Do not invent a second border/focus/invalid recipe.

@@ -1,4 +1,4 @@
-export type CalendarSkeletonView = "day" | "week" | "month";
+export type CalendarSkeletonView = "day" | "week" | "month" | "auto";
 
 export type CalendarSkeletonProps = {
   className?: string;

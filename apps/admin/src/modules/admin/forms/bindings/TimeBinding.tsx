@@ -9,7 +9,7 @@ export type TimeBindingProps = FormFieldRenderProps &
     "value" | "onValueChange" | "onChange" | keyof FormFieldRenderProps
   >;
 
-/** Context-blind — TimePicker does not read `useFieldContext()`. */
+/** TimePicker also reads `useFieldContext()`; explicit aria props still win. */
 export function TimeBinding({
   value,
   onChange,

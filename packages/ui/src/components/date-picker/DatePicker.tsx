@@ -16,6 +16,7 @@ import type { DateRange } from "react-day-picker";
 import { useMinWidth } from "../../hooks/use-breakpoint/UseBreakpoint";
 import { cn } from "../../lib/utils";
 import { Calendar } from "../calendar/Calendar";
+import { useFieldContext } from "../field/Field";
 import {
   InputGroup,
   InputGroupAddon,
@@ -172,8 +173,9 @@ function DatePicker({
     }
   }, [value, focused]);
 
+  const field = useFieldContext();
   const displayValue = focused ? draft : value ? formatDateLabel(value) : draft;
-  const isInvalid = Boolean(invalid ?? ariaInvalid);
+  const isInvalid = Boolean(invalid ?? ariaInvalid ?? field?.invalid);
 
   const commitDraft = React.useCallback(
     (raw: string) => {
@@ -210,19 +212,19 @@ function DatePicker({
     <InputGroup
       className={cn(className)}
       data-slot="date-picker"
-      data-disabled={disabled || undefined}
+      data-disabled={(disabled ?? field?.disabled) || undefined}
     >
       <InputGroupInput
         {...inputProps}
-        id={id}
+        id={id ?? field?.id}
         name={name}
         autoComplete="off"
-        disabled={disabled}
+        disabled={disabled ?? field?.disabled}
         readOnly={readOnly}
         placeholder={placeholder}
         value={displayValue}
-        aria-invalid={isInvalid || undefined}
-        aria-describedby={ariaDescribedBy}
+        aria-invalid={ariaInvalid ?? (isInvalid || undefined)}
+        aria-describedby={ariaDescribedBy ?? field?.describedBy}
         aria-label={ariaLabel}
         onFocus={(event) => {
           setFocused(true);
@@ -363,8 +365,9 @@ function DateRangePicker({
     );
   }, [value, focused]);
 
+  const field = useFieldContext();
   const displayValue = focused ? draft : value ? formatRangeLabel(value) : draft;
-  const isInvalid = Boolean(invalid ?? ariaInvalid);
+  const isInvalid = Boolean(invalid ?? ariaInvalid ?? field?.invalid);
 
   const applyRange = (next: DateRangePickerValues | undefined) => {
     setValue(next);
@@ -425,19 +428,19 @@ function DateRangePicker({
       ref={hostRef}
       className={cn(className)}
       data-slot="date-range-picker"
-      data-disabled={disabled || undefined}
+      data-disabled={(disabled ?? field?.disabled) || undefined}
     >
       <InputGroupInput
         {...inputProps}
-        id={id}
+        id={id ?? field?.id}
         name={name}
         autoComplete="off"
-        disabled={disabled}
+        disabled={disabled ?? field?.disabled}
         readOnly={readOnly}
         placeholder={placeholder}
         value={displayValue}
-        aria-invalid={isInvalid || undefined}
-        aria-describedby={ariaDescribedBy}
+        aria-invalid={ariaInvalid ?? (isInvalid || undefined)}
+        aria-describedby={ariaDescribedBy ?? field?.describedBy}
         aria-label={ariaLabel}
         onFocus={(event) => {
           setFocused(true);

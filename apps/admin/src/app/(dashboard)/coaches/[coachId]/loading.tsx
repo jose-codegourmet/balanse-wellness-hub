@@ -4,7 +4,7 @@ import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
 export default function Loading() {
   return (
     <AdminPageShell title="Edit Coach">
-      <FormPageSkeleton label="Loading coach" sections={3} fields={4} />
+      <FormPageSkeleton label="Loading coach" sections={3} fields={4} tabs={4} />
     </AdminPageShell>
   );
 }

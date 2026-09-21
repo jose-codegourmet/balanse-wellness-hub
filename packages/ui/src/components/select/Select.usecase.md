@@ -25,15 +25,19 @@ Use Select when you need custom option UI, grouping, or a portal menu. Do not de
 
 ### Size and invalid
 
-`SelectTrigger` accepts `size` (`sm | default | md | lg`) and `invalid`. `md` matches `default` (`h-8`).
+`SelectTrigger` is `w-full` and accepts `size` (`sm | default | md | lg`) and `invalid`. `md` matches `default` (`h-8`). Constrain width in the layout, not on the trigger.
+
+`SelectItem` accepts optional `leading` and `description`. The leading mark also appears in the closed trigger (via `ItemText`); the trigger hides the description line.
 
 ```tsx
 <Select>
-  <SelectTrigger size="md" className="w-[200px]">
+  <SelectTrigger size="md">
     <SelectValue placeholder="Select a fruit" />
   </SelectTrigger>
   <SelectContent>
-    <SelectItem value="apple">Apple</SelectItem>
+    <SelectItem value="apple" leading={<Avatar size="sm" />} description="Seasonal">
+      Apple
+    </SelectItem>
     <SelectItem value="banana">Banana</SelectItem>
   </SelectContent>
 </Select>

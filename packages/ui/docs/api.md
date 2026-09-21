@@ -35,7 +35,7 @@ Exported from `src/index.ts`:
 | Card | `Card`, `CardAction`, `CardContent`, `CardDescription`, `CardFooter`, `CardHeader`, `CardTitle` |
 | Carousel | `Carousel`, `CarouselContent`, `CarouselItem`, `CarouselNext`, `CarouselPrevious`, `CarouselApi` (type), `useCarousel` |
 | Chart | `ChartConfig` (type), `ChartContainer`, `ChartLegend`, `ChartLegendContent`, `ChartStyle`, `ChartTooltip`, `ChartTooltipContent` |
-| Checkbox | `Checkbox` |
+| Checkbox | `Checkbox`, `CheckboxGroup`, `CheckboxGroupItem` |
 | Collapsible | `Collapsible`, `CollapsibleContent`, `CollapsibleTrigger` |
 | Combobox | `Combobox`, `ComboboxChip`, `ComboboxChips`, `ComboboxChipsInput`, `ComboboxCollection`, `ComboboxContent`, `ComboboxEmpty`, `ComboboxGroup`, `ComboboxInput`, `ComboboxItem`, `ComboboxLabel`, `ComboboxList`, `ComboboxSeparator`, `ComboboxTrigger`, `ComboboxValue`, `useComboboxAnchor` |
 | Command | `Command`, `CommandDialog`, `CommandEmpty`, `CommandGroup`, `CommandInput`, `CommandItem`, `CommandList`, `CommandSeparator`, `CommandShortcut` |
@@ -84,6 +84,8 @@ Exported from `src/index.ts`:
 | Toggle | `Toggle`, `toggleVariants` |
 | Toggle Group | `ToggleGroup`, `ToggleGroupItem` |
 | Tooltip | `Tooltip`, `TooltipContent`, `TooltipProvider`, `TooltipTrigger` |
+| Option row | `OptionRow`, `choiceOptionFilterText`, `ChoiceOption` (type), `OptionRowProps` (type) |
+| Control surface | `controlSurfaceVariants`, `textareaSurfaceVariants`, `controlSurfaceGroup`, `controlSurfaceChips`, `controlIndicatorStates` |
 | Utilities | `cn` |
 | Viewport hooks | `useMediaQuery`, `useBreakpoint`, `useMinWidth`, `useIsMobile` |
 | Calendar | `ScheduleCalendar`, `detectView` |

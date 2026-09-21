@@ -141,7 +141,7 @@ export function CoachFormPage({ coachId, initialTab }: CoachFormPageProps) {
         title="Edit Coach"
         breadcrumb={[{ label: "Coaches", href: "/coaches" }, { label: coachId }]}
       >
-        <FormPageSkeleton label="Loading coach" sections={3} fields={4} />
+        <FormPageSkeleton label="Loading coach" sections={3} fields={4} tabs={4} />
       </AdminPageShell>
     );
   }

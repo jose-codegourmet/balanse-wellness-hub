@@ -20,6 +20,9 @@ export const Mobile: Story = {
       <CalendarSkeleton {...args} view="day" />
     </ShellStoryFrame>
   ),
+  parameters: {
+    viewport: { defaultViewport: "mobile" },
+  },
 };
 
 export const Tablet: Story = {
@@ -28,14 +31,33 @@ export const Tablet: Story = {
       <CalendarSkeleton {...args} view="week" />
     </ShellStoryFrame>
   ),
+  parameters: {
+    viewport: { defaultViewport: "tablet" },
+  },
 };
 
 export const Desktop: Story = {
   render: (args) => (
     <ShellStoryFrame width={SHELL_WIDTH.desktop}>
-      <CalendarSkeleton {...args} />
+      <CalendarSkeleton {...args} view="month" />
     </ShellStoryFrame>
   ),
+  parameters: {
+    viewport: { defaultViewport: "desktop" },
+  },
+};
+
+export const AutoLive: Story = {
+  name: "Auto (live breakpoint)",
+  render: (args) => <CalendarSkeleton {...args} view="auto" />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "No pinned `view`. Day agenda below 768, week strip at 768, month grid at 1280. Resize the Storybook viewport to watch it switch.",
+      },
+    },
+  },
 };
 
 export const MobileDark: Story = {
@@ -57,7 +79,7 @@ export const TabletDark: Story = {
 export const DesktopDark: Story = {
   render: (args) => (
     <ShellStoryFrame width={SHELL_WIDTH.desktop} dark>
-      <CalendarSkeleton {...args} />
+      <CalendarSkeleton {...args} view="month" />
     </ShellStoryFrame>
   ),
 };
@@ -65,7 +87,7 @@ export const DesktopDark: Story = {
 export const ReducedMotion: Story = {
   render: (args) => (
     <ReducedMotionNote>
-      <CalendarSkeleton {...args} />
+      <CalendarSkeleton {...args} view="month" />
     </ReducedMotionNote>
   ),
 };

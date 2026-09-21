@@ -9,7 +9,7 @@ export type RichTextBindingProps = FormFieldRenderProps &
     keyof FormFieldRenderProps | "value" | "onChange"
   >;
 
-/** Context-blind — reads `useFieldContext()` and wires aria explicitly. */
+/** RichTextarea also reads `useFieldContext()`; explicit aria props still win. */
 export function RichTextBinding({
   value,
   onChange,

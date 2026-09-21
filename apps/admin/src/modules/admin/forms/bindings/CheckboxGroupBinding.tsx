@@ -1,9 +1,16 @@
 "use client";
 
-import { Checkbox, FieldLegend, FieldSet, useFieldContext } from "@balanse/ui";
+import {
+  CheckboxGroup,
+  CheckboxGroupItem,
+  type CheckboxGroupOption,
+  FieldLegend,
+  FieldSet,
+  useFieldContext,
+} from "@balanse/ui";
 import type { FormFieldRenderProps } from "../AdminForm.schema";
 
-export type CheckboxGroupOption = { value: string; label: string };
+export type { CheckboxGroupOption };
 
 export type CheckboxGroupBindingProps = FormFieldRenderProps & {
   options: CheckboxGroupOption[];
@@ -39,22 +46,23 @@ export function CheckboxGroupBinding({
       onBlur={onBlur}
     >
       {legend ? <FieldLegend variant="label">{legend}</FieldLegend> : null}
-      <div data-slot="checkbox-group" className="grid gap-2">
+      <CheckboxGroup>
         {options.map((option) => {
           const optionId = `${name}-${option.value}`;
           return (
-            <div key={option.value} className="flex items-center gap-2 text-sm">
-              <Checkbox
-                id={optionId}
-                disabled={disabled}
-                checked={selected.includes(option.value)}
-                onCheckedChange={(next) => toggle(option.value, next === true)}
-              />
-              <label htmlFor={optionId}>{option.label}</label>
-            </div>
+            <CheckboxGroupItem
+              key={option.value}
+              id={optionId}
+              label={option.label}
+              leading={option.leading}
+              description={option.description}
+              disabled={disabled || option.disabled}
+              checked={selected.includes(option.value)}
+              onCheckedChange={(next) => toggle(option.value, next === true)}
+            />
           );
         })}
-      </div>
+      </CheckboxGroup>
     </FieldSet>
   );
 }

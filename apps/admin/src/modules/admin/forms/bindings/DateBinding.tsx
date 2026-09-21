@@ -9,7 +9,7 @@ export type DateBindingProps = FormFieldRenderProps &
     "value" | "onValueChange" | "onChange" | keyof FormFieldRenderProps
   >;
 
-/** Context-blind — DatePicker does not read `useFieldContext()`. */
+/** DatePicker also reads `useFieldContext()`; explicit aria props still win. */
 export function DateBinding({ value, onChange, onBlur, name, ref, ...props }: DateBindingProps) {
   const field = useFieldContext();
   const ymd = typeof value === "string" && value ? value : undefined;
