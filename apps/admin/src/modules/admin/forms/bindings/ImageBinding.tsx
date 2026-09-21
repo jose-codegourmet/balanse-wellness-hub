@@ -1,7 +1,7 @@
 "use client";
 
 import { useFieldContext } from "@balanse/ui";
-import { ImageUpload } from "@/components/balanse/ImageUpload";
+import { ImageUpload } from "@/components/balanse/image-upload/ImageUpload";
 import type { FormFieldRenderProps } from "../AdminForm.schema";
 
 export type ImageBindingProps = FormFieldRenderProps & {

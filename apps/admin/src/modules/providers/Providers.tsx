@@ -5,7 +5,7 @@ import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "next-themes";
 import { type ReactNode, useState } from "react";
-import { AdminToaster } from "@/components/balanse/AdminToaster";
+import { AdminToaster } from "@/components/balanse/admin-toaster/AdminToaster";
 import { makeQueryClient } from "@/lib/query/client";
 import { MockSessionHarness } from "@/modules/dev-harness/MockSessionHarness";
 import { MockSessionProvider } from "@/modules/session/MockSessionProvider";

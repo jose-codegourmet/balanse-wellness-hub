@@ -32,12 +32,12 @@ import {
 } from "@balanse/ui";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ConfirmAction } from "@/components/balanse/ConfirmAction";
-import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
-import { AdminPageTabs } from "@/components/balanse/page/AdminPageTabs";
+import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
+import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
+import { AdminPageTabs } from "@/components/balanse/page/admin-page-tabs/AdminPageTabs";
 import { useTabParam } from "@/components/balanse/page/useTabParam";
-import { AdminQueueCard } from "@/components/balanse/queue/AdminQueueCard";
-import { AdminQueueList } from "@/components/balanse/queue/AdminQueueList";
+import { AdminQueueCard } from "@/components/balanse/queue/admin-queue-card/AdminQueueCard";
+import { AdminQueueList } from "@/components/balanse/queue/admin-queue-list/AdminQueueList";
 import { adminNowIso } from "@/lib/clock";
 import {
   useCheckIn,

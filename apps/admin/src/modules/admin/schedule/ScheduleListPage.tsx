@@ -13,7 +13,7 @@ import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { FullscreenCalendar } from "@/components/jabkit/fullscreen-calendar";
 import type { FullscreenCalendarDay } from "@/components/jabkit/fullscreen-calendar/FullscreenCalendar.types";
 import { adminTodayYmd } from "@/lib/clock";

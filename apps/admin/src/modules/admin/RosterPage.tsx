@@ -14,8 +14,8 @@ import { getMockAdapter } from "@balanse/mock";
 import { StatusBadge } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { ConfirmAction } from "@/components/balanse/ConfirmAction";
-import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
+import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { adminCustomersQuery, adminSessionRosterQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 

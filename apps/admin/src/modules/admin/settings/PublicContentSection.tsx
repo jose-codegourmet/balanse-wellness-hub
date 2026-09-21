@@ -3,7 +3,7 @@
 import { type AdminSettings, FIELD_CONSTRAINTS } from "@balanse/domain";
 import { Button } from "@balanse/ui";
 import { useFieldArray } from "react-hook-form";
-import { ConfirmAction } from "@/components/balanse/ConfirmAction";
+import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import { useUpdateAdminSettings } from "@/lib/query/mutations";
 import { notify } from "@/modules/notifications/notify";
 import {

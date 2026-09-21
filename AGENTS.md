@@ -32,7 +32,7 @@ Jabkit is source-distributed. Each app has `jabkit.config.json`.
 
 ## Component process
 
-Every component added or materially changed ships five colocated files: `Component.tsx`, `Component.schema.ts` (exported props type; plus a `zod` value schema when it is a form or form control), `Component.defaults.ts` (`<component>DefaultValues`), `Component.stories.tsx` (Storybook `meta` with `args` seeded from the defaults), and `Component.usecase.md`. Forms use `react-hook-form` + `zodResolver`, with schema and `defaultValues` colocated, exported, and reused by the story. Reference implementations: `packages/ui/src/components/skeleton/` and `packages/ui/src/components/scroll-area/`. Full rules and the scaffold: `docs/component-guide.md`, `docs/templates/component/`.
+Wrap each component in its own `kebab-case` folder. The five colocated files live **inside** that folder: `Component.tsx`, `Component.schema.ts` (exported props type; plus a `zod` value schema when it is a form or form control), `Component.defaults.ts` (`<component>DefaultValues`), `Component.stories.tsx` (Storybook `meta` with `args` seeded from the defaults), and `Component.usecase.md`. Admin composition may nest under a feature parent (`dashboard/dashboard-bento/`). Do not dump sibling components as loose files in a shared folder. Forms use `react-hook-form` + `zodResolver`, with schema and `defaultValues` colocated, exported, and reused by the story. Reference implementations: `packages/ui/src/components/skeleton/` and `packages/ui/src/components/scroll-area/`. Full rules and the scaffold: `docs/component-guide.md`, `docs/templates/component/`.
 
 ## Data
 

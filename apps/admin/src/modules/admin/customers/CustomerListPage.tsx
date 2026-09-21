@@ -8,9 +8,9 @@ import { CalendarClock, Clock, type LucideIcon, UserMinus, Users } from "lucide-
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useMemo } from "react";
-import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
-import type { AdminDataTableRowAction } from "@/components/balanse/data-table/AdminDataTable.schema";
-import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
+import type { AdminDataTableRowAction } from "@/components/balanse/data-table/admin-data-table/AdminDataTable.schema";
+import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { adminNowIso } from "@/lib/clock";
 import { adminCustomersQuery } from "@/lib/query/queries";
 import { cn } from "@/lib/utils";

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { AdminSidebar } from "@/components/balanse/sidebar/AdminSidebar";
+import { AdminSidebar } from "@/components/balanse/sidebar/admin-sidebar/AdminSidebar";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export function AdminShell({

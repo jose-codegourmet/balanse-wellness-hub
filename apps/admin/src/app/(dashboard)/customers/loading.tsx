@@ -1,5 +1,5 @@
 import { Skeleton, TablePageSkeleton } from "@balanse/ui";
-import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 
 const STAT_KEYS = ["total", "upcoming", "recent", "never"] as const;
 

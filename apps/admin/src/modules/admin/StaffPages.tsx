@@ -8,9 +8,9 @@ import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { ConfirmAction } from "@/components/balanse/ConfirmAction";
-import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
-import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
+import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
+import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { adminStaffQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 

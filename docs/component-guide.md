@@ -12,7 +12,7 @@ This ticket publishes process only. It does not change rendered pixels.
 | --- | --- | --- |
 | Shared cross-app primitive | `packages/ui/src/components/<kebab-name>/` | Hand-create the folder (or scaffold with shadcn from `apps/web` and move the output); export from `src/index.ts` |
 | Marketing / app-shell block available upstream | `apps/<app>/src/components/jabkit/` | `npx @jabkit/cli add <name>` from the app dir; files stay **pristine** |
-| Product composition of either | `apps/<app>/src/components/balanse/` (or `packages/ui/src/balanse/` when both apps need it) | Hand-written wrapper |
+| Product composition of either | `apps/<app>/src/components/balanse/<kebab-name>/` or `apps/<app>/src/components/balanse/<area>/<kebab-name>/` (or `packages/ui/src/balanse/<kebab-name>/` when both apps need it) | Hand-written wrapper; each public component owns its kebab folder |
 
 Do not hand-edit vendored Jabkit source unless a ticket explicitly requires a patch, and then record it. Vendored Jabkit keeps its own `*.types.ts` shape and is **exempt** from the required file set below (those files are also excluded from Biome). Registry URL and `jabkit.config.json` live in each app; see `docs/engineering/jabkit.md`.
 
@@ -144,6 +144,8 @@ Backlink depths (already correct in the repo — do not “normalize” them):
 
 - From `packages/ui/src/components/<name>/`: `../../../../../docs/component-guide.md`
 - One extra `../` per extra nesting level (today: `components/table/data-table/` and `components/motion/scroll-reveal/` use six).
+- From `apps/admin/src/components/balanse/<kebab-name>/`: six (`../../../../../../docs/component-guide.md`).
+- From `apps/admin/src/components/balanse/<area>/<kebab-name>/`: seven (`../../../../../../../docs/component-guide.md`).
 
 ```md
 # Component — Use Cases

@@ -18,17 +18,17 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { Path } from "react-hook-form";
-import { ConfirmAction } from "@/components/balanse/ConfirmAction";
-import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
+import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import {
   AdminWizard,
   AdminWizardStepPanel,
   useMinWidth,
-} from "@/components/balanse/wizard/AdminWizard";
+} from "@/components/balanse/wizard/admin-wizard/AdminWizard";
 import type {
   AdminWizardStep,
   AdminWizardSurface,
-} from "@/components/balanse/wizard/AdminWizard.schema";
+} from "@/components/balanse/wizard/admin-wizard/AdminWizard.schema";
 import { adminNowIso, adminTodayYmd } from "@/lib/clock";
 import { useCancelAdminSession, useUpsertAdminSession } from "@/lib/query/mutations";
 import {

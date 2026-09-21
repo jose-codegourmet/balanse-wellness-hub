@@ -6,16 +6,16 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Path } from "react-hook-form";
-import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import {
   AdminWizard,
   AdminWizardStepPanel,
   useMinWidth,
-} from "@/components/balanse/wizard/AdminWizard";
+} from "@/components/balanse/wizard/admin-wizard/AdminWizard";
 import type {
   AdminWizardStep,
   AdminWizardSurface,
-} from "@/components/balanse/wizard/AdminWizard.schema";
+} from "@/components/balanse/wizard/admin-wizard/AdminWizard.schema";
 import { useUpsertAdminClass } from "@/lib/query/mutations";
 import { adminClassesQuery, adminCoachesQuery } from "@/lib/query/queries";
 import { notify } from "@/modules/notifications/notify";

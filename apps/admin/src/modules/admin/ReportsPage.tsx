@@ -12,9 +12,9 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
-import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
-import { ReportsOverview } from "@/components/balanse/ReportsOverview";
+import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
+import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
+import { ReportsOverview } from "@/components/balanse/reports-overview/ReportsOverview";
 import {
   adminClassesQuery,
   adminCoachesQuery,

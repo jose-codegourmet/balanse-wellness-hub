@@ -12,10 +12,10 @@ import {
 import { Badge, cn, FeedbackState, StatusBadge } from "@balanse/ui";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ConfirmAction } from "@/components/balanse/ConfirmAction";
-import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
-import { AdminQueueCard } from "@/components/balanse/queue/AdminQueueCard";
-import { AdminQueueList } from "@/components/balanse/queue/AdminQueueList";
+import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
+import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
+import { AdminQueueCard } from "@/components/balanse/queue/admin-queue-card/AdminQueueCard";
+import { AdminQueueList } from "@/components/balanse/queue/admin-queue-list/AdminQueueList";
 import { adminNowIso } from "@/lib/clock";
 import {
   useCompleteAdminCancellation,

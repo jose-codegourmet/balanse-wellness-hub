@@ -13,8 +13,8 @@ import {
 } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
-import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
-import { AdminPageTabs } from "@/components/balanse/page/AdminPageTabs";
+import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
+import { AdminPageTabs } from "@/components/balanse/page/admin-page-tabs/AdminPageTabs";
 import { useTabParam } from "@/components/balanse/page/useTabParam";
 import { adminSettingsQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";

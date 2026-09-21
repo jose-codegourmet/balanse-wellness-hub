@@ -10,7 +10,7 @@ import {
 import { Badge, StatusBadge } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
+import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { adminCustomerDetailQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 

@@ -18,10 +18,10 @@ import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { ConfirmAction } from "@/components/balanse/ConfirmAction";
-import { AdminDataTable } from "@/components/balanse/data-table/AdminDataTable";
-import { AdminPageShell } from "@/components/balanse/page/AdminPageShell";
-import { AdminPageTabs } from "@/components/balanse/page/AdminPageTabs";
+import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
+import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
+import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
+import { AdminPageTabs } from "@/components/balanse/page/admin-page-tabs/AdminPageTabs";
 import { adminNowIso } from "@/lib/clock";
 import {
   adminBookingDetailQuery,

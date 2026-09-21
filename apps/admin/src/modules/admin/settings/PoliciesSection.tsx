@@ -9,7 +9,7 @@ import {
 } from "@balanse/domain";
 import { Badge } from "@balanse/ui";
 import { useEffect, useState } from "react";
-import { ConfirmAction } from "@/components/balanse/ConfirmAction";
+import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import { adminNowIso } from "@/lib/clock";
 import { usePromotePolicyVersion } from "@/lib/query/mutations";
 import { notify } from "@/modules/notifications/notify";
