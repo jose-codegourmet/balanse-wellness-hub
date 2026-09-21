@@ -111,10 +111,7 @@ export function SettingsPage({
       }
     >
       <div className="mt-6 grid gap-10">
-        <section
-          id="settings-business"
-          className={tab === "business" ? undefined : "hidden"}
-        >
+        <section id="settings-business" className={tab === "business" ? undefined : "hidden"}>
           <BusinessProfileSection
             key={`business-${epoch.business}`}
             settings={settings}
@@ -123,10 +120,7 @@ export function SettingsPage({
             onSaved={() => bump("business")}
           />
         </section>
-        <section
-          id="settings-payment"
-          className={tab === "payment" ? undefined : "hidden"}
-        >
+        <section id="settings-payment" className={tab === "payment" ? undefined : "hidden"}>
           <PaymentInfoSection
             key={`payment-${epoch.payment}`}
             settings={settings}
@@ -135,10 +129,7 @@ export function SettingsPage({
             onSaved={() => bump("payment")}
           />
         </section>
-        <section
-          id="settings-content"
-          className={tab === "content" ? undefined : "hidden"}
-        >
+        <section id="settings-content" className={tab === "content" ? undefined : "hidden"}>
           <PublicContentSection
             key={`content-${epoch.content}`}
             settings={settings}
@@ -148,10 +139,7 @@ export function SettingsPage({
             onSaved={() => bump("content")}
           />
         </section>
-        <section
-          id="settings-policies"
-          className={tab === "policies" ? undefined : "hidden"}
-        >
+        <section id="settings-policies" className={tab === "policies" ? undefined : "hidden"}>
           <PoliciesSection
             key={`policies-${epoch.policies}`}
             settings={settings}

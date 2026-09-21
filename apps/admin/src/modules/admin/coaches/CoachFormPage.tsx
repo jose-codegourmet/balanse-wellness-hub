@@ -265,10 +265,7 @@ function CoachFormFields({
         </FormSection>
       </section>
 
-      <section
-        data-slot="coach-profile"
-        className={tab === "profile" ? undefined : "hidden"}
-      >
+      <section data-slot="coach-profile" className={tab === "profile" ? undefined : "hidden"}>
         <FormSection title="Public profile" surface="card">
           <FormField name="name" label="Name" required>
             {(field) => <TextBinding {...field} />}
@@ -328,10 +325,7 @@ function CoachFormFields({
       ) : null}
 
       {!isNew ? (
-        <section
-          data-slot="coach-sessions"
-          className={tab === "sessions" ? undefined : "hidden"}
-        >
+        <section data-slot="coach-sessions" className={tab === "sessions" ? undefined : "hidden"}>
           <h2 className="font-display text-2xl">Upcoming sessions</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Read-only. Coach schedules are not edited here.

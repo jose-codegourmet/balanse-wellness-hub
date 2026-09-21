@@ -6,7 +6,7 @@ import type { AdminPageTab } from "./AdminPageTabs.schema";
 
 function TabsDemo({
   tabs,
-  value: initial,
+  value: initialValue,
   mobileBehavior,
   label,
 }: {
@@ -15,7 +15,7 @@ function TabsDemo({
   mobileBehavior?: "tabs" | "stack";
   label?: string;
 }) {
-  const [value, setValue] = useState(value ?? tabs[0]?.id ?? "pending");
+  const [value, setValue] = useState(initialValue ?? tabs[0]?.id ?? "pending");
   return (
     <AdminPageTabs
       tabs={tabs}
@@ -106,9 +106,7 @@ export const Overflowing1280: Story = {
 
 export const StackOnMobile: Story = {
   args: { mobileBehavior: "stack" },
-  render: (args) => (
-    <TabsDemo tabs={args.tabs ?? []} value={args.value} mobileBehavior="stack" />
-  ),
+  render: (args) => <TabsDemo tabs={args.tabs ?? []} value={args.value} mobileBehavior="stack" />,
   parameters: { viewport: { defaultViewport: "mobile" } },
 };
 
