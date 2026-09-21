@@ -69,9 +69,13 @@ export function SettingsPage({
     setDirty((current) => ({ ...current, [id]: false }));
   }, []);
 
+  function dirtySections(except?: SettingsSection) {
+    return SETTINGS_SECTIONS.filter((id) => dirty[id] && id !== except);
+  }
+
   function requestTab(next: SettingsSection) {
     if (next === tab) return;
-    if (dirty[tab]) {
+    if (dirtySections(next).length > 0) {
       setPendingTab(next);
       return;
     }
@@ -80,7 +84,7 @@ export function SettingsPage({
 
   function confirmTabLeave() {
     if (!pendingTab) return;
-    bump(tab);
+    for (const id of dirtySections(pendingTab)) bump(id);
     setTab(pendingTab);
     setPendingTab(null);
   }
@@ -174,6 +178,8 @@ export function SettingsPage({
             key={`policies-${epoch.policies}`}
             settings={settings}
             invalidVersion={invalidPolicyVersion}
+            onDirtyChange={(next) => markDirty("policies", next)}
+            onSaved={() => bump("policies")}
           />
         </section>
       </div>
@@ -181,9 +187,13 @@ export function SettingsPage({
       <AlertDialog open={pendingTab !== null} onOpenChange={(open) => !open && setPendingTab(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Leave {SETTINGS_TAB_LABELS[tab]} without saving?</AlertDialogTitle>
+            <AlertDialogTitle>Leave without saving?</AlertDialogTitle>
             <AlertDialogDescription>
-              You have unsaved changes in this section. Switch tabs and those edits are lost.
+              You have unsaved changes
+              {dirtySections(pendingTab ?? undefined)
+                .map((id) => ` in ${SETTINGS_TAB_LABELS[id]}`)
+                .join("")}
+              . Switch sections and those edits are lost.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

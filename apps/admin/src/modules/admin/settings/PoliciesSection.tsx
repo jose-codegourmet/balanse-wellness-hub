@@ -8,6 +8,7 @@ import {
   type PolicyDocumentVersion,
 } from "@balanse/domain";
 import { Badge } from "@balanse/ui";
+import { useEffect, useState } from "react";
 import { ConfirmAction } from "@/components/balanse/ConfirmAction";
 import { adminNowIso } from "@/lib/clock";
 import { usePromotePolicyVersion } from "@/lib/query/mutations";
@@ -18,6 +19,11 @@ import {
   type PolicyPromoteFormValues,
   policyPromoteFormSchema,
 } from "../forms/settings/settings-form.schema";
+import { DirtyBridge } from "./DirtyBridge";
+
+function promoteFormId(documentName: string) {
+  return `promote-${documentName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`.replace(/-$/, "");
+}
 
 function nextPolicyVersion(current: string): string {
   const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(current.trim());
@@ -54,29 +60,35 @@ function PromotePolicyForm({
   documentName,
   currentVersion,
   invalidVersion = false,
+  onDirtyChange,
+  onSaved,
 }: {
   documentName: string;
   currentVersion: string;
   invalidVersion?: boolean;
+  onDirtyChange?: (documentName: string, dirty: boolean) => void;
+  onSaved?: () => void;
 }) {
   const promote = usePromotePolicyVersion();
   const suggested = invalidVersion ? "not-a-version" : nextPolicyVersion(currentVersion);
 
   return (
     <AdminForm
-      id={`promote-${documentName}`}
+      id={promoteFormId(documentName)}
       schema={policyPromoteFormSchema}
       defaultValues={{ version: suggested }}
       onSubmit={async (values) => {
         try {
           await promote.mutateAsync({ documentName, version: values.version });
           notify.admin("policy.promoted");
+          onSaved?.();
         } catch (error) {
           notify.admin("policy.promote-failed");
           throw error;
         }
       }}
     >
+      <DirtyBridge onDirtyChange={(dirty) => onDirtyChange?.(documentName, dirty)} />
       <PromotePolicyFields documentName={documentName} />
     </AdminForm>
   );
@@ -99,7 +111,7 @@ function PromotePolicyFields({ documentName }: { documentName: string }) {
         label="New version"
         description="Format yyyy-mm, matching the stored policy versions."
       >
-        {(field) => <TextBinding {...field} inputMode="numeric" placeholder="yyyy-mm" />}
+        {(field) => <TextBinding {...field} placeholder="yyyy-mm" />}
       </FormField>
       <ConfirmAction
         triggerLabel={`Promote ${documentName}`}
@@ -118,11 +130,27 @@ function PromotePolicyFields({ documentName }: { documentName: string }) {
 export function PoliciesSection({
   settings,
   invalidVersion = false,
+  onDirtyChange,
+  onSaved,
 }: {
   settings: AdminSettings;
   invalidVersion?: boolean;
+  onDirtyChange?: (dirty: boolean) => void;
+  onSaved?: () => void;
 }) {
   const groups = groupPolicyDocuments(settings.policyDocuments);
+  const [promoteDirty, setPromoteDirty] = useState<Record<string, boolean>>({});
+
+  function markPromoteDirty(documentName: string, next: boolean) {
+    setPromoteDirty((current) => {
+      if (current[documentName] === next) return current;
+      return { ...current, [documentName]: next };
+    });
+  }
+
+  useEffect(() => {
+    onDirtyChange?.(Object.values(promoteDirty).some(Boolean));
+  }, [onDirtyChange, promoteDirty]);
 
   return (
     <FormSection
@@ -178,6 +206,8 @@ export function PoliciesSection({
                   documentName={group.name}
                   currentVersion={current.version}
                   invalidVersion={invalidVersion}
+                  onDirtyChange={markPromoteDirty}
+                  onSaved={onSaved}
                 />
               ) : null}
             </li>

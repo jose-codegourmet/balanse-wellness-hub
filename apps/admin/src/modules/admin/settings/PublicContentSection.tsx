@@ -51,6 +51,7 @@ function FaqListEditor() {
         <Button
           type="button"
           variant="outline"
+          disabled={fields.length >= FIELD_CONSTRAINTS.settings.faq.maxItems}
           onClick={() =>
             append({
               id: `faq-${globalThis.crypto?.randomUUID?.() ?? Date.now()}`,
