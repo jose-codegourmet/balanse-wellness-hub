@@ -261,10 +261,7 @@ function ClassWizardFields({
         </FormField>
         <FormField name="associatedCoachIds" label="Associated coaches (optional)">
           {(field) => (
-            <CheckboxGroupBinding
-              {...field}
-              options={coaches.map(toCoachChoiceOption)}
-            />
+            <CheckboxGroupBinding {...field} options={coaches.map(toCoachChoiceOption)} />
           )}
         </FormField>
       </AdminWizardStepPanel>

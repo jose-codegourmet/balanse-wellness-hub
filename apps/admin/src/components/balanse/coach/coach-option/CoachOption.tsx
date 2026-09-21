@@ -41,7 +41,11 @@ export function CoachOption({ coach, layout = "avatar", className }: CoachOption
 
   if (layout === "avatar") {
     return (
-      <span data-slot="coach-option" aria-hidden="true" className={cn("flex items-center gap-1.5", className)}>
+      <span
+        data-slot="coach-option"
+        aria-hidden="true"
+        className={cn("flex items-center gap-1.5", className)}
+      >
         {avatar}
         {inactive ? (
           <Badge variant="neutral" appearance="soft" size="sm">

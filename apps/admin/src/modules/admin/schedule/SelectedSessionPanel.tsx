@@ -69,7 +69,11 @@ export function SelectedSessionPanel({
         {formatSessionTime(session.startsAt)}–{formatSessionTime(session.endsAt)}
       </p>
       <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-        {coach ? <CoachOption coach={coach} layout="row" className="min-w-0 flex-1 text-foreground" /> : session.coachName}
+        {coach ? (
+          <CoachOption coach={coach} layout="row" className="min-w-0 flex-1 text-foreground" />
+        ) : (
+          session.coachName
+        )}
         <span>· {sessionStatusLabel(session.status)}</span>
       </div>
       <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">

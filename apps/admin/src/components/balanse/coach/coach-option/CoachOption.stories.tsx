@@ -1,7 +1,7 @@
 import { coachPhotoKey } from "@balanse/domain";
 import {
-  CheckboxGroup,
   CheckboxGroupItem,
+  CheckboxGroup as CoachCheckboxGroup,
   Combobox,
   ComboboxCollection,
   ComboboxContent,
@@ -158,9 +158,7 @@ export const PickerHeadshots: Story = {
 };
 
 export const PickerPlaceholders: Story = {
-  render: () => (
-    <CoachPickerDemo coaches={[coachOptionAlec, coachOptionSofia, coachOptionKate]} />
-  ),
+  render: () => <CoachPickerDemo coaches={[coachOptionAlec, coachOptionSofia, coachOptionKate]} />,
 };
 
 export const EmptyRoster: Story = {
@@ -187,9 +185,9 @@ export const DarkTheme: Story = {
   globals: { theme: "dark" },
 };
 
-export const CheckboxGroup: Story = {
+export const MultiAssign: Story = {
   render: () => (
-    <CheckboxGroup>
+    <CoachCheckboxGroup>
       {roster.slice(0, 4).map((coach) => {
         const option = toCoachChoiceOption(coach);
         return (
@@ -201,6 +199,6 @@ export const CheckboxGroup: Story = {
           />
         );
       })}
-    </CheckboxGroup>
+    </CoachCheckboxGroup>
   ),
 };

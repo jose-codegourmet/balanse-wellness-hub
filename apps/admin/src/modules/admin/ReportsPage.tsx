@@ -9,7 +9,6 @@ import {
 } from "@balanse/domain";
 import {
   type ChoiceOption,
-  choiceOptionFilterText,
   Combobox,
   ComboboxCollection,
   ComboboxContent,
@@ -17,6 +16,7 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
+  choiceOptionFilterText,
   Label,
   NativeSelect,
 } from "@balanse/ui";

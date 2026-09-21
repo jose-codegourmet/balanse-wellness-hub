@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  choiceOptionFilterText,
   Combobox,
   ComboboxCollection,
   ComboboxContent,
@@ -9,6 +8,7 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
+  choiceOptionFilterText,
 } from "@balanse/ui";
 import type { FormFieldRenderProps } from "../AdminForm.schema";
 import type { ChoiceOption } from "./ChoiceBinding";
