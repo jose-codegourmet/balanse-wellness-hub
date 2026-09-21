@@ -23,6 +23,52 @@ export default meta;
 type Story = StoryObj<typeof TablePageSkeleton>;
 
 export const Mobile: Story = {
+  args: { layout: "auto" },
+  render: (args) => (
+    <ShellStoryFrame width={SHELL_WIDTH.mobile}>
+      <TablePageSkeleton {...args} />
+    </ShellStoryFrame>
+  ),
+  parameters: {
+    viewport: { defaultViewport: "mobile" },
+  },
+};
+
+export const Tablet: Story = {
+  args: { layout: "auto", rows: 6 },
+  render: (args) => (
+    <ShellStoryFrame width={SHELL_WIDTH.tablet}>
+      <TablePageSkeleton {...args} />
+    </ShellStoryFrame>
+  ),
+  parameters: {
+    viewport: { defaultViewport: "tablet" },
+  },
+};
+
+export const Desktop: Story = {
+  args: { layout: "auto", rows: 8 },
+  render: (args) => (
+    <ShellStoryFrame width={SHELL_WIDTH.desktop}>
+      <TablePageSkeleton {...args} />
+    </ShellStoryFrame>
+  ),
+  parameters: {
+    viewport: { defaultViewport: "desktop" },
+  },
+};
+
+export const CardsForced: Story = {
+  args: { layout: "cards", rows: 4 },
+  render: (args) => (
+    <ShellStoryFrame width={SHELL_WIDTH.desktop}>
+      <TablePageSkeleton {...args} />
+    </ShellStoryFrame>
+  ),
+};
+
+export const TableForced: Story = {
+  args: { layout: "table", rows: 4 },
   render: (args) => (
     <ShellStoryFrame width={SHELL_WIDTH.mobile}>
       <TablePageSkeleton {...args} />
@@ -30,23 +76,8 @@ export const Mobile: Story = {
   ),
 };
 
-export const Tablet: Story = {
-  render: (args) => (
-    <ShellStoryFrame width={SHELL_WIDTH.tablet}>
-      <TablePageSkeleton {...args} rows={6} />
-    </ShellStoryFrame>
-  ),
-};
-
-export const Desktop: Story = {
-  render: (args) => (
-    <ShellStoryFrame width={SHELL_WIDTH.desktop}>
-      <TablePageSkeleton {...args} rows={8} />
-    </ShellStoryFrame>
-  ),
-};
-
 export const MobileDark: Story = {
+  args: { layout: "cards" },
   render: (args) => (
     <ShellStoryFrame width={SHELL_WIDTH.mobile} dark>
       <TablePageSkeleton {...args} />
@@ -55,17 +86,19 @@ export const MobileDark: Story = {
 };
 
 export const TabletDark: Story = {
+  args: { layout: "table", rows: 6 },
   render: (args) => (
     <ShellStoryFrame width={SHELL_WIDTH.tablet} dark>
-      <TablePageSkeleton {...args} rows={6} />
+      <TablePageSkeleton {...args} />
     </ShellStoryFrame>
   ),
 };
 
 export const DesktopDark: Story = {
+  args: { layout: "table", rows: 8 },
   render: (args) => (
     <ShellStoryFrame width={SHELL_WIDTH.desktop} dark>
-      <TablePageSkeleton {...args} rows={8} />
+      <TablePageSkeleton {...args} />
     </ShellStoryFrame>
   ),
 };
@@ -73,7 +106,7 @@ export const DesktopDark: Story = {
 export const ReducedMotion: Story = {
   render: (args) => (
     <ReducedMotionNote>
-      <TablePageSkeleton {...args} />
+      <TablePageSkeleton {...args} layout="table" />
     </ReducedMotionNote>
   ),
 };
@@ -84,13 +117,14 @@ export const PhotoRoster: Story = {
     rows: 6,
     columns: 6,
     leadingCell: "avatar",
+    layout: "cards",
   },
 };
 
 export const VersusReal: Story = {
   render: (args) => (
     <div className="grid gap-8 lg:grid-cols-2">
-      <TablePageSkeleton {...args} rows={3} columns={4} />
+      <TablePageSkeleton {...args} rows={3} columns={4} layout="table" />
       <section className="w-full text-foreground">
         <div className="flex flex-col gap-1">
           <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">

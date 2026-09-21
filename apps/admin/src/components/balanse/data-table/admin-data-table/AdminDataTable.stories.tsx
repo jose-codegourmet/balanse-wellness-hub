@@ -149,6 +149,28 @@ export const Loading: Story = {
   },
 };
 
+export const LoadingCards360: Story = {
+  args: {
+    loading: true,
+    loadingLabel: "Loading results",
+    layout: "cards",
+  },
+  parameters: {
+    viewport: { defaultViewport: "mobile" },
+  },
+};
+
+export const LoadingTable1280: Story = {
+  args: {
+    loading: true,
+    loadingLabel: "Loading results",
+    layout: "table",
+  },
+  parameters: {
+    viewport: { defaultViewport: "desktop" },
+  },
+};
+
 export const ErrorState: Story = {
   args: {
     error: <FeedbackState id="calendar.load-failed" />,

@@ -7,7 +7,6 @@ import {
   CardAction,
   CardContent,
   CardHeader,
-  CardListSkeleton,
   CardTitle,
   Checkbox,
   cn,
@@ -336,6 +335,7 @@ function AdminDataTableInner<TData>({
           <Separator className="my-5" />
         ) : null}
 
+        {loading ? null : (
         <div
           className={cn("mb-3 flex flex-wrap items-center justify-between gap-3", !title && "mt-0")}
         >
@@ -359,8 +359,9 @@ function AdminDataTableInner<TData>({
             {filteredCount === 1 ? labels.result : labels.results}
           </p>
         </div>
+        )}
 
-        {selectable && selectedRows.length > 0 ? (
+        {selectable && selectedRows.length > 0 && !loading ? (
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 px-4 py-2.5">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-foreground tabular-nums">
@@ -393,12 +394,18 @@ function AdminDataTableInner<TData>({
           </div>
         ) : null}
 
-        {cardMode ? (
+        {loading ? (
+          <TablePageSkeleton
+            label={resolvedLoadingLabel}
+            rows={Math.min(localPageSize, cardMode ? 6 : 8)}
+            columns={tableColumns.length}
+            layout={cardMode ? "cards" : "table"}
+            chrome="content"
+          />
+        ) : cardMode ? (
           <div>
             {error ? (
               <div className="rounded-xl border border-border bg-card p-4">{error}</div>
-            ) : loading ? (
-              <CardListSkeleton label={resolvedLoadingLabel} items={Math.min(localPageSize, 6)} />
             ) : table.getRowModel().rows.length === 0 ? (
               <div className="rounded-xl border border-dashed border-border p-4">{emptyNode}</div>
             ) : (
@@ -432,12 +439,6 @@ function AdminDataTableInner<TData>({
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             {error ? (
               <div className="p-4">{error}</div>
-            ) : loading ? (
-              <TablePageSkeleton
-                label={resolvedLoadingLabel}
-                rows={Math.min(localPageSize, 8)}
-                columns={tableColumns.length}
-              />
             ) : (
               <>
                 <div
