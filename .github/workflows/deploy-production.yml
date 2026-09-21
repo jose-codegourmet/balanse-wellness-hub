@@ -3,8 +3,10 @@
 # Dispatch-only (and reusable via workflow_call). Does not run on every push —
 # Git-triggered Vercel deploys are a no-op while projects use
 # commandForIgnoringBuildStep: `exit 0`. This workflow uses the Vercel CLI
-# (pull → build --prod → deploy --prebuilt --prod), which is not gated by
-# the Git ignore-build step.
+# (pull → deploy --prod, or optionally pull → build --prod → deploy --prebuilt),
+# which is not gated by the Git ignore-build step. Prefer remote mode: runner
+# `vercel build --prod` can succeed while `vercel deploy --prebuilt` hangs on
+# Vercel "Building…".
 #
 # Required GitHub Actions secrets (Settings → Secrets and variables → Actions):
 #
@@ -51,13 +53,13 @@ on:
         type: string
         default: ""
       mode:
-        description: prebuilt = GHA vercel build + deploy --prebuilt (default). remote = vercel deploy --prod (Vercel builds).
+        description: remote = vercel deploy --prod (Vercel builds; default). prebuilt = GHA vercel build + deploy --prebuilt.
         required: true
         type: choice
         options:
-          - prebuilt
           - remote
-        default: prebuilt
+          - prebuilt
+        default: remote
   workflow_call:
     inputs:
       app:
@@ -71,10 +73,10 @@ on:
         type: string
         default: ""
       mode:
-        description: prebuilt | remote
+        description: remote | prebuilt
         required: false
         type: string
-        default: prebuilt
+        default: remote
     secrets:
       VERCEL_TOKEN:
         required: true
@@ -167,7 +169,7 @@ jobs:
         run: |
           set -euo pipefail
           app="${APP:-both}"
-          mode="${MODE:-prebuilt}"
+          mode="${MODE:-remote}"
           case "${mode}" in
             prebuilt|remote) ;;
             *)
@@ -197,7 +199,7 @@ jobs:
     name: Deploy ${{ matrix.app }}
     needs: prepare
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     environment: production
     strategy:
       fail-fast: false
@@ -248,7 +250,10 @@ jobs:
         run: |
           set -euo pipefail
           if [ "${{ needs.prepare.outputs.mode }}" = "prebuilt" ]; then
-            vercel deploy --prebuilt --prod --archive=tgz --yes | tee /tmp/vercel-deploy.out
+            # Do not pass --archive=tgz. Production #3/#4 hung on Vercel "Building…"
+            # after upload even though runner `vercel build --prod` succeeded.
+            # Prefer mode=remote (`vercel deploy --prod --yes`) when that happens.
+            vercel deploy --prebuilt --prod --yes | tee /tmp/vercel-deploy.out
           else
             vercel deploy --prod --yes | tee /tmp/vercel-deploy.out
           fi
