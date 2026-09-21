@@ -86,6 +86,7 @@ Exported from `src/index.ts`:
 | Tooltip | `Tooltip`, `TooltipContent`, `TooltipProvider`, `TooltipTrigger` |
 | Utilities | `cn` |
 | Viewport hooks | `useMediaQuery`, `useBreakpoint`, `useMinWidth`, `useIsMobile` |
+| Calendar | `ScheduleCalendar`, `detectView` |
 | Mock harness | `MockHarnessAffordance` |
 
 ---
