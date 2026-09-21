@@ -20,7 +20,13 @@ import { useUpsertAdminClass } from "@/lib/query/mutations";
 import { adminClassesQuery, adminCoachesQuery } from "@/lib/query/queries";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import { AdminForm, FormActions, FormField, useAdminFormContext } from "../forms/AdminForm";
+import {
+  AdminForm,
+  FormActions,
+  FormField,
+  FormSection,
+  useAdminFormContext,
+} from "../forms/AdminForm";
 import {
   BooleanBinding,
   CheckboxGroupBinding,
@@ -199,6 +205,7 @@ function ClassWizardFields({
           hideSubmit={isNew && !isLast && mdUp}
           cancelHref={CLOSE_HREF}
           guard={guard}
+          sticky={false}
         >
           {current > 1 ? (
             <Button
@@ -238,12 +245,14 @@ function ClassWizardFields({
       </AdminWizardStepPanel>
       <AdminWizardStepPanel stepId="defaults">
         <p className="text-sm text-muted-foreground">{DEFAULTS_NOTE}</p>
-        <FormField name="defaultDurationMinutes" label="Default duration (optional)">
-          {(field) => <TextBinding {...field} type="number" />}
-        </FormField>
-        <FormField name="defaultPricePhp" label="Default price (optional)">
-          {(field) => <TextBinding {...field} type="number" />}
-        </FormField>
+        <FormSection title="Defaults" columns={2} surface="card">
+          <FormField name="defaultDurationMinutes" label="Default duration" optional>
+            {(field) => <TextBinding {...field} type="number" />}
+          </FormField>
+          <FormField name="defaultPricePhp" label="Default price" optional>
+            {(field) => <TextBinding {...field} type="number" />}
+          </FormField>
+        </FormSection>
       </AdminWizardStepPanel>
       <AdminWizardStepPanel stepId="coaches">
         <FormField name="active" label="Active" orientation="horizontal">

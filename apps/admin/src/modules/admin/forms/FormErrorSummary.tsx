@@ -25,13 +25,14 @@ function collectErrors(
 }
 
 export function FormErrorSummary() {
-  const { formState, getLabel } = useAdminFormContext();
+  const { formState, getLabel, getFieldId } = useAdminFormContext();
   if (!formState.isSubmitted) return null;
   const items = collectErrors(formState.errors);
   if (items.length === 0) return null;
 
   return (
     <div
+      role="alert"
       aria-live="polite"
       className="rounded-lg border border-destructive/40 bg-destructive/5 p-3"
     >
@@ -39,7 +40,16 @@ export function FormErrorSummary() {
       <ul className="mt-1 list-disc pl-5 text-sm text-destructive">
         {items.map((item) => (
           <li key={item.name}>
-            {getLabel(item.name)} — {item.message}
+            <button
+              type="button"
+              className="underline underline-offset-4"
+              onClick={() => {
+                const fieldId = getFieldId(item.name);
+                if (fieldId) document.getElementById(fieldId)?.focus();
+              }}
+            >
+              {getLabel(item.name)} — {item.message}
+            </button>
           </li>
         ))}
       </ul>

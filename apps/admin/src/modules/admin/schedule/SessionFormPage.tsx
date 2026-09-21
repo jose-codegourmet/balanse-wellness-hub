@@ -39,7 +39,13 @@ import {
 } from "@/lib/query/queries";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import { AdminForm, FormActions, FormField, useAdminFormContext } from "../forms/AdminForm";
+import {
+  AdminForm,
+  FormActions,
+  FormField,
+  FormSection,
+  useAdminFormContext,
+} from "../forms/AdminForm";
 import {
   BooleanBinding,
   ChoiceBinding,
@@ -343,6 +349,26 @@ function SessionWizardFields({
           hideSubmit={isNew && !isLast && mdUp}
           cancelHref={CLOSE_HREF}
           guard={guard}
+          sticky={false}
+          destructive={
+            canCancel ? (
+              <ConfirmAction
+                triggerLabel="Cancel Session"
+                title="Cancel this session?"
+                description={`${auditConfirmationCopy("Cancel session", "Admin", adminNowIso())} Affected bookings enter manual refund handling. The session stays in history.`}
+                variant="outline"
+                onConfirm={async () => {
+                  try {
+                    await cancel.mutateAsync(sessionId);
+                    notify.admin("session.cancelled");
+                    onLeaveList();
+                  } catch {
+                    notify.admin("session.cancel-failed");
+                  }
+                }}
+              />
+            ) : null
+          }
         >
           {current > 1 ? (
             <Button
@@ -367,23 +393,6 @@ function SessionWizardFields({
             >
               Continue
             </Button>
-          ) : null}
-          {canCancel ? (
-            <ConfirmAction
-              triggerLabel="Cancel Session"
-              title="Cancel this session?"
-              description={`${auditConfirmationCopy("Cancel session", "Admin", adminNowIso())} Affected bookings enter manual refund handling. The session stays in history.`}
-              variant="outline"
-              onConfirm={async () => {
-                try {
-                  await cancel.mutateAsync(sessionId);
-                  notify.admin("session.cancelled");
-                  onLeaveList();
-                } catch {
-                  notify.admin("session.cancel-failed");
-                }
-              }}
-            />
           ) : null}
         </FormActions>
       }
@@ -420,12 +429,14 @@ function SessionWizardFields({
             />
           )}
         </FormField>
-        <FormField name="pricePhp" label="Customer Price">
-          {(field) => <TextBinding {...field} type="number" />}
-        </FormField>
-        <FormField name="capacity" label="Capacity">
-          {(field) => <TextBinding {...field} type="number" />}
-        </FormField>
+        <FormSection title="Price and capacity" columns={2}>
+          <FormField name="pricePhp" label="Customer Price">
+            {(field) => <TextBinding {...field} type="number" />}
+          </FormField>
+          <FormField name="capacity" label="Capacity">
+            {(field) => <TextBinding {...field} type="number" />}
+          </FormField>
+        </FormSection>
         <FormField name="bookable" label="Publish / bookable" orientation="horizontal">
           {(field) => <BooleanBinding {...field} as="switch" />}
         </FormField>
@@ -433,7 +444,6 @@ function SessionWizardFields({
           {(field) => (
             <ChoiceBinding
               {...field}
-              as="native-select"
               options={SESSION_STATUSES.map((status) => ({
                 value: status,
                 label: sessionStatusLabel(status),
@@ -452,7 +462,6 @@ function SessionWizardFields({
             {(field) => (
               <ChoiceBinding
                 {...field}
-                as="native-select"
                 options={COACH_RATE_TYPES.map((type) => ({
                   value: type,
                   label: coachRateTypeLabel(type),
@@ -474,8 +483,8 @@ function SessionWhenFields() {
   const end = endsAt ? fromSessionIso(endsAt) : { ymd: start.ymd, hhmm: "" };
 
   return (
-    <>
-      <FormField name="startsAt" label="Date" wireAria>
+    <FormSection title="When" columns={2}>
+      <FormField name="startsAt" label="Date" wireAria span="full">
         {(field) => (
           <DateBinding
             {...field}
@@ -523,6 +532,6 @@ function SessionWhenFields() {
           />
         )}
       </FormField>
-    </>
+    </FormSection>
   );
 }

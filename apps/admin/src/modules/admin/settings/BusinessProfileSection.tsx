@@ -66,29 +66,30 @@ export function BusinessProfileSection({
       <FormSection
         title="Business profile"
         description="Operational studio details. These are not the public email shown on the site."
+        columns={2}
+        surface="card"
       >
-        <div className="grid gap-4 md:grid-cols-2">
-          <FormField name="businessName" label="Business name">
-            {(field) => <TextBinding {...field} />}
-          </FormField>
-          <FormField
-            name="contact.phone"
-            label="Operational phone"
-            description="Studio phone for staff and bookings — not the public inbox."
-          >
-            {(field) => <TextBinding {...field} type="tel" />}
-          </FormField>
-          <FormField name="contact.address" label="Studio address">
-            {(field) => <TextBinding {...field} />}
-          </FormField>
-          <FormField
-            name="openingHours"
-            label="Opening hours"
-            description="Left blank. Facebook did not expose daily hours."
-          >
-            {(field) => <TextBinding {...field} readOnly />}
-          </FormField>
-        </div>
+        <FormField name="businessName" label="Business name">
+          {(field) => <TextBinding {...field} />}
+        </FormField>
+        <FormField
+          name="contact.phone"
+          label="Operational phone"
+          description="Studio phone for staff and bookings — not the public inbox."
+        >
+          {(field) => <TextBinding {...field} type="tel" />}
+        </FormField>
+        <FormField name="contact.address" label="Studio address" span="full">
+          {(field) => <TextBinding {...field} />}
+        </FormField>
+        <FormField
+          name="openingHours"
+          label="Opening hours"
+          description="Left blank. Facebook did not expose daily hours."
+          span="full"
+        >
+          {(field) => <TextBinding {...field} readOnly />}
+        </FormField>
       </FormSection>
       <FormActions submitLabel="Save business profile" />
     </AdminForm>

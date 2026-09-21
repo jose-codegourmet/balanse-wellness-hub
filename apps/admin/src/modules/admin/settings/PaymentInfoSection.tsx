@@ -58,27 +58,25 @@ export function PaymentInfoSection({
       <FormSection
         title="Payment info"
         description="GCash details shown when a guest pays online. Saving here does not rewrite public content."
+        columns={2}
+        surface="card"
       >
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_16rem]">
-          <div className="grid gap-4 md:grid-cols-2">
-            <FormField name="gcashName" label="GCash name">
-              {(field) => <TextBinding {...field} />}
-            </FormField>
-            <FormField name="gcashNumber" label="GCash number">
-              {(field) => <TextBinding {...field} type="tel" inputMode="tel" />}
-            </FormField>
-          </div>
-          <FormField name="qrImageKey" label="GCash QR" wireAria>
-            {(field) => (
-              <ImageBinding
-                {...field}
-                label={field.value ? "Replace QR" : "Upload QR"}
-                fallbackLabel="No QR uploaded yet."
-                previewName="GCash QR"
-              />
-            )}
-          </FormField>
-        </div>
+        <FormField name="gcashName" label="GCash name">
+          {(field) => <TextBinding {...field} />}
+        </FormField>
+        <FormField name="gcashNumber" label="GCash number">
+          {(field) => <TextBinding {...field} type="tel" inputMode="tel" />}
+        </FormField>
+        <FormField name="qrImageKey" label="GCash QR" wireAria span="full">
+          {(field) => (
+            <ImageBinding
+              {...field}
+              label={field.value ? "Replace QR" : "Upload QR"}
+              fallbackLabel="No QR uploaded yet."
+              previewName="GCash QR"
+            />
+          )}
+        </FormField>
       </FormSection>
       <FormActions submitLabel="Save payment info" />
     </AdminForm>

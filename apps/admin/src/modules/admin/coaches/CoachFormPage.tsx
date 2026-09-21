@@ -207,11 +207,7 @@ export function CoachFormPage({ coachId, initialTab }: CoachFormPageProps) {
           upcoming={upcoming}
           sessionsPending={sessionsQuery.isPending && !sessionsQuery.data}
         />
-        <FormActions
-          submitLabel="Save Changes"
-          cancelHref="/coaches"
-          className="max-md:sticky max-md:bottom-0 max-md:z-10 max-md:-mx-4 max-md:border-t max-md:border-border max-md:bg-background max-md:p-4"
-        />
+        <FormActions submitLabel="Save Changes" cancelHref="/coaches" />
       </AdminForm>
     </AdminPageShell>
   );
@@ -257,7 +253,7 @@ function CoachFormFields({
         data-slot="coach-photo"
         className={tab === "photo" ? undefined : "hidden max-md:block"}
       >
-        <FormSection title="Profile photo">
+        <FormSection title="Profile photo" surface="card">
           <FormField name="photoKey" label="Profile photo" wireAria>
             {(field) => (
               <ImageBinding
@@ -275,18 +271,19 @@ function CoachFormFields({
         data-slot="coach-profile"
         className={tab === "profile" ? undefined : "hidden max-md:block"}
       >
-        <FormSection title="Public profile">
-          <FormField name="name" label="Name">
+        <FormSection title="Public profile" surface="card">
+          <FormField name="name" label="Name" required>
             {(field) => <TextBinding {...field} />}
           </FormField>
           <FormField
             name="specialties"
             label="Specialty / Classes"
             description="Add each specialty as its own chip. Required when the coach is active."
+            span="full"
           >
             {(field) => <TagListBinding {...field} />}
           </FormField>
-          <FormField name="shortBio" label="Short bio">
+          <FormField name="shortBio" label="Short bio" optional span="full">
             {(field) => (
               <RichTextBinding {...field} maxLength={FIELD_CONSTRAINTS.coach.shortBio.max} />
             )}
@@ -309,7 +306,11 @@ function CoachFormFields({
           <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
             Internal only — admin
           </p>
-          <FormSection title="Internal financials" description={COACH_DEFAULT_RATE_NOTE}>
+          <FormSection
+            title="Internal financials"
+            description={COACH_DEFAULT_RATE_NOTE}
+            columns={2}
+          >
             <FormField name="defaultRatePhp" label="Default rate">
               {(field) => <TextBinding {...field} type="number" />}
             </FormField>

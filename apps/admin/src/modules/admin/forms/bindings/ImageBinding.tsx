@@ -30,6 +30,7 @@ export function ImageBinding({
       id={field?.id}
       aria-invalid={field?.invalid || undefined}
       aria-describedby={field?.describedBy}
+      className="w-full rounded-xl border border-border bg-muted/20 p-4"
     >
       <ImageUpload
         label={label}
