@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { adminSettingsQuery } from "@/lib/query/queries";
-import { SettingsPage } from "@/modules/admin/SettingsPage";
+import { SettingsPage } from "@/modules/admin/settings/SettingsPage";
 
 export const metadata: Metadata = {
   title: "Settings",

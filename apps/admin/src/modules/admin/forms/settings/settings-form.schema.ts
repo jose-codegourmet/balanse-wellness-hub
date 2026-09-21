@@ -34,7 +34,7 @@ export const settingsFormSchema = z.object({
     .trim()
     .min(1, "Enter the GCash name.")
     .max(FIELD_CONSTRAINTS.settings.gcashName.max),
-  gcashNumber: z.string().refine(isPhMobile, {
+  gcashNumber: z.string().refine((value) => isPhMobile(value.replace(/\s+/g, "")), {
     message: "Enter a PH mobile number.",
     params: { validationCode: "invalid_format" },
   }),
@@ -58,3 +58,37 @@ export const settingsFormSchema = z.object({
 });
 
 export type SettingsFormValues = z.infer<typeof settingsFormSchema>;
+
+const contactShape = settingsFormSchema.shape.contact.shape;
+
+export const businessProfileFormSchema = z.object({
+  businessName: settingsFormSchema.shape.businessName,
+  contact: z.object({
+    phone: contactShape.phone,
+    address: contactShape.address,
+  }),
+  openingHours: settingsFormSchema.shape.openingHours,
+});
+
+export const paymentInfoFormSchema = settingsFormSchema.pick({
+  gcashName: true,
+  gcashNumber: true,
+  qrImageKey: true,
+});
+
+export const publicContentFormSchema = z.object({
+  about: settingsFormSchema.shape.about,
+  contact: z.object({
+    email: contactShape.email,
+  }),
+  faqs: settingsFormSchema.shape.faqs,
+});
+
+export const policyPromoteFormSchema = z.object({
+  version: policyVersionSchema,
+});
+
+export type BusinessProfileFormValues = z.infer<typeof businessProfileFormSchema>;
+export type PaymentInfoFormValues = z.infer<typeof paymentInfoFormSchema>;
+export type PublicContentFormValues = z.infer<typeof publicContentFormSchema>;
+export type PolicyPromoteFormValues = z.infer<typeof policyPromoteFormSchema>;
