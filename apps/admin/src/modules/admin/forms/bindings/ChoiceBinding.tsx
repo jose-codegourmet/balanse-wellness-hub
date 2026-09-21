@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  type ChoiceOption,
   NativeSelect,
   NativeSelectOption,
   RadioGroup,
@@ -13,7 +14,7 @@ import {
 } from "@balanse/ui";
 import type { FormFieldRenderProps } from "../AdminForm.schema";
 
-export type ChoiceOption = { value: string; label: string };
+export type { ChoiceOption };
 
 export type ChoiceBindingProps = FormFieldRenderProps & {
   as?: "radio" | "native-select" | "select";
@@ -64,7 +65,13 @@ export function ChoiceBinding({
         </SelectTrigger>
         <SelectContent>
           {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
+            <SelectItem
+              key={option.value}
+              value={option.value}
+              leading={option.leading}
+              description={option.description}
+              disabled={option.disabled}
+            >
               {option.label}
             </SelectItem>
           ))}

@@ -1,3 +1,4 @@
+// biome-ignore-all assist/source/organizeImports: append-only public barrel (FE-SHR-016/017)
 export * from "./balanse/assets/MarketingImage";
 export * from "./balanse/brand/BrandFrame";
 export * from "./balanse/calendar/ScheduleCalendar";
@@ -83,3 +84,5 @@ export * from "./components/tooltip/Tooltip";
 export * from "./hooks/use-breakpoint/UseBreakpoint";
 export * from "./hooks/use-media-query/UseMediaQuery";
 export * from "./lib/utils";
+export * from "./lib/control-surface";
+export * from "./components/option-row/OptionRow";

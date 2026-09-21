@@ -1,6 +1,6 @@
 import type { BentoSkeletonProps, BentoSkeletonTileSpec } from "./BentoSkeleton.schema";
 
-/** Matches admin `dashboardTileSpanClass` / `dashboardBentoSkeletonTiles`. */
+/** Matches admin `dashboardTileSpanClass` / `dashboardBentoSkeletonTiles` after #212. */
 export const bentoSkeletonDashboardTiles: BentoSkeletonTileSpec[] = [
   {
     id: "attention",

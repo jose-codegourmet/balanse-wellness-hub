@@ -16,7 +16,10 @@ export type SelectContentProps = SelectPrimitive.Popup.Props &
     SelectPrimitive.Positioner.Props,
     "align" | "alignOffset" | "side" | "sideOffset" | "alignItemWithTrigger"
   >;
-export type SelectItemProps = SelectPrimitive.Item.Props;
+export type SelectItemProps = SelectPrimitive.Item.Props & {
+  leading?: React.ReactNode;
+  description?: string;
+};
 export type SelectGroupProps = SelectPrimitive.Group.Props;
 export type SelectLabelProps = SelectPrimitive.GroupLabel.Props;
 export type SelectSeparatorProps = SelectPrimitive.Separator.Props;

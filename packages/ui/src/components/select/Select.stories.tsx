@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
+import { Avatar, AvatarFallback } from "../avatar/Avatar";
 import { Field, FieldLabel } from "../field/Field";
 import {
   Select,
@@ -11,6 +12,14 @@ import {
   SelectValue,
 } from "./Select";
 import { selectDefaultValues } from "./Select.defaults";
+
+function CoachMark({ initials }: { initials: string }) {
+  return (
+    <Avatar size="sm" className="size-7">
+      <AvatarFallback>{initials}</AvatarFallback>
+    </Avatar>
+  );
+}
 
 const meta: Meta<typeof Select> = {
   title: "Components/Select",
@@ -25,7 +34,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: (args) => (
     <Select {...args}>
-      <SelectTrigger className="w-[200px]">
+      <SelectTrigger className="max-w-xs">
         <SelectValue placeholder="Select a fruit" />
       </SelectTrigger>
       <SelectContent>
@@ -86,6 +95,76 @@ export const Disabled: Story = {
       </SelectContent>
     </Select>
   ),
+};
+
+export const RichOptions: Story = {
+  render: (args) => (
+    <div className="max-w-sm">
+      <Select {...args} defaultValue="maya">
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem
+            value="maya"
+            leading={<CoachMark initials="MS" />}
+            description="Reformer · senior"
+          >
+            Maya Santos
+          </SelectItem>
+          <SelectItem
+            value="lina"
+            leading={<CoachMark initials="LC" />}
+            description="Tower · weekend"
+          >
+            Lina Cruz
+          </SelectItem>
+          <SelectItem
+            value="jon"
+            leading={<CoachMark initials="JR" />}
+            description="Mat · mornings"
+            disabled
+          >
+            Jon Reyes
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  ),
+  parameters: {
+    viewport: { defaultViewport: "mobile" },
+  },
+};
+
+export const RichOptionsDark: Story = {
+  render: (args) => (
+    <div className="dark max-w-sm bg-background p-4 text-foreground">
+      <Select {...args} defaultValue="maya">
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem
+            value="maya"
+            leading={<CoachMark initials="MS" />}
+            description="Reformer · senior"
+          >
+            Maya Santos
+          </SelectItem>
+          <SelectItem
+            value="lina"
+            leading={<CoachMark initials="LC" />}
+            description="Tower · weekend"
+          >
+            Lina Cruz
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  ),
+  parameters: {
+    viewport: { defaultViewport: "desktop" },
+  },
 };
 
 export const Grouped: Story = {

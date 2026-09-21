@@ -2,6 +2,7 @@
 
 import { ChevronDownIcon } from "lucide-react";
 
+import { controlSizeClass, controlSurfaceVariants } from "../../lib/control-surface";
 import { cn } from "../../lib/utils";
 import { useFieldContext } from "../field/Field";
 
@@ -27,7 +28,7 @@ function NativeSelect({
   return (
     <div
       className={cn(
-        "group/native-select relative w-fit has-[select:disabled]:opacity-50",
+        "group/native-select relative w-full has-[select:disabled]:opacity-50",
         className,
       )}
       data-slot="native-select-wrapper"
@@ -40,7 +41,13 @@ function NativeSelect({
         disabled={disabled ?? field?.disabled}
         aria-invalid={ariaInvalid ?? (isInvalid || undefined)}
         aria-describedby={ariaDescribedBy ?? field?.describedBy}
-        className="h-8 w-full min-w-0 appearance-none rounded-lg border border-input bg-transparent py-1 pr-8 pl-2.5 text-sm transition-colors outline-none select-none selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-md),10px)] data-[size=sm]:py-0.5 data-[size=lg]:h-9 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
+        className={cn(
+          controlSurfaceVariants({
+            size: size === "default" ? "md" : size,
+          }),
+          "appearance-none pr-8 select-none selection:bg-primary selection:text-primary-foreground data-[size=sm]:rounded-[min(var(--radius-md),10px)]",
+          size === "default" && controlSizeClass.md,
+        )}
         {...props}
       />
       <ChevronDownIcon

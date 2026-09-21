@@ -17,25 +17,34 @@ type Story = StoryObj<typeof FormPageSkeleton>;
 export const Mobile: Story = {
   render: (args) => (
     <ShellStoryFrame width={SHELL_WIDTH.mobile}>
-      <FormPageSkeleton {...args} />
+      <FormPageSkeleton {...args} tabs={4} />
     </ShellStoryFrame>
   ),
+  parameters: {
+    viewport: { defaultViewport: "mobile" },
+  },
 };
 
 export const Tablet: Story = {
   render: (args) => (
     <ShellStoryFrame width={SHELL_WIDTH.tablet}>
-      <FormPageSkeleton {...args} />
+      <FormPageSkeleton {...args} tabs={4} />
     </ShellStoryFrame>
   ),
+  parameters: {
+    viewport: { defaultViewport: "tablet" },
+  },
 };
 
 export const Desktop: Story = {
   render: (args) => (
     <ShellStoryFrame width={SHELL_WIDTH.desktop}>
-      <FormPageSkeleton {...args} />
+      <FormPageSkeleton {...args} tabs={4} />
     </ShellStoryFrame>
   ),
+  parameters: {
+    viewport: { defaultViewport: "desktop" },
+  },
 };
 
 export const MobileDark: Story = {
@@ -70,10 +79,25 @@ export const ReducedMotion: Story = {
   ),
 };
 
+export const WithTabs: Story = {
+  args: {
+    tabs: 4,
+    label: "Loading coach",
+  },
+  render: (args) => (
+    <ShellStoryFrame width={SHELL_WIDTH.desktop}>
+      <FormPageSkeleton {...args} />
+    </ShellStoryFrame>
+  ),
+  parameters: {
+    viewport: { defaultViewport: "desktop" },
+  },
+};
+
 export const VersusReal: Story = {
   render: (args) => (
     <div className="grid gap-8 lg:grid-cols-2">
-      <FormPageSkeleton {...args} sections={1} fields={2} />
+      <FormPageSkeleton {...args} sections={1} fields={2} tabs={3} />
       <section className="max-w-2xl">
         <h1 className="font-display text-3xl">Settings</h1>
         <form className="mt-8 grid gap-10">

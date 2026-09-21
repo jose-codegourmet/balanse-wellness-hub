@@ -43,13 +43,20 @@ export function ComboboxBinding({
         placeholder={placeholder}
         className="w-full"
         showClear
+        leading={selected?.leading}
       />
       <ComboboxContent>
         <ComboboxEmpty>{emptyLabel}</ComboboxEmpty>
         <ComboboxList>
           <ComboboxCollection>
             {(item) => (
-              <ComboboxItem key={item.value} value={item}>
+              <ComboboxItem
+                key={item.value}
+                value={item}
+                leading={item.leading}
+                description={item.description}
+                disabled={item.disabled}
+              >
                 {item.label}
               </ComboboxItem>
             )}

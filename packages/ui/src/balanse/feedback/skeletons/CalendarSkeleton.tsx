@@ -1,9 +1,28 @@
+"use client";
+
+import { BALANSE_BREAKPOINTS } from "@balanse/config";
 import { Skeleton } from "../../../components/skeleton/Skeleton";
+import { useBreakpoint } from "../../../hooks/use-breakpoint/UseBreakpoint";
 import { cn } from "../../../lib/utils";
-import type { CalendarSkeletonProps } from "./CalendarSkeleton.schema";
+import type { CalendarSkeletonProps, CalendarSkeletonView } from "./CalendarSkeleton.schema";
 import { countKeys } from "./count-keys";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+
+function resolveView(
+  view: CalendarSkeletonView,
+  breakpoint: ReturnType<typeof useBreakpoint>,
+): Exclude<CalendarSkeletonView, "auto"> {
+  if (view !== "auto") return view;
+  return detectCalendarView(BALANSE_BREAKPOINTS[breakpoint]);
+}
+
+/** Same rule as `detectView()` on `ScheduleCalendar`. */
+export function detectCalendarView(width: number): Exclude<CalendarSkeletonView, "auto"> {
+  if (width >= BALANSE_BREAKPOINTS.desktop) return "month";
+  if (width >= BALANSE_BREAKPOINTS.tablet) return "week";
+  return "day";
+}
 
 function dayCell(dayKey: string) {
   return (
@@ -14,13 +33,53 @@ function dayCell(dayKey: string) {
   );
 }
 
+function DayAgenda() {
+  return (
+    <ul className="space-y-2" data-calendar-grid="day">
+      {countKeys("agenda", 4).map((rowKey) => (
+        <li
+          key={rowKey}
+          className="flex flex-col gap-2 rounded-md border border-border bg-card px-3 py-3"
+        >
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-3 w-28" />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function CalendarGrid({
+  view,
+  weeks,
+}: {
+  view: Exclude<CalendarSkeletonView, "auto">;
+  weeks: number;
+}) {
+  if (view === "day") return <DayAgenda />;
+
+  const dayCount = view === "week" ? 7 : weeks * 7;
+  return (
+    <div data-calendar-grid={view} className="grid grid-cols-7 gap-2">
+      {WEEKDAYS.map((weekday) => (
+        <div key={weekday} className="px-1 text-xs font-medium text-muted-foreground">
+          {weekday}
+        </div>
+      ))}
+      {countKeys("day", dayCount).map((dayKey) => dayCell(dayKey))}
+    </div>
+  );
+}
+
 export function CalendarSkeleton({
   className,
   weeks = 5,
-  view = "month",
+  view = "auto",
   label = "Loading schedule",
 }: CalendarSkeletonProps) {
-  const dayCount = view === "day" ? 1 : view === "week" ? 7 : weeks * 7;
+  const breakpoint = useBreakpoint();
+  const resolvedView = resolveView(view, breakpoint);
 
   return (
     <div role="status" aria-busy="true" aria-label={label} className={cn("space-y-4", className)}>
@@ -38,35 +97,28 @@ export function CalendarSkeleton({
             <Skeleton className="h-8 w-20 rounded-md" />
           </div>
         </div>
-        <div className={cn("grid gap-2", view !== "day" && "grid-cols-7")}>
-          {view !== "day"
-            ? WEEKDAYS.map((weekday) => (
-                <div key={weekday} className="px-1 text-xs font-medium text-muted-foreground">
-                  {weekday}
-                </div>
-              ))
-            : null}
-          {countKeys("day", dayCount).map((dayKey) => dayCell(dayKey))}
-        </div>
-        <div className="grid gap-4 md:grid-cols-[1fr_20rem]">
-          <ul className="space-y-2">
-            {countKeys("session", 3).map((sessionKey) => (
-              <li
-                key={sessionKey}
-                className="flex flex-col gap-1 rounded-md border border-border px-3 py-3"
-              >
-                <Skeleton className="h-4 w-40" />
-                <Skeleton className="h-4 w-48" />
-                <Skeleton className="h-3 w-24" />
-              </li>
-            ))}
-          </ul>
-          <aside className="rounded-md border border-border px-3 py-3">
-            <Skeleton className="h-5 w-36" />
-            <Skeleton className="mt-3 h-4 w-full" />
-            <Skeleton className="mt-2 h-4 w-2/3" />
-            <Skeleton className="mt-4 h-8 w-28 rounded-md" />
-          </aside>
+        <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start xl:gap-6">
+          <CalendarGrid view={resolvedView} weeks={weeks} />
+          <div className="mt-8 grid gap-4 xl:sticky xl:top-8 xl:mt-0">
+            <ul className="space-y-2">
+              {countKeys("session", 3).map((sessionKey) => (
+                <li
+                  key={sessionKey}
+                  className="flex flex-col gap-1 rounded-md border border-border px-3 py-3"
+                >
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-3 w-24" />
+                </li>
+              ))}
+            </ul>
+            <aside className="rounded-md border border-border px-3 py-3">
+              <Skeleton className="h-5 w-36" />
+              <Skeleton className="mt-3 h-4 w-full" />
+              <Skeleton className="mt-2 h-4 w-2/3" />
+              <Skeleton className="mt-4 h-8 w-28 rounded-md" />
+            </aside>
+          </div>
         </div>
       </div>
     </div>

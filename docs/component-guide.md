@@ -244,6 +244,17 @@ Primitives added or materially changed in `@balanse/ui` during this wave. Find t
 
 `Badge` and `StatusBadge` were redesigned in place (`FE-SHR-011` / #202). Field primitives (`Button`, `Field`, `Input`, `Textarea`, `Checkbox`, `Switch`, `RadioGroup`, `NativeSelect`) were hardened in `FE-SHR-008` / #199. Wave closeout: `docs/metas/fe-admin-polish.md`.
 
+## Control surface recipe
+
+Every new or changed form control in `@balanse/ui` must compose the shared recipe in `packages/ui/src/lib/control-surface.ts` (`controlSurfaceVariants`, `textareaSurfaceVariants`, `controlSurfaceGroup`, `controlSurfaceChips`, `controlIndicatorStates`). That file owns resting border, background, radius, shadow, `sm` / `md` / `lg` heights, horizontal padding, placeholder colour, and `hover` / `focus-visible` / `aria-invalid` / `disabled` / `readonly`.
+
+Rules:
+
+- Controls are `w-full` by default. The layout constrains width — do not ship `w-fit` on a trigger or native select wrapper.
+- Text-like controls use `controlSurfaceVariants`. Input groups and chip fields use the group/chips helpers. Checkbox, Switch, and Radio keep their own geometry but must use `controlIndicatorStates` for colour, focus, and invalid.
+- Route `aria-invalid` / `aria-describedby` through `useFieldContext()` so `FieldError` drives the same red ring. Keep explicit props working for context-free use.
+- Field child order is **label → control → description → error**.
+
 ### Admin polish wave 2 Batch A (`FE-SHR-014`, `FE-SHR-018`)
 
 | Primitive | Path | Ticket |
@@ -251,3 +262,13 @@ Primitives added or materially changed in `@balanse/ui` during this wave. Find t
 | `useMediaQuery` | `packages/ui/src/hooks/use-media-query/` | `FE-SHR-014` / #261 |
 | `useBreakpoint` / `useMinWidth` / `useIsMobile` | `packages/ui/src/hooks/use-breakpoint/` | `FE-SHR-014` / #261 |
 | `MockHarnessAffordance` | `packages/ui/src/balanse/mock-harness-affordance/` | `FE-SHR-018` / #262 |
+
+### Admin polish wave 2 Batch B (`FE-SHR-015`–`017`)
+
+| Primitive | Path | Ticket |
+| --- | --- | --- |
+| Responsive page skeletons | `packages/ui/src/balanse/feedback/skeletons/` | `FE-SHR-015` / #263 |
+| Control surface recipe | `packages/ui/src/lib/control-surface.ts` | `FE-SHR-016` / #264 |
+| Field gallery stories | `packages/ui/src/components/field/FieldGallery.stories.tsx` | `FE-SHR-016` / #264 |
+| `OptionRow` / `ChoiceOption` | `packages/ui/src/components/option-row/` | `FE-SHR-017` / #265 |
+| Rich Combobox / Select / CheckboxGroup | `packages/ui/src/components/{combobox,select,checkbox}/` | `FE-SHR-017` / #265 |

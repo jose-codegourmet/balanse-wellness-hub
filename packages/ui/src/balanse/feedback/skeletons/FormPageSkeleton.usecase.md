@@ -4,11 +4,11 @@
 
 ## Purpose
 
-Settings-shaped form shell: `max-w-2xl`, section headings, labelled field rows (`gap-1.5` + `h-8` inputs), footer action.
+Form loading shell that matches `AdminForm`: full-bleed fields on mobile, constrained `md:max-w-2xl` column on tablet/desktop, optional tab-strip on `md+`, and a sticky action bar below `md`.
 
 ## When to use
 
-- `/settings`, create/edit forms, staff/class editors
+- `/settings`, create/edit forms, staff/class/coach editors
 
 ## When NOT to use
 
@@ -16,7 +16,7 @@ Settings-shaped form shell: `max-w-2xl`, section headings, labelled field rows (
 
 ## Shape props
 
-`label` (required), `sections` (default 2), `fields` (per section, default 3).
+`label` (required), `sections` (default 2), `fields` (per section, default 3), optional `tabs` (`true` → 4 chips, or a count). Tab placeholders hide below `md`.
 
 ## Accessibility
 
