@@ -21,6 +21,18 @@ A type error or lint error fails **verify**. Both `web` and `admin` build from a
 
 Do not add the service-role key to CI for the default verify job.
 
+## Production deploy (dispatch only)
+
+**Workflow:** `.github/workflows/deploy-production.yml`.
+
+Does **not** run on push. Vercel Git deploys may no-op while ignore-build is `exit 0`; this Action uses the Vercel CLI so that setting does not apply.
+
+1. Add repository secrets: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID_WEB`, `VERCEL_PROJECT_ID_ADMIN` (see comments in the workflow file and project ids in `docs/backend/preview-and-staging.md`).
+2. Actions → **Deploy Production** → Run workflow.
+3. Choose `web`, `admin`, or `both` (default), optional git ref, and `prebuilt` (default) or `remote`.
+
+`prebuilt` is `vercel pull` → `vercel build --prod` → `vercel deploy --prebuilt --prod`. `remote` is `vercel deploy --prod` (Vercel builds the upload).
+
 ## Local equivalent
 
 ```bash
