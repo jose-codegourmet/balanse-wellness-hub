@@ -336,29 +336,32 @@ function AdminDataTableInner<TData>({
         ) : null}
 
         {loading ? null : (
-        <div
-          className={cn("mb-3 flex flex-wrap items-center justify-between gap-3", !title && "mt-0")}
-        >
-          <AdminDataTableToolbar
-            table={table}
-            labels={labels}
-            searchPlaceholder={searchPlaceholder ?? labels.search}
-            searchable={searchable}
-            searchId={searchId}
-            query={query}
-            onQueryChange={setQuery}
-            toolbar={toolbar}
-            enableColumnVisibility={enableColumnVisibility}
-            enableDensity={enableDensity && !cardMode}
-            density={density}
-            onDensityChange={(next) => updatePrefs({ density: next })}
-            compact={cardMode}
-          />
-          <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">{filteredCount}</span>{" "}
-            {filteredCount === 1 ? labels.result : labels.results}
-          </p>
-        </div>
+          <div
+            className={cn(
+              "mb-3 flex flex-wrap items-center justify-between gap-3",
+              !title && "mt-0",
+            )}
+          >
+            <AdminDataTableToolbar
+              table={table}
+              labels={labels}
+              searchPlaceholder={searchPlaceholder ?? labels.search}
+              searchable={searchable}
+              searchId={searchId}
+              query={query}
+              onQueryChange={setQuery}
+              toolbar={toolbar}
+              enableColumnVisibility={enableColumnVisibility}
+              enableDensity={enableDensity && !cardMode}
+              density={density}
+              onDensityChange={(next) => updatePrefs({ density: next })}
+              compact={cardMode}
+            />
+            <p className="text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">{filteredCount}</span>{" "}
+              {filteredCount === 1 ? labels.result : labels.results}
+            </p>
+          </div>
         )}
 
         {selectable && selectedRows.length > 0 && !loading ? (
