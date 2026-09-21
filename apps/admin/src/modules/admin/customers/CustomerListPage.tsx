@@ -122,16 +122,18 @@ function CustomerListPageInner({ empty, loading, error, focusCustomerId }: Custo
       {
         accessorKey: "fullName",
         header: "Name",
-        meta: { primaryLink: (row) => `/customers/${row.id}` },
+        meta: { primaryLink: (row) => `/customers/${row.id}`, mobile: { role: "title" } },
       },
       {
         accessorKey: "email",
         header: "Email",
+        meta: { mobile: { role: "subtitle" } },
         cell: ({ row }) => <CopyableText value={row.original.email} />,
       },
       {
         accessorKey: "contactNumber",
         header: "Phone",
+        meta: { mobile: { role: "meta" } },
         cell: ({ row }) => <CopyableText value={row.original.contactNumber} />,
       },
       {
@@ -141,7 +143,7 @@ function CustomerListPageInner({ empty, loading, error, focusCustomerId }: Custo
         enableColumnFilter: true,
         enableGlobalFilter: false,
         sortingFn: (a, b) => a.original.upcomingCount - b.original.upcomingCount,
-        meta: { enableFaceting: true, facetLabel: "Has upcoming" },
+        meta: { enableFaceting: true, facetLabel: "Has upcoming", mobile: { role: "status" } },
         cell: ({ row }) => {
           const count = row.original.upcomingCount;
           return (
@@ -164,7 +166,7 @@ function CustomerListPageInner({ empty, loading, error, focusCustomerId }: Custo
         enableGlobalFilter: false,
         sortingFn: (a, b) =>
           (a.original.lastVisitAt ?? "").localeCompare(b.original.lastVisitAt ?? ""),
-        meta: { enableFaceting: true, facetLabel: "Ever visited" },
+        meta: { enableFaceting: true, facetLabel: "Ever visited", mobile: { role: "meta" } },
         cell: ({ row }) => {
           const iso = row.original.lastVisitAt;
           if (!iso) return "—";

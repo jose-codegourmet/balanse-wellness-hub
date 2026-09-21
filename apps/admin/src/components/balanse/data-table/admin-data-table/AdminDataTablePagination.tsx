@@ -21,12 +21,14 @@ export function AdminDataTablePagination<TData>({
   labels,
   filteredCount,
   enablePageSize,
+  thumbFriendly = false,
 }: {
   table: Table<TData>;
   tableId: string;
   labels: AdminDataTableLabels;
   filteredCount: number;
   enablePageSize: boolean;
+  thumbFriendly?: boolean;
 }) {
   const pageCount = Math.max(1, table.getPageCount());
   const currentPage = table.getState().pagination.pageIndex + 1;
@@ -67,7 +69,8 @@ export function AdminDataTablePagination<TData>({
                 <Button
                   type="button"
                   variant="outline"
-                  size="icon-sm"
+                  size={thumbFriendly ? "icon" : "icon-sm"}
+                  className={thumbFriendly ? "min-h-11 min-w-11" : undefined}
                   disabled={!table.getCanPreviousPage()}
                   onClick={() => table.previousPage()}
                   aria-label={labels.previous}
@@ -87,7 +90,8 @@ export function AdminDataTablePagination<TData>({
                 <Button
                   type="button"
                   variant="outline"
-                  size="icon-sm"
+                  size={thumbFriendly ? "icon" : "icon-sm"}
+                  className={thumbFriendly ? "min-h-11 min-w-11" : undefined}
                   disabled={!table.getCanNextPage()}
                   onClick={() => table.nextPage()}
                   aria-label={labels.next}

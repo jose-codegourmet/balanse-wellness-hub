@@ -4,7 +4,7 @@
 
 ## Purpose
 
-The single TanStack table for every admin list. Toolbar, pagination, optional facets, column visibility, density, row actions, and URL-persisted state live here so screens stay data-source agnostic and pass `data` + `columns`.
+The single TanStack table for every admin list. Toolbar, pagination, optional facets, column visibility, density, row actions, and URL-persisted state live here so screens stay data-source agnostic and pass `data` + `columns`. Below the tablet breakpoint (`useBreakpoint` / `useIsMobile`), the same table state renders as a vertical card list.
 
 ## When to use
 
@@ -44,11 +44,17 @@ Facet a column without changing the cell:
 }
 ```
 
-Mark a primary link cell so the row is keyboard-reachable without `onRowClick`:
+Mark a primary link cell so the row is keyboard-reachable without `onRowClick`, and place the column on the mobile card:
 
 ```tsx
-{ accessorKey: "fullName", header: "Name", meta: { primaryLink: (row) => `/customers/${row.id}` } }
+{
+  accessorKey: "fullName",
+  header: "Name",
+  meta: { primaryLink: (row) => `/customers/${row.id}`, mobile: { role: "title" } },
+}
 ```
+
+`layout` is `"auto"` by default (cards below 768, table at tablet+). Pin `"table"` or `"cards"` in Storybook. Columns without `mobile` meta become labelled key/value rows so nothing disappears. Use `role: "hidden"` only when the column is already represented (e.g. a Review link that duplicates `primaryLink`).
 
 ## Gotchas
 

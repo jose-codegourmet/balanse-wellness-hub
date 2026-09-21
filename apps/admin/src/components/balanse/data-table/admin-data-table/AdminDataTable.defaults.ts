@@ -21,6 +21,11 @@ export const adminDataTableDefaultLabels: AdminDataTableLabels = {
   rowActions: "Row actions",
   selectAll: "Select all rows on this page",
   selectRow: "Select row",
+  filters: "Filters",
+  sort: "Sort",
+  sortAscending: "Ascending",
+  sortDescending: "Descending",
+  sortNone: "Clear sort",
 };
 
 export const adminDataTableDefaultValues: Partial<AdminDataTableProps<unknown>> = {
@@ -29,5 +34,6 @@ export const adminDataTableDefaultValues: Partial<AdminDataTableProps<unknown>> 
   searchable: true,
   density: "comfortable",
   persistUrl: false,
+  layout: "auto",
   emptyFilterLabel: "No rows match your filter.",
 };

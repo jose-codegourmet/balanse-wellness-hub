@@ -2,12 +2,23 @@ import type { FeedbackStateId } from "@balanse/domain";
 import type { ColumnDef, RowData } from "@tanstack/react-table";
 import type { ReactNode } from "react";
 
+export type AdminDataTableMobileRole = "title" | "subtitle" | "meta" | "status" | "hidden";
+
+export type AdminDataTableMobileMeta = {
+  role: AdminDataTableMobileRole;
+  order?: number;
+};
+
+export type AdminDataTableLayout = "auto" | "table" | "cards";
+
 declare module "@tanstack/react-table" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- TanStack requires TValue on ColumnMeta
   interface ColumnMeta<TData extends RowData, TValue> {
     enableFaceting?: boolean;
     facetLabel?: string;
     primaryLink?: (row: TData) => string;
+    /** Card-list placement below the tablet breakpoint. Omit to fall back to a labelled key/value row. */
+    mobile?: AdminDataTableMobileMeta;
   }
 }
 
@@ -30,6 +41,11 @@ export type AdminDataTableLabels = {
   rowActions: string;
   selectAll: string;
   selectRow: string;
+  filters: string;
+  sort: string;
+  sortAscending: string;
+  sortDescending: string;
+  sortNone: string;
   loadMore?: never;
 };
 
@@ -80,4 +96,9 @@ export type AdminDataTableProps<TData> = {
   persistUrl?: boolean;
   persistPrefs?: boolean;
   rowActions?: (row: TData) => AdminDataTableRowAction<TData>[];
+  /**
+   * `auto` uses `useBreakpoint()` at the tablet boundary (cards below 768).
+   * Pin `table` or `cards` for Storybook and one-off screens.
+   */
+  layout?: AdminDataTableLayout;
 };

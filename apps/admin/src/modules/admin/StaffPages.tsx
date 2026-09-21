@@ -24,19 +24,20 @@ export function StaffListPage({ empty }: { empty?: boolean }) {
       {
         accessorKey: "name",
         header: "Name",
-        meta: { primaryLink: (row) => `/staff/${row.id}` },
+        meta: { primaryLink: (row) => `/staff/${row.id}`, mobile: { role: "title" } },
       },
       {
         id: "role",
         header: "Role",
         accessorFn: () => "Admin",
+        meta: { mobile: { role: "subtitle" } },
       },
       {
         id: "status",
         header: "Status",
         accessorFn: (row) => staffStatusLabel(row.status),
         enableColumnFilter: true,
-        meta: { enableFaceting: true, facetLabel: "Status" },
+        meta: { enableFaceting: true, facetLabel: "Status", mobile: { role: "status" } },
         cell: ({ row }) => (
           <Badge
             variant={row.original.status === "disabled" ? "danger" : "success"}
@@ -52,6 +53,7 @@ export function StaffListPage({ empty }: { empty?: boolean }) {
         id: "action",
         header: "Action",
         enableSorting: false,
+        meta: { mobile: { role: "hidden" } },
         cell: ({ row }) => (
           <Link className="underline underline-offset-4" href={`/staff/${row.original.id}`}>
             View/Edit
