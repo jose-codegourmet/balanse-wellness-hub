@@ -699,6 +699,27 @@ export function staffStatusLabel(status: AdminStaff["status"]): string {
   return status === "active" ? "Active" : "Disabled";
 }
 
+/** Authorisation role only — never invent a COACH StaffRole. */
+export function staffRoleLabel(role: AdminStaff["role"]): string {
+  return role === "ADMIN" ? "Admin" : role;
+}
+
+/**
+ * Capability line for staff tables: Admin / Admin · Coach / Coach.
+ * Teaching is the `isCoach` flag, not a role.
+ */
+export function staffCapabilityLabel(staff: Pick<AdminStaff, "role" | "isCoach">): string {
+  const role = staffRoleLabel(staff.role);
+  if (staff.isCoach) {
+    return role === "Admin" ? "Admin · Coach" : "Coach";
+  }
+  return role;
+}
+
+export function staffCoachFacetLabel(isCoach: boolean): string {
+  return isCoach ? "Coach" : "Not a coach";
+}
+
 export function auditConfirmationCopy(action: string, actor = "Admin", atIso?: string): string {
   const when = atIso ?? new Date().toISOString();
   return `${action} will be audited as ${actor} at ${when}.`;

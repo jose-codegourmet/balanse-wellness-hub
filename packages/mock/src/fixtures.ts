@@ -123,6 +123,7 @@ const coachRows: AdminCoach[] = [
     active: true,
     defaultRatePhp: 700,
     rateType: "PER_SESSION",
+    staffId: null,
   },
   {
     id: "coach-rachelle",
@@ -133,6 +134,7 @@ const coachRows: AdminCoach[] = [
     active: true,
     defaultRatePhp: 750,
     rateType: "PER_SESSION",
+    staffId: null,
   },
   {
     id: "coach-alec",
@@ -143,6 +145,7 @@ const coachRows: AdminCoach[] = [
     active: true,
     defaultRatePhp: 700,
     rateType: "PER_SESSION",
+    staffId: null,
   },
   {
     id: "coach-jodi",
@@ -153,6 +156,7 @@ const coachRows: AdminCoach[] = [
     active: true,
     defaultRatePhp: 700,
     rateType: "PER_HOUR",
+    staffId: null,
   },
   {
     id: "coach-wolf",
@@ -163,6 +167,7 @@ const coachRows: AdminCoach[] = [
     active: true,
     defaultRatePhp: 650,
     rateType: "PER_SESSION",
+    staffId: null,
   },
   {
     id: "coach-kate",
@@ -173,6 +178,7 @@ const coachRows: AdminCoach[] = [
     active: true,
     defaultRatePhp: 650,
     rateType: "PER_SESSION",
+    staffId: null,
   },
   {
     id: "coach-sofia",
@@ -183,6 +189,7 @@ const coachRows: AdminCoach[] = [
     active: true,
     defaultRatePhp: 650,
     rateType: "PER_SESSION",
+    staffId: null,
   },
   {
     id: "coach-mikaela",
@@ -193,6 +200,7 @@ const coachRows: AdminCoach[] = [
     active: true,
     defaultRatePhp: 650,
     rateType: "PER_SESSION",
+    staffId: null,
   },
   {
     id: "coach-maris",
@@ -203,6 +211,7 @@ const coachRows: AdminCoach[] = [
     active: true,
     defaultRatePhp: 650,
     rateType: "PER_SESSION",
+    staffId: null,
   },
   {
     id: "coach-francis",
@@ -213,13 +222,14 @@ const coachRows: AdminCoach[] = [
     active: true,
     defaultRatePhp: 650,
     rateType: "PER_SESSION",
+    staffId: null,
   },
 ];
 
 export const adminCoaches: AdminCoach[] = coachRows;
 
 export function toPublicCoach(coach: AdminCoach): PublicCoach {
-  const { defaultRatePhp: _rate, rateType: _type, ...publicCoach } = coach;
+  const { defaultRatePhp: _rate, rateType: _type, staffId: _staffId, ...publicCoach } = coach;
   return publicCoach;
 }
 

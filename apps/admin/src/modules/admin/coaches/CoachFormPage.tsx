@@ -15,12 +15,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import type { FieldErrors } from "react-hook-form";
+import { CoachStaffLink } from "@/components/balanse/coach/coach-staff-link/CoachStaffLink";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { AdminPageTabs } from "@/components/balanse/page/admin-page-tabs/AdminPageTabs";
 import { useTabParam } from "@/components/balanse/page/useTabParam";
 import { adminNowIso } from "@/lib/clock";
 import { useUpsertAdminCoach } from "@/lib/query/mutations";
-import { adminCoachesQuery, adminSessionsQuery } from "@/lib/query/queries";
+import { adminCoachesQuery, adminSessionsQuery, adminStaffQuery } from "@/lib/query/queries";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import {
@@ -110,6 +111,7 @@ export function CoachFormPage({ coachId, initialTab }: CoachFormPageProps) {
   const { principal } = useMockPrincipal();
   const canSeeRates = principal.role === "admin";
   const coachesQuery = useQuery(adminCoachesQuery(principal.role));
+  const staffQuery = useQuery(adminStaffQuery(principal.role));
   const sessionsQuery = useQuery(adminSessionsQuery(principal.role));
   const upsert = useUpsertAdminCoach();
   const existing = isNew ? undefined : coachesQuery.data?.find((row) => row.id === coachId);
@@ -206,6 +208,14 @@ export function CoachFormPage({ coachId, initialTab }: CoachFormPageProps) {
           isNew={isNew}
           upcoming={upcoming}
           sessionsPending={sessionsQuery.isPending && !sessionsQuery.data}
+          linkedStaff={
+            existing?.staffId
+              ? (staffQuery.data?.find((row) => row.id === existing.staffId) ?? {
+                  id: existing.staffId,
+                  name: existing.staffId,
+                })
+              : null
+          }
         />
         <FormActions submitLabel="Save Changes" cancelHref="/coaches" />
       </AdminForm>
@@ -221,6 +231,7 @@ function CoachFormFields({
   isNew,
   upcoming,
   sessionsPending,
+  linkedStaff,
 }: {
   tab: CoachFormTabId;
   setTab: (next: CoachFormTabId) => void;
@@ -229,6 +240,7 @@ function CoachFormFields({
   isNew: boolean;
   upcoming: AdminSession[];
   sessionsPending: boolean;
+  linkedStaff: { id: string; name: string } | null;
 }) {
   const { formState, watch } = useAdminFormContext<CoachFormValues>();
   const previewName = watch("name") || "Coach";
@@ -286,6 +298,7 @@ function CoachFormFields({
           <FormField name="active" label="Status: Active" orientation="horizontal">
             {(field) => <BooleanBinding {...field} as="switch" />}
           </FormField>
+          {isNew ? null : <CoachStaffLink staff={linkedStaff} />}
         </FormSection>
       </section>
 
