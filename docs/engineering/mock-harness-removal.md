@@ -2,7 +2,7 @@
 
 When real Supabase Auth lands:
 
-1. Delete `apps/*/src/modules/dev-harness/MockSessionHarness.tsx`.
+1. Delete `apps/*/src/modules/dev-harness/MockSessionHarness.tsx` and the shared `MockHarnessAffordance` in `@balanse/ui` (`packages/ui/src/balanse/mock-harness-affordance/`).
 2. Replace `MockSessionProvider` with the auth session provider.
 3. Replace cookie `balanse-mock-principal` reads in `apps/admin/middleware.ts` and portal guards.
 4. Drop `NEXT_PUBLIC_ENABLE_MOCK_HARNESS`.

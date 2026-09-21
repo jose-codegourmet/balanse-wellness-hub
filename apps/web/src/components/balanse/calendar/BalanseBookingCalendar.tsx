@@ -14,7 +14,13 @@ import {
   type ScheduleGridView,
   scheduleGridDays,
 } from "@balanse/domain";
-import { CalendarSkeleton, FeedbackState, type ScheduleCalendarProps } from "@balanse/ui";
+import {
+  CalendarSkeleton,
+  detectView,
+  FeedbackState,
+  type ScheduleCalendarProps,
+  useBreakpoint,
+} from "@balanse/ui";
 import {
   BadgeCheck,
   CalendarDays,
@@ -105,7 +111,7 @@ export function BalanseBookingCalendar({
   sessionBecameFullId,
   audience = "guest",
 }: ScheduleCalendarProps) {
-  const [width, setWidth] = useState<number>(BALANSE_BREAKPOINTS.desktop);
+  const breakpoint = useBreakpoint();
   const [date, setDate] = useState(() => manilaYmd(nowIso));
   const [classFilter, setClassFilter] = useState(initialClassFilter);
   const [coachFilter, setCoachFilter] = useState(initialCoachFilter);
@@ -114,20 +120,7 @@ export function BalanseBookingCalendar({
   const scrollRef = useRef<HTMLElement>(null);
   const today = manilaYmd(nowIso);
   const resolvedView: ScheduleGridView =
-    view === "auto"
-      ? width >= BALANSE_BREAKPOINTS.desktop
-        ? "month"
-        : width >= BALANSE_BREAKPOINTS.tablet
-          ? "week"
-          : "day"
-      : view;
-
-  useEffect(() => {
-    const resize = () => setWidth(window.innerWidth);
-    resize();
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
-  }, []);
+    view === "auto" ? detectView(BALANSE_BREAKPOINTS[breakpoint]) : view;
   useEffect(() => setClassFilter(initialClassFilter), [initialClassFilter]);
   useEffect(() => setCoachFilter(initialCoachFilter), [initialCoachFilter]);
 

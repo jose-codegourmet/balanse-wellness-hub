@@ -241,3 +241,11 @@ Primitives added or materially changed in `@balanse/ui` during this wave. Find t
 | Page-skeleton shells | `packages/ui/src/balanse/feedback/skeletons/` (`TablePageSkeleton`, `CardListSkeleton`, `FormPageSkeleton`, `BentoSkeleton`, `DetailPageSkeleton`, `CalendarSkeleton`) | `FE-SHR-012` / #203 |
 
 `Badge` and `StatusBadge` were redesigned in place (`FE-SHR-011` / #202). Field primitives (`Button`, `Field`, `Input`, `Textarea`, `Checkbox`, `Switch`, `RadioGroup`, `NativeSelect`) were hardened in `FE-SHR-008` / #199. Wave closeout: `docs/metas/fe-admin-polish.md`.
+
+### Admin polish wave 2 Batch A (`FE-SHR-014`, `FE-SHR-018`)
+
+| Primitive | Path | Ticket |
+| --- | --- | --- |
+| `useMediaQuery` | `packages/ui/src/hooks/use-media-query/` | `FE-SHR-014` / #261 |
+| `useBreakpoint` / `useMinWidth` / `useIsMobile` | `packages/ui/src/hooks/use-breakpoint/` | `FE-SHR-014` / #261 |
+| `MockHarnessAffordance` | `packages/ui/src/balanse/mock-harness-affordance/` | `FE-SHR-018` / #262 |

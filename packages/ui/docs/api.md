@@ -85,6 +85,9 @@ Exported from `src/index.ts`:
 | Toggle Group | `ToggleGroup`, `ToggleGroupItem` |
 | Tooltip | `Tooltip`, `TooltipContent`, `TooltipProvider`, `TooltipTrigger` |
 | Utilities | `cn` |
+| Viewport hooks | `useMediaQuery`, `useBreakpoint`, `useMinWidth`, `useIsMobile` |
+| Calendar | `ScheduleCalendar`, `detectView` |
+| Mock harness | `MockHarnessAffordance` |
 
 ---
 

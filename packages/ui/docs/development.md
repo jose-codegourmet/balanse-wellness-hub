@@ -14,6 +14,7 @@ packages/ui/
 │   ├── index.ts              # Public barrel — every export must be added here
 │   ├── styles.css            # tw-animate-css import
 │   ├── lib/utils.ts          # cn()
+│   ├── hooks/                # useMediaQuery, useBreakpoint
 │   └── components/
 │       ├── button/
 │       │   ├── Button.tsx
