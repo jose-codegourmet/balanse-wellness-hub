@@ -16,12 +16,21 @@ export const PUBLIC_FORBIDDEN_KEYS = [
   "staffId",
 ] as const;
 
-export function presentStaff<T extends { coach?: { id: string } | null }>(staff: T) {
-  const { coach, ...rest } = staff;
+export function presentStaff<
+  T extends {
+    coach?: { id: string } | null;
+    roleDefinition?: { id: string; key: string; name: string; status: string } | null;
+  },
+>(staff: T) {
+  const { coach, roleDefinition, ...rest } = staff;
   return {
     ...rest,
     isCoach: Boolean(coach),
     coachId: coach?.id ?? null,
+    roleId: roleDefinition?.id ?? (rest as { roleId?: string }).roleId ?? null,
+    roleKey: roleDefinition?.key ?? null,
+    roleName: roleDefinition?.name ?? null,
+    roleStatus: roleDefinition?.status ?? null,
   };
 }
 

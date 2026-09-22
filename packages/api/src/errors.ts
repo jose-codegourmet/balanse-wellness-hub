@@ -82,6 +82,12 @@ const RULE_CODES = new Set([
   "package_not_free",
   "package_is_free",
   "acquisition_not_found",
+  "last_super_admin_protected",
+  "permission_denied",
+  "privilege_escalation",
+  "archived_role",
+  "coach_role_requires_link",
+  "unknown_permission",
 ]);
 
 export function mapUnknownError(error: unknown): ApiError {
@@ -120,9 +126,25 @@ export function mapUnknownError(error: unknown): ApiError {
       },
     );
   }
+  if (message.includes("last_super_admin_protected")) {
+    return new ApiError(
+      403,
+      "last_super_admin_protected",
+      "The last active Super Admin cannot be disabled, demoted, or stripped of all-access.",
+    );
+  }
+  if (message.includes("permission_denied")) {
+    return new ApiError(403, "forbidden", "Missing permission.");
+  }
   for (const code of RULE_CODES) {
     if (message.includes(code)) {
-      const status = code.endsWith("_not_found") ? 404 : 400;
+      const status = code.endsWith("_not_found")
+        ? 404
+        : code === "last_super_admin_protected" ||
+            code === "permission_denied" ||
+            code === "privilege_escalation"
+          ? 403
+          : 400;
       return new ApiError(status, code, message);
     }
   }

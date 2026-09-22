@@ -14,6 +14,14 @@ function deps(kind: "anon" | "customer" | "admin"): ApiDeps {
                 status: "ACTIVE",
                 role: "ADMIN",
                 isSystem: false,
+                coach: null,
+                roleDefinition: {
+                  id: "role_super_admin",
+                  key: "super_admin",
+                  status: "ACTIVE",
+                  allAccess: true,
+                  permissions: [],
+                },
               }
             : null,
         ),

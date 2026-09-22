@@ -31,5 +31,7 @@ Wave 1 contract for epic #289 (ticket #294). Downstream tickets import
    `PermissionDefinition`, `StaffRolePermission`, `StaffMember.roleId`,
    expand/seed/backfill SQL, `has_permission` / `owns_session` helpers,
    last-Super-Admin locking, and RLS/RPC gates. `is_admin()` stays Super
-   Admin only. The leftover `StaffRole` enum is not dropped yet. API
-   handler authorization is #292.
+   Admin only. The leftover `StaffRole` enum is not dropped yet.
+9. Wave 3 (#292) owns API staff-actor resolution, `ADMIN_API_ACCESS`
+   enforcement, sensitive response shaping, and role
+   CRUD/clone/archive/assignment endpoints. No React UI or mock adapters.

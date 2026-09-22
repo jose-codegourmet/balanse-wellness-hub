@@ -13,6 +13,7 @@ import {
   serializePaymentQrs,
 } from "../payment-qrs";
 import { presentPaymentQr } from "../presenters";
+import { requireSettingsSection, shapeSettingsPayload } from "../sensitive";
 import {
   assertNoDeveloperConfig,
   mergeSettings,
@@ -32,8 +33,8 @@ import {
 } from "../validation";
 
 export async function getAdminSettings(deps: ApiDeps, req: Request): Promise<Response> {
-  requireAdmin(await resolveActor(deps, req));
-  return ok(await settingsPayload(deps));
+  const actor = requireAdmin(await resolveActor(deps, req));
+  return ok(shapeSettingsPayload(actor, await settingsPayload(deps)));
 }
 
 async function settingsPayload(deps: ApiDeps) {
@@ -101,6 +102,20 @@ export async function patchAdminSettings(deps: ApiDeps, req: Request): Promise<R
   const body = await readJson(req);
   assertNoDeveloperConfig(body);
   const section = (asString(body.section) ?? inferSection(body)) as SettingsSection | undefined;
+  if (section) requireSettingsSection(actor, section);
+  else {
+    if (
+      hasPath(body, "business") ||
+      hasPath(body, "business.name") ||
+      hasPath(body, "business.phone")
+    ) {
+      requireSettingsSection(actor, "business");
+    }
+    if (hasPath(body, "payment")) requireSettingsSection(actor, "payment");
+    if (hasPath(body, "content") || hasPath(body, "business.email")) {
+      requireSettingsSection(actor, "content");
+    }
+  }
   if (section && !["business", "payment", "content", "policies"].includes(section)) {
     throwFields(
       fieldError(
@@ -208,7 +223,7 @@ export async function patchAdminSettings(deps: ApiDeps, req: Request): Promise<R
     actor,
     metadata: { section: section ?? "partial", changedKeys: changed },
   });
-  return ok(await settingsPayload(deps));
+  return ok(shapeSettingsPayload(actor, await settingsPayload(deps)));
 }
 
 export async function postSettingsQr(deps: ApiDeps, req: Request): Promise<Response> {
@@ -493,7 +508,7 @@ export async function promotePolicy(deps: ApiDeps, req: Request, id: string): Pr
     actor,
     metadata: { document: document.title, previousVersion: previous, newVersion: version },
   });
-  return ok(await settingsPayload(deps));
+  return ok(shapeSettingsPayload(actor, await settingsPayload(deps)));
 }
 
 function inferSection(body: Record<string, unknown>): SettingsSection | undefined {

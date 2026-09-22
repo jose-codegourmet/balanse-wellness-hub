@@ -17,6 +17,14 @@ describe("route authorisation helpers", () => {
         staffId: "s",
         email: null,
         authMethod: "email",
+        staffStatus: "active",
+        roleId: "role_super_admin",
+        roleKey: "super_admin",
+        roleActive: true,
+        permissions: [],
+        coachId: null,
+        isCoach: false,
+        isSystem: false,
       }).staffId,
     ).toBe("s");
   });

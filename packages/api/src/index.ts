@@ -1,5 +1,5 @@
-export type { ApiActor, ApiDeps, StoragePort } from "./deps";
-export { createDefaultDeps, createDefaultStorage } from "./deps";
+export type { AdminApiActor, ApiActor, ApiDeps, StoragePort } from "./deps";
+export { createDefaultDeps, createDefaultStorage, staffAuthorizationOf } from "./deps";
 export { dispatch } from "./dispatch";
 export { ApiError } from "./errors";
 export { assertPublicPayload, PUBLIC_FORBIDDEN_KEYS } from "./presenters";

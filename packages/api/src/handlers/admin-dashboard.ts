@@ -8,6 +8,7 @@ import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { ok } from "../http";
 import { money } from "../presenters";
+import { shapeDashboard } from "../sensitive";
 
 type DayRow = {
   day: Date;
@@ -18,11 +19,11 @@ type DayRow = {
 };
 
 export async function getAdminDashboard(deps: ApiDeps, req: Request): Promise<Response> {
-  requireAdmin(await resolveActor(deps, req));
+  const actor = requireAdmin(await resolveActor(deps, req));
   const snapshot = await operationalSnapshot(deps);
   const series = await dashboardSeries(deps, DASHBOARD_SERIES_WINDOW_DAYS);
   const prior = priorDayFromSeries(series);
-  const body = {
+  const raw = {
     ...snapshot,
     series,
     comparisons: {
@@ -51,6 +52,7 @@ export async function getAdminDashboard(deps: ApiDeps, req: Request): Promise<Re
         "Pending payment / cancellation / reschedule / waitlist counts are live queues. No historical snapshot exists, so FE-ADM-022 must not invent a trend arrow for them.",
     },
   };
+  const body = shapeDashboard(actor, raw);
   if (/profit/i.test(JSON.stringify(body))) {
     throw new ApiError(500, "internal_error", "Dashboard must not contain a field named profit.");
   }

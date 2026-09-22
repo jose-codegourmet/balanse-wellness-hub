@@ -1,4 +1,6 @@
-# Staff roles and permission helpers (#298)
+# Staff roles and permission helpers (#298 / #292)
+
+Wave 3 (#292) consumes these helpers from `@balanse/api` (`packages/api/src/auth.ts`, `sql.ts`). Actor resolution still loads Prisma `roleId` + permissions; mutations lock last-Super-Admin and own-session checks through `app_private.*`.
 
 Wave 2 of epic #289. Consumes `@balanse/domain` (`PERMISSION_KEYS`,
 `PERMISSION_REGISTRY`, `BUILT_IN_ROLE_DEFINITIONS`,

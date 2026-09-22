@@ -1,4 +1,4 @@
-import { resolveActor } from "./auth";
+import { authorizeAdminRequest } from "./auth";
 import { type ApiDeps, createDefaultDeps } from "./deps";
 import { ApiError } from "./errors";
 import { errorResponse, json } from "./http";
@@ -21,14 +21,7 @@ export async function dispatch(
       return json(404, { code: "not_found", message: "Not found." });
     }
     if (matched.route.path.startsWith("/api/admin")) {
-      const actor = await resolveActor(deps, req);
-      if (actor.kind !== "admin") {
-        throw new ApiError(
-          actor.kind === "anon" ? 401 : 403,
-          actor.kind === "anon" ? "unauthenticated" : "forbidden",
-          actor.kind === "anon" ? "Sign in required." : "Admin authorisation required.",
-        );
-      }
+      await authorizeAdminRequest(deps, req, url.pathname);
     }
     return await matched.route.handler(deps, req, matched.params);
   } catch (error) {
