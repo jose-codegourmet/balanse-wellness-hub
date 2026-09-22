@@ -91,6 +91,8 @@ Session packages (#290) are a separate entitlement ledger. Cash is never refunde
 
 Paid packages follow the same manual-review principle as GCash: no automated gateway, and credits activate only after studio approval.
 
+Session **packages** (BE-058) are not store credit. Cash/GCash booking payments are never converted into package credits. A restored redemption only returns the same previously reserved session credit. Paid package purchases use a dedicated acquisition payment, not a fake booking payment.
+
 ## Future
 
 Automated payment gateway integration is explicitly future scope.

@@ -14,7 +14,7 @@ Canonical assumptions carried into the screens:
 - Waitlist is FIFO.
 - Admin manually reviews payments and confirms bookings.
 - Cancellation/reschedule are requests, not instant self-service mutations.
-- Refunds are manual; no store credit in MVP.
+- Refunds are manual; no store credit in MVP. Session packages (BE-058) are session credits, not wallets.
 - Admin performs check-in; no-show means no refund.
 - Coaches do not manage their own schedules in MVP.
 

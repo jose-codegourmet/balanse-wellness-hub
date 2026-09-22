@@ -6,7 +6,7 @@
 3. Contact
 4. FAQs
 5. Coaches
-5a. Packages
+5a. Packages (published catalogue)
 
 ## Customer Auth
 6. Login

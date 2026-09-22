@@ -14,6 +14,8 @@ model Profile {
   waitlistEntries         WaitlistEntry[]
   cancellationRequests    CancellationRequest[]
   rescheduleRequests      RescheduleRequest[]
+  bundleAcquisitions      BundleAcquisition[]
+  customerBundles         CustomerBundle[]
 
   @@index([email])
   @@map("profiles")
@@ -46,6 +48,10 @@ model StaffMember {
   noShows               Booking[]                @relation("BookingNoShowBy")
   auditEvents           AuditEvent[]
   pendingUploads        PendingUpload[]
+  grantedBundles        BundleAcquisition[]      @relation("BundleGrantedBy")
+  reviewedAcquisitions  BundleAcquisition[]      @relation("BundleAcquisitionReviewedBy")
+  reviewedBundlePayments BundleAcquisitionPayment[] @relation("BundlePaymentReviewedBy")
+  revokedBundles        CustomerBundle[]         @relation("CustomerBundleRevokedBy")
 
   @@index([status])
   @@index([email])

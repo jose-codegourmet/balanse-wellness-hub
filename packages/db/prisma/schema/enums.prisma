@@ -105,3 +105,54 @@ enum PolicyDocumentKind {
 
   @@map("policy_document_kind")
 }
+
+/// BE-058 — session-bundle / package catalogue. Internal; customer chrome says "Package".
+enum BundleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+
+  @@map("bundle_status")
+}
+
+enum BundleApplicabilityMode {
+  ALL_ACTIVE_CLASSES
+  EXPLICIT_CLASSES
+
+  @@map("bundle_applicability_mode")
+}
+
+enum BundleAcquisitionKind {
+  CUSTOMER_CLAIM
+  CUSTOMER_PAID
+  ADMIN_GRANT
+
+  @@map("bundle_acquisition_kind")
+}
+
+enum BundleAcquisitionStatus {
+  PENDING_PAYMENT
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  CANCELLED
+
+  @@map("bundle_acquisition_status")
+}
+
+enum CustomerBundleStatus {
+  ACTIVE
+  EXHAUSTED
+  EXPIRED
+  REVOKED
+
+  @@map("customer_bundle_status")
+}
+
+enum BundleRedemptionStatus {
+  HELD
+  CONSUMED
+  RESTORED
+
+  @@map("bundle_redemption_status")
+}

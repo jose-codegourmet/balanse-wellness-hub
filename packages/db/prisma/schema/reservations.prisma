@@ -24,6 +24,7 @@ model Booking {
   payments             Payment[]
   refunds              Refund[]
   waitlistEntries      WaitlistEntry[]
+  bundleRedemptions    BundleRedemption[]
   cancellationRequests CancellationRequest[]
   rescheduleRequests   RescheduleRequest[]
 
@@ -99,6 +100,7 @@ model PaymentQrCode {
   updatedAt  DateTime  @updatedAt
 
   payments Payment[]
+  bundleAcquisitionPayments BundleAcquisitionPayment[]
 
   @@index([isActive])
   @@index([archivedAt])
@@ -133,22 +135,29 @@ model Refund {
 
 /// BE-012 — FIFO waitlist. Sequence + joinedAt; does not consume capacity.
 model WaitlistEntry {
-  id        String         @id @default(cuid())
-  sessionId String
-  profileId String         @db.Uuid
-  bookingId String?
-  joinedAt  DateTime       @default(now()) @db.Timestamptz
-  sequence  BigInt
-  status    WaitlistStatus @default(WAITING)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id                     String         @id @default(cuid())
+  sessionId              String
+  profileId              String         @db.Uuid
+  bookingId              String?
+  joinedAt               DateTime       @default(now()) @db.Timestamptz
+  sequence               BigInt
+  status                 WaitlistStatus @default(WAITING)
+  /// Intended entitlement only. Waitlisting never holds or consumes a credit.
+  intendedEntitlementId  String?
+  /// Set when promotion cannot debit the intended entitlement. Row stays WAITING.
+  promotionBlockReason   String?
+  promotionBlockedAt     DateTime?      @db.Timestamptz
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
 
-  session GymSession @relation(fields: [sessionId], references: [id])
-  profile Profile    @relation(fields: [profileId], references: [id])
-  booking Booking?   @relation(fields: [bookingId], references: [id])
+  session             GymSession      @relation(fields: [sessionId], references: [id])
+  profile             Profile         @relation(fields: [profileId], references: [id])
+  booking             Booking?        @relation(fields: [bookingId], references: [id])
+  intendedEntitlement CustomerBundle? @relation(fields: [intendedEntitlementId], references: [id])
 
   @@index([sessionId, status, sequence])
   @@index([profileId])
+  @@index([intendedEntitlementId])
   @@map("waitlist_entries")
 }
 

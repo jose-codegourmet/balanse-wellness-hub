@@ -5,7 +5,13 @@
 export {
   AuditActorType,
   BookingStatus,
+  BundleAcquisitionKind,
+  BundleAcquisitionStatus,
+  BundleApplicabilityMode,
+  BundleRedemptionStatus,
+  BundleStatus,
   CoachRateType,
+  CustomerBundleStatus,
   PaymentMethod,
   PaymentStatus,
   PolicyDocumentKind,

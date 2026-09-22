@@ -41,6 +41,32 @@ export type SessionStatus = (typeof SESSION_STATUSES)[number];
 export const STAFF_ROLES = ["ADMIN"] as const;
 export type StaffRole = (typeof STAFF_ROLES)[number];
 
+/** BE-058 — catalogue / entitlement / ledger. Customer chrome says “Package”. */
+export const BUNDLE_STATUSES = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
+export type BundleStatus = (typeof BUNDLE_STATUSES)[number];
+
+export const BUNDLE_APPLICABILITY_MODES = ["ALL_ACTIVE_CLASSES", "EXPLICIT_CLASSES"] as const;
+export type BundleApplicabilityMode = (typeof BUNDLE_APPLICABILITY_MODES)[number];
+
+export const BUNDLE_ACQUISITION_KINDS = ["CUSTOMER_CLAIM", "CUSTOMER_PAID", "ADMIN_GRANT"] as const;
+export type BundleAcquisitionKind = (typeof BUNDLE_ACQUISITION_KINDS)[number];
+
+export const BUNDLE_ACQUISITION_STATUSES = [
+  "PENDING_PAYMENT",
+  "PENDING_REVIEW",
+  "APPROVED",
+  "ACTIVE",
+  "REJECTED",
+  "CANCELLED",
+] as const;
+export type BundleAcquisitionStatus = (typeof BUNDLE_ACQUISITION_STATUSES)[number];
+
+export const CUSTOMER_BUNDLE_STATUSES = ["ACTIVE", "EXHAUSTED", "EXPIRED", "REVOKED"] as const;
+export type CustomerBundleStatus = (typeof CUSTOMER_BUNDLE_STATUSES)[number];
+
+export const BUNDLE_REDEMPTION_STATUSES = ["HELD", "CONSUMED", "RESTORED"] as const;
+export type BundleRedemptionStatus = (typeof BUNDLE_REDEMPTION_STATUSES)[number];
+
 export const SESSION_SLOTS_MANILA = [
   "08:00",
   "09:30",

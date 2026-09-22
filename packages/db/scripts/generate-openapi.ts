@@ -2,7 +2,13 @@ import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   BOOKING_STATUSES,
+  BUNDLE_ACQUISITION_KINDS,
+  BUNDLE_ACQUISITION_STATUSES,
+  BUNDLE_APPLICABILITY_MODES,
+  BUNDLE_REDEMPTION_STATUSES,
+  BUNDLE_STATUSES,
   COACH_RATE_TYPES,
+  CUSTOMER_BUNDLE_STATUSES,
   PAYMENT_METHODS,
   PAYMENT_STATUSES,
   REFUND_STATUSES,
@@ -160,7 +166,7 @@ const spec = {
     title: "Balanse Wellness Hub API (BE-024 contract pack)",
     version: "0.3.0",
     description:
-      "Machine-readable contract for the wiring phase (BE-024 plus BE-050–BE-056). Hold duration and cutoff are absent from admin settings. Money is whole pesos as decimal strings. Admin lists use CursorPage. Validation failures use ValidationFailed (422).",
+      "Machine-readable contract for the wiring phase (BE-024 plus BE-050–BE-058). Hold duration and cutoff are absent from admin settings. Money is whole pesos as decimal strings. Admin lists use CursorPage. Validation failures use ValidationFailed (422). Session bundles are session credits, not wallets.",
   },
   paths,
   components: {
@@ -172,6 +178,12 @@ const spec = {
       SessionStatus: { type: "string", enum: [...SESSION_STATUSES] },
       CoachRateType: { type: "string", enum: [...COACH_RATE_TYPES] },
       StaffRole: { type: "string", enum: [...STAFF_ROLES] },
+      BundleStatus: { type: "string", enum: [...BUNDLE_STATUSES] },
+      BundleApplicabilityMode: { type: "string", enum: [...BUNDLE_APPLICABILITY_MODES] },
+      BundleAcquisitionKind: { type: "string", enum: [...BUNDLE_ACQUISITION_KINDS] },
+      BundleAcquisitionStatus: { type: "string", enum: [...BUNDLE_ACQUISITION_STATUSES] },
+      CustomerBundleStatus: { type: "string", enum: [...CUSTOMER_BUNDLE_STATUSES] },
+      BundleRedemptionStatus: { type: "string", enum: [...BUNDLE_REDEMPTION_STATUSES] },
       GenericSuccess: { type: "object", additionalProperties: true },
       CursorPage: {
         type: "object",

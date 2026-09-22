@@ -56,7 +56,8 @@
 - Store credit
 - Wallet/balance
 - Membership packages / monthly plans
-- Transferable or unlimited class passes beyond the session-package model in #290
+- Transferable or unlimited class passes beyond the session-package model in #290 / BE-058
+- Wallet / store-credit class passes (session packages are entitlements, not wallets)
 - Coach self-service schedule management
 - Full coach portal
 - Automated recurring-class generation

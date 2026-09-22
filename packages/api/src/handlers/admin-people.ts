@@ -1,5 +1,10 @@
 import { bookingListTab } from "@balanse/domain";
 import { requireAdmin, resolveActor, writeAudit } from "../auth";
+import {
+  entitlementWithLedger,
+  presentAcquisition,
+  presentEntitlement,
+} from "../bundle-presenters";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { asString, ok, pagination, readJson, searchParams } from "../http";
@@ -260,6 +265,11 @@ export async function getCustomer(deps: ApiDeps, req: Request, id: string): Prom
         include: { policyVersion: { include: { document: true } } },
         orderBy: { acceptedAt: "desc" },
       },
+      customerBundles: { include: entitlementWithLedger, orderBy: { createdAt: "desc" } },
+      bundleAcquisitions: {
+        include: { payment: true, entitlement: true },
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
   if (!profile) throw new ApiError(404, "customer_not_found", "Customer not found.");
@@ -309,5 +319,9 @@ export async function getCustomer(deps: ApiDeps, req: Request, id: string): Prom
       version: row.policyVersion.version,
       acceptedAt: row.acceptedAt.toISOString(),
     })),
+    entitlements: profile.customerBundles.map(presentEntitlement),
+    pendingAcquisitions: profile.bundleAcquisitions
+      .filter((row) => row.status === "PENDING_PAYMENT" || row.status === "PENDING_REVIEW")
+      .map(presentAcquisition),
   });
 }
