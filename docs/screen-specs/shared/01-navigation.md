@@ -1,13 +1,13 @@
 # Shared — Navigation
 
 ## Public
-Schedule, Classes, Coaches, About, FAQs, Contact, Login/Profile
+Schedule, Classes, Packages, Coaches, About, FAQs, Contact, Login/Profile
 
 ## Customer
-Home/My Bookings, Schedule, Profile, Achievements(TBD)
+Home/My Bookings, Schedule, Packages, Profile, Achievements(TBD)
 
 ## Admin
-Dashboard, Schedule, Bookings, Payments, Payment QR, Cancellations, Reschedules, Customers, Coaches, Classes, Staff, Settings
+Dashboard, Schedule, Bookings, Payments, Payment QR, Cancellations, Reschedules, Customers, Coaches, Classes, Bundles, Staff, Settings
 
 ## Admin reporting addition
 
@@ -27,6 +27,7 @@ Suggested admin navigation order:
 - Customers
 - Coaches
 - Classes
+- Bundles
 - Reports
 - Staff
 - Settings

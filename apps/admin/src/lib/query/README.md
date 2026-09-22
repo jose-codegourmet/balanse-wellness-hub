@@ -42,6 +42,7 @@ queryClient.invalidateQueries({ queryKey: adminKeys.bookings.all(role) });
 | `approveAdminReschedule`, `rejectAdminReschedule` | `reschedules.all`, `bookings.all`, `sessions.all`, `dashboard`, `queues.all` |
 | `checkIn`, `markNoShow` | `bookings.all`, `roster` (prefix), `dashboard`, `reports.all` |
 | `upsertAdminClass` | `classes.all` |
+| `upsertAdminBundle`, `setAdminBundleStatus`, grant/revoke/review | `bundles.all`, `customers.all` |
 | `upsertAdminCoach` | `coaches.all` |
 | `upsertAdminSession`, `cancelAdminSession` | `sessions.all`, `dashboard`, `reports.all`, `bookings.all`, `roster` (prefix) |
 | `upsertAdminStaff`, `disableAdminStaff` | `staff.all` |

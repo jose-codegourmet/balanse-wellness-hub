@@ -1,3 +1,4 @@
+import type { BundleAcquisition, CustomerEntitlement } from "./bundles";
 import {
   ADMIN_CURSOR_LIMIT_DEFAULT,
   ADMIN_CURSOR_LIMIT_MAX,
@@ -173,6 +174,8 @@ export type AdminCustomerDetail = AdminCustomer & {
   attendanceHistory: CustomerBooking[];
   paymentHistory: CustomerBooking[];
   policyAcceptances: PolicyAcceptance[];
+  entitlements: CustomerEntitlement[];
+  acquisitions: BundleAcquisition[];
 };
 
 export type AdminDashboardSnapshot = {

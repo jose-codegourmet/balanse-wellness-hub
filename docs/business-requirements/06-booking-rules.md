@@ -17,6 +17,8 @@ A customer may reserve only when:
 - the customer accepts required waivers/policies,
 - either a slot is available or the customer is eligible to join the waitlist.
 
+A customer may apply one eligible session package (bundle entitlement) when reserving. One credit and one slot are reserved together. Packages never bypass cutoff, capacity, waitlist, waiver, or studio confirmation. See `openspec/specs/session-bundles.md`.
+
 ## Own booking only
 
 Customers cannot reserve for another person.

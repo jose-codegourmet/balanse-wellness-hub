@@ -45,7 +45,19 @@ function advisoriesFor(booking: CustomerBooking): Advisory[] {
       kind: "informational",
       icon: Info,
       title: "You are on the waitlist",
-      body: "No payment is due while you wait.",
+      body: booking.packagePromotionBlocked
+        ? "Your intended package could not be reserved when a spot opened. You are still waiting. The studio will not pick another package or charge cash."
+        : booking.intendedEntitlementId
+          ? "No session is held on the waitlist. The intended package is checked again if you are promoted."
+          : "No payment is due while you wait.",
+    });
+  }
+  if (booking.entitlementId || booking.packageName) {
+    advisories.push({
+      kind: "informational",
+      icon: Info,
+      title: booking.packageName ?? "Package",
+      body: "This booking uses a package session, not a cash payment. The studio still confirms the spot.",
     });
   }
   if (booking.status === "CANCELLATION_REQUESTED" || booking.status === "RESCHEDULE_REQUESTED") {
@@ -134,7 +146,7 @@ export function BookingDetail({
               const Icon = advisory.icon;
               return (
                 <Alert
-                  key={advisory.kind}
+                  key={advisory.title}
                   className="booking-advisory"
                   data-advisory={advisory.kind}
                 >

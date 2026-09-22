@@ -8,3 +8,4 @@
 4. Contact renders verified findings details, no invented hours, walk-in QR → account → same calendar, and a mocked form (validation, submitting, success, failure) with no network call. Channels are not a booking path.
 5. FAQs expose Booking, Payment, Waitlist, Cancellation/Reschedule, and Walk-ins with canonical answers. Cancellation/reschedule copy has no deadline or refund-eligibility rule. Search filters client-side. Contact Us goes to `/contact`.
 6. Coaches cards show photo, name, specialty, short bio, and View Classes only. Filters come from fixture specialties. View Classes applies `coachId` on the landing calendar. Public props never include rate or cost. Roster matches findings.md §4b.
+7. Published session packages appear at `/packages` and `/packages/[slug]`. Drafts and archives are omitted. Coach compensation never appears. See `openspec/specs/session-bundles.md`.

@@ -14,6 +14,7 @@ describe("FE-SHR-001 navigation catalogs", () => {
     expect(PUBLIC_NAV_ITEMS.map((item) => item.label)).toEqual([
       "Schedule",
       "Classes",
+      "Packages",
       "Coaches",
       "About",
       "FAQs",
@@ -21,17 +22,18 @@ describe("FE-SHR-001 navigation catalogs", () => {
       "Login/Profile",
     ]);
     expect(PUBLIC_NAV_ITEMS[0]?.href).toBe("/#schedule");
-    expect(PUBLIC_NAV_ITEMS[1]?.href).toBe("/#classes");
+    expect(PUBLIC_NAV_ITEMS[1]?.href).toBe("/classes");
   });
 
   it("keeps the customer set as four items with a combined Home/My Bookings destination", () => {
     expect(CUSTOMER_NAV_ITEMS.map((item) => item.label)).toEqual([
       "Home/My Bookings",
       "Schedule",
+      "Packages",
       "Profile",
       "Achievements (TBD)",
     ]);
-    expect(CUSTOMER_NAV_ITEMS).toHaveLength(4);
+    expect(CUSTOMER_NAV_ITEMS).toHaveLength(5);
   });
 
   it("keeps the admin set with Payment QR after Payments and Reports between Classes and Staff", () => {
@@ -46,11 +48,12 @@ describe("FE-SHR-001 navigation catalogs", () => {
       "Customers",
       "Coaches",
       "Classes",
+      "Bundles",
       "Reports",
       "Staff",
       "Settings",
     ]);
-    expect(ADMIN_NAV_ITEMS).toHaveLength(13);
+    expect(ADMIN_NAV_ITEMS).toHaveLength(14);
   });
 
   it("does not leak admin-only destinations into public or customer catalogs", () => {

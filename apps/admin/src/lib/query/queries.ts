@@ -82,6 +82,18 @@ export const adminCustomersQuery = (role: MockRole, filters?: AdminCustomerListF
     queryFn: () => getMockAdapter().getAdminCustomers(filters),
   });
 
+export const adminBundlesQuery = (role: MockRole) =>
+  queryOptions({
+    queryKey: adminKeys.bundles.all(role),
+    queryFn: () => getMockAdapter().getAdminBundles(),
+  });
+
+export const adminBundleAcquisitionsQuery = (role: MockRole) =>
+  queryOptions({
+    queryKey: adminKeys.bundles.acquisitions(role),
+    queryFn: () => getMockAdapter().getAdminBundleAcquisitions(),
+  });
+
 export const adminCustomerDetailQuery = (role: MockRole, id: string) =>
   queryOptions({
     queryKey: adminKeys.customers.detail(role, id),

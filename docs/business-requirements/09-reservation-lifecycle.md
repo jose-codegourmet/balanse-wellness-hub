@@ -15,6 +15,7 @@ Customer wants the class but no main slot is currently available.
 - Does not consume normal available capacity.
 - Ordered FIFO.
 - Does not require payment yet.
+- Does not hold or consume a package credit. An intended package may be recorded and must be revalidated on promotion. If that package is no longer usable, the customer stays waitlisted in an action-required state. The studio does not silently charge cash or pick another package.
 
 ### HELD_AWAITING_PAYMENT
 
@@ -33,6 +34,7 @@ GCash proof has been uploaded.
 
 - Slot remains held.
 - Waiting for admin verification.
+- Package bookings also land here after a credit is held, so the studio still confirms the spot.
 
 ### PENDING_ADMIN_CONFIRMATION
 

@@ -1,11 +1,12 @@
 "use client";
 
-import type { CustomerProfile, PublicSession } from "@balanse/domain";
+import type { CustomerEntitlement, CustomerProfile, PublicSession } from "@balanse/domain";
 import {
   bookingCreatedToastId,
   formatPeso,
   formatSessionDate,
   formatSessionRange,
+  formatSessionsRemaining,
   REQUIRED_POLICY_DOCUMENTS,
   sessionDisplayName,
 } from "@balanse/domain";
@@ -18,11 +19,13 @@ import { notify } from "@/modules/notifications/notify";
 export function BookingForm({
   session,
   profile,
+  entitlements = [],
   intent = "reserve",
   forcedStatus,
 }: {
   session: PublicSession;
   profile: CustomerProfile;
+  entitlements?: CustomerEntitlement[];
   intent?: "reserve" | "waitlist";
   forcedStatus?: "submitting";
 }) {
@@ -31,6 +34,9 @@ export function BookingForm({
   const [email, setEmail] = useState(profile.email);
   const [contactNumber, setContactNumber] = useState(profile.contactNumber);
   const [accepted, setAccepted] = useState<Record<string, boolean>>({});
+  const [entitlementId, setEntitlementId] = useState<string>(
+    entitlements.length === 1 ? (entitlements[0]?.id ?? "") : "",
+  );
   const [status, setStatus] = useState<"idle" | "submitting">(
     forcedStatus === "submitting" ? "submitting" : "idle",
   );
@@ -110,6 +116,49 @@ export function BookingForm({
         </div>
       </section>
 
+      {entitlements.length > 0 ? (
+        <section>
+          <h2 className="font-display text-2xl">Use a package</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {waitlist
+              ? "Joining the waitlist does not hold a session. The intended package is checked again if a spot opens."
+              : "Using a package holds one session credit with the spot. It does not skip capacity, cutoff, or confirmation."}
+          </p>
+          <fieldset className="mt-4 grid gap-3">
+            <label className="flex items-start gap-3 rounded-xl border border-border p-4 text-sm">
+              <input
+                type="radio"
+                name="package"
+                className="mt-1 size-4"
+                checked={entitlementId === ""}
+                onChange={() => setEntitlementId("")}
+              />
+              <span>Pay for this session instead</span>
+            </label>
+            {entitlements.map((row) => (
+              <label
+                key={row.id}
+                className="flex items-start gap-3 rounded-xl border border-border p-4 text-sm"
+              >
+                <input
+                  type="radio"
+                  name="package"
+                  className="mt-1 size-4"
+                  checked={entitlementId === row.id}
+                  onChange={() => setEntitlementId(row.id)}
+                />
+                <span>
+                  <span className="font-medium">{row.snapshot.name}</span>
+                  <span className="mt-1 block text-muted-foreground">
+                    {formatSessionsRemaining(row.remainingCredits)}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </fieldset>
+        </section>
+      ) : null}
+
       <section>
         <h2 className="font-display text-2xl">Waivers / policies</h2>
         <ul className="mt-4 space-y-4">
@@ -150,6 +199,8 @@ export function BookingForm({
             .createBooking({
               customerId: profile.id,
               sessionId: session.id,
+              entitlementId: waitlist ? null : entitlementId || null,
+              intendedEntitlementId: waitlist ? entitlementId || null : null,
               policyAcceptances: REQUIRED_POLICY_DOCUMENTS.map((doc) => ({
                 documentName: doc.documentName,
                 version: doc.version,
@@ -158,15 +209,23 @@ export function BookingForm({
             })
             .then((booking) => {
               notify.portal(bookingCreatedToastId(booking.status));
-              if (waitlist || booking.status === "WAITLISTED") {
+              if (waitlist || booking.status === "WAITLISTED" || booking.entitlementId) {
                 router.push(`/portal/bookings/${booking.id}`);
                 return;
               }
               router.push(`/portal/bookings/${booking.id}/payment`);
+            })
+            .catch(() => {
+              notify.portal("package.action-failed");
+              setStatus("idle");
             });
         }}
       >
-        {waitlist ? "Join waitlist" : "Continue to Payment"}
+        {waitlist
+          ? "Join waitlist"
+          : entitlementId
+            ? "Reserve with package"
+            : "Continue to Payment"}
       </Button>
     </div>
   );

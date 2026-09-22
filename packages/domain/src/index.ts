@@ -1,6 +1,7 @@
 export * from "./admin";
 export * from "./asset-manifest";
 export * from "./assets";
+export * from "./bundles";
 export * from "./calendar-layout";
 export * from "./class-images";
 export * from "./classes";

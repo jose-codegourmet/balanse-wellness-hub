@@ -5,6 +5,7 @@ import {
   CreditCard,
   Dumbbell,
   LayoutDashboard,
+  Package,
   QrCode,
   Repeat,
   Settings,
@@ -25,6 +26,7 @@ export const NAV_ICONS: Record<AdminNavItem["id"], typeof LayoutDashboard> = {
   customers: Users,
   coaches: UserRound,
   classes: Dumbbell,
+  bundles: Package,
   reports: BarChart3,
   staff: Users,
   settings: Settings,
@@ -43,7 +45,7 @@ export const NAV_GROUPS: { label: string; ids: AdminNavItem["id"][] }[] = [
       "reschedules",
     ],
   },
-  { label: "Directory", ids: ["customers", "coaches", "classes", "staff"] },
+  { label: "Directory", ids: ["customers", "coaches", "classes", "bundles", "staff"] },
   { label: "Studio", ids: ["reports", "settings"] },
 ];
 

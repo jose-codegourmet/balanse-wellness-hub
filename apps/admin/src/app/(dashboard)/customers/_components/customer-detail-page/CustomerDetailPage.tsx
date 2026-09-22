@@ -3,7 +3,10 @@
 import {
   type AdminCustomerDetail,
   bookingListTab,
+  entitlementStatusLabel,
+  formatPeso,
   formatSessionDate,
+  formatSessionsRemaining,
   paymentStatusLabel,
   refundStatusLabel,
   sessionDisplayName,
@@ -12,8 +15,9 @@ import { Badge, StatusBadge } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
-import { adminCustomerDetailQuery } from "@/lib/query/queries";
+import { adminBundlesQuery, adminCustomerDetailQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { GrantPackageForm } from "../grant-package-form/GrantPackageForm";
 
 function BookingBlock({
   title,
@@ -52,6 +56,7 @@ function BookingBlock({
 export function CustomerDetailPage({ customerId }: { customerId: string }) {
   const { principal } = useMockPrincipal();
   const query = useSuspenseQuery(adminCustomerDetailQuery(principal.role, customerId));
+  const bundlesQuery = useSuspenseQuery(adminBundlesQuery(principal.role));
   const detail = query.data;
   if (!detail) return null;
 
@@ -83,6 +88,31 @@ export function CustomerDetailPage({ customerId }: { customerId: string }) {
           </dd>
         </div>
       </dl>
+
+      <section className="mt-8">
+        <h2 className="font-display text-2xl">Packages</h2>
+        {(detail.entitlements ?? []).length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">No packages on this customer.</p>
+        ) : (
+          <ul className="mt-3 space-y-2">
+            {(detail.entitlements ?? []).map((entitlement) => (
+              <li key={entitlement.id} className="rounded-xl border border-border p-3 text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-medium">{entitlement.snapshot.name}</span>
+                  <Badge appearance="soft" size="sm">
+                    {entitlementStatusLabel(entitlement.status)}
+                  </Badge>
+                </div>
+                <p className="mt-1 text-muted-foreground">
+                  {formatSessionsRemaining(entitlement.remainingCredits)} · granted{" "}
+                  {entitlement.grantedCredits} · {formatPeso(entitlement.snapshot.pricePhp)}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+        <GrantPackageForm customerId={customerId} bundles={bundlesQuery.data} />
+      </section>
 
       <BookingBlock title="Upcoming" empty="No upcoming bookings." rows={detail.upcoming} />
       <BookingBlock title="Pending" empty="No pending bookings." rows={detail.pending} />

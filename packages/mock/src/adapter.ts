@@ -11,8 +11,14 @@ import type {
   AdminSettings,
   AdminStaff,
   BookingStatus,
+  BundleAcquisition,
+  BundleAuditEvent,
+  BundleDefinition,
+  BundleRedemption,
+  BundleStatus,
   CursorPage,
   CustomerBooking,
+  CustomerEntitlement,
   CustomerProfile,
   DuplicateScheduleInput,
   PaymentInstructions,
@@ -20,6 +26,7 @@ import type {
   PaymentQrCode,
   PolicyAcceptance,
   PolicyDocumentVersion,
+  PublicBundle,
   PublicClass,
   PublicCoach,
   PublicContent,
@@ -51,6 +58,8 @@ export type MockDataAdapter = {
   getPublicCoaches: () => Promise<PublicCoach[]>;
   getPublicClasses: () => Promise<PublicClass[]>;
   getPublicContent: () => Promise<PublicContent>;
+  getPublicBundles: () => Promise<PublicBundle[]>;
+  getPublicBundle: (slugOrId: string) => Promise<PublicBundle | null>;
 
   getMe: (customerId: string) => Promise<CustomerProfile | null>;
   patchMe: (
@@ -64,10 +73,36 @@ export type MockDataAdapter = {
     contactNumber: string;
   }) => Promise<CustomerProfile>;
 
+  getMyEntitlements: (customerId: string) => Promise<CustomerEntitlement[]>;
+  getMyEntitlement: (
+    customerId: string,
+    entitlementId: string,
+  ) => Promise<CustomerEntitlement | null>;
+  getMyAcquisitions: (customerId: string) => Promise<BundleAcquisition[]>;
+  getEligibleEntitlements: (
+    customerId: string,
+    sessionId: string,
+  ) => Promise<CustomerEntitlement[]>;
+  getEntitlementRedemptions: (
+    customerId: string,
+    entitlementId: string,
+  ) => Promise<BundleRedemption[]>;
+  claimFreeBundle: (input: {
+    customerId: string;
+    bundleId: string;
+    idempotencyKey?: string;
+  }) => Promise<CustomerEntitlement>;
+  requestPaidBundle: (input: {
+    customerId: string;
+    bundleId: string;
+    idempotencyKey?: string;
+  }) => Promise<BundleAcquisition>;
   createBooking: (input: {
     customerId: string;
     sessionId: string;
     policyAcceptances?: PolicyAcceptance[];
+    entitlementId?: string | null;
+    intendedEntitlementId?: string | null;
   }) => Promise<CustomerBooking>;
   getBookings: (customerId: string) => Promise<CustomerBooking[]>;
   getBooking: (id: string) => Promise<CustomerBooking | null>;
@@ -209,6 +244,53 @@ export type MockDataAdapter = {
   archivePaymentQr: (id: string) => Promise<PaymentQrCode>;
   promotePolicyVersion: (documentName: string, version: string) => Promise<AdminSettings>;
   getAdminDashboard: () => Promise<AdminDashboardSnapshot>;
+  getAdminBundles: () => Promise<BundleDefinition[]>;
+  getAdminBundle: (id: string) => Promise<BundleDefinition | null>;
+  upsertAdminBundle: (input: {
+    id?: string;
+    name: string;
+    slug: string;
+    summary: string;
+    description: string;
+    sessionCredits: number;
+    pricePhp: number;
+    allActiveClasses: boolean;
+    classIds: string[];
+    validityDays: number | null;
+    perCustomerLimit: number | null;
+    status: BundleStatus;
+  }) => Promise<BundleDefinition>;
+  setAdminBundleStatus: (id: string, status: BundleStatus) => Promise<BundleDefinition>;
+  grantCustomerBundle: (input: {
+    customerId: string;
+    bundleId: string;
+    note?: string;
+    overrideLimit?: boolean;
+    actorId?: string;
+    idempotencyKey?: string;
+  }) => Promise<CustomerEntitlement>;
+  revokeCustomerEntitlement: (input: {
+    entitlementId: string;
+    reason: string;
+    actorId?: string;
+  }) => Promise<CustomerEntitlement>;
+  getAdminBundleAcquisitions: (
+    status?: BundleAcquisition["status"],
+  ) => Promise<BundleAcquisition[]>;
+  approveBundleAcquisition: (id: string, actorId?: string) => Promise<CustomerEntitlement>;
+  rejectBundleAcquisition: (
+    id: string,
+    reason: string,
+    actorId?: string,
+  ) => Promise<BundleAcquisition>;
+  getAdminCustomerEntitlements: (customerId: string) => Promise<CustomerEntitlement[]>;
+  getBundleAudit: (query?: {
+    entitlementId?: string;
+    customerId?: string;
+    bundleId?: string;
+  }) => Promise<BundleAuditEvent[]>;
+  expireHeldBooking: (bookingId: string) => Promise<CustomerBooking>;
+  promoteWaitlistedBooking: (bookingId: string) => Promise<CustomerBooking>;
 };
 
 export type MockRuntimeOptions = {

@@ -6,13 +6,14 @@
 export type PublicNavId =
   | "schedule"
   | "classes"
+  | "packages"
   | "coaches"
   | "about"
   | "faqs"
   | "contact"
   | "auth";
 
-export type CustomerNavId = "home" | "schedule" | "profile" | "achievements";
+export type CustomerNavId = "home" | "schedule" | "packages" | "profile" | "achievements";
 
 /** Submenu under the Profile destination (FE-CUS-017). */
 export type CustomerProfileSectionId = "basic" | "account" | "password" | "policies";
@@ -28,6 +29,7 @@ export type AdminNavId =
   | "customers"
   | "coaches"
   | "classes"
+  | "bundles"
   | "reports"
   | "staff"
   | "settings";
@@ -62,6 +64,7 @@ export type CustomerProfileSection = {
 export const PUBLIC_NAV_ITEMS: readonly PublicNavItem[] = [
   { id: "schedule", label: "Schedule", href: "/#schedule" },
   { id: "classes", label: "Classes", href: "/classes" },
+  { id: "packages", label: "Packages", href: "/packages" },
   { id: "coaches", label: "Coaches", href: "/coaches" },
   { id: "about", label: "About", href: "/about" },
   { id: "faqs", label: "FAQs", href: "/faqs" },
@@ -73,6 +76,7 @@ export const PUBLIC_NAV_ITEMS: readonly PublicNavItem[] = [
 export const CUSTOMER_NAV_ITEMS: readonly CustomerNavItem[] = [
   { id: "home", label: "Home/My Bookings", href: "/portal" },
   { id: "schedule", label: "Schedule", href: "/portal/schedule" },
+  { id: "packages", label: "Packages", href: "/portal/packages" },
   { id: "profile", label: "Profile", href: "/portal/profile" },
   { id: "achievements", label: "Achievements (TBD)", href: "/portal/achievements" },
 ] as const;
@@ -116,6 +120,7 @@ export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
   { id: "customers", label: "Customers", href: "/customers" },
   { id: "coaches", label: "Coaches", href: "/coaches" },
   { id: "classes", label: "Classes", href: "/classes" },
+  { id: "bundles", label: "Bundles", href: "/bundles" },
   { id: "reports", label: "Reports", href: "/reports" },
   { id: "staff", label: "Staff", href: "/staff" },
   { id: "settings", label: "Settings", href: "/settings" },
@@ -133,7 +138,14 @@ export function isPublicNavActive(item: PublicNavItem, pathname: string, hash = 
     return pathname === "/" && hash !== "#classes";
   }
   if (item.id === "classes") {
-    return pathname === "/" && hash === "#classes";
+    return (
+      (pathname === "/" && hash === "#classes") ||
+      pathname === "/classes" ||
+      pathname.startsWith("/classes/")
+    );
+  }
+  if (item.id === "packages") {
+    return pathname === "/packages" || pathname.startsWith("/packages/");
   }
   if (item.id === "auth") {
     return pathname === "/login" || pathname.startsWith("/portal/profile");
@@ -148,6 +160,9 @@ export function isCustomerNavActive(item: CustomerNavItem, pathname: string): bo
       pathname.startsWith("/portal/bookings") ||
       pathname.startsWith("/portal/book/")
     );
+  }
+  if (item.id === "packages") {
+    return pathname === "/portal/packages" || pathname.startsWith("/portal/packages/");
   }
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }

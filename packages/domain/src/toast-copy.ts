@@ -30,6 +30,10 @@ export const PORTAL_TOAST_IDS = [
   "profile.save-failed",
   "contact.message-sent",
   "contact.message-failed",
+  "package.claimed",
+  "package.requested",
+  "package.action-failed",
+  "package.limit-reached",
 ] as const;
 
 export type PortalToastId = (typeof PORTAL_TOAST_IDS)[number];
@@ -130,6 +134,31 @@ export const PORTAL_TOAST_COPY = {
     title: "Message not saved",
     description: "That message could not be saved. Try again, or call the studio.",
   },
+  "package.claimed": {
+    id: "package.claimed",
+    tone: "success",
+    title: "Package added",
+    description: "Sessions remaining are ready to use on eligible classes. This is not cash.",
+  },
+  "package.requested": {
+    id: "package.requested",
+    tone: "info",
+    title: "Package request sent",
+    description: "The studio reviews paid packages manually. Credits activate after approval.",
+  },
+  "package.action-failed": {
+    id: "package.action-failed",
+    tone: "error",
+    title: "Package not updated",
+    description: "That package request could not be completed. Try again.",
+  },
+  "package.limit-reached": {
+    id: "package.limit-reached",
+    tone: "warning",
+    title: "Package limit reached",
+    description:
+      "This package already belongs to your account. Ask the studio if you need another.",
+  },
 } as const satisfies ExhaustivePortalToastCopy;
 
 export function portalToastCopy(id: PortalToastId): PortalToastCopy {
@@ -144,6 +173,7 @@ export function portalToastCopy(id: PortalToastId): PortalToastCopy {
 export function bookingCreatedToastId(status: BookingStatus): PortalToastId {
   if (status === "WAITLISTED") return "booking.waitlisted";
   if (status === "HELD_AWAITING_PAYMENT") return "booking.held-awaiting-payment";
+  if (status === "PAYMENT_SUBMITTED") return "booking.reserved";
   return "booking.reserved";
 }
 
@@ -183,6 +213,15 @@ export const ADMIN_TOAST_IDS = [
   "settings.save-failed",
   "policy.promoted",
   "policy.promote-failed",
+  "bundle.saved",
+  "bundle.save-failed",
+  "bundle.status-updated",
+  "bundle.status-failed",
+  "bundle.granted",
+  "bundle.grant-failed",
+  "bundle.revoked",
+  "bundle.acquisition-reviewed",
+  "bundle.review-failed",
 ] as const;
 
 export type AdminToastId = (typeof ADMIN_TOAST_IDS)[number];
@@ -384,6 +423,60 @@ export const ADMIN_TOAST_COPY = {
     tone: "error",
     title: "Policy not promoted",
     description: "That version could not be promoted. Try again.",
+  },
+  "bundle.saved": {
+    id: "bundle.saved",
+    tone: "success",
+    title: "Package saved",
+    description: "Future acquisitions use these terms. Existing entitlements keep their snapshots.",
+  },
+  "bundle.save-failed": {
+    id: "bundle.save-failed",
+    tone: "error",
+    title: "Package not saved",
+    description: "Those changes could not be saved. Try again.",
+  },
+  "bundle.status-updated": {
+    id: "bundle.status-updated",
+    tone: "success",
+    title: "Package status updated",
+    description: "Drafts stay admin-only. Archive blocks new claims without rewriting history.",
+  },
+  "bundle.status-failed": {
+    id: "bundle.status-failed",
+    tone: "error",
+    title: "Package status not updated",
+    description: "That status change could not be saved. Try again.",
+  },
+  "bundle.granted": {
+    id: "bundle.granted",
+    tone: "success",
+    title: "Package granted",
+    description: "The customer received a snapshot of the current package terms.",
+  },
+  "bundle.grant-failed": {
+    id: "bundle.grant-failed",
+    tone: "error",
+    title: "Package not granted",
+    description: "The grant could not be completed. Check the limit or try again.",
+  },
+  "bundle.revoked": {
+    id: "bundle.revoked",
+    tone: "success",
+    title: "Package revoked",
+    description: "Remaining sessions can no longer be used. History stays in the ledger.",
+  },
+  "bundle.acquisition-reviewed": {
+    id: "bundle.acquisition-reviewed",
+    tone: "success",
+    title: "Package request updated",
+    description: "Approval activates credits. Rejection does not create an entitlement.",
+  },
+  "bundle.review-failed": {
+    id: "bundle.review-failed",
+    tone: "error",
+    title: "Package request not updated",
+    description: "That review could not be saved. Try again.",
   },
 } as const satisfies ExhaustiveAdminToastCopy;
 

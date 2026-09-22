@@ -23,10 +23,10 @@ These items are intentionally not required for the first proof-of-concept MVP.
 
 - memberships
 - monthly plans
-- packages
-- class passes
-- credits
-- wallet
+- class passes as a separate product from session packages
+- monetary credits / wallet
+
+Session packages (fixed session entitlements, including a free Newbie Package) are delivered as mock-first catalogue + ledger behavior. See `openspec/specs/session-bundles.md` and GitHub #290. Remaining backend WIRE (Prisma, RLS, HTTP handlers) is a follow-up.
 - promo codes
 - loyalty
 

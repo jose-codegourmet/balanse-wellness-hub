@@ -110,6 +110,13 @@ export type CustomerBooking = {
   targetSession?: PublicSession | null;
   rejectReason?: string | null;
   proofPreviewUrl?: string | null;
+  /** Held or consumed package redemption, when the booking used a package. */
+  entitlementId?: string | null;
+  /** Waitlist intent only — does not hold or consume a credit. */
+  intendedEntitlementId?: string | null;
+  packageName?: string | null;
+  /** True when waitlist promotion could not reserve the intended package. */
+  packagePromotionBlocked?: boolean;
 };
 
 export type PaymentInstructions = {

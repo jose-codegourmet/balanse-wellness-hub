@@ -21,6 +21,10 @@ export const FEEDBACK_STATE_IDS = [
   "admin.no-classes",
   "admin.no-coaches",
   "admin.no-payment-qrs",
+  "admin.no-bundles",
+  "admin.no-package-reviews",
+  "customer.no-packages",
+  "public.no-packages",
 ] as const;
 
 export type FeedbackStateId = (typeof FEEDBACK_STATE_IDS)[number];
@@ -152,5 +156,30 @@ export const FEEDBACK_STATE_DEFAULTS: Record<FeedbackStateId, FeedbackStateCopy>
     kind: "empty",
     title: "No payment QR yet",
     description: "Upload the GCash or InstaPay QR customers use to pay the studio.",
+  },
+  "admin.no-bundles": {
+    id: "admin.no-bundles",
+    kind: "empty",
+    title: "No packages yet",
+    description: "Create a package to grant or sell a fixed number of sessions.",
+  },
+  "admin.no-package-reviews": {
+    id: "admin.no-package-reviews",
+    kind: "empty",
+    title: "No package reviews",
+    description: "Paid package requests appear here after a customer submits them.",
+  },
+  "customer.no-packages": {
+    id: "customer.no-packages",
+    kind: "empty",
+    title: "No packages yet",
+    description: "Claim a free package or request a paid one. Sessions remaining are not cash.",
+    actionLabel: "Browse packages",
+  },
+  "public.no-packages": {
+    id: "public.no-packages",
+    kind: "empty",
+    title: "No packages published",
+    description: "The studio has not published a package yet. Check back soon.",
   },
 };
