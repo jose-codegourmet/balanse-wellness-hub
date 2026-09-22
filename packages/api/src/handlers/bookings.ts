@@ -94,7 +94,15 @@ export async function postBookings(deps: ApiDeps, req: Request): Promise<Respons
   const versions = Array.isArray(body.policyVersionIds)
     ? body.policyVersionIds.filter((item): item is string => typeof item === "string")
     : [];
-  const created = await createReservation(deps, actor.userId, sessionId, versions);
+  const entitlementId = asString(body.entitlementId);
+  const created = await createReservation(
+    deps,
+    actor.userId,
+    sessionId,
+    versions,
+    entitlementId,
+    asString(body.intendedEntitlementId) ?? entitlementId,
+  );
   const booking = await loadOwnBooking(deps, created.bookingId, actor.userId);
   return ok({
     kind: created.kind,
@@ -133,7 +141,8 @@ export async function postWaitlist(deps: ApiDeps, req: Request, id: string): Pro
   const versions = Array.isArray(body.policyVersionIds)
     ? body.policyVersionIds.filter((item): item is string => typeof item === "string")
     : [];
-  const created = await createReservation(deps, actor.userId, session.id, versions);
+  const intended = asString(body.intendedEntitlementId) ?? asString(body.entitlementId);
+  const created = await createReservation(deps, actor.userId, session.id, versions, null, intended);
   const booking = await loadOwnBooking(deps, created.bookingId, actor.userId);
   return ok({ kind: created.kind, booking: presentBooking(booking) });
 }

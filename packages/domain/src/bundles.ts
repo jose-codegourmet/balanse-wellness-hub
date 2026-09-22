@@ -3,20 +3,23 @@
  * Credits are session entitlements, never cash, store credit, or a wallet.
  */
 
-export const BUNDLE_STATUSES = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
-export type BundleStatus = (typeof BUNDLE_STATUSES)[number];
+import { classSlug } from "./classes";
+import type {
+  BundleAcquisitionKind,
+  BundleAcquisitionStatus,
+  BundleApplicabilityMode,
+  BundleRedemptionStatus,
+  BundleStatus,
+  CustomerBundleStatus,
+  PaymentMethod,
+  PaymentStatus,
+} from "./enums";
+
+/** Admin/backend name. Customer-facing copy is always “Package”. */
+export const PACKAGE_CUSTOMER_LABEL = "Package";
 
 export const BUNDLE_ACQUISITION_CHANNELS = ["SELF_CLAIM", "SELF_PURCHASE", "ADMIN_GRANT"] as const;
 export type BundleAcquisitionChannel = (typeof BUNDLE_ACQUISITION_CHANNELS)[number];
-
-export const BUNDLE_ACQUISITION_STATUSES = [
-  "PENDING_PAYMENT",
-  "PENDING_REVIEW",
-  "ACTIVE",
-  "REJECTED",
-  "CANCELLED",
-] as const;
-export type BundleAcquisitionStatus = (typeof BUNDLE_ACQUISITION_STATUSES)[number];
 
 export const ENTITLEMENT_STATUSES = [
   "PENDING",
@@ -73,6 +76,7 @@ export const REDEMPTION_STATUS_LABELS: Record<RedemptionStatus, string> = {
 export const BUNDLE_ACQUISITION_STATUS_LABELS: Record<BundleAcquisitionStatus, string> = {
   PENDING_PAYMENT: "Awaiting payment",
   PENDING_REVIEW: "Awaiting studio review",
+  APPROVED: "Approved",
   ACTIVE: "Approved",
   REJECTED: "Not approved",
   CANCELLED: "Cancelled",
@@ -113,6 +117,27 @@ export type PublicBundle = Pick<
   | "perCustomerLimit"
   | "status"
 >;
+
+export type PublicPackage = {
+  id: string;
+  slug: string;
+  name: string;
+  summary: string;
+  description: string;
+  sessionCreditCount: number;
+  pricePhp: number;
+  applicabilityMode: BundleApplicabilityMode;
+  classIds: string[];
+  validityDays: number | null;
+  perCustomerLimit: number | null;
+  status: Extract<BundleStatus, "PUBLISHED">;
+};
+
+export type AdminBundle = Omit<PublicPackage, "status"> & {
+  status: BundleStatus;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type EntitlementSnapshot = {
   name: string;
@@ -180,6 +205,77 @@ export type BundleAuditEvent = {
   reason: string | null;
   createdAt: string;
 };
+
+export type EntitlementBalances = {
+  granted: number;
+  held: number;
+  consumed: number;
+  restored: number;
+  remaining: number;
+};
+
+export type HttpBundleRedemption = {
+  id: string;
+  entitlementId: string;
+  bookingId: string;
+  sessionId: string;
+  status: BundleRedemptionStatus;
+  heldAt: string;
+  consumedAt: string | null;
+  restoredAt: string | null;
+  restoreReason: string | null;
+};
+
+export type BundleAcquisitionPayment = {
+  id: string;
+  method: PaymentMethod;
+  status: PaymentStatus;
+  amountPhp: number;
+  proofObjectKey: string | null;
+  submittedAt: string | null;
+};
+
+export type HttpBundleAcquisition = {
+  id: string;
+  bundleId: string;
+  profileId: string;
+  kind: BundleAcquisitionKind;
+  status: BundleAcquisitionStatus;
+  idempotencyKey: string;
+  overrideLimit: boolean;
+  overrideReason: string | null;
+  adminNote: string | null;
+  rejectionNote: string | null;
+  createdAt: string;
+  reviewedAt: string | null;
+  payment: BundleAcquisitionPayment | null;
+  entitlementId: string | null;
+};
+
+export type HttpCustomerEntitlement = {
+  id: string;
+  bundleId: string;
+  profileId: string;
+  status: CustomerBundleStatus;
+  name: string;
+  sessionCreditCount: number;
+  pricePhp: number;
+  applicabilityMode: BundleApplicabilityMode;
+  classIds: string[];
+  validityDays: number | null;
+  expiresAt: string | null;
+  grantedAt: string;
+  revokedAt: string | null;
+  revokeReason: string | null;
+  balances: EntitlementBalances;
+  acquisition: HttpBundleAcquisition | null;
+  redemptions?: HttpBundleRedemption[];
+};
+
+export type EligibleEntitlement = Pick<
+  HttpCustomerEntitlement,
+  "id" | "name" | "status" | "expiresAt" | "balances" | "classIds" | "applicabilityMode"
+>;
 
 export const CONSUMED_BOOKING_STATUSES = [
   "CONFIRMED",
@@ -282,4 +378,84 @@ export function addValidityDays(fromIso: string, days: number): string {
 
 export function formatSessionsRemaining(count: number): string {
   return count === 1 ? "1 session remaining" : `${count} sessions remaining`;
+}
+
+export function bundleSlug(name: string): string {
+  return classSlug(name);
+}
+
+export function deriveEntitlementBalances(
+  granted: number,
+  redemptions: Array<Pick<HttpBundleRedemption, "status">>,
+): EntitlementBalances {
+  let held = 0;
+  let consumed = 0;
+  let restored = 0;
+  for (const row of redemptions) {
+    if (row.status === "HELD") held += 1;
+    if (row.status === "CONSUMED") consumed += 1;
+    if (row.status === "RESTORED") restored += 1;
+  }
+  const remaining = Math.max(0, granted - held - consumed);
+  return { granted, held, consumed, restored, remaining };
+}
+
+export function deriveCustomerBundleStatus(
+  current: CustomerBundleStatus,
+  balances: EntitlementBalances,
+  expiresAt: string | null,
+  nowIso: string,
+): CustomerBundleStatus {
+  if (current === "REVOKED") return "REVOKED";
+  if (expiresAt && new Date(expiresAt).getTime() <= new Date(nowIso).getTime()) return "EXPIRED";
+  if (balances.remaining <= 0) return "EXHAUSTED";
+  return "ACTIVE";
+}
+
+export function isEntitlementEligibleForSession(
+  entitlement: Pick<
+    HttpCustomerEntitlement,
+    "status" | "expiresAt" | "balances" | "applicabilityMode" | "classIds" | "profileId"
+  >,
+  session: { classId: string; startsAt: string },
+  customerId: string,
+  nowIso: string,
+): { ok: true } | { ok: false; code: string } {
+  if (entitlement.profileId !== customerId) return { ok: false, code: "entitlement_foreign" };
+  if (entitlement.status === "REVOKED") return { ok: false, code: "entitlement_revoked" };
+  if (entitlement.status === "EXPIRED") return { ok: false, code: "entitlement_expired" };
+  if (
+    entitlement.expiresAt &&
+    new Date(session.startsAt).getTime() >= new Date(entitlement.expiresAt).getTime()
+  ) {
+    return { ok: false, code: "entitlement_expired" };
+  }
+  if (
+    entitlement.expiresAt &&
+    new Date(entitlement.expiresAt).getTime() <= new Date(nowIso).getTime()
+  ) {
+    return { ok: false, code: "entitlement_expired" };
+  }
+  if (
+    entitlement.applicabilityMode === "EXPLICIT_CLASSES" &&
+    !entitlement.classIds.includes(session.classId)
+  ) {
+    return { ok: false, code: "entitlement_ineligible_class" };
+  }
+  if (entitlement.balances.remaining <= 0) return { ok: false, code: "entitlement_exhausted" };
+  if (entitlement.status !== "ACTIVE") return { ok: false, code: "entitlement_not_usable" };
+  return { ok: true };
+}
+
+export function sessionsRemainingCopy(remaining: number): string {
+  const noun = remaining === 1 ? "session" : "sessions";
+  return `${remaining} ${noun} remaining`;
+}
+
+export function claimIdempotencyKey(profileId: string, bundleId: string): string {
+  return `customer-claim:${profileId}:${bundleId}`;
+}
+
+export function paidAcquisitionIdempotencyKey(profileId: string, bundleId: string): string {
+  return `customer-paid:${profileId}:${bundleId}`;
 }

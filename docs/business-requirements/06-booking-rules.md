@@ -76,6 +76,15 @@ Payment or payment evidence does not automatically grant final confirmation.
 
 Admin confirms or rejects according to the MVP manual process.
 
+## Session packages (BE-058)
+
+A customer may book a scheduled session using one eligible issued package entitlement instead of a cash/GCash payment path.
+
+- Show “Use a package” only when an active entitlement applies to that session’s **class** and is still valid at session start.
+- Hold one credit with the main-list slot; consume on confirm/attend; restore on reject, hold expiry, or completed eligible cancellation.
+- Waitlisting does not hold a credit. Promotion revalidates the intended entitlement. If it is unusable, the customer stays waiting with an action-required block — never silent cash or another package.
+- Capacity, cutoff, policies, and admin confirmation still apply. Packages do not book a coach.
+
 ## Booking records are never silently removed
 
 Expired, rejected, cancelled, no-show, and completed bookings should remain part of booking history.

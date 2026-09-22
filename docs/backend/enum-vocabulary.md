@@ -26,5 +26,10 @@ Customer-facing booking/refund labels: `docs/screen-specs/shared/02-status-langu
 | `request_resolution` | `OPEN`, `COMPLETED`, `REJECTED` | Request rows, not booking status. |
 | `audit_actor_type` | `STAFF`, `SYSTEM`, `CUSTOMER` | Audit only. |
 | `policy_document_kind` | waiver / gym / participation / cancellation | Catalogue. |
+| `bundle_status` | `DRAFT`, `PUBLISHED`, `ARCHIVED` | Package catalogue (BE-058). |
+| `bundle_applicability_mode` | `ALL_ACTIVE_CLASSES`, `EXPLICIT_CLASSES` | Class set, not coach. |
+| `bundle_acquisition_kind` / `bundle_acquisition_status` | claim / paid / grant + pending/approved | Order row. |
+| `customer_bundle_status` | `ACTIVE`, `EXHAUSTED`, `EXPIRED`, `REVOKED` | Issued entitlement. |
+| `bundle_redemption_status` | `HELD`, `CONSUMED`, `RESTORED` | Credit ledger. |
 
-No invented business states beyond the docs above.
+No invented **booking** states beyond the docs above. Bundle enums are internal catalogue/ledger vocabulary (customer chrome says “Package”).

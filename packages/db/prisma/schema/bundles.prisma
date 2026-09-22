@@ -1,0 +1,155 @@
+/// BE-058 — reusable session-bundle definition (customer-facing name: package).
+/// Editing this row never rewrites existing entitlement snapshots.
+model Bundle {
+  id                  String                  @id @default(cuid())
+  name                String
+  slug                String                  @unique
+  summary             String                  @default("")
+  description         String                  @default("")
+  sessionCreditCount  Int
+  pricePhp            Decimal                 @db.Decimal(12, 2)
+  applicabilityMode   BundleApplicabilityMode
+  validityDays        Int?
+  perCustomerLimit    Int?
+  status              BundleStatus            @default(DRAFT)
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+
+  classApplicability BundleClassApplicability[]
+  acquisitions       BundleAcquisition[]
+  entitlements       CustomerBundle[]
+
+  @@index([status])
+  @@map("bundles")
+}
+
+/// Explicit class set when applicabilityMode = EXPLICIT_CLASSES.
+model BundleClassApplicability {
+  id        String   @id @default(cuid())
+  bundleId  String
+  classId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bundle   Bundle   @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  gymClass GymClass @relation(fields: [classId], references: [id])
+
+  @@unique([bundleId, classId])
+  @@index([classId])
+  @@map("bundle_class_applicability")
+}
+
+/// Order / grant / claim. Paid rows activate an entitlement only after approval.
+model BundleAcquisition {
+  id               String                  @id @default(cuid())
+  bundleId         String
+  profileId        String                  @db.Uuid
+  kind             BundleAcquisitionKind
+  status           BundleAcquisitionStatus
+  idempotencyKey   String                  @unique
+  overrideLimit    Boolean                 @default(false)
+  overrideReason   String?
+  adminNote        String?
+  grantedById      String?
+  reviewedById     String?
+  reviewedAt       DateTime?               @db.Timestamptz
+  rejectionNote    String?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  bundle      Bundle                    @relation(fields: [bundleId], references: [id])
+  profile     Profile                   @relation(fields: [profileId], references: [id])
+  grantedBy   StaffMember?              @relation("BundleGrantedBy", fields: [grantedById], references: [id])
+  reviewedBy  StaffMember?              @relation("BundleAcquisitionReviewedBy", fields: [reviewedById], references: [id])
+  entitlement CustomerBundle?
+  payment     BundleAcquisitionPayment?
+
+  @@index([profileId, status])
+  @@index([bundleId, profileId])
+  @@index([status, createdAt])
+  @@map("bundle_acquisitions")
+}
+
+/// Paid-acquisition payment. Not a booking payment — never invents a booking FK.
+model BundleAcquisitionPayment {
+  id              String        @id @default(cuid())
+  acquisitionId   String        @unique
+  method          PaymentMethod
+  status          PaymentStatus @default(NONE)
+  amount          Decimal       @db.Decimal(12, 2)
+  proofObjectKey  String?
+  submittedAt     DateTime?     @db.Timestamptz
+  reviewedById    String?
+  reviewedAt      DateTime?     @db.Timestamptz
+  adminNote       String?
+  referenceNumber String?
+  payerName       String?
+  paymentQrCodeId String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  acquisition   BundleAcquisition @relation(fields: [acquisitionId], references: [id])
+  reviewedBy    StaffMember?      @relation("BundlePaymentReviewedBy", fields: [reviewedById], references: [id])
+  paymentQrCode PaymentQrCode?    @relation(fields: [paymentQrCodeId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([status, createdAt])
+  @@index([paymentQrCodeId])
+  @@map("bundle_acquisition_payments")
+}
+
+/// Issued copy for one customer. Snapshots are immutable after insert.
+model CustomerBundle {
+  id                         String               @id @default(cuid())
+  acquisitionId              String               @unique
+  bundleId                   String
+  profileId                  String               @db.Uuid
+  status                     CustomerBundleStatus @default(ACTIVE)
+  snapshotName               String
+  snapshotSessionCreditCount Int
+  snapshotPricePhp           Decimal              @db.Decimal(12, 2)
+  snapshotApplicabilityMode  BundleApplicabilityMode
+  snapshotClassIds           String[]             @default([])
+  snapshotValidityDays       Int?
+  snapshotExpiresAt          DateTime?            @db.Timestamptz
+  revokedAt                  DateTime?            @db.Timestamptz
+  revokedById                String?
+  revokeReason               String?
+  createdAt                  DateTime             @default(now())
+  updatedAt                  DateTime             @updatedAt
+
+  acquisition     BundleAcquisition @relation(fields: [acquisitionId], references: [id])
+  bundle          Bundle            @relation(fields: [bundleId], references: [id])
+  profile         Profile           @relation(fields: [profileId], references: [id])
+  revokedBy       StaffMember?      @relation("CustomerBundleRevokedBy", fields: [revokedById], references: [id])
+  redemptions     BundleRedemption[]
+  waitlistIntents WaitlistEntry[]
+
+  @@index([profileId, status])
+  @@index([bundleId])
+  @@index([snapshotExpiresAt])
+  @@map("customer_bundles")
+}
+
+/// Append-only credit ledger. Remaining = snapshot − (HELD + CONSUMED).
+model BundleRedemption {
+  id            String                 @id @default(cuid())
+  entitlementId String
+  bookingId     String
+  sessionId     String
+  status        BundleRedemptionStatus
+  heldAt        DateTime               @default(now()) @db.Timestamptz
+  consumedAt    DateTime?              @db.Timestamptz
+  restoredAt    DateTime?              @db.Timestamptz
+  restoreReason String?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  entitlement CustomerBundle @relation(fields: [entitlementId], references: [id])
+  booking     Booking        @relation(fields: [bookingId], references: [id])
+  session     GymSession     @relation(fields: [sessionId], references: [id])
+
+  @@index([entitlementId, status])
+  @@index([bookingId])
+  @@index([sessionId])
+  @@map("bundle_redemptions")
+}

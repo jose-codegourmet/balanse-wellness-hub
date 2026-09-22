@@ -41,6 +41,8 @@ export async function createReservation(
   profileId: string,
   sessionId: string,
   acceptanceVersionIds: string[],
+  entitlementId?: string | null,
+  intendedEntitlementId?: string | null,
 ): Promise<{
   bookingId: string;
   kind: "hold" | "waitlist";
@@ -57,10 +59,12 @@ export async function createReservation(
       };
     }>
   >(
-    `SELECT public.create_reservation($1::uuid, $2, $3::text[]) AS result`,
+    `SELECT public.create_reservation($1::uuid, $2, $3::text[], $4, $5) AS result`,
     profileId,
     sessionId,
     acceptanceVersionIds,
+    entitlementId ?? null,
+    intendedEntitlementId ?? null,
   );
   return rows[0].result;
 }

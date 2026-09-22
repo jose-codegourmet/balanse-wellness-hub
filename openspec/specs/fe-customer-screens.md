@@ -7,4 +7,4 @@
 - Hold deadline is `min(reserved_at + 8h, class_start)` and is not editable
 - GCash proof upload never auto-confirms
 - Cancellation and reschedule are requests; slots stay held
-- Packages at `/portal/packages` follow `docs/screen-specs/customer/14-packages.md` and `openspec/specs/session-bundles.md`
+- Packages at `/portal/packages` follow `docs/screen-specs/customer/14-packages.md` and `openspec/specs/session-bundles.md`. Do not fetch `/api/*`.

@@ -176,6 +176,8 @@ export type AdminCustomerDetail = AdminCustomer & {
   policyAcceptances: PolicyAcceptance[];
   entitlements: CustomerEntitlement[];
   acquisitions: BundleAcquisition[];
+  /** HTTP-shaped pending paid requests when present. */
+  pendingAcquisitions?: BundleAcquisition[];
 };
 
 export type AdminDashboardSnapshot = {

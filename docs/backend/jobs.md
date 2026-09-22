@@ -6,6 +6,8 @@
 
 Idempotent. Uses `FOR UPDATE SKIP LOCKED` and per-session advisory locks. Safe to overlap.
 
+Hold expiry also restores any non-`RESTORED` bundle redemption on that booking (BE-058). Promotion revalidates `intendedEntitlementId` and may set `promotionBlockReason` instead of creating an invalid debit.
+
 Behaviour:
 
 1. Expire `HELD_AWAITING_PAYMENT` rows with `holdExpiresAt <= now()`.
