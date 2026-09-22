@@ -1,7 +1,7 @@
 # Admin Portal — Schedule Management
 
 ```text
-SCHEDULE                           [Create Session]
+SCHEDULE          [Duplicate Range] [Create Session]
 [Today] [<] September 2026 [>]
 ADMIN CALENDAR
 Class | Coaches | Capacity | Confirmed/Held/Waitlisted
@@ -9,10 +9,11 @@ Class | Coaches | Capacity | Confirmed/Held/Waitlisted
 SELECTED SESSION
 Class | date/time | coaches | capacity
 [View Roster] [Edit] [Cancel Session]
+[Make Recurring]
 ```
 
 Create/Edit fields: class, date, start/end, coaches (multi-select; at least one required), price, capacity, publish/bookable state.
-Recurring generation is out of MVP. Coaches do not edit schedules.
+`Duplicate Range` copies non-cancelled sessions from an inclusive source range to a new start date. `Make Recurring` uses the selected session as a weekly template with weekday, date-range, and draft/publish controls. Both surfaces preview the generated count and explain that exact matches are skipped. Coaches do not edit schedules.
 
 ## Financial/session costing fields
 

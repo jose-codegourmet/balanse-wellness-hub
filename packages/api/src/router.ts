@@ -12,8 +12,10 @@ import {
   postAdminClass,
   postAdminCoach,
   postAdminSession,
+  postAdminSessionRecurrence,
   postCancelSession,
   postCoachPhoto,
+  postDuplicateAdminSessions,
 } from "./handlers/admin-catalogue";
 import { getAdminDashboard, getAdminDashboardMetrics } from "./handlers/admin-dashboard";
 import {
@@ -162,7 +164,10 @@ const handlers: Record<string, RouteHandler> = {
     deleteCoachPhoto(deps, req, params.id),
   "GET /api/admin/sessions": (deps, req) => getAdminSessions(deps, req),
   "POST /api/admin/sessions": (deps, req) => postAdminSession(deps, req),
+  "POST /api/admin/sessions/duplicate": (deps, req) => postDuplicateAdminSessions(deps, req),
   "PATCH /api/admin/sessions/{id}": (deps, req, params) => patchAdminSession(deps, req, params.id),
+  "POST /api/admin/sessions/{id}/recurrence": (deps, req, params) =>
+    postAdminSessionRecurrence(deps, req, params.id),
   "POST /api/admin/sessions/{id}/cancel": (deps, req, params) =>
     postCancelSession(deps, req, params.id),
   "GET /api/admin/cancellation-requests": (deps, req) => getCancellationRequests(deps, req),

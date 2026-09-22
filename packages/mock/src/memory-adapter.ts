@@ -17,19 +17,23 @@ import {
   ADMIN_PAYMENT_HOLD_SORT,
   ADMIN_PAYMENT_REFUND_SORT,
   ADMIN_REQUEST_QUEUE_SORT,
+  addCalendarDays,
   bookingListTab,
   buildAdminCustomerRow,
   buildAdminDashboard,
+  calendarDayDistance,
   canApproveReschedule,
   computeAdminReports,
   computeHoldExpiresAt,
   computeSessionDrilldown,
   computeSessionInventory,
+  datesForWeeklyRecurrence,
   FIELD_CONSTRAINTS,
   filterPaymentQueue,
   formatPeso,
   manilaYmd,
   sessionCoachCost,
+  shiftSessionIsoToDate,
   sliceCursorPage,
   toPublicSession,
   validateSessionCapacity,
@@ -207,6 +211,55 @@ export function createMemoryAdapter(): MockDataAdapter {
   const findBooking = (id: string) => bookings.find((b) => b.id === id) ?? null;
 
   const asPublic = (session: AdminSession): PublicSession => toPublicSession(session);
+
+  function createGeneratedSession(
+    template: AdminSession,
+    startsAt: string,
+    publish: boolean,
+    recurrenceRuleId: string | null,
+  ): AdminSession {
+    const durationMs = Date.parse(template.endsAt) - Date.parse(template.startsAt);
+    const endsAt = new Date(Date.parse(startsAt) + durationMs).toISOString();
+    const assigned = template.coaches.map((assignedCoach) => {
+      const coach = coaches.find((row) => row.id === assignedCoach.id);
+      if (!coach) throw new Error("One or more assigned coaches no longer exist.");
+      return coach;
+    });
+    const coachAssignments = assigned.map((coach) => ({
+      coachId: coach.id,
+      coachRatePhp: coach.defaultRatePhp,
+      coachRateType: coach.rateType,
+    }));
+    const generated: AdminSession = {
+      id: `session-${crypto.randomUUID()}`,
+      classId: template.classId,
+      name: template.name ?? null,
+      className: template.className,
+      coaches: assigned.map(({ id, name, photoKey }) => ({ id, name, photoKey })),
+      coachName: assigned.map((coach) => coach.name).join(", "),
+      coachAssignments,
+      coachRatePhp: coachAssignments.reduce(
+        (sum, assignment) =>
+          sum +
+          sessionCoachCost(assignment, {
+            startsAt,
+            endsAt,
+          }),
+        0,
+      ),
+      startsAt,
+      endsAt,
+      pricePhp: template.pricePhp,
+      capacity: template.capacity,
+      remainingSlots: template.capacity,
+      reservable: publish,
+      availability: "open",
+      status: publish ? "PUBLISHED" : "DRAFT",
+      bookable: publish,
+      recurrenceRuleId,
+    };
+    return generated;
+  }
 
   const withFullOverlay = (session: PublicSession): PublicSession => {
     const fullId = getMockRuntime().sessionBecameFullId;
@@ -578,6 +631,67 @@ export function createMemoryAdapter(): MockDataAdapter {
         };
         sessions = [created, ...sessions];
         return clone(created);
+      }),
+    duplicateAdminSchedule: (input) =>
+      applyMockEffects(() => {
+        const dayOffset = calendarDayDistance(input.sourceStart, input.targetStart);
+        const templates = sessions.filter((session) => {
+          const ymd = manilaYmd(session.startsAt);
+          return (
+            ymd >= input.sourceStart && ymd <= input.sourceEnd && session.status !== "CANCELLED"
+          );
+        });
+        const created: AdminSession[] = [];
+        let skippedCount = 0;
+        for (const template of templates) {
+          const targetYmd = addCalendarDays(manilaYmd(template.startsAt), dayOffset);
+          const startsAt = shiftSessionIsoToDate(template.startsAt, targetYmd);
+          if (
+            sessions.some(
+              (session) => session.classId === template.classId && session.startsAt === startsAt,
+            )
+          ) {
+            skippedCount += 1;
+            continue;
+          }
+          created.push(createGeneratedSession(template, startsAt, input.publish, null));
+        }
+        sessions = [...created, ...sessions];
+        return {
+          createdCount: created.length,
+          skippedCount,
+          sessionIds: created.map((session) => session.id),
+        };
+      }),
+    createAdminRecurringSchedule: (input) =>
+      applyMockEffects(() => {
+        const template = sessions.find((session) => session.id === input.sourceSessionId);
+        if (!template) throw new Error("Session not found");
+        if (template.status === "CANCELLED") throw new Error("Cancelled sessions cannot repeat.");
+        if (template.recurrenceRuleId) throw new Error("This session is already recurring.");
+        const recurrenceRuleId = `recurrence-${crypto.randomUUID()}`;
+        template.recurrenceRuleId = recurrenceRuleId;
+        const created: AdminSession[] = [];
+        let skippedCount = 0;
+        for (const ymd of datesForWeeklyRecurrence(input)) {
+          const startsAt = shiftSessionIsoToDate(template.startsAt, ymd);
+          if (
+            sessions.some(
+              (session) => session.classId === template.classId && session.startsAt === startsAt,
+            )
+          ) {
+            skippedCount += 1;
+            continue;
+          }
+          created.push(createGeneratedSession(template, startsAt, input.publish, recurrenceRuleId));
+        }
+        sessions = [...created, ...sessions];
+        return {
+          createdCount: created.length,
+          skippedCount,
+          sessionIds: created.map((session) => session.id),
+          recurrenceRuleId,
+        };
       }),
     cancelAdminSession: (id) =>
       applyMockEffects(() => {

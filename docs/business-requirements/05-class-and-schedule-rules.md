@@ -52,20 +52,16 @@ Coaches themselves do not edit the schedule.
 
 ## Recurring schedules
 
-Recurring class schedules are needed operationally in the future, but automatic recurring schedule creation is excluded from the lean MVP.
+Epic #288 adds bounded admin schedule automation after the lean MVP wave. Admin can duplicate an inclusive source range or use one session as a weekly template. Generated occurrences remain ordinary sessions and follow every existing booking, capacity, cancellation, reporting, and compensation-snapshot rule.
 
-### MVP approach
-
-Admin creates/manages scheduled sessions manually.
-
-### Future
-
-Support patterns such as:
+Supported patterns:
 
 - every Monday at 8:00 AM,
 - every Tuesday and Thursday at 6:00 PM,
-- recurrence ranges,
-- recurrence exceptions.
+- inclusive recurrence ranges up to one year,
+- duplicating a source range up to 63 days.
+
+Exact class/start-time matches are skipped. Generated sessions default to draft unless admin explicitly publishes the batch. Holiday calendars, recurrence exceptions, series-wide editing/deletion, and coach self-service are not part of #288.
 
 ## Class cancellation
 

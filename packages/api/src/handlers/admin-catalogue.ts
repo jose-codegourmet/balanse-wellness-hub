@@ -1,5 +1,15 @@
 import type { Prisma } from "@balanse/db";
-import { classSlug, FIELD_CONSTRAINTS, SIGNED_UPLOAD } from "@balanse/domain";
+import {
+  addCalendarDays,
+  calendarDayDistance,
+  classSlug,
+  datesForWeeklyRecurrence,
+  FIELD_CONSTRAINTS,
+  isManilaYmd,
+  manilaYmd,
+  SIGNED_UPLOAD,
+  type Weekday,
+} from "@balanse/domain";
 import { requireAdmin, resolveActor, writeAudit } from "../auth";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
@@ -278,6 +288,224 @@ export async function postAdminSession(deps: ApiDeps, req: Request): Promise<Res
     metadata: { coachIds },
   });
   return ok({ session: created });
+}
+
+export async function postDuplicateAdminSessions(deps: ApiDeps, req: Request): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const body = await readJson(req);
+  const sourceStart = parseScheduleDate(body, "sourceStart");
+  const sourceEnd = parseScheduleDate(body, "sourceEnd");
+  const targetStart = parseScheduleDate(body, "targetStart");
+  const rangeDays = calendarDayDistance(sourceStart, sourceEnd);
+  if (rangeDays < 0 || rangeDays > 62) {
+    throwFields(
+      fieldError("sourceEnd", "out_of_range", "Copy an inclusive range of at most 63 days."),
+    );
+  }
+  const dayOffset = calendarDayDistance(sourceStart, targetStart);
+  const publish = body.publish === true;
+  const rangeStart = new Date(`${sourceStart}T00:00:00+08:00`);
+  const rangeEnd = new Date(`${addCalendarDays(sourceEnd, 1)}T00:00:00+08:00`);
+
+  const result = await deps.prisma.$transaction(async (tx) => {
+    const templates = await tx.gymSession.findMany({
+      where: {
+        startsAt: { gte: rangeStart, lt: rangeEnd },
+        status: { not: "CANCELLED" },
+      },
+      orderBy: { startsAt: "asc" },
+      include: { gymClass: true, coaches: true },
+    });
+    if (templates.some((session) => !session.gymClass.active)) {
+      throwFields(
+        fieldError(
+          "sourceStart",
+          "inactive_reference",
+          "The source range includes an inactive class.",
+        ),
+      );
+    }
+    const createdIds: string[] = [];
+    let skippedCount = 0;
+    for (const template of templates) {
+      const startsAt = new Date(template.startsAt.getTime() + dayOffset * 86_400_000);
+      const endsAt = new Date(template.endsAt.getTime() + dayOffset * 86_400_000);
+      const duplicate = await tx.gymSession.findFirst({
+        where: { classId: template.classId, startsAt },
+        select: { id: true },
+      });
+      if (duplicate) {
+        skippedCount += 1;
+        continue;
+      }
+      const assigned = await resolveSessionCoaches(
+        tx,
+        template.coaches.map((assignment) => assignment.coachId),
+      );
+      const created = await tx.gymSession.create({
+        data: generatedSessionData(template, assigned, startsAt, endsAt, publish),
+        select: { id: true },
+      });
+      createdIds.push(created.id);
+    }
+    return { createdCount: createdIds.length, skippedCount, sessionIds: createdIds };
+  });
+  await writeAudit(deps, {
+    entityType: "session_batch",
+    entityId: `duplicate:${sourceStart}:${targetStart}`,
+    action: "session.duplicate_range",
+    actor,
+    metadata: { ...result, sourceStart, sourceEnd, targetStart, publish },
+  });
+  return ok(result);
+}
+
+export async function postAdminSessionRecurrence(
+  deps: ApiDeps,
+  req: Request,
+  sourceSessionId: string,
+): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const body = await readJson(req);
+  const startsOn = parseScheduleDate(body, "startsOn");
+  const endsOn = parseScheduleDate(body, "endsOn");
+  const rangeDays = calendarDayDistance(startsOn, endsOn);
+  if (rangeDays < 0 || rangeDays > 366) {
+    throwFields(
+      fieldError("endsOn", "out_of_range", "Create an inclusive series of at most one year."),
+    );
+  }
+  const weekdays = parseWeekdays(body.weekdays);
+  const publish = body.publish === true;
+  const dates = datesForWeeklyRecurrence({ startsOn, endsOn, weekdays });
+
+  const result = await deps.prisma.$transaction(async (tx) => {
+    const source = await tx.gymSession.findUnique({
+      where: { id: sourceSessionId },
+      include: { gymClass: true, coaches: true },
+    });
+    if (!source) throw new ApiError(404, "session_not_found", "Session not found.");
+    if (source.status === "CANCELLED") {
+      throwFields(
+        fieldError("sourceSessionId", "invalid_format", "Cancelled sessions cannot repeat."),
+      );
+    }
+    if (source.recurrenceRuleId) {
+      throwFields(
+        fieldError("sourceSessionId", "already_exists", "This session is already recurring."),
+      );
+    }
+    if (!source.gymClass.active) {
+      throwFields(
+        fieldError("sourceSessionId", "inactive_reference", "The session class is inactive."),
+      );
+    }
+    const assigned = await resolveSessionCoaches(
+      tx,
+      source.coaches.map((assignment) => assignment.coachId),
+    );
+    const rule = await tx.sessionRecurrenceRule.create({
+      data: {
+        sourceSessionId,
+        startsOn: new Date(`${startsOn}T00:00:00Z`),
+        endsOn: new Date(`${endsOn}T00:00:00Z`),
+        weekdays,
+        publish,
+      },
+    });
+    await tx.gymSession.update({
+      where: { id: sourceSessionId },
+      data: { recurrenceRuleId: rule.id },
+    });
+    const createdIds: string[] = [];
+    let skippedCount = 0;
+    const sourceManilaYmd = manilaYmd(source.startsAt.toISOString());
+    for (const ymd of dates) {
+      const dayOffset = calendarDayDistance(sourceManilaYmd, ymd);
+      const startsAt = new Date(source.startsAt.getTime() + dayOffset * 86_400_000);
+      const endsAt = new Date(source.endsAt.getTime() + dayOffset * 86_400_000);
+      const duplicate = await tx.gymSession.findFirst({
+        where: { classId: source.classId, startsAt },
+        select: { id: true },
+      });
+      if (duplicate) {
+        skippedCount += 1;
+        continue;
+      }
+      const created = await tx.gymSession.create({
+        data: {
+          ...generatedSessionData(source, assigned, startsAt, endsAt, publish),
+          recurrenceRuleId: rule.id,
+        },
+        select: { id: true },
+      });
+      createdIds.push(created.id);
+    }
+    return {
+      recurrenceRuleId: rule.id,
+      createdCount: createdIds.length,
+      skippedCount,
+      sessionIds: createdIds,
+    };
+  });
+  await writeAudit(deps, {
+    entityType: "session_recurrence_rule",
+    entityId: result.recurrenceRuleId,
+    action: "session.recurrence.create",
+    actor,
+    metadata: { ...result, sourceSessionId, startsOn, endsOn, weekdays, publish },
+  });
+  return ok(result);
+}
+
+function generatedSessionData(
+  template: {
+    classId: string;
+    capacity: number;
+    customerPrice: Prisma.Decimal;
+  },
+  coaches: Awaited<ReturnType<typeof resolveSessionCoaches>>,
+  startsAt: Date,
+  endsAt: Date,
+  publish: boolean,
+) {
+  return {
+    classId: template.classId,
+    startsAt,
+    endsAt,
+    capacity: template.capacity,
+    customerPrice: template.customerPrice,
+    status: publish ? ("PUBLISHED" as const) : ("DRAFT" as const),
+    coaches: {
+      create: coaches.map((coach) => ({
+        coachId: coach.id,
+        coachRate: coach.defaultRate,
+        coachRateType: coach.rateType,
+      })),
+    },
+  };
+}
+
+function parseScheduleDate(body: Record<string, unknown>, key: string): string {
+  const value = requireString(body, key, 10);
+  if (!isManilaYmd(value)) {
+    throwFields(fieldError(key, "invalid_format", `${key} must be yyyy-mm-dd.`));
+  }
+  return value;
+}
+
+function parseWeekdays(value: unknown): Weekday[] {
+  if (!Array.isArray(value) || value.length === 0 || value.length > 7) {
+    throwFields(fieldError("weekdays", "required", "Choose one to seven weekdays."));
+  }
+  if (value.some((day) => !Number.isInteger(day) || day < 0 || day > 6)) {
+    throwFields(fieldError("weekdays", "invalid_format", "Weekdays must be integers from 0 to 6."));
+  }
+  const weekdays = value as Weekday[];
+  if (new Set(weekdays).size !== weekdays.length) {
+    throwFields(fieldError("weekdays", "invalid_format", "Choose each weekday only once."));
+  }
+  return weekdays;
 }
 
 export async function patchAdminSession(

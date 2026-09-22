@@ -2200,6 +2200,75 @@
         }
       }
     },
+    "/api/admin/sessions/duplicate": {
+      "post": {
+        "tags": [
+          "BE-057"
+        ],
+        "operationId": "BE-057_post__api_admin_sessions_duplicate",
+        "summary": "BE-057 POST /api/admin/sessions/duplicate",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/sessions/{id}": {
       "patch": {
         "tags": [
@@ -2258,6 +2327,75 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/sessions/{id}/recurrence": {
+      "post": {
+        "tags": [
+          "BE-057"
+        ],
+        "operationId": "BE-057_post__api_admin_sessions_id_recurrence",
+        "summary": "BE-057 POST /api/admin/sessions/{id}/recurrence",
         "responses": {
           "200": {
             "description": "Success",

@@ -14,9 +14,8 @@ These items are intentionally not required for the first proof-of-concept MVP.
 
 ## Scheduling
 
-- recurring session templates
-- automatic weekly recurrence
-- exceptions/holiday rules
+- recurrence exceptions / holiday rules
+- series-wide recurrence editing and deletion
 - coach self-service availability
 - coach portal
 

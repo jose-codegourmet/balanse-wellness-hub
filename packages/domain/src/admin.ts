@@ -132,6 +132,7 @@ export type AdminSession = PublicSession & {
   bookable: boolean;
   coachRatePhp: number;
   coachAssignments: { coachId: string; coachRatePhp: number; coachRateType: CoachRateType }[];
+  recurrenceRuleId?: string | null;
 };
 
 export function toPublicSession(session: AdminSession): PublicSession {

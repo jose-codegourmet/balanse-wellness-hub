@@ -11,6 +11,7 @@ import {
 } from "@balanse/domain";
 import { Badge, Button } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
+import { Repeat2 } from "lucide-react";
 import Link from "next/link";
 import { CoachOption } from "@/components/balanse/coach/coach-option/CoachOption";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
@@ -45,6 +46,11 @@ export function SelectedSessionPanel({
   return (
     <aside className="rounded-xl border border-border bg-card p-4">
       <h2 className="font-display text-2xl">Selected Session</h2>
+      {session.recurrenceRuleId ? (
+        <Badge className="mt-2" variant="neutral">
+          Recurring occurrence
+        </Badge>
+      ) : null}
       {daySessions.length > 1 ? (
         <ul className="mt-3 grid gap-1">
           {daySessions.map((row) => {
@@ -104,6 +110,16 @@ export function SelectedSessionPanel({
         >
           Edit
         </Button>
+        {canCancel && !session.recurrenceRuleId ? (
+          <Button
+            nativeButton={false}
+            variant="outline"
+            render={<Link href={`/schedule/${session.id}/recurrence`} />}
+          >
+            <Repeat2 className="size-4" aria-hidden />
+            Make recurring
+          </Button>
+        ) : null}
         {canCancel ? (
           <ConfirmAction
             triggerLabel="Cancel Session"

@@ -14,6 +14,8 @@
 
 **2026-09-21 product amendment — coach assignments:** Classes are standalone catalogue entries with an optional marketing coach roster. This roster is separate from scheduled staffing: every scheduled session (including drafts) requires at least one coach and may have multiple. Customers book the scheduled class session, not a coach. Each session assignment holds an immutable compensation snapshot; retained assignments preserve it. Sessions support an optional custom name, falling back to the class name when blank. Public class pages include generated hero imagery, assigned coaches, rich-text about content, zoomable galleries, customer rates, and booking. Current marketing content and custom titles remain in the mock UI lane; no live backend wiring is added. See [class pages](screen-specs/public/10-class-pages.md) and [session coach assignments](backend/session-coach-assignments.md) for scope and rollout details.
 
+**2026-09-22 product amendment — recurring schedules (#288):** Admin schedule automation now supports duplicating an inclusive range of up to 63 days and creating a bounded weekly series from one existing session. Generated occurrences are ordinary sessions, default to draft, skip exact class/start-time matches, and capture current coach rates as new immutable snapshots. Holiday exceptions and series-wide mutation remain future scope. See `openspec/specs/recurring-schedules.md`.
+
 ---
 
 ## Table of contents
@@ -1812,16 +1814,16 @@ apps/admin (port 9001)
 - **Lane:** FE
 - **Depends on:** FE-FND-009, FE-SHR-005
 - **Source docs:** `docs/screen-specs/admin/05-schedule-management.md`; `docs/business-requirements/05-class-and-schedule-rules.md`; `15-admin-flows.md` Flow A, Flow F
-- **Scope notes:** Spec: header with `[Create Session]`, `[Today] [<] Month [>]` controls, admin calendar showing `Class | Coach | Capacity | Confirmed/Held/Waitlisted`, and a selected-session panel with `[View Roster] [Edit] [Cancel Session]`. Create/Edit fields: class, date, start/end, coach, price, capacity, publish/bookable state — plus the financial fields the spec adds: `Customer Price`, `Coach`, `Coach Rate`, `Coach Rate Type`, `Capacity`. Historical snapshot rule must be surfaced in the UI: editing a coach's default rate later must not rewrite this session (show the snapshot as session-owned data). Recurring generation is out of MVP; coaches do not edit schedules.
+- **Scope notes:** Spec: header with `[Duplicate Range] [Create Session]`, `[Today] [<] Month [>]` controls, admin calendar showing `Class | Coach | Capacity | Confirmed/Held/Waitlisted`, and a selected-session panel with `[View Roster] [Edit] [Make Recurring] [Cancel Session]`. Create/Edit fields: class, date, start/end, coach, price, capacity, publish/bookable state — plus the financial fields the spec adds: `Customer Price`, `Coach`, `Coach Rate`, `Coach Rate Type`, `Capacity`. Historical snapshot rule must be surfaced in the UI: editing a coach's default rate later must not rewrite this session (show the snapshot as session-owned data).
 - **Acceptance criteria:**
   - [ ] Calendar shows the four specced per-session data points.
   - [ ] Create/Edit form contains every specced field including the coach-rate snapshot fields, and no others.
   - [ ] UI copy or helper text makes clear the rate shown is a session snapshot, not a live coach rate.
   - [ ] `[Cancel Session]` requires confirmation and explains that affected bookings enter manual refund handling.
-  - [ ] No recurring/repeat option exists anywhere in the form.
+  - [ ] Duplicate-range and recurring-series forms preview the generated count, default to draft, and report skipped exact matches.
   - [ ] Capacity below current consumption is rejected in the mock validation.
   - [ ] "No sessions scheduled" empty state wired.
-- **Out of scope:** Recurrence; coach self-service.
+- **Out of scope:** Holiday/exception engine, series-wide editing/deletion, coach self-service.
 - **Phase:** P4
 
 #### FE-ADM-006 — Class management
@@ -2389,7 +2391,7 @@ The intended mechanics: every mocked screen reads through the `MockDataAdapter` 
 | **WIRE-012** | Serve coach and marketing imagery from Supabase Storage instead of bundled assets | FE | `ASSET-030`, `FE-SHR-004` | Bundled asset paths in the manifest |
 | **WIRE-013** | End-to-end verification of the canonical loop and the edge cases in `16-edge-cases.md` | FE+BE | all above | — |
 
-**Deliberately excluded from the wiring phase as well** (still future scope per `docs/business-requirements/19-future-scope.md`): payment gateways, automated verification/refunds, memberships/packages/credits, recurring schedule automation, a coach portal, Resend email notifications, SMS/push, multi-branch, and admin-editable hold/cutoff settings.
+**Deliberately excluded from the wiring phase as well** (still future scope per `docs/business-requirements/19-future-scope.md`): payment gateways, automated verification/refunds, memberships/packages/credits, recurrence exceptions and series-wide mutation, a coach portal, Resend email notifications, SMS/push, multi-branch, and admin-editable hold/cutoff settings.
 
 ---
 
@@ -2711,5 +2713,4 @@ Every file under `docs/screen-specs/` and the FE ticket(s) that cover it.
 | ASSET-022 | Contact page imagery (Assets A–B) | P2 |
 | ASSET-023 | FAQ header accent (Asset A) | P2 |
 | ASSET-030 | Upload approved assets into Supabase Storage | P4 |
-
 

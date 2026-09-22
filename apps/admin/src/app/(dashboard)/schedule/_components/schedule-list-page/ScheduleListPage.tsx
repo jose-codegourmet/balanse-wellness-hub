@@ -1,8 +1,9 @@
 "use client";
 
-import { computeSessionInventory, manilaYmd } from "@balanse/domain";
+import { addCalendarDays, computeSessionInventory, manilaYmd } from "@balanse/domain";
 import { Button, DetailPageSkeleton, FeedbackState } from "@balanse/ui";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { Copy } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -95,9 +96,23 @@ function ScheduleListPageInner({
     <AdminPageShell
       title="Schedule"
       actions={
-        <Button nativeButton={false} render={<Link href={createSessionHref(selectedDay)} />}>
-          Create Session
-        </Button>
+        <>
+          <Button
+            nativeButton={false}
+            variant="outline"
+            render={
+              <Link
+                href={`/schedule/duplicate?from=${selectedDay}&to=${addCalendarDays(selectedDay, 6)}`}
+              />
+            }
+          >
+            <Copy className="size-4" aria-hidden />
+            Duplicate range
+          </Button>
+          <Button nativeButton={false} render={<Link href={createSessionHref(selectedDay)} />}>
+            Create Session
+          </Button>
+        </>
       }
     >
       {sessions.length === 0 ? <FeedbackState id="admin.no-sessions" /> : null}

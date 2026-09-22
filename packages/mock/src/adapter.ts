@@ -14,6 +14,7 @@ import type {
   CursorPage,
   CustomerBooking,
   CustomerProfile,
+  DuplicateScheduleInput,
   PaymentInstructions,
   PaymentMethod,
   PaymentQrCode,
@@ -23,6 +24,8 @@ import type {
   PublicCoach,
   PublicContent,
   PublicSession,
+  RecurringScheduleInput,
+  ScheduleGenerationResult,
   SessionReportDrilldown,
   SessionStatus,
 } from "@balanse/domain";
@@ -130,6 +133,10 @@ export type MockDataAdapter = {
     bookable: boolean;
     status: SessionStatus;
   }) => Promise<AdminSession>;
+  duplicateAdminSchedule: (input: DuplicateScheduleInput) => Promise<ScheduleGenerationResult>;
+  createAdminRecurringSchedule: (
+    input: RecurringScheduleInput,
+  ) => Promise<ScheduleGenerationResult>;
   cancelAdminSession: (id: string) => Promise<AdminSession>;
   getAdminCancellationRequests: {
     (): Promise<CustomerBooking[]>;

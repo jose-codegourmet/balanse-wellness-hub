@@ -61,6 +61,7 @@ model GymSession {
   isPlaceholder Boolean       @default(false)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+  recurrenceRuleId String?
 
   gymClass          GymClass            @relation(fields: [classId], references: [id])
   coaches           SessionCoach[]
@@ -68,11 +69,35 @@ model GymSession {
   waitlistEntries   WaitlistEntry[]
   rescheduleTargets RescheduleRequest[] @relation("RescheduleTargetSession")
   rescheduleOrigins RescheduleRequest[] @relation("RescheduleFromSession")
+  recurrenceRule    SessionRecurrenceRule? @relation("RecurrenceOccurrences", fields: [recurrenceRuleId], references: [id], onDelete: SetNull)
+  recurrenceTemplates SessionRecurrenceRule[] @relation("RecurrenceTemplate")
 
   @@index([startsAt])
   @@index([status, startsAt])
   @@index([classId])
+  @@index([recurrenceRuleId])
   @@map("sessions")
+}
+
+/// #288 — a bounded weekly rule. Occurrences are eagerly generated as ordinary sessions.
+model SessionRecurrenceRule {
+  id              String   @id @default(cuid())
+  sourceSessionId String
+  startsOn        DateTime @db.Date
+  endsOn          DateTime @db.Date
+  weekdays        Int[]
+  timeZone        String   @default("Asia/Manila")
+  publish         Boolean  @default(false)
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  sourceSession GymSession   @relation("RecurrenceTemplate", fields: [sourceSessionId], references: [id], onDelete: Restrict)
+  sessions      GymSession[] @relation("RecurrenceOccurrences")
+
+  @@index([sourceSessionId])
+  @@index([active, endsOn])
+  @@map("session_recurrence_rules")
 }
 
 /// BE-053 — public FAQ rows. Display order is `sortOrder`, not document position.

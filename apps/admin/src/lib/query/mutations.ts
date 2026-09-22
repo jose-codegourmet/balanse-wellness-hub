@@ -196,6 +196,28 @@ export function useUpsertAdminSession() {
   });
 }
 
+export function useDuplicateAdminSchedule() {
+  const role = useAdminRole();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      input: Parameters<ReturnType<typeof getMockAdapter>["duplicateAdminSchedule"]>[0],
+    ) => getMockAdapter().duplicateAdminSchedule(input),
+    onSuccess: () => invalidateForRole(queryClient, sessionKeys(role)),
+  });
+}
+
+export function useCreateAdminRecurringSchedule() {
+  const role = useAdminRole();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      input: Parameters<ReturnType<typeof getMockAdapter>["createAdminRecurringSchedule"]>[0],
+    ) => getMockAdapter().createAdminRecurringSchedule(input),
+    onSuccess: () => invalidateForRole(queryClient, sessionKeys(role)),
+  });
+}
+
 export function useCancelAdminSession() {
   const role = useAdminRole();
   const queryClient = useQueryClient();
