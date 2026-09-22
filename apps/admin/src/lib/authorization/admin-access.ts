@@ -27,9 +27,13 @@ export function firstImplementedPermittedAdminRoute(
 }
 
 export function visibleAdminNavItems(actor: StaffAuthorizationActor | null | undefined) {
-  return permittedAdminNavItems(actor).filter((item) => {
-    if (item.id !== "staff") return true;
-    return canAccessAdminHref(actor, "/staff");
+  return permittedAdminNavItems(actor).flatMap((item) => {
+    if (item.id !== "staff") return [item];
+    if (canAccessAdminHref(actor, "/staff")) return [item];
+    if (canAccessAdminHref(actor, "/staff/roles")) {
+      return [{ ...item, label: "Roles", href: "/staff/roles" }];
+    }
+    return [];
   });
 }
 

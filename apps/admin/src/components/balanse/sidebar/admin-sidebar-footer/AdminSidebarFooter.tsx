@@ -46,7 +46,7 @@ export function AdminSidebarFooter({
   const email = actor?.email ?? "staff@balanse.example";
   const initials = email.slice(0, 1).toUpperCase();
   const accountLabel = actor
-    ? roleLabel(actor.roleKey)
+    ? roleLabel(actor.roleKey, actor.roleName ?? undefined)
     : (ROLE_LABELS[principal.role] ?? principal.role);
 
   return (

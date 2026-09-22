@@ -28,8 +28,62 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Mock admin credentials. Not real auth. */
 export const MOCK_ADMIN_CREDENTIALS = [
-  { email: "rex@balanse.example", password: "welcome", staffId: "staff-rex" },
-  { email: "partner@balanse.example", password: "welcome", staffId: "staff-partner" },
+  {
+    email: "rex@balanse.example",
+    password: "welcome",
+    staffId: "staff-rex",
+    name: "Rex Francis Regis",
+    roleLabel: "Super Admin",
+    accessSummary: "Every admin page and action, including sensitive financial data.",
+  },
+  {
+    email: "partner@balanse.example",
+    password: "welcome",
+    staffId: "staff-partner",
+    name: "Studio Partner",
+    roleLabel: "Front Desk",
+    accessSummary: "Bookings, payments, attendance, customers, classes, and coaches.",
+  },
+  {
+    email: "ephraim@balanse.example",
+    password: "welcome",
+    staffId: "staff-ephraim",
+    name: "Ephraim Bacaltos",
+    roleLabel: "Coach",
+    accessSummary: "Own schedule, own rosters, and attendance for assigned sessions only.",
+  },
+  {
+    email: "mia@balanse.example",
+    password: "welcome",
+    staffId: "staff-custom",
+    name: "Mia Reyes",
+    roleLabel: "Community Host",
+    accessSummary: "Read-only dashboard, customers, classes, and coach directory.",
+  },
+  {
+    email: "camille@balanse.example",
+    password: "welcome",
+    staffId: "staff-content-editor",
+    name: "Camille Flores",
+    roleLabel: "Content Editor",
+    accessSummary: "Public website content and policy management only.",
+  },
+  {
+    email: "paolo@balanse.example",
+    password: "welcome",
+    staffId: "staff-role-auditor",
+    name: "Paolo Cruz",
+    roleLabel: "Role Auditor",
+    accessSummary: "Read-only access to roles and their permission matrices.",
+  },
+  {
+    email: "disabled@balanse.example",
+    password: "welcome",
+    staffId: "staff-disabled",
+    name: "Inactive Coordinator",
+    roleLabel: "Revoked account",
+    accessSummary: "Demonstrates the disabled-account access screen.",
+  },
 ] as const;
 
 /** Known customer emails used to demonstrate a non-admin rejection. */

@@ -1,6 +1,6 @@
 "use client";
 
-import { ADMIN_LOGIN_HELP, validateAdminLogin } from "@balanse/domain";
+import { ADMIN_LOGIN_HELP, MOCK_ADMIN_CREDENTIALS, validateAdminLogin } from "@balanse/domain";
 import { resolveMockStaffActor } from "@balanse/mock/session";
 import { BrandLockup, LocalizedSkeleton } from "@balanse/ui";
 import Image from "next/image";
@@ -73,6 +73,42 @@ export function AdminLogin({
                 }, 350);
               }}
             />
+            <details className="mt-6 rounded-xl border border-border/70 bg-muted/25 p-3 open:bg-card">
+              <summary className="cursor-pointer text-sm font-semibold">
+                Try a sample staff account
+              </summary>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                Each account has a different role. Selecting one fills the mock credentials so you
+                can verify hidden navigation, blocked routes, and allowed actions.
+              </p>
+              <div className="mt-3 grid gap-2">
+                {MOCK_ADMIN_CREDENTIALS.map((account) => (
+                  <button
+                    key={account.staffId}
+                    type="button"
+                    className="rounded-lg border border-border/70 bg-background p-3 text-left transition-colors hover:border-primary/30 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    onClick={() => {
+                      setEmail(account.email);
+                      setPassword(account.password);
+                      setErrors({});
+                    }}
+                  >
+                    <span className="flex items-center justify-between gap-3">
+                      <span className="font-medium">{account.name}</span>
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[0.6875rem] font-semibold text-muted-foreground">
+                        {account.roleLabel}
+                      </span>
+                    </span>
+                    <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                      {account.accessSummary}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Password for every sample: <code className="font-semibold">welcome</code>
+              </p>
+            </details>
             <p className="mt-6 text-center text-sm text-muted-foreground">{ADMIN_LOGIN_HELP}</p>
           </div>
         </div>

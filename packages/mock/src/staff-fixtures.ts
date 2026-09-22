@@ -1,4 +1,9 @@
-import type { AdminStaff, StaffAuthorizationActor, StaffRoleDefinition } from "@balanse/domain";
+import type {
+  AdminStaff,
+  PermissionKey,
+  StaffAuthorizationActor,
+  StaffRoleDefinition,
+} from "@balanse/domain";
 import {
   actorAuthorizationFingerprint,
   builtInRoleDefinition,
@@ -15,6 +20,8 @@ export const MOCK_STAFF_ROLE_IDS = {
   frontDesk: "role-front-desk",
   coach: "role-coach",
   communityHost: "role-community-host",
+  contentEditor: "role-content-editor",
+  roleAuditor: "role-role-auditor",
 } as const;
 
 /** Custom-role allow-list composed from the seeded Front Desk matrix — not a copied registry. */
@@ -25,6 +32,15 @@ export const COMMUNITY_HOST_PERMISSION_KEYS = FRONT_DESK_PERMISSION_KEYS.filter(
     key === "classes.read" ||
     key === "coaches.read",
 );
+
+export const CONTENT_EDITOR_PERMISSION_KEYS = [
+  "settings.content.manage",
+  "settings.policies.manage",
+] as const satisfies readonly PermissionKey[];
+
+export const ROLE_AUDITOR_PERMISSION_KEYS = [
+  "roles.read",
+] as const satisfies readonly PermissionKey[];
 
 export type MockStaffRoleRecord = StaffRoleDefinition & {
   id: string;
@@ -61,6 +77,30 @@ export const mockStaffRoles: readonly MockStaffRoleRecord[] = [
     allAccess: false,
     permissionKeys: COMMUNITY_HOST_PERMISSION_KEYS,
   },
+  {
+    id: MOCK_STAFF_ROLE_IDS.contentEditor,
+    revision: 1,
+    key: "content_editor",
+    name: "Content Editor",
+    description: "Custom mock role: public website content and policy management only.",
+    builtIn: false,
+    builtInKey: null,
+    status: "active",
+    allAccess: false,
+    permissionKeys: CONTENT_EDITOR_PERMISSION_KEYS,
+  },
+  {
+    id: MOCK_STAFF_ROLE_IDS.roleAuditor,
+    revision: 1,
+    key: "role_auditor",
+    name: "Role Auditor",
+    description: "Custom mock role: read-only access to roles and permission matrices.",
+    builtIn: false,
+    builtInKey: null,
+    status: "active",
+    allAccess: false,
+    permissionKeys: ROLE_AUDITOR_PERMISSION_KEYS,
+  },
 ];
 
 export const MOCK_STAFF_IDS = {
@@ -69,6 +109,8 @@ export const MOCK_STAFF_IDS = {
   coach: "staff-ephraim",
   disabled: "staff-disabled",
   custom: "staff-custom",
+  contentEditor: "staff-content-editor",
+  roleAuditor: "staff-role-auditor",
 } as const;
 
 export type MockStaffIdentityId = (typeof MOCK_STAFF_IDS)[keyof typeof MOCK_STAFF_IDS];
@@ -116,6 +158,20 @@ export const MOCK_STAFF_IDENTITIES: readonly MockStaffIdentity[] = [
     description: "Active custom-role staff. Not a coach.",
     staffId: MOCK_STAFF_IDS.custom,
     roleId: MOCK_STAFF_ROLE_IDS.communityHost,
+  },
+  {
+    id: MOCK_STAFF_IDS.contentEditor,
+    label: "Camille — Content Editor",
+    description: "Active custom-role staff with public content and policy access only.",
+    staffId: MOCK_STAFF_IDS.contentEditor,
+    roleId: MOCK_STAFF_ROLE_IDS.contentEditor,
+  },
+  {
+    id: MOCK_STAFF_IDS.roleAuditor,
+    label: "Paolo — Role Auditor",
+    description: "Active custom-role staff with read-only role catalogue access.",
+    staffId: MOCK_STAFF_IDS.roleAuditor,
+    roleId: MOCK_STAFF_ROLE_IDS.roleAuditor,
   },
 ];
 
@@ -180,6 +236,22 @@ export const mockStaffMembers: AdminStaff[] = [
     "Mia Reyes",
     "mia@balanse.example",
     MOCK_STAFF_ROLE_IDS.communityHost,
+    "active",
+    null,
+  ),
+  staffRow(
+    MOCK_STAFF_IDS.contentEditor,
+    "Camille Flores",
+    "camille@balanse.example",
+    MOCK_STAFF_ROLE_IDS.contentEditor,
+    "active",
+    null,
+  ),
+  staffRow(
+    MOCK_STAFF_IDS.roleAuditor,
+    "Paolo Cruz",
+    "paolo@balanse.example",
+    MOCK_STAFF_ROLE_IDS.roleAuditor,
     "active",
     null,
   ),
@@ -264,6 +336,7 @@ export function resolveMockStaffActorFromStaffId(
     staffStatus: staff.status,
     roleId: role.id,
     roleKey: role.key,
+    roleName: role.name,
     roleActive: role.status === "active",
     permissions,
     coachId: staff.coachId,

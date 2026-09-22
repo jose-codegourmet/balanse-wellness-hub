@@ -18,6 +18,8 @@ export type StaffAuthorizationActor = {
   staffStatus: StaffMemberStatus;
   roleId: string;
   roleKey: string;
+  /** Display label for custom roles. Authorization continues to use roleKey and permissions. */
+  roleName?: string | null;
   roleActive: boolean;
   permissions: readonly PermissionKey[];
   /** Linked Coach.id when this staff member teaches. Never inferred from name/email. */
