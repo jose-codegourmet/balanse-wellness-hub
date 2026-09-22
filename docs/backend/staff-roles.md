@@ -39,8 +39,15 @@ Existing `staff_members` rows (including the system actor) keep their ids,
 to Super Admin. `is_admin()` still excludes `isSystem`.
 
 `pnpm --filter @balanse/db db:seed` re-upserts the registry and Super Admin
-snapshot from `@balanse/domain`. It does not rewrite the Front Desk / Coach
-allow-lists (database triggers protect those matrices).
+snapshot from `@balanse/domain`. If a Front Desk / Coach role has **zero**
+permission rows (schema-only environments), seed fills the domain allow-list
+once. After #298 helpers land, triggers block further FD/Coach matrix writes.
+
+#293 adds `20260922181200_be289_293_report_sensitive_fields`: JWT callers of
+`report_class_performance_v2`, `report_session_performance`, and
+`report_session_drilldown` receive `0` for sales/cost columns unless they
+hold `reports.sales.read` / `reports.coach_costs.read`. Service-role remains
+unshaped (handlers still strip). Closeout: [authorization-closeout.md](./authorization-closeout.md).
 
 ## Helpers for #292
 
@@ -94,12 +101,14 @@ Prisma/service-role (`auth.uid()` null) still bypasses that JWT check —
 Custom roles are ordinary `staff_role_definitions` rows (`builtIn = false`).
 They never need a `StaffRole` enum value.
 
-## Hosted project / advisors (2026-09-22)
+## Hosted project / advisors (2026-09-22, re-checked #293)
 
-SQL was **not** applied to `xydundrayuusqizssgby`. Prisma validate/generate ran
-against the schema only. Re-run `get_advisors` after a reviewed deploy.
+SQL was **not** applied to `xydundrayuusqizssgby` (including #293 report-field
+SQL). Prisma validate/generate ran against the schema only. Re-run
+`get_advisors` after a reviewed deploy of `181000` → `181100` → `181200`.
 
-Findings on the **current** hosted project (before this migration):
+Findings on the **current** hosted project (before #298/#293 SQL). None of
+these were introduced by this epic:
 
 | Advisor | Notes |
 | --- | --- |

@@ -114,6 +114,23 @@ export function isSuperAdminRoleKey(value: string): boolean {
   return value === SUPER_ADMIN_ROLE_KEY;
 }
 
+/** Matches DB last-SA detection: all-access or built-in Super Admin key. */
+export function roleHoldsSuperAdminAccess(
+  role:
+    | {
+        key?: string | null;
+        allAccess?: boolean | null;
+        builtInKey?: string | null;
+      }
+    | null
+    | undefined,
+): boolean {
+  if (!role) return false;
+  if (role.allAccess) return true;
+  if (role.builtInKey === SUPER_ADMIN_ROLE_KEY) return true;
+  return Boolean(role.key && isSuperAdminRoleKey(role.key));
+}
+
 export function isCoachAuthorizationRole(roleKey: string): boolean {
   return roleKey === COACH_ROLE_KEY;
 }

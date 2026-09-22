@@ -44,7 +44,8 @@ cannot save. Mock writes go through `getAdminStaffRoles` /
 - Coach authorization role requires a linked coach profile.
 - `isCoach` / `coachId` stay a separate teaching link and compose with every role.
 - Last active Super Admin cannot be disabled, demoted, deleted, or stripped
-  of all-access behavior (`violatesLastSuperAdminInvariant`).
+  of all-access behavior (`violatesLastSuperAdminInvariant`). The staff
+  detail form hides `[Disable Access]` when that invariant would fire.
 - Archived or disabled roles cannot be assigned.
 - Warn when changing the current user’s role or access.
 

@@ -1,6 +1,11 @@
 "use client";
 
-import { ADMIN_ROLE_CAPABILITY_NOTE, isSuperAdminRoleKey, staffStatusLabel } from "@balanse/domain";
+import {
+  ADMIN_ROLE_CAPABILITY_NOTE,
+  isSuperAdminRoleKey,
+  staffStatusLabel,
+  violatesLastSuperAdminInvariant,
+} from "@balanse/domain";
 import { FormPageSkeleton } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -136,7 +141,26 @@ export function StaffDetailPage({ staffId }: StaffDetailPageProps) {
             existing && existing.status === "active" && isSuperAdminRoleKey(existing.roleKey),
           )}
           activeSuperAdminCount={activeSuperAdminCount}
+          disableBlocked={violatesLastSuperAdminInvariant({
+            targetHoldsSuperAdmin: Boolean(
+              existing && existing.status === "active" && isSuperAdminRoleKey(existing.roleKey),
+            ),
+            remainingActiveSuperAdminCount: activeSuperAdminCount,
+            action: "disable",
+          })}
           onDisable={async () => {
+            if (
+              violatesLastSuperAdminInvariant({
+                targetHoldsSuperAdmin: Boolean(
+                  existing && existing.status === "active" && isSuperAdminRoleKey(existing.roleKey),
+                ),
+                remainingActiveSuperAdminCount: activeSuperAdminCount,
+                action: "disable",
+              })
+            ) {
+              notify.admin("staff.disable-failed");
+              throw new Error("The last active Super Admin cannot be disabled.");
+            }
             try {
               await disable.mutateAsync(staffId);
               notify.admin("staff.disabled");
@@ -159,6 +183,7 @@ function StaffFormFields({
   status,
   targetIsActiveSuperAdmin,
   activeSuperAdminCount,
+  disableBlocked,
   onDisable,
 }: {
   isNew: boolean;
@@ -168,6 +193,7 @@ function StaffFormFields({
   status: "active" | "disabled";
   targetIsActiveSuperAdmin: boolean;
   activeSuperAdminCount: number;
+  disableBlocked: boolean;
   onDisable: () => Promise<void>;
 }) {
   const { principal } = useMockPrincipal();
@@ -238,7 +264,11 @@ function StaffFormFields({
           submitLabel="Save"
           cancelHref="/staff"
           destructive={
-            isNew ? undefined : (
+            isNew ? undefined : disableBlocked ? (
+              <p className="text-sm text-muted-foreground">
+                The last active Super Admin cannot be disabled.
+              </p>
+            ) : (
               <ConfirmAction
                 triggerLabel="Disable Access"
                 title="Disable staff access?"

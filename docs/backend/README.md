@@ -25,6 +25,7 @@
 | [dashboard-metrics.md](./dashboard-metrics.md) | BE-054 |
 | [staff-coach-unification.md](./staff-coach-unification.md) | BE-055 |
 | [staff-roles.md](./staff-roles.md) | #298 / epic #289 |
+| [authorization-closeout.md](./authorization-closeout.md) | #293 / epic #289 |
 | [payment-qr-collection.md](./payment-qr-collection.md) | BE-056 |
 | [session-bundles.md](./session-bundles.md) | BE-058 |
 | [api-routes.md](./api-routes.md) | BE-030–BE-043 + BE-050–058 + #292 |

@@ -214,11 +214,20 @@ export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter
       requirePermission("reports.session.read");
       const report = await inner.getAdminSessionReport(sessionId);
       const actor = requireStaffActor();
-      if (!report || hasPermission(actor, "reports.coach_costs.read")) return report;
+      if (!report) return report;
+      const includeSales = hasPermission(actor, "reports.sales.read");
+      const includeCost = hasPermission(actor, "reports.coach_costs.read");
+      const grossRevenuePhp = includeSales ? report.grossRevenuePhp : 0;
+      const refundsPhp = includeSales ? report.refundsPhp : 0;
+      const coachCostPhp = includeCost ? report.coachCostPhp : 0;
       return {
         ...report,
-        coachCostPhp: 0,
-        grossContributionPhp: report.grossRevenuePhp - report.refundsPhp,
+        customerPricePhp: includeSales ? report.customerPricePhp : 0,
+        grossRevenuePhp,
+        refundsPhp,
+        coachCostPhp,
+        grossContributionPhp:
+          includeSales && includeCost ? grossRevenuePhp - refundsPhp - coachCostPhp : 0,
       };
     },
     getAdminStaff: () => {

@@ -90,6 +90,12 @@ const RULE_CODES = new Set([
   "unknown_permission",
 ]);
 
+export function isLastSuperAdminProtectedError(error: unknown): boolean {
+  if (error instanceof ApiError) return error.code === "last_super_admin_protected";
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes("last_super_admin_protected");
+}
+
 export function mapUnknownError(error: unknown): ApiError {
   if (error instanceof ApiError) return error;
   if (
@@ -126,7 +132,7 @@ export function mapUnknownError(error: unknown): ApiError {
       },
     );
   }
-  if (message.includes("last_super_admin_protected")) {
+  if (isLastSuperAdminProtectedError(error)) {
     return new ApiError(
       403,
       "last_super_admin_protected",

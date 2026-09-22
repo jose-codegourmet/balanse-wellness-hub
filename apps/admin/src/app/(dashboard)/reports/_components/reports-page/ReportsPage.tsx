@@ -214,14 +214,15 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
               tableId="reports-sessions"
               title="Session Performance"
               data={reports.sessionPerformance}
-              columns={
-                canCoachCosts
-                  ? sessionColumns
-                  : sessionColumns.filter(
-                      (column) =>
-                        !("accessorKey" in column && column.accessorKey === "coachCostPhp"),
-                    )
-              }
+              columns={sessionColumns.filter((column) => {
+                if ("accessorKey" in column && column.accessorKey === "revenuePhp") {
+                  return canSales;
+                }
+                if ("accessorKey" in column && column.accessorKey === "coachCostPhp") {
+                  return canCoachCosts;
+                }
+                return true;
+              })}
               getRowId={(row) => row.sessionId}
               searchPlaceholder="Search sessions"
             />
@@ -234,6 +235,8 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
 
 export function ReportDrilldownPage({ sessionId }: { sessionId: string }) {
   const { principal } = useMockPrincipal();
+  const canSales = useCanAdminAction("reports-sales");
+  const canCoachCosts = useCanAdminAction("reports-coach-costs");
   const query = useSuspenseQuery(adminSessionReportQuery(principal, sessionId));
   const row = query.data;
   if (!row) return null;
@@ -254,11 +257,17 @@ export function ReportDrilldownPage({ sessionId }: { sessionId: string }) {
         <Line label="Waitlisted" value={row.waitlisted} />
         <Line label="Checked In" value={row.checkedIn} />
         <Line label="No-show" value={row.noShow} />
-        <Line label="Customer Price" value={formatPeso(row.customerPricePhp)} />
-        <Line label="Gross Revenue" value={formatPeso(row.grossRevenuePhp)} />
-        <Line label="Refunds" value={formatPeso(row.refundsPhp)} />
-        <Line label="Coach Cost" value={formatPeso(row.coachCostPhp)} />
-        <Line label="Gross Contribution" value={formatPeso(row.grossContributionPhp)} />
+        {canSales ? (
+          <>
+            <Line label="Customer Price" value={formatPeso(row.customerPricePhp)} />
+            <Line label="Gross Revenue" value={formatPeso(row.grossRevenuePhp)} />
+            <Line label="Refunds" value={formatPeso(row.refundsPhp)} />
+          </>
+        ) : null}
+        {canCoachCosts ? <Line label="Coach Cost" value={formatPeso(row.coachCostPhp)} /> : null}
+        {canSales && canCoachCosts ? (
+          <Line label="Gross Contribution" value={formatPeso(row.grossContributionPhp)} />
+        ) : null}
         <Line label="Occupancy" value={formatRatioPercent(row.occupancy)} />
         <Line
           label="Attendance Utilization"
