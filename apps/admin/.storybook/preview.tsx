@@ -60,7 +60,12 @@ function MockRuntimeBridge({
 const withAdminProviders: Decorator = (Story, context) => {
   const theme = (context.globals.theme as "light" | "dark") ?? "light";
   const role = (context.globals.principal as MockRole) ?? "admin";
-  const initialPrincipal = normalizeMockPrincipal({ ...DEFAULT_MOCK_PRINCIPAL, role });
+  const staffId = context.parameters.staffId as string | undefined;
+  const initialPrincipal = normalizeMockPrincipal({
+    ...DEFAULT_MOCK_PRINCIPAL,
+    role,
+    staffId: role === "admin" ? staffId : null,
+  });
   const mockRuntime = context.parameters.mockRuntime as Partial<MockRuntimeOptions> | undefined;
   // Apply knobs during render, before useQuery fires in the story.
   resetMockRuntime();

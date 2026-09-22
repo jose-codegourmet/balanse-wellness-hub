@@ -3,12 +3,12 @@ import {
   type DashboardMetricId,
   type MetricSeries,
 } from "@balanse/domain";
-import { requireAdmin, resolveActor } from "../auth";
-import type { ApiDeps } from "../deps";
+import { requireAdmin, requireAnyPermission, requirePermission, resolveActor } from "../auth";
+import type { AdminApiActor, ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { ok } from "../http";
 import { money } from "../presenters";
-import { shapeDashboard } from "../sensitive";
+import { actorHas, shapeDashboard } from "../sensitive";
 
 type DayRow = {
   day: Date;
@@ -19,8 +19,11 @@ type DayRow = {
 };
 
 export async function getAdminDashboard(deps: ApiDeps, req: Request): Promise<Response> {
-  const actor = requireAdmin(await resolveActor(deps, req));
-  const snapshot = await operationalSnapshot(deps);
+  const actor = requireAnyPermission(requireAdmin(await resolveActor(deps, req)), [
+    "dashboard.operations.read",
+    "dashboard.financial.read",
+  ]);
+  const snapshot = await operationalSnapshot(deps, actor);
   const series = await dashboardSeries(deps, DASHBOARD_SERIES_WINDOW_DAYS);
   const prior = priorDayFromSeries(series);
   const raw = {
@@ -60,7 +63,7 @@ export async function getAdminDashboard(deps: ApiDeps, req: Request): Promise<Re
 }
 
 export async function getAdminDashboardMetrics(deps: ApiDeps, req: Request): Promise<Response> {
-  requireAdmin(await resolveActor(deps, req));
+  requirePermission(requireAdmin(await resolveActor(deps, req)), "dashboard.financial.read");
   const series = await dashboardSeries(deps, DASHBOARD_SERIES_WINDOW_DAYS);
   return ok({
     grain: "day",
@@ -70,7 +73,9 @@ export async function getAdminDashboardMetrics(deps: ApiDeps, req: Request): Pro
   });
 }
 
-async function operationalSnapshot(deps: ApiDeps) {
+async function operationalSnapshot(deps: ApiDeps, actor: AdminApiActor) {
+  const ownOnly = !actorHas(actor, "schedule.read.all");
+  const coachId = ownOnly ? actor.coachId : null;
   const rows = await deps.prisma.$queryRawUnsafe<
     Array<{
       todays_classes: number;
@@ -83,14 +88,29 @@ async function operationalSnapshot(deps: ApiDeps) {
       todays_occupancy: number;
       coach_cost_today: number;
     }>
-  >(`
+  >(
+    `
     WITH today AS (
       SELECT (timezone('Asia/Manila', now()))::date AS d
+    ),
+    scoped_sessions AS (
+      SELECT s.*
+      FROM sessions s, today
+      WHERE (s."startsAt" AT TIME ZONE 'Asia/Manila')::date = today.d
+        AND s.status IN ('PUBLISHED', 'CANCELLED')
+        AND (
+          $1::boolean = false
+          OR (
+            $2::text IS NOT NULL
+            AND EXISTS (
+              SELECT 1 FROM session_coaches sc
+              WHERE sc."sessionId" = s.id AND sc."coachId" = $2
+            )
+          )
+        )
     )
     SELECT
-      (SELECT COUNT(*) FROM sessions s, today
-        WHERE (s."startsAt" AT TIME ZONE 'Asia/Manila')::date = today.d
-          AND s.status IN ('PUBLISHED', 'CANCELLED')) AS todays_classes,
+      (SELECT COUNT(*) FROM scoped_sessions) AS todays_classes,
       (SELECT COUNT(*) FROM payments p
         WHERE p.method = 'GCASH' AND p.status = 'PROOF_SUBMITTED') AS pending_payments,
       (SELECT COUNT(*) FROM cancellation_requests WHERE resolution = 'OPEN') AS cancellations,
@@ -98,27 +118,28 @@ async function operationalSnapshot(deps: ApiDeps) {
       (SELECT COUNT(*) FROM bookings WHERE status = 'WAITLISTED') AS waitlisted,
       (SELECT COALESCE(SUM(p.amount), 0) FROM payments p
         JOIN bookings b ON b.id = p."bookingId"
-        JOIN sessions s ON s.id = b."sessionId", today
+        JOIN scoped_sessions s ON s.id = b."sessionId"
         WHERE p.status IN ('VERIFIED', 'CASH_RECEIVED')
-          AND b.status NOT IN ('WAITLISTED', 'HELD_AWAITING_PAYMENT')
-          AND (s."startsAt" AT TIME ZONE 'Asia/Manila')::date = today.d) AS todays_sales,
+          AND b.status NOT IN ('WAITLISTED', 'HELD_AWAITING_PAYMENT')) AS todays_sales,
       (SELECT COALESCE(SUM(r.amount), 0) FROM refunds r
         WHERE r.status = 'REFUND_PENDING') AS pending_refunds,
       (SELECT CASE WHEN COALESCE(SUM(s.capacity), 0) = 0 THEN 0
         ELSE COUNT(*) FILTER (WHERE b.status IN ('CONFIRMED', 'CHECKED_IN'))::numeric
              / NULLIF(SUM(DISTINCT s.capacity), 0) END
-        FROM sessions s
-        LEFT JOIN bookings b ON b."sessionId" = s.id, today
-        WHERE (s."startsAt" AT TIME ZONE 'Asia/Manila')::date = today.d
-          AND s.status = 'PUBLISHED') AS todays_occupancy,
-      (SELECT COALESCE(SUM(app_private.session_coach_cost(s.id)), 0) FROM sessions s, today
-        WHERE (s."startsAt" AT TIME ZONE 'Asia/Manila')::date = today.d
-          AND s.status IN ('PUBLISHED', 'CANCELLED')) AS coach_cost_today
-  `);
+        FROM scoped_sessions s
+        LEFT JOIN bookings b ON b."sessionId" = s.id
+        WHERE s.status = 'PUBLISHED') AS todays_occupancy,
+      (SELECT COALESCE(SUM(app_private.session_coach_cost(s.id)), 0) FROM scoped_sessions s) AS coach_cost_today
+  `,
+    ownOnly,
+    coachId,
+  );
   const row = rows[0];
   const todaysSchedule = await deps.prisma.gymSession.findMany({
     where: {
       status: { in: ["PUBLISHED", "CANCELLED"] },
+      ...(ownOnly && coachId ? { coaches: { some: { coachId } } } : {}),
+      ...(ownOnly && !coachId ? { id: { in: [] } } : {}),
     },
     include: {
       gymClass: true,

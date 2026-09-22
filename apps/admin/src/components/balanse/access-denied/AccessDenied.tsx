@@ -25,6 +25,12 @@ const COPY: Record<
       "Your role cannot open this page or action. Use the navigation to reach a section you can manage, or ask a Super Admin for access.",
     icon: ShieldAlert,
   },
+  ownership: {
+    title: "This session is not assigned to you",
+    description:
+      "Coach access is limited to sessions on your teaching assignment. Open your schedule and choose one of your classes.",
+    icon: ShieldAlert,
+  },
 };
 
 export function AccessDenied({ kind, homeHref }: AccessDeniedProps) {
@@ -42,7 +48,7 @@ export function AccessDenied({ kind, homeHref }: AccessDeniedProps) {
         {copy.title}
       </h1>
       <p className="mt-3 text-sm text-muted-foreground">{copy.description}</p>
-      {kind === "denied" && homeHref ? (
+      {(kind === "denied" || kind === "ownership") && homeHref ? (
         <Button className="mt-6" nativeButton={false} render={<Link href={homeHref} />}>
           Go to your first available page
         </Button>

@@ -3,6 +3,7 @@ import type {
   AdminDashboardSnapshot,
   AdminReports,
   AdminSession,
+  CustomerBooking,
   PermissionKey,
   StaffAuthorizationActor,
 } from "@balanse/domain";
@@ -10,6 +11,7 @@ import {
   hasPermission,
   hasScopedPermission,
   isInteractiveStaffActor,
+  occupancyForSessions,
   violatesLastSuperAdminInvariant,
 } from "@balanse/domain";
 import { getBoundMockPrincipal, getBoundMockStaffActor } from "./session";
@@ -161,6 +163,55 @@ export function redactDashboardFinancials(
     pendingRefundsPhp: 0,
     coachCostTodayPhp: 0,
     series: snapshot.series ? { ...snapshot.series, gross_sales: undefined } : snapshot.series,
+  };
+}
+
+export function scopeDashboardSnapshot(
+  snapshot: AdminDashboardSnapshot,
+  actor: StaffAuthorizationActor,
+  bookings: CustomerBooking[],
+): AdminDashboardSnapshot {
+  const schedule = hasPermission(actor, "schedule.read.all")
+    ? snapshot.todaysSchedule
+    : snapshot.todaysSchedule.filter((row) => sessionAssignedToActor(row, actor));
+  const scoped = {
+    ...snapshot,
+    todaysSchedule: hasPermission(actor, "coach_rates.read")
+      ? schedule
+      : schedule.map((row) => stripSessionRates(row)),
+    todaysClasses: schedule.length,
+    todaysOccupancy: occupancyForSessions(schedule, bookings),
+    pendingPayments: hasPermission(actor, "payments.read") ? snapshot.pendingPayments : 0,
+    cancellations: hasPermission(actor, "cancellations.read") ? snapshot.cancellations : 0,
+    reschedules: hasPermission(actor, "reschedules.read") ? snapshot.reschedules : 0,
+    waitlisted: hasPermission(actor, "bookings.read") ? snapshot.waitlisted : 0,
+    attention: {
+      payments: hasPermission(actor, "payments.read") ? snapshot.attention.payments : 0,
+      cancellations: hasPermission(actor, "cancellations.read")
+        ? snapshot.attention.cancellations
+        : 0,
+      reschedules: hasPermission(actor, "reschedules.read") ? snapshot.attention.reschedules : 0,
+    },
+  };
+  return hasPermission(actor, "dashboard.financial.read")
+    ? scoped
+    : redactDashboardFinancials(scoped);
+}
+
+/** Attendance roster rows: name + status. No directory, refund, or proof fields. */
+export function stripRosterBooking(row: CustomerBooking, includePayment: boolean): CustomerBooking {
+  return {
+    id: row.id,
+    customerId: row.customerId,
+    customerName: row.customerName,
+    sessionId: row.sessionId,
+    status: row.status,
+    paymentMethod: includePayment ? row.paymentMethod : null,
+    paymentStatus: includePayment ? row.paymentStatus : "NONE",
+    refundStatus: "NOT_APPLICABLE",
+    holdExpiresAt: null,
+    createdAt: row.createdAt,
+    session: row.session,
   };
 }
 

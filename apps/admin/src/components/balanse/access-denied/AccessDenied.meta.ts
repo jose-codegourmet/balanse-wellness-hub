@@ -1,4 +1,4 @@
-export type AccessDeniedKind = "forbidden" | "revoked" | "denied";
+export type AccessDeniedKind = "forbidden" | "revoked" | "denied" | "ownership";
 
 export type AccessDeniedProps = {
   kind: AccessDeniedKind;

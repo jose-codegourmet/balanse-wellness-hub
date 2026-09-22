@@ -1,5 +1,6 @@
 "use client";
 
+import { hasPermission } from "@balanse/domain";
 import { MOCK_STAFF_IDENTITIES, resetMockRuntime, setMockRuntime } from "@balanse/mock";
 import { isMockHarnessEnabled } from "@balanse/mock/session";
 import { MockHarnessAffordance } from "@balanse/ui";
@@ -78,7 +79,18 @@ const QUEUES = [
   { id: "payments", label: "Payments", href: "/payments" },
   { id: "cancellations", label: "Cancellations", href: "/cancellations" },
   { id: "reschedules", label: "Reschedules", href: "/reschedules" },
-  { id: "roster", label: "Roster (Wed open)", href: "/sessions/session-wed-open/roster" },
+  {
+    id: "roster-open",
+    label: "Roster (Wed open)",
+    href: "/sessions/session-wed-open/roster",
+    ownerCoachIds: ["coach-rex"],
+  },
+  {
+    id: "roster-cutoff",
+    label: "Roster (Wed cutoff)",
+    href: "/sessions/session-wed-cutoff/roster",
+    ownerCoachIds: ["coach-rex", "coach-ephraim"],
+  },
 ] as const;
 
 type Scenario = "normal" | "schedule-failed" | "session-became-full" | "empty-admin-queues";
@@ -86,7 +98,13 @@ type Scenario = "normal" | "schedule-failed" | "session-became-full" | "empty-ad
 export function MockSessionHarness() {
   const enabled = isMockHarnessEnabled();
   const { principal, actor } = useMockPrincipal();
-  const permittedQueues = QUEUES.filter((queue) => canAccessAdminHref(actor, queue.href));
+  const permittedQueues = QUEUES.filter((queue) => {
+    if (!canAccessAdminHref(actor, queue.href)) return false;
+    if (!("ownerCoachIds" in queue)) return true;
+    if (hasPermission(actor, "roster.read.all")) return true;
+    const coachId = actor?.coachId;
+    return Boolean(coachId && (queue.ownerCoachIds as readonly string[]).includes(coachId));
+  });
   const switchIdentity = useSwitchAuthorizedIdentity();
   const queryClient = useQueryClient();
   const router = useRouter();
