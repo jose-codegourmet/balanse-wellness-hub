@@ -1,5 +1,5 @@
 import type { AdminPaymentTab, AdminReportFilters, BookingStatus } from "@balanse/domain";
-import type { MockRole } from "@balanse/mock/session";
+import type { AdminAuthScope } from "./auth-scope";
 
 export type AdminBookingListFilters = {
   status?: BookingStatus;
@@ -14,60 +14,68 @@ export type AdminCustomerListFilters = {
 };
 
 export const adminKeys = {
-  all: (role: MockRole) => ["admin", role] as const,
+  all: (scope: AdminAuthScope) => ["admin", scope] as const,
 
-  dashboard: (role: MockRole) => [...adminKeys.all(role), "dashboard"] as const,
+  dashboard: (scope: AdminAuthScope) => [...adminKeys.all(scope), "dashboard"] as const,
 
   bookings: {
-    all: (role: MockRole) => [...adminKeys.all(role), "bookings"] as const,
-    list: (role: MockRole, filters?: AdminBookingListFilters) =>
-      [...adminKeys.bookings.all(role), "list", filters ?? null] as const,
-    detail: (role: MockRole, id: string) =>
-      [...adminKeys.bookings.all(role), "detail", id] as const,
+    all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "bookings"] as const,
+    list: (scope: AdminAuthScope, filters?: AdminBookingListFilters) =>
+      [...adminKeys.bookings.all(scope), "list", filters ?? null] as const,
+    detail: (scope: AdminAuthScope, id: string) =>
+      [...adminKeys.bookings.all(scope), "detail", id] as const,
   },
 
-  payments: { all: (role: MockRole) => [...adminKeys.all(role), "payments"] as const },
-  cancellations: { all: (role: MockRole) => [...adminKeys.all(role), "cancellations"] as const },
-  reschedules: { all: (role: MockRole) => [...adminKeys.all(role), "reschedules"] as const },
-  classes: { all: (role: MockRole) => [...adminKeys.all(role), "classes"] as const },
-  bundles: {
-    all: (role: MockRole) => [...adminKeys.all(role), "bundles"] as const,
-    acquisitions: (role: MockRole) => [...adminKeys.bundles.all(role), "acquisitions"] as const,
+  payments: { all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "payments"] as const },
+  cancellations: {
+    all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "cancellations"] as const,
   },
-  coaches: { all: (role: MockRole) => [...adminKeys.all(role), "coaches"] as const },
-  sessions: { all: (role: MockRole) => [...adminKeys.all(role), "sessions"] as const },
-  staff: { all: (role: MockRole) => [...adminKeys.all(role), "staff"] as const },
-  settings: { all: (role: MockRole) => [...adminKeys.all(role), "settings"] as const },
-  paymentQrs: { all: (role: MockRole) => [...adminKeys.all(role), "payment-qrs"] as const },
+  reschedules: {
+    all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "reschedules"] as const,
+  },
+  classes: { all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "classes"] as const },
+  bundles: {
+    all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "bundles"] as const,
+    acquisitions: (scope: AdminAuthScope) =>
+      [...adminKeys.bundles.all(scope), "acquisitions"] as const,
+  },
+  coaches: { all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "coaches"] as const },
+  sessions: { all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "sessions"] as const },
+  staff: { all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "staff"] as const },
+  settings: { all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "settings"] as const },
+  paymentQrs: { all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "payment-qrs"] as const },
 
   customers: {
-    all: (role: MockRole) => [...adminKeys.all(role), "customers"] as const,
-    list: (role: MockRole, filters?: AdminCustomerListFilters) =>
-      [...adminKeys.customers.all(role), "list", filters ?? null] as const,
-    detail: (role: MockRole, id: string) =>
-      [...adminKeys.customers.all(role), "detail", id] as const,
+    all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "customers"] as const,
+    list: (scope: AdminAuthScope, filters?: AdminCustomerListFilters) =>
+      [...adminKeys.customers.all(scope), "list", filters ?? null] as const,
+    detail: (scope: AdminAuthScope, id: string) =>
+      [...adminKeys.customers.all(scope), "detail", id] as const,
   },
 
-  rosterAll: (role: MockRole) => [...adminKeys.all(role), "roster"] as const,
-  roster: (role: MockRole, sessionId: string) => [...adminKeys.rosterAll(role), sessionId] as const,
-  proofUrl: (role: MockRole, bookingId: string) =>
-    [...adminKeys.all(role), "proof-url", bookingId] as const,
+  rosterAll: (scope: AdminAuthScope) => [...adminKeys.all(scope), "roster"] as const,
+  roster: (scope: AdminAuthScope, sessionId: string) =>
+    [...adminKeys.rosterAll(scope), sessionId] as const,
+  proofUrl: (scope: AdminAuthScope, bookingId: string) =>
+    [...adminKeys.all(scope), "proof-url", bookingId] as const,
 
   reports: {
-    all: (role: MockRole) => [...adminKeys.all(role), "reports"] as const,
-    list: (role: MockRole, filters: AdminReportFilters) =>
-      [...adminKeys.reports.all(role), "list", filters] as const,
-    sales: (role: MockRole) => [...adminKeys.reports.all(role), "sales"] as const,
-    session: (role: MockRole, sessionId: string) =>
-      [...adminKeys.reports.all(role), "session", sessionId] as const,
+    all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "reports"] as const,
+    list: (scope: AdminAuthScope, filters: AdminReportFilters) =>
+      [...adminKeys.reports.all(scope), "list", filters] as const,
+    sales: (scope: AdminAuthScope) => [...adminKeys.reports.all(scope), "sales"] as const,
+    session: (scope: AdminAuthScope, sessionId: string) =>
+      [...adminKeys.reports.all(scope), "session", sessionId] as const,
   },
 
   /** Infinite queue keys for FE-ADM-020 (#210). Prefix stays `queues`. */
   queues: {
-    all: (role: MockRole) => [...adminKeys.all(role), "queues"] as const,
-    payments: (role: MockRole, tab: AdminPaymentTab) =>
-      [...adminKeys.queues.all(role), "payments", tab] as const,
-    cancellations: (role: MockRole) => [...adminKeys.queues.all(role), "cancellations"] as const,
-    reschedules: (role: MockRole) => [...adminKeys.queues.all(role), "reschedules"] as const,
+    all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "queues"] as const,
+    payments: (scope: AdminAuthScope, tab: AdminPaymentTab) =>
+      [...adminKeys.queues.all(scope), "payments", tab] as const,
+    cancellations: (scope: AdminAuthScope) =>
+      [...adminKeys.queues.all(scope), "cancellations"] as const,
+    reschedules: (scope: AdminAuthScope) =>
+      [...adminKeys.queues.all(scope), "reschedules"] as const,
   },
 } as const;

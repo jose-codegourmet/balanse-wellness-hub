@@ -22,8 +22,8 @@ import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export function RosterPage({ sessionId }: { sessionId: string }) {
   const { principal } = useMockPrincipal();
-  const rosterQuery = useSuspenseQuery(adminSessionRosterQuery(principal.role, sessionId));
-  const customersQuery = useSuspenseQuery(adminCustomersQuery(principal.role));
+  const rosterQuery = useSuspenseQuery(adminSessionRosterQuery(principal, sessionId));
+  const customersQuery = useSuspenseQuery(adminCustomersQuery(principal));
   const roster = rosterQuery.data;
   const customers = customersQuery.data;
 

@@ -289,8 +289,8 @@ export function RescheduleQueuePage({
   focus,
 }: RescheduleQueuePageProps) {
   const { principal } = useMockPrincipal();
-  const query = useInfiniteQuery(adminReschedulesInfiniteQuery(principal.role));
-  const bookingsQuery = useQuery(adminBookingsQuery(principal.role));
+  const query = useInfiniteQuery(adminReschedulesInfiniteQuery(principal));
+  const bookingsQuery = useQuery(adminBookingsQuery(principal));
   const nowIso = adminNowIso();
   const stamp = auditConfirmationCopy("This reschedule action", "Admin", nowIso);
   const [exiting, setExiting] = useState<Map<string, CustomerBooking>>(new Map());

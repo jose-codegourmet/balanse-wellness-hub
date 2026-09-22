@@ -186,7 +186,7 @@ export function CancellationQueuePage({
   nextPageError,
 }: CancellationQueuePageProps) {
   const { principal } = useMockPrincipal();
-  const query = useInfiniteQuery(adminCancellationsInfiniteQuery(principal.role));
+  const query = useInfiniteQuery(adminCancellationsInfiniteQuery(principal));
   const nowIso = adminNowIso();
   const stamp = auditConfirmationCopy("This cancellation action", "Admin", nowIso);
   const [exiting, setExiting] = useState<Map<string, CustomerBooking>>(new Map());

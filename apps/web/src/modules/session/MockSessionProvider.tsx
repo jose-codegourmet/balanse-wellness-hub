@@ -5,6 +5,7 @@ import {
   isMockHarnessEnabled,
   MOCK_HARNESS_COOKIE,
   type MockPrincipal,
+  normalizeMockPrincipal,
   parseMockPrincipal,
   serializeMockPrincipal,
 } from "@balanse/mock/session";
@@ -37,13 +38,15 @@ export function MockSessionProvider({
   children: ReactNode;
   initialPrincipal?: MockPrincipal;
 }) {
-  const [principal, setPrincipalState] = useState<MockPrincipal>(
-    () => initialPrincipal ?? parseMockPrincipal(readCookie()) ?? DEFAULT_MOCK_PRINCIPAL,
+  const [principal, setPrincipalState] = useState<MockPrincipal>(() =>
+    normalizeMockPrincipal(
+      initialPrincipal ?? parseMockPrincipal(readCookie()) ?? DEFAULT_MOCK_PRINCIPAL,
+    ),
   );
 
   const setPrincipal = useCallback((next: Partial<MockPrincipal>) => {
     setPrincipalState((current) => {
-      const merged = { ...current, ...next };
+      const merged = normalizeMockPrincipal({ ...current, ...next });
       writeCookie(merged);
       return merged;
     });

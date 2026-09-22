@@ -39,6 +39,7 @@ import {
   validateSessionCapacity,
 } from "@balanse/domain";
 import type { AdminPaymentQueueQuery, AdminRequestQueueQuery, MockDataAdapter } from "./adapter";
+import { applyAdminAuthorization } from "./apply-admin-authorization";
 import type { BundleState } from "./bundle-engine";
 import {
   approveAcquisition,
@@ -356,7 +357,7 @@ export function createMemoryAdapter(): MockDataAdapter {
 
   const emptyQueues = () => getMockRuntime().emptyAdminQueues;
 
-  return {
+  return applyAdminAuthorization({
     getPublicSessions: (query) =>
       applyMockEffects(
         () => {
@@ -1308,7 +1309,7 @@ export function createMemoryAdapter(): MockDataAdapter {
         if (!booking) throw new Error("Booking not found");
         return clone(promoteWaitlisted(booking));
       }),
-  };
+  });
 }
 
 export const mockAdapter = createMemoryAdapter();

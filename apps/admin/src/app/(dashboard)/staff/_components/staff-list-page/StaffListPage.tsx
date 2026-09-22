@@ -22,8 +22,8 @@ export type StaffListPageProps = { empty?: boolean };
 
 export function StaffListPage({ empty }: StaffListPageProps) {
   const { principal } = useMockPrincipal();
-  const query = useSuspenseQuery(adminStaffQuery(principal.role));
-  const coachesQuery = useSuspenseQuery(adminCoachesQuery(principal.role));
+  const query = useSuspenseQuery(adminStaffQuery(principal));
+  const coachesQuery = useSuspenseQuery(adminCoachesQuery(principal));
   const rows = empty ? [] : query.data;
 
   const columns = useMemo<ColumnDef<AdminStaff, unknown>[]>(

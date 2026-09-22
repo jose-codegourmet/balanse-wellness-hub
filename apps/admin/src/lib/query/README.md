@@ -7,12 +7,12 @@ Wave 2 pages should be thin. Data goes through this directory only.
 1. **Prefetch in the route.** `page.tsx` is a server component. Read the mock principal the same way `app/layout.tsx` does (`cookies()` + `parseMockPrincipal`), then:
 
    ```tsx
-   return prefetchAdmin([adminDashboardQuery(principal.role)], <DashboardPage />);
+   return prefetchAdmin([adminDashboardQuery(principal)], <DashboardPage />);
    ```
 
    Keep the existing `Metadata` export. `prefetchAdmin(options, children)` is the stable signature for FE-ADM-018 (#208).
 
-2. **Read in the module** with `useQuery` / `useSuspenseQuery` and the matching `*Query` factory from `queries.ts`. Pass `principal.role` from `useMockPrincipal()`.
+2. **Read in the module** with `useQuery` / `useSuspenseQuery` and the matching `*Query` factory from `queries.ts`. Pass the full `principal` from `useMockPrincipal()` — factories bind the adapter actor and key by `adminAuthScope(principal)`.
 
 3. **Write through `mutations.ts`.** Each hook invalidates the keys in the table below. Do not hand-roll a `refresh()` that re-fetches the page.
 
@@ -22,12 +22,15 @@ Wave 2 pages should be thin. Data goes through this directory only.
 
 All keys are built by `adminKeys` in `keys.ts`. No string literals at call sites.
 
-Every key is rooted at `["admin", role]` so switching `admin → customer/guest` in the harness cannot serve another role’s cache (coach rates in particular). There is no staff id on `MockPrincipal`; partition by `role` only.
+Every key is rooted at `["admin", adminAuthScope(principal)]`. The scope is a
+staff authorization fingerprint (staff id + role/permission revision), not the
+coarse `guest | customer | admin` shell role. Super Admin → Coach must not
+reuse cached rates, reports, or other-staff rosters.
 
 Hierarchical prefixes work with `invalidateQueries`:
 
 ```ts
-queryClient.invalidateQueries({ queryKey: adminKeys.bookings.all(role) });
+queryClient.invalidateQueries({ queryKey: adminKeys.bookings.all(scope) });
 ```
 
 `adminKeys.queues` holds infinite queue keys (`payments(tab)`, `cancellations`, `reschedules`). Factories: `adminPaymentsQueueInfiniteQuery`, `adminCancellationsInfiniteQuery`, `adminReschedulesInfiniteQuery`.
@@ -63,7 +66,7 @@ queryClient.invalidateQueries({ queryKey: adminKeys.bookings.all(role) });
 
 ## Cache + mock principal
 
-`MockSessionHarness` calls `queryClient.clear()` on every principal change and every `setMockRuntime(...)`. Clear, do not invalidate — another role’s data must not stay reachable even briefly.
+Identity switches go through `useSwitchAuthorizedIdentity`, which calls `removeAuthorizedAdminCache` (remove `["admin"]` + `clear`) and navigates with a consumer-supplied allowed-route function (`firstPermittedAdminRoute` by default). Clear, do not invalidate — another staff principal’s data must not stay reachable even briefly.
 
 `AdminSidebar` still calls `getAdminDashboard()` directly. FE-ADM-016 (#205) should adopt `adminDashboardQuery` so `/dashboard` and the sidebar share one key.
 

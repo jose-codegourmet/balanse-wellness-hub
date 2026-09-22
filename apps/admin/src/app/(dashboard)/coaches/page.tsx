@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default async function Page() {
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [adminCoachesQuery(principal.role), adminSessionsQuery(principal.role)],
+    [adminCoachesQuery(principal), adminSessionsQuery(principal)],
     <AdminQuerySuspense>
       <CoachListPage />
     </AdminQuerySuspense>,

@@ -3,7 +3,6 @@ import type {
   AdminCoach,
   AdminSession,
   AdminSettings,
-  AdminStaff,
   BookingStatus,
   CustomerBooking,
   CustomerProfile,
@@ -126,7 +125,7 @@ const coachRows: AdminCoach[] = [
     active: true,
     defaultRatePhp: 700,
     rateType: "PER_SESSION",
-    staffId: null,
+    staffId: "staff-ephraim",
   },
   {
     id: "coach-rachelle",
@@ -732,23 +731,4 @@ export const adminSettings: AdminSettings = {
   ],
 };
 
-export const staff: AdminStaff[] = [
-  {
-    id: "staff-rex",
-    name: "Rex Francis Regis",
-    email: "rex@balanse.example",
-    role: "ADMIN",
-    status: "active",
-    isCoach: true,
-    coachId: "coach-rex",
-  },
-  {
-    id: "staff-partner",
-    name: "Studio Partner",
-    email: "partner@balanse.example",
-    role: "ADMIN",
-    status: "active",
-    isCoach: false,
-    coachId: null,
-  },
-];
+export { mockStaffMembers as staff } from "./staff-fixtures";

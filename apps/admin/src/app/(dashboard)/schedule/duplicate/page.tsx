@@ -19,7 +19,7 @@ export default async function Page({
   const { from, to } = await searchParams;
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [adminSessionsQuery(principal.role)],
+    [adminSessionsQuery(principal)],
     <AdminQuerySuspense>
       <DuplicateScheduleForm sourceStart={from} sourceEnd={to} />
     </AdminQuerySuspense>,

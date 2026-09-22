@@ -23,9 +23,9 @@ export default async function Page() {
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
     [
-      adminClassesQuery(principal.role),
-      adminCoachesQuery(principal.role),
-      adminReportsQuery(principal.role, DEFAULT_REPORT_FILTERS),
+      adminClassesQuery(principal),
+      adminCoachesQuery(principal),
+      adminReportsQuery(principal, DEFAULT_REPORT_FILTERS),
     ],
     <AdminQuerySuspense>
       <ReportsPage />

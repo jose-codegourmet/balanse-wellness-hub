@@ -97,9 +97,9 @@ function CustomerListPageInner({ empty, loading, error, focusCustomerId }: Custo
   const facets = parseCustomerFacets(searchParams.get(`${CUSTOMER_TABLE_ID}_facets`));
   const upcomingOnly = (facets.upcoming ?? []).includes("Has upcoming");
   const listQuery = useSuspenseQuery(
-    adminCustomersQuery(principal.role, upcomingOnly ? { hasUpcoming: true } : undefined),
+    adminCustomersQuery(principal, upcomingOnly ? { hasUpcoming: true } : undefined),
   );
-  const rosterQuery = useSuspenseQuery(adminCustomersQuery(principal.role));
+  const rosterQuery = useSuspenseQuery(adminCustomersQuery(principal));
 
   const roster = useMemo(() => {
     const next = empty ? [] : rosterQuery.data;

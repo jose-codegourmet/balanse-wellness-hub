@@ -2,20 +2,22 @@
 
 import type { AdminSettings } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import type { MockRole } from "@balanse/mock/session";
 import { type QueryKey, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { type AdminAuthScope, adminAuthScope, bindAdminQueryPrincipal } from "./auth-scope";
 import { adminKeys } from "./keys";
 
-function useAdminRole() {
-  return useMockPrincipal().principal.role;
+function useAdminAuthScope(): AdminAuthScope {
+  const { principal } = useMockPrincipal();
+  bindAdminQueryPrincipal(principal);
+  return adminAuthScope(principal);
 }
 
 function invalidateForRole(queryClient: ReturnType<typeof useQueryClient>, keys: QueryKey[]) {
   return Promise.all(keys.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
 }
 
-function bookingPaymentDashboard(role: MockRole): QueryKey[] {
+function bookingPaymentDashboard(role: AdminAuthScope): QueryKey[] {
   return [
     adminKeys.bookings.all(role),
     adminKeys.payments.all(role),
@@ -25,7 +27,7 @@ function bookingPaymentDashboard(role: MockRole): QueryKey[] {
 }
 
 export function useConfirmAdminBooking() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => getMockAdapter().confirmAdminBooking(id),
@@ -34,7 +36,7 @@ export function useConfirmAdminBooking() {
 }
 
 export function useRejectAdminBooking() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
@@ -44,7 +46,7 @@ export function useRejectAdminBooking() {
 }
 
 export function useRecordCash() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (bookingId: string) => getMockAdapter().recordCash(bookingId),
@@ -53,7 +55,7 @@ export function useRecordCash() {
 }
 
 export function useMarkRefundPending() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (bookingId: string) => getMockAdapter().markRefundPending(bookingId),
@@ -62,7 +64,7 @@ export function useMarkRefundPending() {
 }
 
 export function useMarkRefunded() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (bookingId: string) => getMockAdapter().markRefunded(bookingId),
@@ -70,7 +72,7 @@ export function useMarkRefunded() {
   });
 }
 
-function cancellationKeys(role: MockRole): QueryKey[] {
+function cancellationKeys(role: AdminAuthScope): QueryKey[] {
   return [
     adminKeys.cancellations.all(role),
     adminKeys.bookings.all(role),
@@ -80,7 +82,7 @@ function cancellationKeys(role: MockRole): QueryKey[] {
 }
 
 export function useCompleteAdminCancellation() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (bookingId: string) => getMockAdapter().completeAdminCancellation(bookingId),
@@ -89,7 +91,7 @@ export function useCompleteAdminCancellation() {
 }
 
 export function useRejectAdminCancellation() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ bookingId, reason }: { bookingId: string; reason: string }) =>
@@ -98,7 +100,7 @@ export function useRejectAdminCancellation() {
   });
 }
 
-function rescheduleKeys(role: MockRole): QueryKey[] {
+function rescheduleKeys(role: AdminAuthScope): QueryKey[] {
   return [
     adminKeys.reschedules.all(role),
     adminKeys.bookings.all(role),
@@ -109,7 +111,7 @@ function rescheduleKeys(role: MockRole): QueryKey[] {
 }
 
 export function useApproveAdminReschedule() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (bookingId: string) => getMockAdapter().approveAdminReschedule(bookingId),
@@ -118,7 +120,7 @@ export function useApproveAdminReschedule() {
 }
 
 export function useRejectAdminReschedule() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ bookingId, reason }: { bookingId: string; reason: string }) =>
@@ -127,7 +129,7 @@ export function useRejectAdminReschedule() {
   });
 }
 
-function attendanceKeys(role: MockRole): QueryKey[] {
+function attendanceKeys(role: AdminAuthScope): QueryKey[] {
   return [
     adminKeys.bookings.all(role),
     adminKeys.rosterAll(role),
@@ -138,7 +140,7 @@ function attendanceKeys(role: MockRole): QueryKey[] {
 }
 
 export function useCheckIn() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (bookingId: string) => getMockAdapter().checkIn(bookingId),
@@ -147,7 +149,7 @@ export function useCheckIn() {
 }
 
 export function useMarkNoShow() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (bookingId: string) => getMockAdapter().markNoShow(bookingId),
@@ -156,7 +158,7 @@ export function useMarkNoShow() {
 }
 
 export function useUpsertAdminClass() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["upsertAdminClass"]>[0]) =>
@@ -166,7 +168,7 @@ export function useUpsertAdminClass() {
 }
 
 export function useUpsertAdminCoach() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["upsertAdminCoach"]>[0]) =>
@@ -176,7 +178,7 @@ export function useUpsertAdminCoach() {
   });
 }
 
-function sessionKeys(role: MockRole): QueryKey[] {
+function sessionKeys(role: AdminAuthScope): QueryKey[] {
   return [
     adminKeys.sessions.all(role),
     adminKeys.dashboard(role),
@@ -187,7 +189,7 @@ function sessionKeys(role: MockRole): QueryKey[] {
 }
 
 export function useUpsertAdminSession() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["upsertAdminSession"]>[0]) =>
@@ -197,7 +199,7 @@ export function useUpsertAdminSession() {
 }
 
 export function useDuplicateAdminSchedule() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (
@@ -208,7 +210,7 @@ export function useDuplicateAdminSchedule() {
 }
 
 export function useCreateAdminRecurringSchedule() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (
@@ -219,7 +221,7 @@ export function useCreateAdminRecurringSchedule() {
 }
 
 export function useCancelAdminSession() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => getMockAdapter().cancelAdminSession(id),
@@ -227,12 +229,12 @@ export function useCancelAdminSession() {
   });
 }
 
-function staffCoachKeys(role: MockRole): QueryKey[] {
+function staffCoachKeys(role: AdminAuthScope): QueryKey[] {
   return [adminKeys.staff.all(role), adminKeys.coaches.all(role)];
 }
 
 export function useUpsertAdminStaff() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["upsertAdminStaff"]>[0]) =>
@@ -242,7 +244,7 @@ export function useUpsertAdminStaff() {
 }
 
 export function useDisableAdminStaff() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => getMockAdapter().disableAdminStaff(id),
@@ -250,12 +252,12 @@ export function useDisableAdminStaff() {
   });
 }
 
-function paymentQrKeys(role: MockRole): QueryKey[] {
+function paymentQrKeys(role: AdminAuthScope): QueryKey[] {
   return [adminKeys.paymentQrs.all(role), adminKeys.settings.all(role)];
 }
 
 export function useUpsertPaymentQr() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["upsertPaymentQr"]>[0]) =>
@@ -265,7 +267,7 @@ export function useUpsertPaymentQr() {
 }
 
 export function useActivatePaymentQr() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => getMockAdapter().activatePaymentQr(id),
@@ -274,7 +276,7 @@ export function useActivatePaymentQr() {
 }
 
 export function useArchivePaymentQr() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => getMockAdapter().archivePaymentQr(id),
@@ -283,7 +285,7 @@ export function useArchivePaymentQr() {
 }
 
 export function useUpsertPolicyDocument() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["upsertPolicyDocument"]>[0]) =>
@@ -293,7 +295,7 @@ export function useUpsertPolicyDocument() {
 }
 
 export function useDeletePolicyDocument() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => getMockAdapter().deletePolicyDocument(id),
@@ -302,7 +304,7 @@ export function useDeletePolicyDocument() {
 }
 
 export function useUpdateAdminSettings() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (patch: Partial<AdminSettings>) => getMockAdapter().updateAdminSettings(patch),
@@ -310,12 +312,12 @@ export function useUpdateAdminSettings() {
   });
 }
 
-function bundleKeys(role: MockRole): QueryKey[] {
+function bundleKeys(role: AdminAuthScope): QueryKey[] {
   return [adminKeys.bundles.all(role), adminKeys.customers.all(role)];
 }
 
 export function useUpsertAdminBundle() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["upsertAdminBundle"]>[0]) =>
@@ -325,7 +327,7 @@ export function useUpsertAdminBundle() {
 }
 
 export function useSetAdminBundleStatus() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
@@ -340,7 +342,7 @@ export function useSetAdminBundleStatus() {
 }
 
 export function useGrantCustomerBundle() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["grantCustomerBundle"]>[0]) =>
@@ -350,7 +352,7 @@ export function useGrantCustomerBundle() {
 }
 
 export function useRevokeCustomerEntitlement() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (
@@ -361,7 +363,7 @@ export function useRevokeCustomerEntitlement() {
 }
 
 export function useApproveBundleAcquisition() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => getMockAdapter().approveBundleAcquisition(id),
@@ -370,7 +372,7 @@ export function useApproveBundleAcquisition() {
 }
 
 export function useRejectBundleAcquisition() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
@@ -380,7 +382,7 @@ export function useRejectBundleAcquisition() {
 }
 
 export function usePromotePolicyVersion() {
-  const role = useAdminRole();
+  const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ documentName, version }: { documentName: string; version: string }) =>

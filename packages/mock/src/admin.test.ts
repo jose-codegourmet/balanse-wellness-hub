@@ -63,7 +63,10 @@ describe("admin mock queues", () => {
   it("does not leak admin-only modules into apps/web", () => {
     const webFiles = [
       resolve(process.cwd(), "../../apps/web/src/modules/customer/BookingCard.tsx"),
-      resolve(process.cwd(), "../../apps/web/src/modules/public/CoachPreviewCard.tsx"),
+      resolve(
+        process.cwd(),
+        "../../apps/web/src/app/(public)/_components/landing-page/coach-preview-card/CoachPreviewCard.tsx",
+      ),
     ];
     for (const file of webFiles) {
       const source = readFileSync(file, "utf8");

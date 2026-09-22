@@ -78,8 +78,8 @@ function ScheduleListPageInner({
 }) {
   const router = useRouter();
   const { principal } = useMockPrincipal();
-  const sessionsQuery = useSuspenseQuery(adminSessionsQuery(principal.role));
-  const bookingsQuery = useQuery(adminBookingsQuery(principal.role));
+  const sessionsQuery = useSuspenseQuery(adminSessionsQuery(principal));
+  const bookingsQuery = useQuery(adminBookingsQuery(principal));
   const sessions = empty ? [] : sessionsQuery.data;
   const bookings = bookingsQuery.data ?? [];
   const todayYmd = adminTodayYmd();

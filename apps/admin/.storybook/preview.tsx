@@ -4,9 +4,11 @@ import {
   DEFAULT_MOCK_PRINCIPAL,
   type MockRole,
   type MockRuntimeOptions,
+  normalizeMockPrincipal,
   resetMockRuntime,
   setMockRuntime,
 } from "@balanse/mock";
+import { adminAuthScope } from "../src/lib/query/auth-scope";
 import type { Decorator, Preview } from "@storybook/nextjs-vite";
 import { type ReactNode, useEffect, useLayoutEffect } from "react";
 import { Providers } from "../src/modules/providers/Providers";
@@ -58,7 +60,7 @@ function MockRuntimeBridge({
 const withAdminProviders: Decorator = (Story, context) => {
   const theme = (context.globals.theme as "light" | "dark") ?? "light";
   const role = (context.globals.principal as MockRole) ?? "admin";
-  const initialPrincipal = { ...DEFAULT_MOCK_PRINCIPAL, role };
+  const initialPrincipal = normalizeMockPrincipal({ ...DEFAULT_MOCK_PRINCIPAL, role });
   const mockRuntime = context.parameters.mockRuntime as Partial<MockRuntimeOptions> | undefined;
   // Apply knobs during render, before useQuery fires in the story.
   resetMockRuntime();
@@ -71,7 +73,7 @@ const withAdminProviders: Decorator = (Story, context) => {
       >
         <Providers
           // Fresh QueryClient per principal / mockRuntime so caches cannot leak.
-          key={`${role}:${JSON.stringify(mockRuntime ?? null)}`}
+          key={`${adminAuthScope(initialPrincipal)}:${JSON.stringify(mockRuntime ?? null)}`}
           initialPrincipal={initialPrincipal}
         >
           <MockRuntimeBridge options={mockRuntime}>
@@ -118,7 +120,7 @@ const preview: Preview = {
     },
     principal: {
       description:
-        "Mock session role. MockPrincipal has no separate staff role — use admin vs customer/guest.",
+        "Mock shell role. Admin stories bind staff-rex; use the harness for Front Desk / Coach / custom / disabled.",
       defaultValue: "admin",
       toolbar: {
         title: "Principal",

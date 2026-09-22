@@ -15,7 +15,7 @@ export default async function Page({ params }: { params: Promise<{ bundleId: str
   const { bundleId } = await params;
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [adminBundlesQuery(principal.role), adminClassesQuery(principal.role)],
+    [adminBundlesQuery(principal), adminClassesQuery(principal)],
     <AdminQuerySuspense>
       <BundleFormPage bundleId={bundleId} />
     </AdminQuerySuspense>,

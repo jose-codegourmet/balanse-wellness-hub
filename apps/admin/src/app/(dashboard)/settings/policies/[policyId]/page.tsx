@@ -9,7 +9,7 @@ export default async function Page({ params }: { params: Promise<{ policyId: str
   const { policyId } = await params;
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [adminSettingsQuery(principal.role)],
+    [adminSettingsQuery(principal)],
     <AdminQuerySuspense>
       <SettingsPage initialTab="policies" policyId={policyId} />
     </AdminQuerySuspense>,

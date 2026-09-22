@@ -387,7 +387,7 @@ export function PaymentReviewPage({
   const { principal } = useMockPrincipal();
   const [urlTab, setUrlTab] = useTabParam("tab", PAYMENT_TABS, "gcash");
   const tab = tabOverride ?? urlTab;
-  const query = useInfiniteQuery(adminPaymentsQueueInfiniteQuery(principal.role, tab));
+  const query = useInfiniteQuery(adminPaymentsQueueInfiniteQuery(principal, tab));
   const nowIso = adminNowIso();
   const stamp = auditConfirmationCopy("This payment action", "Admin", nowIso);
   const [exiting, setExiting] = useState<Map<string, CustomerBooking>>(new Map());

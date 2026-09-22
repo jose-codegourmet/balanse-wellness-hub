@@ -22,7 +22,7 @@ export function AdminNotificationHeader({
   compact = false,
 }: AdminNotificationHeaderProps) {
   const { principal } = useMockPrincipal();
-  const { data } = useQuery(adminDashboardQuery(principal.role));
+  const { data } = useQuery(adminDashboardQuery(principal));
   const items = data
     ? [
         {
