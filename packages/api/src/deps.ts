@@ -1,4 +1,5 @@
 import { type PrismaClient, prisma } from "@balanse/db";
+import type { PermissionKey, StaffAuthorizationActor, StaffMemberStatus } from "@balanse/domain";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 export type AuthMethod = "google" | "email";
@@ -9,16 +10,42 @@ export type ResolvedUser = {
   authMethod: AuthMethod;
 };
 
+export type AdminApiActor = {
+  kind: "admin";
+  userId: string;
+  staffId: string;
+  email: string | null;
+  authMethod: AuthMethod;
+  staffStatus: StaffMemberStatus;
+  roleId: string;
+  roleKey: string;
+  roleActive: boolean;
+  permissions: readonly PermissionKey[];
+  coachId: string | null;
+  isCoach: boolean;
+  isSystem: boolean;
+};
+
 export type ApiActor =
   | { kind: "anon" }
   | { kind: "customer"; userId: string; email: string | null; authMethod: AuthMethod }
-  | {
-      kind: "admin";
-      userId: string;
-      staffId: string;
-      email: string | null;
-      authMethod: AuthMethod;
-    };
+  | AdminApiActor;
+
+export function staffAuthorizationOf(actor: AdminApiActor): StaffAuthorizationActor {
+  return {
+    userId: actor.userId,
+    staffId: actor.staffId,
+    staffStatus: actor.staffStatus,
+    roleId: actor.roleId,
+    roleKey: actor.roleKey,
+    roleActive: actor.roleActive,
+    permissions: actor.permissions,
+    coachId: actor.coachId,
+    isCoach: actor.isCoach,
+    email: actor.email,
+    isSystem: actor.isSystem,
+  };
+}
 
 export type StoragePort = {
   createSignedUpload: (

@@ -27,7 +27,7 @@
 | [staff-roles.md](./staff-roles.md) | #298 / epic #289 |
 | [payment-qr-collection.md](./payment-qr-collection.md) | BE-056 |
 | [session-bundles.md](./session-bundles.md) | BE-058 |
-| [api-routes.md](./api-routes.md) | BE-030–BE-043 + BE-050–058 |
+| [api-routes.md](./api-routes.md) | BE-030–BE-043 + BE-050–058 + #292 |
 | [human-steps.md](./human-steps.md) | dashboard-only |
 
 - [Session coach assignments](./session-coach-assignments.md) — independent classes, required multi-coach sessions, per-coach snapshots, migration rollout.

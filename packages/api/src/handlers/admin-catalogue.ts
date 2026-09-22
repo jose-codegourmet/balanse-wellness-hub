@@ -16,6 +16,13 @@ import { ApiError } from "../errors";
 import { asString, ok, pagination, readJson, searchParams } from "../http";
 import { presentCoach } from "../presenters";
 import {
+  actorHas,
+  canManageRates,
+  canReadRates,
+  maybeStripRates,
+  sessionOwnedByActor,
+} from "../sensitive";
+import {
   assertOwnedCoachPhotoKey,
   confirmUpload,
   extensionFor,
@@ -91,9 +98,26 @@ export async function patchAdminClass(deps: ApiDeps, req: Request, id: string): 
 }
 
 export async function getAdminCoaches(deps: ApiDeps, req: Request): Promise<Response> {
-  requireAdmin(await resolveActor(deps, req));
-  const items = await deps.prisma.coach.findMany({ orderBy: { name: "asc" } });
-  return ok({ items: items.map(presentCoach) });
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const items = await deps.prisma.coach.findMany({
+    orderBy: { name: "asc" },
+    ...(canReadRates(actor)
+      ? {}
+      : {
+          select: {
+            id: true,
+            name: true,
+            specialties: true,
+            shortBio: true,
+            photoKey: true,
+            active: true,
+            staffMemberId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        }),
+  });
+  return ok({ items: maybeStripRates(actor, items.map(presentCoach)) });
 }
 
 export async function postAdminCoach(deps: ApiDeps, req: Request): Promise<Response> {
@@ -101,12 +125,18 @@ export async function postAdminCoach(deps: ApiDeps, req: Request): Promise<Respo
   const body = await readJson(req);
   const name = requireString(body, "name", FIELD_CONSTRAINTS.coach.name.max);
   const shortBio = requireString(body, "shortBio", FIELD_CONSTRAINTS.coach.shortBio.max);
-  const defaultRate = moneyValue(body, "defaultRate", true);
-  const rateType = asString(body.rateType);
+  const mayManageRates = canManageRates(actor);
+  const defaultRate = mayManageRates ? moneyValue(body, "defaultRate", true) : "0";
+  const rateType = mayManageRates ? asString(body.rateType) : "PER_SESSION";
   if (rateType !== "PER_SESSION" && rateType !== "PER_HOUR") {
     throwFields(
       fieldError("rateType", "invalid_enum", "rateType must be PER_SESSION or PER_HOUR."),
     );
+  }
+  if (!mayManageRates && (body.defaultRate != null || body.rateType != null)) {
+    throw new ApiError(403, "forbidden", "Missing permission.", {
+      details: { permission: "coach_rates.manage" },
+    });
   }
   const created = await deps.prisma.coach.create({
     data: {
@@ -124,7 +154,7 @@ export async function postAdminCoach(deps: ApiDeps, req: Request): Promise<Respo
     action: "coach.create",
     actor,
   });
-  return ok({ coach: presentCoach(created) });
+  return ok({ coach: maybeStripRates(actor, presentCoach(created)) });
 }
 
 export async function patchAdminCoach(deps: ApiDeps, req: Request, id: string): Promise<Response> {
@@ -132,8 +162,13 @@ export async function patchAdminCoach(deps: ApiDeps, req: Request, id: string): 
   const body = await readJson(req);
   const name = optionalString(body, "name", FIELD_CONSTRAINTS.coach.name.max);
   const shortBio = optionalString(body, "shortBio", FIELD_CONSTRAINTS.coach.shortBio.max);
-  const defaultRate = moneyValue(body, "defaultRate", false);
-  const rateType = asString(body.rateType);
+  if (!canManageRates(actor) && (body.defaultRate != null || body.rateType != null)) {
+    throw new ApiError(403, "forbidden", "Missing permission.", {
+      details: { permission: "coach_rates.manage" },
+    });
+  }
+  const defaultRate = canManageRates(actor) ? moneyValue(body, "defaultRate", false) : undefined;
+  const rateType = canManageRates(actor) ? asString(body.rateType) : undefined;
   if (rateType && rateType !== "PER_SESSION" && rateType !== "PER_HOUR") {
     throwFields(
       fieldError("rateType", "invalid_enum", "rateType must be PER_SESSION or PER_HOUR."),
@@ -153,7 +188,7 @@ export async function patchAdminCoach(deps: ApiDeps, req: Request, id: string): 
     },
   });
   await writeAudit(deps, { entityType: "coach", entityId: id, action: "coach.update", actor });
-  return ok({ coach: presentCoach(updated) });
+  return ok({ coach: maybeStripRates(actor, presentCoach(updated)) });
 }
 
 export async function postCoachPhoto(deps: ApiDeps, req: Request, id: string): Promise<Response> {
@@ -214,14 +249,17 @@ export async function deleteCoachPhoto(deps: ApiDeps, req: Request, id: string):
 }
 
 export async function getAdminSessions(deps: ApiDeps, req: Request): Promise<Response> {
-  requireAdmin(await resolveActor(deps, req));
+  const actor = requireAdmin(await resolveActor(deps, req));
   const params = searchParams(req);
   const { page, pageSize, skip } = pagination(params);
+  const ownOnly = !actorHas(actor, "schedule.read.all");
   const where = {
     ...(params.get("classId") ? { classId: params.get("classId") as string } : {}),
     ...(params.get("status")
       ? { status: params.get("status") as "DRAFT" | "PUBLISHED" | "CANCELLED" }
       : {}),
+    ...(ownOnly && actor.coachId ? { coaches: { some: { coachId: actor.coachId } } } : {}),
+    ...(ownOnly && !actor.coachId ? { id: { in: [] } } : {}),
   };
   const [total, items] = await Promise.all([
     deps.prisma.gymSession.count({ where }),
@@ -230,20 +268,42 @@ export async function getAdminSessions(deps: ApiDeps, req: Request): Promise<Res
       skip,
       take: pageSize,
       orderBy: { startsAt: "asc" },
-      include: { gymClass: true, coaches: { include: { coach: true } } },
+      include: {
+        gymClass: true,
+        coaches: {
+          include: {
+            coach: canReadRates(actor)
+              ? true
+              : {
+                  select: {
+                    id: true,
+                    name: true,
+                    specialties: true,
+                    shortBio: true,
+                    photoKey: true,
+                    active: true,
+                    staffMemberId: true,
+                  },
+                },
+          },
+        },
+      },
     }),
   ]);
-  return ok({
-    page,
-    pageSize,
-    total,
-    items: items.map((item) => ({
+  const mapped = items
+    .filter((item) => !ownOnly || sessionOwnedByActor(actor, item))
+    .map((item) => ({
       ...item,
       coaches: item.coaches.map((assignment) => ({
         ...assignment,
         coach: presentCoach(assignment.coach),
       })),
-    })),
+    }));
+  return ok({
+    page,
+    pageSize,
+    total,
+    items: maybeStripRates(actor, mapped),
   });
 }
 

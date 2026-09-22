@@ -1,5 +1,13 @@
-import { bookingListTab } from "@balanse/domain";
-import { requireAdmin, resolveActor, writeAudit } from "../auth";
+import { bookingListTab, isCoachAuthorizationRole, resolveRolePermissions } from "@balanse/domain";
+import {
+  assertCanGrantPermissions,
+  assertLastSuperAdminAction,
+  assertRoleAssignable,
+  requireAdmin,
+  requirePermission,
+  resolveActor,
+  writeAudit,
+} from "../auth";
 import {
   entitlementWithLedger,
   presentAcquisition,
@@ -12,7 +20,10 @@ import { bookingStatusPayload, presentStaff } from "../presenters";
 import { CUSTOMER_SENSITIVE_READ_POLICY } from "../settings";
 import { fieldError, requireString, throwFields } from "../validation";
 
-const staffCoachInclude = { coach: { select: { id: true } } } as const;
+const staffCoachInclude = {
+  coach: { select: { id: true } },
+  roleDefinition: { select: { id: true, key: true, name: true, status: true, allAccess: true } },
+} as const;
 
 export async function getStaff(deps: ApiDeps, req: Request): Promise<Response> {
   requireAdmin(await resolveActor(deps, req));
@@ -26,7 +37,26 @@ export async function getStaff(deps: ApiDeps, req: Request): Promise<Response> {
 
 export async function postStaff(deps: ApiDeps, req: Request): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
+  requirePermission(actor, "roles.manage");
   const body = await readJson(req);
+  const roleId = asString(body.roleId)?.trim();
+  if (!roleId) {
+    throw new ApiError(400, "validation_error", "roleId is required.", {
+      fields: { roleId: "Required." },
+    });
+  }
+  const role = await deps.prisma.staffRoleDefinition.findUnique({
+    where: { id: roleId },
+    include: { permissions: { include: { permission: { select: { key: true } } } } },
+  });
+  if (!role) throw new ApiError(404, "role_not_found", "Role not found.");
+  assertCanGrantPermissions(
+    actor,
+    resolveRolePermissions({
+      allAccess: role.allAccess,
+      permissionKeys: role.permissions.map((row) => row.permission.key as never),
+    }),
+  );
   const email = asString(body.email)?.trim().toLowerCase();
   const name = asString(body.name)?.trim();
   if (!email || !name) {
@@ -53,10 +83,27 @@ export async function postStaff(deps: ApiDeps, req: Request): Promise<Response> 
       update: { fullName: name, email },
     });
   }
+  const existingStaff = await deps.prisma.staffMember.findFirst({
+    where: { userId: profile.id },
+    include: staffCoachInclude,
+  });
+  assertRoleAssignable({
+    roleKey: role.key,
+    roleActive: role.status === "ACTIVE",
+    roleArchived: role.status === "ARCHIVED",
+    coachId: existingStaff?.coach?.id ?? asString(body.coachId) ?? null,
+  });
   const staff = await deps.prisma.staffMember.upsert({
     where: { userId: profile.id },
-    create: { userId: profile.id, name, email, role: "ADMIN", status: "ACTIVE" },
-    update: { name, email, status: "ACTIVE" },
+    create: {
+      userId: profile.id,
+      name,
+      email,
+      role: "ADMIN",
+      roleId: role.id,
+      status: "ACTIVE",
+    },
+    update: { name, email, status: "ACTIVE", roleId: role.id },
     include: staffCoachInclude,
   });
   await writeAudit(deps, {
@@ -64,6 +111,7 @@ export async function postStaff(deps: ApiDeps, req: Request): Promise<Response> 
     entityId: staff.id,
     action: "staff.provision",
     actor,
+    metadata: { after: { roleId: role.id, roleKey: role.key } },
   });
   return ok({ staff: presentStaff(staff) });
 }
@@ -93,6 +141,7 @@ export async function disableStaff(deps: ApiDeps, req: Request, id: string): Pro
     throw new ApiError(404, "staff_not_found", "Staff member not found.");
   }
   const staff = await deps.prisma.$transaction(async (tx) => {
+    await assertLastSuperAdminAction({ prisma: tx } as ApiDeps, id, "disable");
     const updated = await tx.staffMember.update({
       where: { id },
       data: { status: "DISABLED" },
@@ -111,8 +160,11 @@ export async function disableStaff(deps: ApiDeps, req: Request, id: string): Pro
     entityId: id,
     action: "staff.disable",
     actor,
+    beforeStatus: existing.status,
     afterStatus: "DISABLED",
     metadata: {
+      before: { status: existing.status, roleId: existing.roleId },
+      after: { status: "DISABLED", roleId: existing.roleId },
       coachId: existing.coach?.id ?? null,
       coachDeactivated: Boolean(existing.coach),
       sessionsUntouched: true,
@@ -182,6 +234,13 @@ export async function unlinkStaffCoach(deps: ApiDeps, req: Request, id: string):
   if (!staff || staff.isSystem) {
     throw new ApiError(404, "staff_not_found", "Staff member not found.");
   }
+  if (staff.roleDefinition && isCoachAuthorizationRole(staff.roleDefinition.key)) {
+    throw new ApiError(
+      400,
+      "coach_role_requires_link",
+      "The Coach role requires a linked coach profile.",
+    );
+  }
   if (staff.coach) {
     await deps.prisma.coach.update({
       where: { id: staff.coach.id },
@@ -198,6 +257,61 @@ export async function unlinkStaffCoach(deps: ApiDeps, req: Request, id: string):
   return ok({
     staff: presentStaff({ ...staff, coach: null }),
   });
+}
+
+export async function assignStaffRole(deps: ApiDeps, req: Request, id: string): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const body = await readJson(req);
+  const roleId = requireString(body, "roleId", 64);
+  const staff = await deps.prisma.staffMember.findUnique({
+    where: { id },
+    include: staffCoachInclude,
+  });
+  if (!staff || staff.isSystem) {
+    throw new ApiError(404, "staff_not_found", "Staff member not found.");
+  }
+  const role = await deps.prisma.staffRoleDefinition.findUnique({
+    where: { id: roleId },
+    include: { permissions: { include: { permission: { select: { key: true } } } } },
+  });
+  if (!role) throw new ApiError(404, "role_not_found", "Role not found.");
+  assertCanGrantPermissions(
+    actor,
+    resolveRolePermissions({
+      allAccess: role.allAccess,
+      permissionKeys: role.permissions.map((row) => row.permission.key as never),
+    }),
+  );
+  assertRoleAssignable({
+    roleKey: role.key,
+    roleActive: role.status === "ACTIVE",
+    roleArchived: role.status === "ARCHIVED",
+    coachId: staff.coach?.id ?? null,
+  });
+  const leavingSuperAdmin = Boolean(staff.roleDefinition?.allAccess) && !role.allAccess;
+  const updated = await deps.prisma.$transaction(async (tx) => {
+    if (leavingSuperAdmin) {
+      await assertLastSuperAdminAction({ prisma: tx } as ApiDeps, id, "demote");
+    }
+    return tx.staffMember.update({
+      where: { id },
+      data: { roleId: role.id },
+      include: staffCoachInclude,
+    });
+  });
+  await writeAudit(deps, {
+    entityType: "staff",
+    entityId: id,
+    action: "staff.role.assign",
+    actor,
+    beforeStatus: staff.roleDefinition?.key ?? staff.roleId,
+    afterStatus: role.key,
+    metadata: {
+      before: { roleId: staff.roleId, roleKey: staff.roleDefinition?.key ?? null },
+      after: { roleId: role.id, roleKey: role.key },
+    },
+  });
+  return ok({ staff: presentStaff(updated) });
 }
 
 export async function getCustomers(deps: ApiDeps, req: Request): Promise<Response> {

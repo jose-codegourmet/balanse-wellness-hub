@@ -42,6 +42,7 @@ import {
   postRecordCash,
 } from "./handlers/admin-payments";
 import {
+  assignStaffRole,
   disableStaff,
   getCustomer,
   getCustomers,
@@ -66,6 +67,15 @@ import {
   rejectCancellation,
   rejectReschedule,
 } from "./handlers/admin-requests";
+import {
+  archiveRole,
+  cloneRole,
+  getPermissionRegistry,
+  getRole,
+  getRoles,
+  patchRole,
+  postRole,
+} from "./handlers/admin-roles";
 import { getSessionRoster, postCheckIn, postNoShow } from "./handlers/admin-roster";
 import {
   activatePaymentQrHandler,
@@ -264,6 +274,14 @@ const handlers: Record<string, RouteHandler> = {
   "POST /api/admin/staff/{id}/coach": (deps, req, params) => linkStaffCoach(deps, req, params.id),
   "DELETE /api/admin/staff/{id}/coach": (deps, req, params) =>
     unlinkStaffCoach(deps, req, params.id),
+  "POST /api/admin/staff/{id}/role": (deps, req, params) => assignStaffRole(deps, req, params.id),
+  "GET /api/admin/permissions": (deps, req) => getPermissionRegistry(deps, req),
+  "GET /api/admin/roles": (deps, req) => getRoles(deps, req),
+  "POST /api/admin/roles": (deps, req) => postRole(deps, req),
+  "GET /api/admin/roles/{id}": (deps, req, params) => getRole(deps, req, params.id),
+  "PATCH /api/admin/roles/{id}": (deps, req, params) => patchRole(deps, req, params.id),
+  "POST /api/admin/roles/{id}/clone": (deps, req, params) => cloneRole(deps, req, params.id),
+  "POST /api/admin/roles/{id}/archive": (deps, req, params) => archiveRole(deps, req, params.id),
   "GET /api/admin/customers": (deps, req) => getCustomers(deps, req),
   "GET /api/admin/customers/{id}": (deps, req, params) => getCustomer(deps, req, params.id),
   "GET /api/admin/settings": (deps, req) => getAdminSettings(deps, req),

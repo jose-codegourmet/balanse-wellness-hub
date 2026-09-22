@@ -3,6 +3,7 @@ import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { ok, pagination, requiredDateRange, searchParams } from "../http";
 import { money } from "../presenters";
+import { shapeClassPerformance } from "../sensitive";
 import { REPORTS_PERFORMANCE_BUDGET } from "../settings";
 import {
   type ReportFilters,
@@ -46,16 +47,19 @@ export async function getSalesOverview(deps: ApiDeps, req: Request): Promise<Res
 }
 
 export async function getClassPerformance(deps: ApiDeps, req: Request): Promise<Response> {
-  requireAdmin(await resolveActor(deps, req));
+  const actor = requireAdmin(await resolveActor(deps, req));
   const rows = await reportClassPerformance(deps, filters(req));
   const body = {
-    items: rows.map((row) => ({
-      Class: row.className,
-      Sessions: Number(row.sessions),
-      Revenue: money(row.revenue),
-      Occupancy: Number(row.occupancy),
-      "No-shows": Number(row.noShows),
-    })),
+    items: shapeClassPerformance(
+      actor,
+      rows.map((row) => ({
+        Class: row.className,
+        Sessions: Number(row.sessions),
+        Revenue: money(row.revenue),
+        Occupancy: Number(row.occupancy),
+        "No-shows": Number(row.noShows),
+      })),
+    ),
   };
   assertNoProfit(body);
   return ok(body);

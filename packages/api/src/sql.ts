@@ -268,6 +268,68 @@ export async function reportSessionPerformance(deps: ApiDeps, filters: ReportFil
   );
 }
 
+export async function dbHasPermission(
+  deps: ApiDeps,
+  userId: string,
+  key: string,
+): Promise<boolean> {
+  try {
+    const rows = await deps.prisma.$queryRawUnsafe<Array<{ v: boolean }>>(
+      `SELECT app_private.has_permission($1::uuid, $2) AS v`,
+      userId,
+      key,
+    );
+    return Boolean(rows[0]?.v);
+  } catch {
+    return false;
+  }
+}
+
+export async function dbLinkedCoachId(deps: ApiDeps, userId: string): Promise<string | null> {
+  try {
+    const rows = await deps.prisma.$queryRawUnsafe<Array<{ v: string | null }>>(
+      `SELECT app_private.linked_coach_id($1::uuid) AS v`,
+      userId,
+    );
+    return rows[0]?.v ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function dbOwnsSession(
+  deps: ApiDeps,
+  userId: string,
+  sessionId: string,
+): Promise<boolean> {
+  try {
+    const rows = await deps.prisma.$queryRawUnsafe<Array<{ v: boolean }>>(
+      `SELECT app_private.owns_session($1::uuid, $2) AS v`,
+      userId,
+      sessionId,
+    );
+    return Boolean(rows[0]?.v);
+  } catch {
+    const assignment = await deps.prisma.sessionCoach.findFirst({
+      where: { sessionId, coach: { staffMember: { userId } } },
+      select: { id: true },
+    });
+    return Boolean(assignment);
+  }
+}
+
+export async function assertLastSuperAdminSafe(
+  deps: ApiDeps,
+  staffId: string,
+  action: "disable" | "demote" | "delete" | "strip_all_access",
+): Promise<void> {
+  await deps.prisma.$executeRawUnsafe(
+    `SELECT app_private.assert_last_super_admin_safe($1, $2)`,
+    staffId,
+    action,
+  );
+}
+
 export async function reportSessionDrilldown(deps: ApiDeps, sessionId: string) {
   return deps.prisma.$queryRawUnsafe<
     Array<{

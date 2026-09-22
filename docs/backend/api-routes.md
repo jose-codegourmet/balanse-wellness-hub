@@ -1,4 +1,4 @@
-# API routes (BE-030–BE-043 + BE-050–058)
+# API routes (BE-030–BE-043 + BE-050–058 + #292 staff auth)
 
 HTTP handlers live in `@balanse/api` and are mounted on `apps/web` at `/api/*` (`src/app/api/[[...path]]/route.ts`). Screens stay mock-only this phase — no FE `fetch` to these routes (`WIRE-*` later).
 
@@ -20,7 +20,11 @@ Screens continue to use `getMockAdapter()` for catalogue and ledger UX.
 
 - Customer routes require a Supabase access token (`Authorization: Bearer`). The attendee is always `auth.users.id`. `customerId` / attendee fields are rejected.
 - There is **no** customer route that sets `CANCELLED`. Cancellation and reschedule are requests only.
-- Admin routes require an active `staff_members` row (`role = ADMIN`, `isSystem = false`). Disabled staff lose access immediately. Non-admin tokens receive 403.
+- Admin routes require an active, non-system `staff_members` row whose `roleId` is an active `staff_role_definitions` row. Authorization is the request-scoped staff actor (user/staff IDs, status, role ID/key, permissions, linked `coachId`, auth method). Disabled or archived-role staff lose access on the next request.
+- Every `/api/admin/*` handler is mapped in `ADMIN_API_ACCESS` (`@balanse/domain`). Dispatch denies unmapped routes. Read permissions never authorize writes. Own-scope never implies all-scope.
+- Front Desk allow-list APIs succeed; privileged APIs (rates, refunds, reports, staff/roles, settings) return 403.
+- Coach own-session reads/attendance succeed; other session IDs return 403. Roster payloads omit rates and payment fields the actor cannot see.
+- Role CRUD: `GET/POST /api/admin/roles`, `GET/PATCH /api/admin/roles/{id}`, clone, archive, `GET /api/admin/permissions`, `POST /api/admin/staff/{id}/role`. No privilege escalation, no archived-role assignment, Coach role requires a linked coach, last active Super Admin cannot be disabled/demoted (`app_private.assert_last_super_admin_safe`). Changes write `audit_events` with actor/target/before/after.
 
 ## OQ-2 (reschedule) — deliberately not enforced
 

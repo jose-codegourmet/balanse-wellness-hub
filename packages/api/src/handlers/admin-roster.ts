@@ -1,12 +1,14 @@
-import { requireAdmin, resolveActor } from "../auth";
+import { requireAdmin, requireOwnedSession, resolveActor } from "../auth";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { asString, ok, readJson } from "../http";
 import { paymentStatusLabel } from "../presenters";
+import { shapeRoster } from "../sensitive";
 import { checkInBooking, markNoShow, reportSessionDrilldown } from "../sql";
 
 export async function getSessionRoster(deps: ApiDeps, req: Request, id: string): Promise<Response> {
-  requireAdmin(await resolveActor(deps, req));
+  const actor = requireAdmin(await resolveActor(deps, req));
+  await requireOwnedSession(deps, actor, id, "roster.read.own", "roster.read.all");
   const session = await deps.prisma.gymSession.findUnique({
     where: { id },
     include: {
@@ -40,34 +42,36 @@ export async function getSessionRoster(deps: ApiDeps, req: Request, id: string):
           : { method: row.paymentMethod, status: null, label: "Not started" },
         attendance: row.status,
       }));
-  return ok({
-    session: {
-      id: session.id,
-      className: session.gymClass.name,
-      coachName: session.coaches.map(({ coach }) => coach.name).join(" & "),
-      coaches: session.coaches.map(({ coach }) => coach),
-      startsAt: session.startsAt.toISOString(),
-    },
-    confirmed: present(["CONFIRMED", "CHECKED_IN"]),
-    held: present(["HELD_AWAITING_PAYMENT", "PAYMENT_SUBMITTED"]),
-    waitlist: waitlist.map((entry) => ({
-      id: entry.id,
-      name: entry.profile.fullName,
-      sequence: Number(entry.sequence),
-      joinedAt: entry.joinedAt.toISOString(),
-    })),
-    metrics: {
-      Capacity: metrics?.capacity ?? session.capacity,
-      Confirmed: metrics?.confirmed ?? 0,
-      Held: metrics?.held ?? 0,
-      Available: metrics?.available ?? 0,
-      Waitlisted: metrics?.waitlisted ?? 0,
-      "Checked In": metrics?.checkedIn ?? 0,
-      "No-show": metrics?.noShow ?? 0,
-      Occupancy: Number(metrics?.occupancy ?? 0),
-      "Attendance Utilisation": Number(metrics?.attendanceUtilisation ?? 0),
-    },
-  });
+  return ok(
+    shapeRoster(actor, {
+      session: {
+        id: session.id,
+        className: session.gymClass.name,
+        coachName: session.coaches.map(({ coach }) => coach.name).join(" & "),
+        coaches: session.coaches.map(({ coach }) => coach),
+        startsAt: session.startsAt.toISOString(),
+      },
+      confirmed: present(["CONFIRMED", "CHECKED_IN"]),
+      held: present(["HELD_AWAITING_PAYMENT", "PAYMENT_SUBMITTED"]),
+      waitlist: waitlist.map((entry) => ({
+        id: entry.id,
+        name: entry.profile.fullName,
+        sequence: Number(entry.sequence),
+        joinedAt: entry.joinedAt.toISOString(),
+      })),
+      metrics: {
+        Capacity: metrics?.capacity ?? session.capacity,
+        Confirmed: metrics?.confirmed ?? 0,
+        Held: metrics?.held ?? 0,
+        Available: metrics?.available ?? 0,
+        Waitlisted: metrics?.waitlisted ?? 0,
+        "Checked In": metrics?.checkedIn ?? 0,
+        "No-show": metrics?.noShow ?? 0,
+        Occupancy: Number(metrics?.occupancy ?? 0),
+        "Attendance Utilisation": Number(metrics?.attendanceUtilisation ?? 0),
+      },
+    }),
+  );
 }
 
 export async function postCheckIn(
@@ -76,6 +80,13 @@ export async function postCheckIn(
   sessionId: string,
 ): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
+  await requireOwnedSession(
+    deps,
+    actor,
+    sessionId,
+    "attendance.manage.own",
+    "attendance.manage.all",
+  );
   const body = await readJson(req);
   const bookingId = asString(body.bookingId);
   if (!bookingId) {
@@ -97,6 +108,13 @@ export async function postNoShow(
   sessionId: string,
 ): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
+  await requireOwnedSession(
+    deps,
+    actor,
+    sessionId,
+    "attendance.manage.own",
+    "attendance.manage.all",
+  );
   const body = await readJson(req);
   const bookingId = asString(body.bookingId);
   if (!bookingId) {

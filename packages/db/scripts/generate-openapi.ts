@@ -164,9 +164,9 @@ const spec = {
   openapi: "3.1.0",
   info: {
     title: "Balanse Wellness Hub API (BE-024 contract pack)",
-    version: "0.3.0",
+    version: "0.4.0",
     description:
-      "Machine-readable contract for the wiring phase (BE-024 plus BE-050–BE-058). Hold duration and cutoff are absent from admin settings. Money is whole pesos as decimal strings. Admin lists use CursorPage. Validation failures use ValidationFailed (422). Session bundles are session credits, not wallets.",
+      "Machine-readable contract for the wiring phase (BE-024 plus BE-050–BE-058 and #292 staff-role APIs). Hold duration and cutoff are absent from admin settings. Money is whole pesos as decimal strings. Admin lists use CursorPage. Validation failures use ValidationFailed (422). Session bundles are session credits, not wallets. Admin routes require explicit staff permissions.",
   },
   paths,
   components: {
