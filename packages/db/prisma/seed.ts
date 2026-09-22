@@ -5,6 +5,7 @@ import {
   classSlug,
 } from "@balanse/domain";
 import { PrismaClient } from "@prisma/client";
+import { seedCanonicalRolesAndPermissions } from "./constants/staff-roles";
 
 const prisma = new PrismaClient();
 
@@ -154,6 +155,8 @@ function addDays(ymd: string, days: number): string {
 
 async function main(): Promise<void> {
   assertSeedAllowed();
+
+  await seedCanonicalRolesAndPermissions(prisma);
 
   await prisma.developerConfig.upsert({
     where: { key: "BOOKING_HOLD_DURATION_HOURS" },

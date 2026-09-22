@@ -21,3 +21,5 @@ Definitions:
 - No field named `profit`.
 
 Dashboard tiles (BE-054) are a separate narrow read — see [dashboard-metrics.md](./dashboard-metrics.md). Gross-sales series uses payment `VERIFIED` / `CASH_RECEIVED` to match `countsTowardGrossSales()`.
+
+#298: these functions stay revoked from `anon` / `authenticated`. A JWT caller must hold `reports.sales.read`, `reports.capacity.read` (`report_class_performance_v2`), `reports.coach_costs.read`, or `reports.session.read`. Service-role / Prisma (`auth.uid()` null) is not a Data API grant — #292 still authorizes before invoke.

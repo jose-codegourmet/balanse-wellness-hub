@@ -47,7 +47,7 @@ Both apps consume `@balanse/db` at runtime. No other workspace *package* (`packa
 | `src/client.ts` | PrismaClient singleton |
 | `src/index.ts` | Public exports |
 | `prisma.config.ts` | Schema path and seed command for the Prisma CLI |
-| `prisma/schema/` | Multi-file Prisma schema |
+| `prisma/schema/` | Multi-file Prisma schema (`roles.prisma` = #298) |
 | `prisma/migrations/` | Prisma migrations |
 | `prisma/seed.ts` | Seed script |
 | `prisma/constants/` | Seed data constants |
@@ -101,6 +101,14 @@ Update this file and `packages/db/docs/` when:
 ## Session coach model
 
 Classes have an optional marketing roster through `ClassMarketingCoach`; this does not assign session staff. `GymSession.coaches` contains one or more `SessionCoach` assignments, each with immutable rate snapshots. Deferred migration constraints enforce the minimum of one coach; new assignments require an active coach. See `docs/backend/session-coach-assignments.md` at the repository root for migration/backfill and public projection rules.
+
+## Staff roles (#298)
+
+`StaffMember.roleId` → `staff_role_definitions`. Canonical keys come from
+`@balanse/domain`. SQL helpers and last-Super-Admin locking are documented in
+`docs/backend/staff-roles.md` and `docs/backend/rls-policies.md`.
+`is_admin()` is Super Admin only — never broaden it to all staff.
+The leftover `StaffRole` enum is not dropped in this wave.
 
 ## Class marketing catalogue
 

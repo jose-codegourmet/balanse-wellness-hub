@@ -6,7 +6,8 @@ UI, API, mocks, and the database must import those modules. Do not invent
 permission strings in the browser.
 
 The legacy `StaffRole` enum (`ADMIN` only) is **not** authorization truth.
-It remains until the #298 schema backfill removes it.
+#298 stores roles in `staff_role_definitions` and `StaffMember.roleId`.
+The enum column remains until a later wave can drop it.
 
 ---
 

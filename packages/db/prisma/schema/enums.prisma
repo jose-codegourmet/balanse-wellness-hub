@@ -59,10 +59,19 @@ enum SessionStatus {
   @@map("session_status")
 }
 
+/// Legacy persisted enum. Authorization truth is `StaffRoleDefinition.key`
+/// (epic #289 / #298). Do not add FRONT_DESK / COACH here.
 enum StaffRole {
   ADMIN
 
   @@map("staff_role")
+}
+
+enum StaffRoleDefinitionStatus {
+  ACTIVE
+  ARCHIVED
+
+  @@map("staff_role_definition_status")
 }
 
 enum StaffStatus {
