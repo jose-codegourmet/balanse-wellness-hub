@@ -118,8 +118,14 @@ export function RoleFormPage({ roleId, cloneSourceId }: RoleFormPageProps) {
 
   return (
     <AdminPageShell
-      className="max-w-3xl"
+      className="max-w-6xl"
+      eyebrow="Access control"
       title={title}
+      description={
+        existing?.builtIn
+          ? "Review the pages and sensitive data this protected role can access."
+          : "Name the responsibility clearly, then grant only the permissions needed for the job."
+      }
       breadcrumb={[
         { label: "Staff", href: "/staff" },
         { label: "Roles", href: "/staff/roles" },

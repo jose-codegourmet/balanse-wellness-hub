@@ -42,17 +42,20 @@ export function RolePermissionChecklist({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="grid gap-4 xl:grid-cols-2">
       {(Object.keys(grouped) as PermissionCategory[]).map((category) => {
         const items = grouped[category];
         const groupKeys = items.map((item) => item.key);
         const selectedInGroup = groupKeys.filter((key) => selected.has(key)).length;
         return (
-          <section key={category} className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-sm font-medium">
+          <section
+            key={category}
+            className="space-y-4 rounded-xl border border-border/70 bg-background/60 p-4"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
+              <h3 className="text-sm font-semibold">
                 {PERMISSION_CATEGORY_LABELS[category]}
-                <span className="ml-2 font-normal text-muted-foreground">
+                <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                   {selectedInGroup}/{items.length}
                 </span>
               </h3>
@@ -60,7 +63,7 @@ export function RolePermissionChecklist({
                 <div className="flex gap-2">
                   <Button
                     type="button"
-                    size="sm"
+                    size="xs"
                     variant="outline"
                     onClick={() => setGroup(category, true)}
                   >
@@ -68,7 +71,7 @@ export function RolePermissionChecklist({
                   </Button>
                   <Button
                     type="button"
-                    size="sm"
+                    size="xs"
                     variant="ghost"
                     onClick={() => setGroup(category, false)}
                   >

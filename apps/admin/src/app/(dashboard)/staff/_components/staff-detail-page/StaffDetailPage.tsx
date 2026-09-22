@@ -79,21 +79,26 @@ export function StaffDetailPage({ staffId }: StaffDetailPageProps) {
 
   return (
     <AdminPageShell
-      className="max-w-xl"
-      title={isNew ? "Add Staff" : "Staff Detail"}
+      className="max-w-5xl"
+      eyebrow="Team access"
+      title={isNew ? "Add staff member" : (existing?.name ?? "Staff detail")}
+      description={
+        isNew
+          ? "Provision an account, assign a role, and decide whether this person also needs a linked coaching profile."
+          : `Manage ${existing?.name ?? "this staff member"}'s account status and studio access.`
+      }
       breadcrumb={[
         { label: "Staff", href: "/staff" },
         { label: isNew ? "Add Staff" : (existing?.name ?? staffId) },
       ]}
     >
-      <p className="text-sm text-muted-foreground">
-        Invite or provision a staff account. There is no public admin registration.
+      <p className="rounded-xl border border-border/70 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+        {ADMIN_ROLE_CAPABILITY_NOTE}
       </p>
-      <p className="mt-2 text-sm text-muted-foreground">{ADMIN_ROLE_CAPABILITY_NOTE}</p>
       <AdminForm
         key={`${existing?.id ?? (isNew ? "new" : `pending-${staffId}`)}:${existing?.status ?? "active"}:${existing?.roleId ?? ""}`}
         id="staff-form"
-        className="mt-6"
+        className="grid gap-6"
         schema={staffFormSchema}
         defaultValues={defaultValues}
         onSubmit={async (values) => {

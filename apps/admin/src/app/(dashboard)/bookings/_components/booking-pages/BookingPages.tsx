@@ -106,7 +106,25 @@ export function BookingListPage() {
 
   return (
     <AdminPageShell
+      eyebrow="Operations queue"
       title="Bookings"
+      description="Review booking requests, verify payment progress, and keep every class roster moving."
+      stats={
+        <dl className="grid grid-cols-3 gap-3">
+          <div>
+            <dt className="text-xs font-medium text-muted-foreground">Current queue</dt>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums">{filtered.length}</dd>
+          </div>
+          <div className="border-l border-border pl-3 sm:pl-5">
+            <dt className="text-xs font-medium text-muted-foreground">All bookings</dt>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums">{bookings.length}</dd>
+          </div>
+          <div className="border-l border-border pl-3 sm:pl-5">
+            <dt className="text-xs font-medium text-muted-foreground">Classes</dt>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums">{classes.length}</dd>
+          </div>
+        </dl>
+      }
       tabs={
         <AdminPageTabs
           tabs={ADMIN_BOOKING_TABS}
@@ -115,7 +133,7 @@ export function BookingListPage() {
             setTab(id as AdminBookingTab);
           }}
         >
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-3 rounded-2xl border border-border/80 bg-card p-4 shadow-sm md:grid-cols-2">
             <div className="grid gap-1.5">
               <Label htmlFor="booking-class">Class</Label>
               <NativeSelect

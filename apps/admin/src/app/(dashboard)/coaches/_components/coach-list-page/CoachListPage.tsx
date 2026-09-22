@@ -171,7 +171,31 @@ export function CoachListPage({
 
   return (
     <AdminPageShell
+      eyebrow="Studio team"
       title="Coaches"
+      description="Manage teaching profiles, specialties, availability, and upcoming session assignments."
+      stats={
+        <dl className="grid grid-cols-3 gap-3">
+          <div>
+            <dt className="text-xs font-medium text-muted-foreground">Active coaches</dt>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums">
+              {rows.filter((row) => row.active).length}
+            </dd>
+          </div>
+          <div className="border-l border-border pl-3 sm:pl-5">
+            <dt className="text-xs font-medium text-muted-foreground">Upcoming sessions</dt>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums">
+              {rows.reduce((total, row) => total + row.upcomingCount, 0)}
+            </dd>
+          </div>
+          <div className="border-l border-border pl-3 sm:pl-5">
+            <dt className="text-xs font-medium text-muted-foreground">Specialties</dt>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums">
+              {new Set(rows.flatMap((row) => row.specialties)).size}
+            </dd>
+          </div>
+        </dl>
+      }
       actions={
         <AdminCan action="coaches-manage">
           <Button nativeButton={false} render={<Link href="/coaches/new" />}>

@@ -35,7 +35,7 @@ export function RoleForm({
   return (
     <AdminForm
       id="role-form"
-      className="mt-6"
+      className="grid gap-6"
       schema={roleFormSchema}
       defaultValues={defaultValues}
       onSubmit={onSubmit}
@@ -69,7 +69,7 @@ function RoleFormFields({
     <>
       <FormSection title="Role" surface="card">
         {builtIn ? (
-          <p className="rounded-md border border-border bg-muted px-3 py-2 text-sm">
+          <p className="rounded-xl border border-border bg-muted/60 px-4 py-3 text-sm">
             Built-in roles are protected. Name, key, and permissions cannot change.
           </p>
         ) : null}
@@ -120,7 +120,7 @@ function RoleFormFields({
           )}
         </FormField>
         {sensitive.length > 0 ? (
-          <p className="rounded-md border border-border bg-muted px-3 py-2 text-sm">
+          <p className="rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm">
             This role can see or change sensitive studio data. Only grant these keys to people who
             need them.
           </p>

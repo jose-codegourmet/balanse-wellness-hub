@@ -86,7 +86,29 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
 
   return (
     <AdminPageShell
+      eyebrow="Packages & credits"
       title="Bundles"
+      description="Create session packages, control what customers can buy, and review paid acquisitions. Existing entitlements always keep their original snapshot."
+      stats={
+        <dl className="grid grid-cols-3 gap-3">
+          <div>
+            <dt className="text-xs font-medium text-muted-foreground">Published</dt>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums">
+              {rows.filter((row) => row.status === "PUBLISHED").length}
+            </dd>
+          </div>
+          <div className="border-l border-border pl-3 sm:pl-5">
+            <dt className="text-xs font-medium text-muted-foreground">Drafts</dt>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums">
+              {rows.filter((row) => row.status === "DRAFT").length}
+            </dd>
+          </div>
+          <div className="border-l border-border pl-3 sm:pl-5">
+            <dt className="text-xs font-medium text-muted-foreground">Needs review</dt>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums">{reviews.length}</dd>
+          </div>
+        </dl>
+      }
       actions={
         <AdminCan action="bundles-manage">
           <Button nativeButton={false} render={<Link href="/bundles/new" />}>
@@ -95,10 +117,6 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
         </AdminCan>
       }
     >
-      <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-        Packages grant a fixed number of sessions. Editing changes future acquisitions only.
-        Existing entitlements keep their snapshots. Credits are not cash refunds.
-      </p>
       {loading ? (
         <TablePageSkeleton label="Loading packages" rows={5} columns={4} />
       ) : error ? (
@@ -155,14 +173,24 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
         />
       )}
 
-      <section className="mt-10">
-        <h2 className="font-display text-2xl">Paid package reviews</h2>
+      <section className="mt-10 overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm">
+        <div className="border-b border-border/70 bg-muted/25 px-5 py-4">
+          <p className="text-xs font-semibold tracking-[0.16em] text-primary uppercase">
+            Review queue
+          </p>
+          <div className="mt-1 flex items-end justify-between gap-4">
+            <h2 className="font-display text-2xl">Paid package reviews</h2>
+            <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium tabular-nums">
+              {reviews.length} pending
+            </span>
+          </div>
+        </div>
         {reviews.length === 0 ? (
-          <FeedbackState id="admin.no-package-reviews" className="mt-4" />
+          <FeedbackState id="admin.no-package-reviews" className="m-5" />
         ) : (
-          <ul className="mt-4 space-y-3">
+          <ul className="divide-y divide-border/70">
             {reviews.map((row: BundleAcquisition) => (
-              <li key={row.id} className="rounded-xl border border-border p-4">
+              <li key={row.id} className="p-5 transition-colors hover:bg-muted/20">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="font-medium">{row.bundleName}</p>

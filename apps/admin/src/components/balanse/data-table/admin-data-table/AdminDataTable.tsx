@@ -337,7 +337,7 @@ function AdminDataTableInner<TData>({
         {loading ? null : (
           <div
             className={cn(
-              "mb-3 flex flex-wrap items-center justify-between gap-3",
+              "mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-card/70 p-3 shadow-xs",
               !title && "mt-0",
             )}
           >
@@ -438,7 +438,7 @@ function AdminDataTableInner<TData>({
             )}
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-border bg-card">
+          <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm">
             {error ? (
               <div className="p-4">{error}</div>
             ) : (
@@ -451,7 +451,7 @@ function AdminDataTableInner<TData>({
                 >
                   <table className="w-full min-w-[36rem] border-separate border-spacing-0 text-left text-sm">
                     {title ? <caption className="sr-only">{title}</caption> : null}
-                    <thead>
+                    <thead className="bg-muted/35">
                       {table.getHeaderGroups().map((headerGroup) => (
                         <tr key={headerGroup.id}>
                           {headerGroup.headers.map((header) => (
@@ -683,7 +683,7 @@ function DataRow<TData>({
       data-state={selected ? "selected" : undefined}
       data-density={density}
       className={cn(
-        "border-b border-border/60 transition-colors duration-200 ease-out last:border-b-0 hover:bg-muted/30 motion-reduce:transition-none data-[state=selected]:bg-muted",
+        "border-b border-border/60 transition-colors duration-200 ease-out last:border-b-0 hover:bg-primary/[0.035] motion-reduce:transition-none data-[state=selected]:bg-muted",
         interactive ? "cursor-pointer" : null,
       )}
       tabIndex={interactive ? 0 : undefined}

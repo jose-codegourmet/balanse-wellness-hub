@@ -72,16 +72,28 @@ function CustomerStatTile({
         href={href}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "flex h-full min-h-0 flex-col rounded-xl border border-border bg-card p-4 md:p-5",
-          "hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          active && "bg-muted/40 ring-2 ring-ring",
+          "group flex h-full min-h-0 flex-col rounded-xl border border-border/70 bg-card p-4 shadow-xs transition-[transform,box-shadow,background-color] md:p-5",
+          "hover:-translate-y-0.5 hover:bg-background hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transform-none",
+          active && "border-primary/30 bg-primary text-primary-foreground shadow-md ring-0",
         )}
       >
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Icon className="size-4" aria-hidden />
+        <div
+          className={cn(
+            "flex items-center gap-2 text-sm text-muted-foreground",
+            active && "text-primary-foreground/75",
+          )}
+        >
+          <span
+            className={cn(
+              "grid size-8 place-items-center rounded-lg bg-muted",
+              active && "bg-primary-foreground/10",
+            )}
+          >
+            <Icon className="size-4" aria-hidden />
+          </span>
           {label}
         </div>
-        <p className="mt-6 text-3xl font-light tracking-tight tabular-nums">{value}</p>
+        <p className="mt-5 text-3xl font-semibold tracking-tight tabular-nums">{value}</p>
       </Link>
     </article>
   );
@@ -227,8 +239,9 @@ function CustomerListPageInner({ empty, loading, error, focusCustomerId }: Custo
 
   return (
     <AdminPageShell
+      eyebrow="Customer care"
       title="Customers"
-      description={`Roster counts from the customer list. Active recently is a last visit within ${CUSTOMER_RECENT_VISIT_WINDOW_DAYS} days.`}
+      description={`Find contact details, upcoming bookings, and visit history. “Active recently” means a visit within ${CUSTOMER_RECENT_VISIT_WINDOW_DAYS} days.`}
       stats={
         <div data-slot="customer-stats" className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           {tiles.map((tile) => (

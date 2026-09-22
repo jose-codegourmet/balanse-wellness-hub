@@ -141,8 +141,32 @@ export function RoleListPage({ empty, loading, error }: RoleListPageProps) {
 
   return (
     <AdminPageShell
+      eyebrow="Access control"
       title="Roles"
+      description="Define what each staff member can see and change. Built-in roles stay protected; custom roles can be tailored to studio responsibilities."
       breadcrumb={[{ label: "Staff", href: "/staff" }, { label: "Roles" }]}
+      stats={
+        <dl className="grid grid-cols-3 gap-3">
+          <div>
+            <dt className="text-xs font-medium text-muted-foreground">Active roles</dt>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums">
+              {rows.filter((row) => row.status === "active").length}
+            </dd>
+          </div>
+          <div className="border-l border-border pl-3 sm:pl-5">
+            <dt className="text-xs font-medium text-muted-foreground">Custom roles</dt>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums">
+              {rows.filter((row) => !row.builtIn).length}
+            </dd>
+          </div>
+          <div className="border-l border-border pl-3 sm:pl-5">
+            <dt className="text-xs font-medium text-muted-foreground">Staff assigned</dt>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums">
+              {rows.reduce((total, row) => total + row.assignedStaffCount, 0)}
+            </dd>
+          </div>
+        </dl>
+      }
       actions={
         canManage ? (
           <Button nativeButton={false} render={<Link href="/staff/roles/new" />}>
@@ -151,10 +175,6 @@ export function RoleListPage({ empty, loading, error }: RoleListPageProps) {
         ) : undefined
       }
     >
-      <p className="max-w-2xl text-sm text-muted-foreground">
-        Built-in Super Admin, Front Desk, and Coach stay protected. Custom roles are checklists from
-        the canonical permission registry. Role is not the same as “this staff member is a coach.”
-      </p>
       {rows.length === 0 ? (
         <FeedbackState
           id="admin.no-roles"
@@ -162,7 +182,7 @@ export function RoleListPage({ empty, loading, error }: RoleListPageProps) {
           onAction={canManage ? () => router.push("/staff/roles/new") : undefined}
         />
       ) : (
-        <div className="mt-4">
+        <div>
           <AdminDataTable
             tableId="staff-roles"
             data={rows}
