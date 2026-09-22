@@ -14,7 +14,11 @@ import {
   type AdminScheduleCalendarView,
 } from "@/components/balanse/schedule-calendar/AdminScheduleCalendar";
 import { adminTodayYmd } from "@/lib/clock";
-import { adminBookingsQuery, adminSessionsQuery } from "@/lib/query/queries";
+import {
+  adminBookingsQuery,
+  adminSessionRosterQuery,
+  adminSessionsQuery,
+} from "@/lib/query/queries";
 import {
   AdminCan,
   useCanAdminAction,
@@ -85,6 +89,7 @@ function ScheduleListPageInner({
   const { principal } = useMockPrincipal();
   const canReadBookings = useCanAdminRoute("/bookings");
   const canCreate = useCanAdminAction("schedule-create");
+  const canOpenRoster = useCanAdminAction("roster-read");
   const sessionsQuery = useSuspenseQuery(adminSessionsQuery(principal));
   const bookingsQuery = useQuery({
     ...adminBookingsQuery(principal),
@@ -101,6 +106,10 @@ function ScheduleListPageInner({
   );
   const selected =
     daySessions.find((session) => session.id === selectedId) ?? daySessions[0] ?? null;
+  const rosterQuery = useQuery({
+    ...adminSessionRosterQuery(principal, selected?.id ?? ""),
+    enabled: Boolean(selected && !canReadBookings && canOpenRoster),
+  });
 
   return (
     <AdminPageShell
@@ -149,7 +158,8 @@ function ScheduleListPageInner({
           />
         </div>
         <div className="mt-8 xl:sticky xl:top-8 xl:mt-0">
-          {bookingsQuery.isPending && !bookingsQuery.data && selected ? (
+          {(bookingsQuery.isPending && !bookingsQuery.data && selected && canReadBookings) ||
+          (rosterQuery.isPending && !rosterQuery.data && selected && !canReadBookings) ? (
             <DetailPageSkeleton label="Loading schedule" />
           ) : selected ? (
             <div className="grid gap-3">
@@ -157,10 +167,22 @@ function ScheduleListPageInner({
                 session={selected}
                 daySessions={daySessions}
                 onSelectSession={setSelectedId}
-                inventory={computeSessionInventory(
-                  selected,
-                  bookings.filter((booking) => booking.sessionId === selected.id),
-                )}
+                inventory={
+                  rosterQuery.data
+                    ? {
+                        confirmed: rosterQuery.data.confirmedCount,
+                        held: rosterQuery.data.heldCount,
+                        available: rosterQuery.data.available,
+                        waitlisted: rosterQuery.data.waitlistedCount,
+                        checkedIn: rosterQuery.data.checkedIn,
+                        noShow: rosterQuery.data.noShow,
+                        lockedByCancellation: 0,
+                      }
+                    : computeSessionInventory(
+                        selected,
+                        bookings.filter((booking) => booking.sessionId === selected.id),
+                      )
+                }
               />
               {canCreate ? <CreateOnDateCard ymd={selectedDay} /> : null}
             </div>

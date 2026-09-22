@@ -1,5 +1,7 @@
 # Staff roles and permission helpers (#298 / #292)
 
+Wave 4 (#291) applies those helpers to coach-owned schedule, roster, attendance, and dashboard reads. Mock adapter, `/api/admin/sessions`, `/api/admin/sessions/:id/roster`, check-in / no-show, and dashboard snapshots filter at the query source using `session_coaches` → linked Coach. Own-scope never implies all-scope. Compensation stays hidden without `coach_rates.read`. UI stays on the mock harness; no FE WIRE.
+
 Wave 3 (#292) consumes these helpers from `@balanse/api` (`packages/api/src/auth.ts`, `sql.ts`). Actor resolution still loads Prisma `roleId` + permissions; mutations lock last-Super-Admin and own-session checks through `app_private.*`.
 
 Wave 2 of epic #289. Consumes `@balanse/domain` (`PERMISSION_KEYS`,

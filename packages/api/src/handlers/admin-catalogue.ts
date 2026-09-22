@@ -10,7 +10,7 @@ import {
   SIGNED_UPLOAD,
   type Weekday,
 } from "@balanse/domain";
-import { requireAdmin, resolveActor, writeAudit } from "../auth";
+import { requireAdmin, requireAnyPermission, resolveActor, writeAudit } from "../auth";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { asString, ok, pagination, readJson, searchParams } from "../http";
@@ -249,7 +249,10 @@ export async function deleteCoachPhoto(deps: ApiDeps, req: Request, id: string):
 }
 
 export async function getAdminSessions(deps: ApiDeps, req: Request): Promise<Response> {
-  const actor = requireAdmin(await resolveActor(deps, req));
+  const actor = requireAnyPermission(requireAdmin(await resolveActor(deps, req)), [
+    "schedule.read.all",
+    "schedule.read.own",
+  ]);
   const params = searchParams(req);
   const { page, pageSize, skip } = pagination(params);
   const ownOnly = !actorHas(actor, "schedule.read.all");

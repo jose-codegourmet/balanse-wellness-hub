@@ -1,4 +1,9 @@
-import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
+import { hasPermission } from "@balanse/domain";
+import {
+  MOCK_HARNESS_COOKIE,
+  parseMockPrincipal,
+  resolveMockStaffActor,
+} from "@balanse/mock/session";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
@@ -13,8 +18,11 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
+  const actor = resolveMockStaffActor(principal);
   return prefetchAdmin(
-    [adminSessionsQuery(principal), adminBookingsQuery(principal)],
+    hasPermission(actor, "bookings.read")
+      ? [adminSessionsQuery(principal), adminBookingsQuery(principal)]
+      : [adminSessionsQuery(principal)],
     <AdminQuerySuspense>
       <ScheduleListPage />
     </AdminQuerySuspense>,

@@ -11,35 +11,60 @@ import {
   paymentStatusLabel,
   sessionDisplayName,
 } from "@balanse/domain";
-import { getMockAdapter } from "@balanse/mock";
-import { StatusBadge } from "@balanse/ui";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { isMockAuthorizationError } from "@balanse/mock";
+import { FeedbackState, StatusBadge } from "@balanse/ui";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { AccessDenied } from "@/components/balanse/access-denied/AccessDenied";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
-import { adminCustomersQuery, adminSessionRosterQuery } from "@/lib/query/queries";
+import { useCheckIn, useMarkNoShow } from "@/lib/query/mutations";
+import { adminSessionRosterQuery } from "@/lib/query/queries";
 import { AdminCan, useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
+import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export function RosterPage({ sessionId }: { sessionId: string }) {
   const { principal } = useMockPrincipal();
-  const canReadCustomers = useCanAdminRoute("/customers");
-  const rosterQuery = useSuspenseQuery(adminSessionRosterQuery(principal, sessionId));
-  const customersQuery = useQuery({
-    ...adminCustomersQuery(principal),
-    enabled: canReadCustomers,
-  });
-  const roster = rosterQuery.data;
-  const customers = customersQuery.data ?? [];
+  const canReadPayments = useCanAdminRoute("/payments");
+  const rosterQuery = useQuery(adminSessionRosterQuery(principal, sessionId));
+  const checkIn = useCheckIn();
+  const markNoShow = useMarkNoShow();
 
-  const name = (id: string) => customers.find((row) => row.id === id)?.fullName ?? id;
-  const occ = occupancyRatio(roster.confirmedCount, roster.capacity);
-  const att = attendanceUtilisation(roster.checkedIn, roster.capacity);
-
-  async function refresh() {
-    await rosterQuery.refetch();
+  if (rosterQuery.isPending && !rosterQuery.data) {
+    return (
+      <AdminPageShell title="Roster" breadcrumb={[{ label: "Schedule", href: "/schedule" }]}>
+        <p className="text-sm text-muted-foreground">Loading roster…</p>
+      </AdminPageShell>
+    );
   }
 
+  if (rosterQuery.isError || !rosterQuery.data) {
+    const error = rosterQuery.error;
+    if (
+      isMockAuthorizationError(error) &&
+      (error.code === "ownership" || error.code === "forbidden")
+    ) {
+      return <AccessDenied kind="ownership" homeHref="/schedule" />;
+    }
+    return (
+      <AdminPageShell title="Roster" breadcrumb={[{ label: "Schedule", href: "/schedule" }]}>
+        <FeedbackState
+          id="calendar.load-failed"
+          title="Roster could not load"
+          description="This session roster did not load. Retry the request or return to the schedule."
+          actionLabel="Retry"
+          onAction={() => {
+            void rosterQuery.refetch();
+          }}
+        />
+      </AdminPageShell>
+    );
+  }
+
+  const roster = rosterQuery.data;
+  const occ = occupancyRatio(roster.confirmedCount, roster.capacity);
+  const att = attendanceUtilisation(roster.checkedIn, roster.capacity);
   const title = `${sessionDisplayName(roster.session)} — ${formatSessionDate(roster.session.startsAt)} — ${formatSessionTime(roster.session.startsAt)}`;
 
   return (
@@ -70,15 +95,27 @@ export function RosterPage({ sessionId }: { sessionId: string }) {
         / {roster.capacity}
       </p>
 
-      <RosterGroup title="Confirmed" rows={roster.confirmed} name={name} onChange={refresh} />
-      <RosterGroup title="Held / Pending" rows={roster.held} name={name} onChange={refresh} />
+      <RosterGroup
+        title="Confirmed"
+        rows={roster.confirmed}
+        showPayment={canReadPayments}
+        onCheckIn={(id) => checkIn.mutateAsync(id)}
+        onNoShow={(id) => markNoShow.mutateAsync(id)}
+      />
+      <RosterGroup
+        title="Held / Pending"
+        rows={roster.held}
+        showPayment={canReadPayments}
+        onCheckIn={(id) => checkIn.mutateAsync(id)}
+        onNoShow={(id) => markNoShow.mutateAsync(id)}
+      />
       <section className="mt-8">
         <h2 className="font-display text-2xl">Waitlist (FIFO)</h2>
         <ol className="mt-3 space-y-2">
           {roster.waitlisted.map((row, index) => (
             <li key={row.id} className="rounded-xl border border-border p-3">
               <p className="font-medium">
-                {index + 1}. {name(row.customerId)}
+                {index + 1}. {row.customerName}
               </p>
               <AdminCan href="/bookings">
                 <Link className="text-sm underline" href={`/bookings/${row.id}`}>
@@ -105,13 +142,15 @@ function Metric({ label, value }: { label: string; value: string | number }) {
 function RosterGroup({
   title,
   rows,
-  name,
-  onChange,
+  showPayment,
+  onCheckIn,
+  onNoShow,
 }: {
   title: string;
   rows: CustomerBooking[];
-  name: (id: string) => string;
-  onChange: () => Promise<void>;
+  showPayment: boolean;
+  onCheckIn: (bookingId: string) => Promise<unknown>;
+  onNoShow: (bookingId: string) => Promise<unknown>;
 }) {
   return (
     <section className="mt-8">
@@ -121,8 +160,10 @@ function RosterGroup({
           <li key={row.id} className="rounded-xl border border-border p-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="font-medium">{name(row.customerId)}</p>
-                <p className="text-sm">Payment: {paymentStatusLabel(row.paymentStatus)}</p>
+                <p className="font-medium">{row.customerName}</p>
+                {showPayment ? (
+                  <p className="text-sm">Payment: {paymentStatusLabel(row.paymentStatus)}</p>
+                ) : null}
                 <p className="text-sm">
                   Attendance: <StatusBadge status={row.status} surface="admin" />
                 </p>
@@ -133,14 +174,31 @@ function RosterGroup({
                     triggerLabel="Check In"
                     title="Check this guest in?"
                     description="Attendance updates immediately in this mock."
-                    onConfirm={() => getMockAdapter().checkIn(row.id).then(onChange)}
+                    onConfirm={async () => {
+                      try {
+                        await onCheckIn(row.id);
+                        notify.admin("booking.checked-in");
+                      } catch {
+                        notify.admin("booking.check-in-failed");
+                      }
+                    }}
                   />
                   <ConfirmAction
                     triggerLabel="Mark no-show"
                     title="Mark as no-show?"
                     description={NO_REFUND_ON_NOSHOW_NOTE}
                     variant="outline"
-                    onConfirm={() => getMockAdapter().markNoShow(row.id).then(onChange)}
+                    onConfirm={async () => {
+                      try {
+                        await onNoShow(row.id);
+                        notify.success({
+                          title: "Marked no-show",
+                          description: "Attendance is recorded for this booking.",
+                        });
+                      } catch {
+                        notify.admin("booking.check-in-failed");
+                      }
+                    }}
                   />
                 </AdminCan>
                 <AdminCan href="/bookings">

@@ -4,14 +4,15 @@ import type { AdminPaymentQueueQuery, MockDataAdapter } from "./adapter";
 import {
   assertLastSuperAdminDisable,
   MockAuthorizationError,
-  redactDashboardFinancials,
   redactReports,
   requireAnyPermission,
   requirePermission,
   requireScopedPermission,
   requireStaffActor,
+  scopeDashboardSnapshot,
   sessionAssignedToActor,
   stripCoachRates,
+  stripRosterBooking,
   stripSessionRates,
 } from "./authorize";
 import { MOCK_STAFF_IDS, resolveMockStaffActorFromStaffId } from "./staff-fixtures";
@@ -172,8 +173,17 @@ export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter
       await requireSessionScope(inner, sessionId, "roster.read.own", "roster.read.all");
       const actor = requireStaffActor();
       const roster = await inner.getAdminSessionRoster(sessionId);
-      if (hasPermission(actor, "coach_rates.read")) return roster;
-      return { ...roster, session: stripSessionRates(roster.session) };
+      const includePayment = hasPermission(actor, "payments.read");
+      const session = hasPermission(actor, "coach_rates.read")
+        ? roster.session
+        : stripSessionRates(roster.session);
+      return {
+        ...roster,
+        session,
+        confirmed: roster.confirmed.map((row) => stripRosterBooking(row, includePayment)),
+        held: roster.held.map((row) => stripRosterBooking(row, includePayment)),
+        waitlisted: roster.waitlisted.map((row) => stripRosterBooking(row, includePayment)),
+      };
     },
     checkIn: async (bookingId) => {
       const sessionId = await bookingSessionId(inner, bookingId);
@@ -313,31 +323,11 @@ export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter
     },
     getAdminDashboard: async () => {
       const actor = requireAnyPermission(["dashboard.operations.read", "dashboard.financial.read"]);
-      const snap = await inner.getAdminDashboard();
-      const schedule = hasPermission(actor, "schedule.read.all")
-        ? snap.todaysSchedule
-        : snap.todaysSchedule.filter((row) => sessionAssignedToActor(row, actor));
-      const withSchedule = {
-        ...snap,
-        todaysSchedule: hasPermission(actor, "coach_rates.read")
-          ? schedule
-          : schedule.map((row) => stripSessionRates(row)),
-        todaysClasses: schedule.length,
-        pendingPayments: hasPermission(actor, "payments.read") ? snap.pendingPayments : 0,
-        cancellations: hasPermission(actor, "cancellations.read") ? snap.cancellations : 0,
-        reschedules: hasPermission(actor, "reschedules.read") ? snap.reschedules : 0,
-        waitlisted: hasPermission(actor, "bookings.read") ? snap.waitlisted : 0,
-        attention: {
-          payments: hasPermission(actor, "payments.read") ? snap.attention.payments : 0,
-          cancellations: hasPermission(actor, "cancellations.read")
-            ? snap.attention.cancellations
-            : 0,
-          reschedules: hasPermission(actor, "reschedules.read") ? snap.attention.reschedules : 0,
-        },
-      };
-      return hasPermission(actor, "dashboard.financial.read")
-        ? withSchedule
-        : redactDashboardFinancials(withSchedule);
+      const [snap, bookings] = await Promise.all([
+        inner.getAdminDashboard(),
+        inner.getAdminBookings(),
+      ]);
+      return scopeDashboardSnapshot(snap, actor, bookings);
     },
     getAdminBundles: () => {
       requireAnyPermission(["bundles.read", "bundles.manage"]);

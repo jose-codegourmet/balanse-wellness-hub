@@ -41,3 +41,8 @@ export const DayView: Story = {
   args: { view: "day", selectedDay: "2026-09-16" },
   parameters: { viewport: { defaultViewport: "mobile" } },
 };
+
+export const CoachAssignedOnly: Story = {
+  args: { selectedDay: "2026-09-16" },
+  parameters: { staffId: "staff-ephraim" },
+};

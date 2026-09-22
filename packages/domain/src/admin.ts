@@ -560,6 +560,24 @@ export function occupancyRatio(confirmed: number, capacity: number): number {
   return confirmed / capacity;
 }
 
+/** Occupancy for a session set already filtered to the actor’s scope. */
+export function occupancyForSessions(
+  sessions: Pick<PublicSession, "id" | "capacity">[],
+  bookings: CustomerBooking[],
+): number {
+  const capacity = sessions.reduce((sum, session) => sum + session.capacity, 0);
+  const confirmed = sessions.reduce((sum, session) => {
+    return (
+      sum +
+      computeSessionInventory(
+        session,
+        bookings.filter((booking) => booking.sessionId === session.id),
+      ).confirmed
+    );
+  }, 0);
+  return occupancyRatio(confirmed, capacity);
+}
+
 export function attendanceUtilisation(checkedIn: number, capacity: number): number {
   if (capacity <= 0) return 0;
   return checkedIn / capacity;

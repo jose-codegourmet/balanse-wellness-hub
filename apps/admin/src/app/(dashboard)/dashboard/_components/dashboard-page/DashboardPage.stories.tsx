@@ -49,3 +49,7 @@ export const NonAdminPrincipal: Story = {
   globals: { principal: "customer" },
   args: { initial: seeded },
 };
+
+export const CoachScope: Story = {
+  parameters: { staffId: "staff-ephraim" },
+};

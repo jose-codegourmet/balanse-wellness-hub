@@ -21,3 +21,7 @@ export const Revoked: Story = {
 export const Denied: Story = {
   args: { kind: "denied", homeHref: "/schedule" },
 };
+
+export const Ownership: Story = {
+  args: { kind: "ownership", homeHref: "/schedule" },
+};
