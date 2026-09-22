@@ -106,6 +106,7 @@ export function canGrantPermissions(
   requested: readonly PermissionKey[],
 ): boolean {
   if (!isInteractiveStaffActor(actor) || !actor) return false;
+  if (requested.length === 0) return false;
   if (isSuperAdminRoleKey(actor.roleKey)) return true;
   return requested.every((key) => hasPermission(actor, key));
 }
@@ -142,9 +143,16 @@ export function roleAssignmentDeniedReason(input: {
 }
 
 export function actorAuthorizationFingerprint(actor: StaffAuthorizationActor): string {
-  return [actor.staffId, actor.roleId, actor.roleKey, [...actor.permissions].sort().join(",")].join(
-    ":",
-  );
+  return [
+    actor.staffId,
+    actor.staffStatus,
+    actor.roleId,
+    actor.roleKey,
+    actor.roleActive ? "1" : "0",
+    actor.coachId ?? "",
+    actor.isCoach ? "1" : "0",
+    [...actor.permissions].sort().join(","),
+  ].join(":");
 }
 
 export type BuiltInRoleAssignment = {

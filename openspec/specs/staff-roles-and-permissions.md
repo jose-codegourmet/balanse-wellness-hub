@@ -19,7 +19,8 @@ Wave 1 contract for epic #289 (ticket #294). Downstream tickets import
 5. Navigation, page routes, page actions, and `/api/admin/*` handlers share
    `packages/domain/src/admin-access.ts`. Every current admin surface is
    mapped, including BE-058 bundle routes via `bundles.read` /
-   `bundles.manage`.
+   `bundles.manage`. Mixed endpoints declare `includeFieldsIf`. The payments
+   refunds tab is `refunds.read`, not `payments.read`.
 6. Helpers are deny-by-default: `hasPermission`, `hasAnyPermission`,
    `hasAllPermissions`, `hasScopedPermission`, `firstPermittedAdminRoute`,
    `roleLabel`, `sensitivePermissionsOf`, `violatesLastSuperAdminInvariant`.

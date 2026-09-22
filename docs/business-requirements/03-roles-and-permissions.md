@@ -183,6 +183,12 @@ Navigation, route guards, page actions, and `/api/admin/*` handlers consume
 `ADMIN_NAV_ACCESS`, `ADMIN_ROUTE_ACCESS`, `ADMIN_ACTION_ACCESS`, and
 `ADMIN_API_ACCESS` from `packages/domain/src/admin-access.ts`.
 
+Mixed payloads (`GET /api/admin/dashboard`, coaches, settings, class
+performance) list `includeFieldsIf`. Handlers must omit those fields unless
+the actor also has the listed key. `GET /api/admin/payments?tab=refunds`
+requires `refunds.read` — `payments.read` is only gcash/counter. Own-scope
+rows set `requiresOwnership`; use `actorSatisfiesRequirement`.
+
 After login or a role change, send the actor to `firstPermittedAdminRoute`
 instead of a forbidden dashboard.
 

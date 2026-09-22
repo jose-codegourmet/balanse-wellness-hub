@@ -344,7 +344,7 @@ export const PERMISSION_REGISTRY: readonly PermissionDefinition[] = [
     "Upload, activate, or archive GCash payment QR codes.",
     true,
   ),
-] as const;
+] as const satisfies readonly PermissionDefinition[];
 
 type RegisteredPermissionKey = (typeof PERMISSION_REGISTRY)[number]["key"];
 type _RegistryCoversAllKeys =

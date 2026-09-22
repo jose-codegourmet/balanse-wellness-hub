@@ -3,12 +3,23 @@
  * Do not keep a second contradictory allow-list in UI or API tickets.
  */
 
-import { hasAnyPermission, type StaffAuthorizationActor } from "./authorization";
+import {
+  hasAnyPermission,
+  isInteractiveStaffActor,
+  type StaffAuthorizationActor,
+} from "./authorization";
 import type { SettingsSection } from "./contracts";
 import { ADMIN_NAV_ITEMS, type AdminNavId } from "./navigation";
-import type { PermissionKey } from "./permissions";
+import { OWN_TO_ALL_PERMISSION, type PermissionKey } from "./permissions";
 
 export type AccessSurfaceKind = "nav" | "route" | "action" | "api";
+
+export type AdminAccessQueryMatch = {
+  key: string;
+  values: readonly string[];
+  /** Used when the query key is omitted (e.g. payments tab defaults to gcash). */
+  defaultValue?: string;
+};
 
 export type AdminAccessRequirement = {
   id: string;
@@ -21,6 +32,12 @@ export type AdminAccessRequirement = {
   pathPattern?: string;
   method?: "GET" | "POST" | "PATCH" | "DELETE";
   requiresOwnership?: boolean;
+  whenQuery?: AdminAccessQueryMatch;
+  /**
+   * Sensitive fields/sections on this mixed payload. Handlers must omit each
+   * listed key’s data unless the actor also has that permission.
+   */
+  includeFieldsIf?: readonly PermissionKey[];
 };
 
 export const SETTINGS_SECTION_PERMISSIONS: Record<SettingsSection, PermissionKey> = {
@@ -127,7 +144,7 @@ export const ADMIN_NAV_ACCESS: readonly AdminAccessRequirement[] = [
   nav("dashboard", "/dashboard", "Dashboard", DASHBOARD_READ_PERMISSIONS),
   nav("schedule", "/schedule", "Schedule", SCHEDULE_READ_PERMISSIONS),
   nav("bookings", "/bookings", "Bookings", ["bookings.read"]),
-  nav("payments", "/payments", "Payments", ["payments.read"]),
+  nav("payments", "/payments", "Payments", ["payments.read", "refunds.read"]),
   nav("payment-qr", "/payment-qr", "Payment QR", ["settings.payment_qr.manage"]),
   nav("cancellations", "/cancellations", "Cancellations", ["cancellations.read"]),
   nav("reschedules", "/reschedules", "Reschedules", ["reschedules.read"]),
@@ -136,13 +153,16 @@ export const ADMIN_NAV_ACCESS: readonly AdminAccessRequirement[] = [
   nav("classes", "/classes", "Classes", CLASS_READ),
   nav("bundles", "/bundles", "Bundles", BUNDLE_READ),
   nav("reports", "/reports", "Reports", REPORT_READ_PERMISSIONS),
-  nav("staff", "/staff", "Staff", STAFF_READ),
+  nav("staff", "/staff", "Staff", [...STAFF_READ, ...ROLE_READ]),
   nav("settings", "/settings", "Settings", SETTINGS_MANAGE_PERMISSIONS),
 ];
 
 export const ADMIN_ROUTE_ACCESS: readonly AdminAccessRequirement[] = [
   route("login", "/login", "Admin login", []),
-  route("dashboard", "/dashboard", "Dashboard", DASHBOARD_READ_PERMISSIONS, { navId: "dashboard" }),
+  route("dashboard", "/dashboard", "Dashboard", DASHBOARD_READ_PERMISSIONS, {
+    navId: "dashboard",
+    includeFieldsIf: ["dashboard.financial.read"],
+  }),
   route("schedule", "/schedule", "Schedule", SCHEDULE_READ_PERMISSIONS, { navId: "schedule" }),
   route("schedule-new", "/schedule/new", "Create session", ["schedule.create"], {
     navId: "schedule",
@@ -174,7 +194,10 @@ export const ADMIN_ROUTE_ACCESS: readonly AdminAccessRequirement[] = [
   route("booking-detail", "/bookings/:bookingId", "Booking detail", ["bookings.read"], {
     navId: "bookings",
   }),
-  route("payments", "/payments", "Payments", ["payments.read"], { navId: "payments" }),
+  route("payments", "/payments", "Payments", ["payments.read", "refunds.read"], {
+    navId: "payments",
+    includeFieldsIf: ["refunds.read"],
+  }),
   route("payment-qr", "/payment-qr", "Payment QR", ["settings.payment_qr.manage"], {
     navId: "payment-qr",
   }),
@@ -189,15 +212,24 @@ export const ADMIN_ROUTE_ACCESS: readonly AdminAccessRequirement[] = [
     navId: "customers",
   }),
   route("coaches-new", "/coaches/new", "Create coach", ["coaches.manage"], { navId: "coaches" }),
-  route("coaches", "/coaches", "Coaches", COACH_READ, { navId: "coaches" }),
-  route("coach-detail", "/coaches/:coachId", "Coach detail", COACH_READ, { navId: "coaches" }),
+  route("coaches", "/coaches", "Coaches", COACH_READ, {
+    navId: "coaches",
+    includeFieldsIf: ["coach_rates.read"],
+  }),
+  route("coach-detail", "/coaches/:coachId", "Coach detail", COACH_READ, {
+    navId: "coaches",
+    includeFieldsIf: ["coach_rates.read"],
+  }),
   route("classes-new", "/classes/new", "Create class", ["classes.manage"], { navId: "classes" }),
   route("classes", "/classes", "Classes", CLASS_READ, { navId: "classes" }),
   route("class-detail", "/classes/:classId", "Class detail", CLASS_READ, { navId: "classes" }),
   route("bundles-new", "/bundles/new", "Create bundle", ["bundles.manage"], { navId: "bundles" }),
   route("bundles", "/bundles", "Bundles", BUNDLE_READ, { navId: "bundles" }),
   route("bundle-detail", "/bundles/:bundleId", "Bundle detail", BUNDLE_READ, { navId: "bundles" }),
-  route("reports", "/reports", "Reports", REPORT_READ_PERMISSIONS, { navId: "reports" }),
+  route("reports", "/reports", "Reports", REPORT_READ_PERMISSIONS, {
+    navId: "reports",
+    includeFieldsIf: REPORT_READ_PERMISSIONS,
+  }),
   route("report-session", "/reports/:sessionId", "Session report", ["reports.session.read"], {
     navId: "reports",
   }),
@@ -292,7 +324,9 @@ export const ADMIN_ACTION_ACCESS: readonly AdminAccessRequirement[] = [
 ];
 
 export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
-  api("GET", "/api/admin/dashboard", "Dashboard snapshot", DASHBOARD_READ_PERMISSIONS),
+  api("GET", "/api/admin/dashboard", "Dashboard snapshot", DASHBOARD_READ_PERMISSIONS, {
+    includeFieldsIf: ["dashboard.financial.read"],
+  }),
   api("GET", "/api/admin/dashboard/metrics", "Dashboard metrics", ["dashboard.financial.read"]),
   api("GET", "/api/admin/sessions", "List sessions", SCHEDULE_READ_PERMISSIONS, {
     requiresOwnership: true,
@@ -318,7 +352,13 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
   api("GET", "/api/admin/bookings", "List bookings", ["bookings.read"]),
   api("POST", "/api/admin/bookings/:id/confirm", "Confirm booking", ["bookings.confirm"]),
   api("POST", "/api/admin/bookings/:id/reject", "Reject booking", ["bookings.reject"]),
-  api("GET", "/api/admin/payments", "Payment queues", ["payments.read"]),
+  api("GET", "/api/admin/payments", "Payment queues (gcash/counter)", ["payments.read"], {
+    whenQuery: { key: "tab", values: ["gcash", "counter"], defaultValue: "gcash" },
+  }),
+  api("GET", "/api/admin/payments", "Refund queue", ["refunds.read"], {
+    id: "api:GET:/api/admin/payments?tab=refunds",
+    whenQuery: { key: "tab", values: ["refunds"] },
+  }),
   api("GET", "/api/admin/payment-proofs/:id/signed-url", "Payment proof", ["payments.review"]),
   api("POST", "/api/admin/payments/:id/record-cash", "Record cash", ["payments.record_cash"]),
   api("POST", "/api/admin/refunds/:id/mark-pending", "Mark refund pending", ["refunds.manage"]),
@@ -342,9 +382,15 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
   api("GET", "/api/admin/classes", "List classes", CLASS_READ),
   api("POST", "/api/admin/classes", "Create class", ["classes.manage"]),
   api("PATCH", "/api/admin/classes/:id", "Update class", ["classes.manage"]),
-  api("GET", "/api/admin/coaches", "List coaches", COACH_READ),
-  api("POST", "/api/admin/coaches", "Create coach", ["coaches.manage"]),
-  api("PATCH", "/api/admin/coaches/:id", "Update coach", ["coaches.manage"]),
+  api("GET", "/api/admin/coaches", "List coaches", COACH_READ, {
+    includeFieldsIf: ["coach_rates.read"],
+  }),
+  api("POST", "/api/admin/coaches", "Create coach", ["coaches.manage"], {
+    includeFieldsIf: ["coach_rates.manage"],
+  }),
+  api("PATCH", "/api/admin/coaches/:id", "Update coach", ["coaches.manage"], {
+    includeFieldsIf: ["coach_rates.manage"],
+  }),
   api("POST", "/api/admin/coaches/:id/photo", "Upload coach photo", ["coaches.manage"]),
   api("DELETE", "/api/admin/coaches/:id/photo", "Remove coach photo", ["coaches.manage"]),
   api("GET", "/api/admin/bundles", "List bundles", BUNDLE_READ),
@@ -366,10 +412,15 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
   ]),
   api("GET", "/api/admin/packages/:id/redemptions", "Package redemptions", BUNDLE_READ),
   api("GET", "/api/admin/reports/sales-overview", "Sales overview", ["reports.sales.read"]),
-  api("GET", "/api/admin/reports/class-performance", "Class performance", [
-    "reports.sales.read",
-    "reports.capacity.read",
-  ]),
+  api(
+    "GET",
+    "/api/admin/reports/class-performance",
+    "Class performance",
+    ["reports.sales.read", "reports.capacity.read"],
+    {
+      includeFieldsIf: ["reports.sales.read", "reports.capacity.read"],
+    },
+  ),
   api("GET", "/api/admin/reports/coach-costs", "Coach costs", ["reports.coach_costs.read"]),
   api("GET", "/api/admin/reports/session-performance", "Session performance", [
     "reports.session.read",
@@ -381,8 +432,12 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
   api("POST", "/api/admin/staff/:id/disable", "Disable staff", ["staff.manage"]),
   api("POST", "/api/admin/staff/:id/coach", "Link coach", ["staff.manage"]),
   api("DELETE", "/api/admin/staff/:id/coach", "Unlink coach", ["staff.manage"]),
-  api("GET", "/api/admin/settings", "Read settings", SETTINGS_MANAGE_PERMISSIONS),
-  api("PATCH", "/api/admin/settings", "Patch settings", SETTINGS_MANAGE_PERMISSIONS),
+  api("GET", "/api/admin/settings", "Read settings", SETTINGS_MANAGE_PERMISSIONS, {
+    includeFieldsIf: SETTINGS_MANAGE_PERMISSIONS,
+  }),
+  api("PATCH", "/api/admin/settings", "Patch settings", SETTINGS_MANAGE_PERMISSIONS, {
+    includeFieldsIf: SETTINGS_MANAGE_PERMISSIONS,
+  }),
   api("POST", "/api/admin/settings/qr", "Legacy settings QR create", [
     "settings.payment_qr.manage",
   ]),
@@ -443,19 +498,35 @@ export function matchAdminRouteAccess(pathname: string): AdminAccessRequirement 
   );
 }
 
+export function accessQueryMatches(
+  requirement: Pick<AdminAccessRequirement, "whenQuery">,
+  query?: Record<string, string | undefined> | URLSearchParams | null,
+): boolean {
+  if (!requirement.whenQuery) return true;
+  const raw = query
+    ? query instanceof URLSearchParams
+      ? (query.get(requirement.whenQuery.key) ?? undefined)
+      : query[requirement.whenQuery.key]
+    : undefined;
+  const value = raw && raw.length > 0 ? raw : requirement.whenQuery.defaultValue;
+  if (value == null) return false;
+  return requirement.whenQuery.values.includes(value);
+}
+
 export function matchAdminApiAccess(
   method: string,
   pathname: string,
+  query?: Record<string, string | undefined> | URLSearchParams | null,
 ): AdminAccessRequirement | null {
   const normalized = method.toUpperCase();
-  return (
-    ADMIN_API_ACCESS.find(
-      (item) =>
-        item.method === normalized &&
-        item.pathPattern &&
-        pathMatchesPattern(pathname, item.pathPattern),
-    ) ?? null
+  const matches = ADMIN_API_ACCESS.filter(
+    (item) =>
+      item.method === normalized &&
+      item.pathPattern &&
+      pathMatchesPattern(pathname, item.pathPattern) &&
+      accessQueryMatches(item, query),
   );
+  return matches.find((item) => item.whenQuery) ?? matches[0] ?? null;
 }
 
 export function actorSatisfiesAccess(
@@ -466,21 +537,64 @@ export function actorSatisfiesAccess(
   return hasAnyPermission(actor, requirement.anyOf);
 }
 
+/**
+ * Permission plus optional own-scope ownership.
+ * `ownsResource` omitted means “may open the surface”; pass `false` to deny a
+ * specific row the actor does not own.
+ */
+export function actorSatisfiesRequirement(
+  actor: StaffAuthorizationActor | null | undefined,
+  requirement: AdminAccessRequirement,
+  context: { ownsResource?: boolean } = {},
+): boolean {
+  if (requirement.anyOf.length === 0) return true;
+  if (!requirement.requiresOwnership) return actorSatisfiesAccess(actor, requirement);
+
+  const allKeys = requirement.anyOf.filter((key) => !(key in OWN_TO_ALL_PERMISSION));
+  const ownKeys = requirement.anyOf.filter((key) => key in OWN_TO_ALL_PERMISSION);
+  if (hasAnyPermission(actor, allKeys)) return true;
+  if (!hasAnyPermission(actor, ownKeys)) return false;
+  if (!isInteractiveStaffActor(actor) || !actor?.coachId) return false;
+  return context.ownsResource !== false;
+}
+
 export function permittedAdminNavItems(
   actor: StaffAuthorizationActor | null | undefined,
 ): (typeof ADMIN_NAV_ITEMS)[number][] {
   return ADMIN_NAV_ITEMS.filter((item) => {
     const requirement = ADMIN_NAV_ACCESS.find((entry) => entry.navId === item.id);
-    return requirement ? actorSatisfiesAccess(actor, requirement) : false;
+    return requirement ? actorSatisfiesRequirement(actor, requirement) : false;
   });
 }
+
+/** Prefer a route the actor can actually open, not just a parent nav href. */
+export const ADMIN_LANDING_PATHS = [
+  "/dashboard",
+  "/schedule",
+  "/bookings",
+  "/payments",
+  "/payment-qr",
+  "/cancellations",
+  "/reschedules",
+  "/customers",
+  "/coaches",
+  "/classes",
+  "/bundles",
+  "/reports",
+  "/staff",
+  "/staff/roles",
+  "/settings",
+] as const;
 
 export function firstPermittedAdminRoute(
   actor: StaffAuthorizationActor | null | undefined,
   fallback: string | null = null,
 ): string | null {
-  const first = permittedAdminNavItems(actor)[0];
-  return first?.href ?? fallback;
+  for (const href of ADMIN_LANDING_PATHS) {
+    const requirement = matchAdminRouteAccess(href);
+    if (requirement && actorSatisfiesRequirement(actor, requirement)) return href;
+  }
+  return fallback;
 }
 
 export function adminNavRequiredPermissions(navId: AdminNavId): readonly PermissionKey[] {
