@@ -2,38 +2,70 @@
 
 ```text
 STAFF MANAGEMENT                    [Add Staff]
-Name (avatar if coach) | Role            | Coach | Status | Action
-Rex                    | Admin · Coach   | Coach | Active | View/Edit
-Partner                | Admin           |  —    | Active | View/Edit
+Name (avatar if coach) | Role              | Coach | Status | Action
+Rex                    | Super Admin · Coach | Coach | Active | View/Edit
+Partner                | Front Desk          |  —    | Active | View/Edit
 
 STAFF DETAIL
 Name
 Email
-Role (Admin — authorisation only)
+Role (authorization — Super Admin / Front Desk / Coach / custom)
 Status
 [This staff member is a coach]  → link to /coaches/[coachId]
+Permission summary (from the assigned role)
 [Save] [Disable Access]
 ```
 
-Role text comes from `staffCapabilityLabel` in `@balanse/domain` (`Admin` / `Admin · Coach`). Do not hardcode `"Admin"`. The Coach column is a faceted filter on the `isCoach` capability.
+Role text comes from `roleLabel` / future staff capability helpers in
+`@balanse/domain`. Do not hardcode `"Admin"`. The Coach column is a faceted
+filter on the derived `isCoach` capability — not the authorization role.
 
 No public admin registration.
 
-## Financial access note
+## Role management (planned screens — #297)
 
-Staff roles should be designed so only authorized admin users can access:
+- `/staff/roles`
+- `/staff/roles/new`
+- `/staff/roles/[roleId]`
 
-- coach compensation rates,
-- sales reports,
-- refund totals,
-- coach-cost reports,
-- capacity/utilization reporting.
+List: name, built-in/custom, active/archived, assigned staff count,
+permission count, actions.
 
-Coach compensation must remain internal.
+Create/edit form: name, description, grouped checklist from
+`PERMISSION_REGISTRY`, select/clear group, sensitive-permission copy,
+clone-from-role, live accessible-pages summary. Built-in keys cannot change.
+
+## Assignment rules
+
+- One role per staff.
+- Coach authorization role requires a linked coach profile.
+- `isCoach` / `coachId` stay a separate teaching link and compose with every role.
+- Last active Super Admin cannot be disabled, demoted, deleted, or stripped
+  of all-access behavior (`violatesLastSuperAdminInvariant`).
+- Archived or disabled roles cannot be assigned.
+- Warn when changing the current user’s role or access.
+
+## Financial and sensitive access
+
+Only explicit permissions grant:
+
+- coach compensation rates (`coach_rates.read` / `coach_rates.manage`)
+- sales reports (`reports.sales.read`)
+- refund totals (`refunds.read` / `refunds.manage`)
+- coach-cost reports (`reports.coach_costs.read`)
+- financial dashboard (`dashboard.financial.read`)
+- capacity/utilization reporting (`reports.capacity.read`)
+
+Front Desk and Coach defaults do not include those keys. Super Admin has
+all-access semantics.
 
 ## Coach capability (BE-055 / FE-ADM-038)
 
-A staff member may optionally be linked to a `Coach` teaching profile. “Is a coach” is derived from that link (`isCoach` / `coachId`) — it is **not** a `StaffRole` value. `StaffRole` stays Admin-only.
+A staff member may optionally be linked to a `Coach` teaching profile.
+“Is a coach” is derived from that link (`isCoach` / `coachId`) — it is **not**
+an authorization role and must not be added to the legacy `StaffRole` enum.
 
-Disabling staff access while a linked coach has future sessions deactivates the **coach** (`active = false`) and leaves assigned sessions untouched. Unlinking must never delete the coach row.
+Disabling staff access while a linked coach has future sessions deactivates
+the **coach** (`active = false`) and leaves assigned sessions untouched.
+Unlinking must never delete the coach row.
 See `docs/backend/staff-coach-unification.md`.

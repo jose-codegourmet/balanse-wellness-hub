@@ -53,7 +53,7 @@ Session packages (fixed session entitlements, including a free Newbie Package) a
 - no-show analytics
 - coach performance analytics
 - revenue dashboards
-- automated staff permissions
+- automated staff permissions — **superseded by epic #289** (Wave 1 contract is #294 in `@balanse/domain`)
 - multiple branches
 
 ## Configuration

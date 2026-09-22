@@ -1,5 +1,33 @@
 # 03 — Roles and Permissions
 
+Canonical keys, seeded matrices, and helpers live in `@balanse/domain`
+(`permissions.ts`, `roles.ts`, `authorization.ts`, `admin-access.ts`).
+UI, API, mocks, and the database must import those modules. Do not invent
+permission strings in the browser.
+
+The legacy `StaffRole` enum (`ADMIN` only) is **not** authorization truth.
+It remains until the #298 schema backfill removes it.
+
+---
+
+## Invariants
+
+1. **Deny by default.** Missing role/permission, disabled role or staff, a
+   system actor, or unresolved coach ownership means no access.
+2. **Server authorization is canonical.** Client checks are UX only.
+3. **Own-scope never implies all-scope.** `schedule.read.own` does not grant
+   `schedule.read.all` (same for roster and attendance).
+4. **Sensitive data needs an explicit permission.** Rates, costs, sales,
+   refund totals, and financial reports are never implied by a broader read.
+5. **Last Super Admin.** The last active non-system Super Admin cannot be
+   disabled, demoted, deleted, or stripped of all-access behavior.
+6. **Role ≠ coach capability.** Authorization answers what staff may do.
+   `isCoach` / `coachId` remain the teaching link from
+   `docs/backend/staff-coach-unification.md`. Never infer permissions from a
+   public Coach row, name/email matching, JWT metadata, or `isCoach` alone.
+
+---
+
 ## 1. Guest
 
 A guest is an unauthenticated visitor.
@@ -59,78 +87,131 @@ A customer is an authenticated individual booking for themselves.
 
 ---
 
-## 3. Admin
+## 3. Staff authorization roles
 
-Initial admins:
+Staff hold **one** role. Custom roles are created from the canonical
+permission checklist. Multiple roles per staff and per-user overrides are
+out of scope.
 
-- Coach Rex
-- Coach Rex's wife
+### 3.1 Super Admin (`super_admin`)
 
-### Can
+- Every current and future permission (all-access semantics).
+- Protected built-in key; not editable or deletable.
+- At least one active non-system staff member must always hold it.
 
-- Manage coaches.
-- Manage classes.
-- Create/edit/cancel scheduled sessions.
-- Assign coaches.
-- Set session price.
-- Set capacity.
-- View all bookings.
-- View customer information needed for operations.
-- Review payment proof.
-- Confirm/reject bookings.
-- Handle cash payments at the counter.
-- Review cancellation requests.
-- Record manual refunds.
-- Handle reschedule requests.
-- Check customers in.
-- Mark no-show.
-- View attendance.
-- Operate the booking calendar.
+Initial operators: Coach Rex and Coach Rex’s partner. They backfill to this
+role; they are not a special case in code.
 
-### Cannot in MVP
+### 3.2 Front Desk (`front_desk`)
 
-- Change developer-only grace-period configuration.
-- Change developer-only booking cutoff configuration unless a future admin setting is intentionally added.
+Allowed:
+
+- `dashboard.operations.read`
+- `schedule.read.all`
+- `roster.read.all`
+- `attendance.manage.all`
+- `bookings.read` / `bookings.confirm` / `bookings.reject`
+- `payments.read` / `payments.review` / `payments.record_cash`
+- `cancellations.read` / `cancellations.manage`
+- `reschedules.read` / `reschedules.manage`
+- `customers.read`
+- `classes.read`
+- `coaches.read` (no rates)
+
+Not allowed by default:
+
+- schedule create / update / cancel / recurrence
+- coach rates
+- refunds
+- financial dashboard or reports
+- class / coach / bundle mutation
+- staff / role administration
+- settings / content / policies / payment QR
+
+Do not silently widen this matrix. Use a custom role for different access.
+
+### 3.3 Coach (`coach`)
+
+Allowed:
+
+- `dashboard.operations.read` (coach-scoped operational dashboard)
+- `schedule.read.own`
+- `roster.read.own`
+- `attendance.manage.own`
+
+Not allowed: global schedule, bookings/payments/refunds/requests, customer
+directory outside assigned rosters, rates (including own rate), catalogue
+mutation, reports, staff/roles/settings, schedule edit/cancel.
+
+**Own** means a `session_coaches` assignment references the coach linked to
+the signed-in `StaffMember`. Never match names or emails.
+
+The Coach role requires a linked coach profile. It does **not** replace
+`isCoach`. A staff member may be Super Admin + coach, Front Desk + coach,
+Coach-role + coach, or a non-teaching Super Admin / Front Desk.
+
+### 3.4 Custom roles
+
+- Stable immutable key; editable display name/description.
+- Permissions only from `PERMISSION_KEYS`.
+- At least one permission required.
+- Cannot impersonate a built-in by key or display name.
+- Actor may grant only permissions they possess unless Super Admin.
+- Built-ins are cloned, not edited.
+- Assigned custom roles are archived (not hard-deleted) after staff are reassigned.
 
 ---
 
-## 4. Coach
+## 4. Canonical permission registry
 
-A coach is an operational resource assigned to one or more sessions.
+Exact keys: `PERMISSION_KEYS` in `packages/domain/src/permissions.ts`.
 
-### MVP behavior
+Groups: Schedule, Booking operations, Catalogue, Reports, Administration.
 
-- Coaches do not need a self-service account/portal.
-- Coaches do not directly edit their schedules in the app.
-- Schedule changes are communicated to Coach Rex/admin.
-- Admin makes the schedule change in the system.
+`bundles.read` and `bundles.manage` were added so every current admin
+bundle/package route has a named permission. They are **not** on the Front
+Desk or Coach defaults.
 
-### Future
+Sensitive keys (rates, refunds, financial dashboard/reports, staff/roles,
+settings) are flagged on the registry.
 
-A coach-facing role may later gain:
+---
 
-- own schedule view,
-- availability management,
-- attendance support,
-- cancellation requests,
-- class roster access.
+## 5. Route and navigation mapping
 
-This is not part of the current MVP.
+Navigation, route guards, page actions, and `/api/admin/*` handlers consume
+`ADMIN_NAV_ACCESS`, `ADMIN_ROUTE_ACCESS`, `ADMIN_ACTION_ACCESS`, and
+`ADMIN_API_ACCESS` from `packages/domain/src/admin-access.ts`.
 
-## Financial permissions update
+After login or a role change, send the actor to `firstPermittedAdminRoute`
+instead of a forbidden dashboard.
 
-### Admin
+Unauthorized behavior:
 
-Authorized admins may:
+- Unauthenticated → login with `returnTo`.
+- Authenticated customer / non-staff → forbidden.
+- Disabled staff → access revoked.
+- Active staff lacking permission → 403 UI; API `forbidden`.
+- Coach targeting another coach’s session → scoped 403 or anti-enumeration 404 (documented once by the API ticket).
+- Direct API attempt → denied even if the UI button is absent.
 
-- manage internal coach rates,
-- view sales reports,
-- view coach-cost reports,
-- view class-capacity / occupancy reports.
+---
 
-### Coach-rate privacy
+## 6. Teaching capability (not a role)
 
-Coach compensation/rate information is internal business data.
+A coach is an operational resource assigned to sessions.
+
+- Coaches do not edit schedules in this epic.
+- Compensation stays hidden without `coach_rates.*`.
+- Public and customer surfaces never receive rates.
+
+See `docs/backend/staff-coach-unification.md` and issue #289.
+
+---
+
+## 7. Coach-rate privacy
+
+Coach compensation is internal business data.
 
 It must not be visible on:
 
@@ -139,4 +220,5 @@ It must not be visible on:
 - customer booking screens,
 - customer booking confirmations.
 
-Only authorized admin users should have access.
+Only actors with `coach_rates.read` / `coach_rates.manage` (Super Admin by
+default) may see or change rates.

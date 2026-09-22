@@ -38,6 +38,11 @@ export type CoachRateType = (typeof COACH_RATE_TYPES)[number];
 export const SESSION_STATUSES = ["DRAFT", "PUBLISHED", "CANCELLED"] as const;
 export type SessionStatus = (typeof SESSION_STATUSES)[number];
 
+/**
+ * Legacy persisted enum (BE-001 / current Prisma `StaffRole`).
+ * Authorization truth is `StaffRoleDefinition.key` + `PERMISSION_KEYS` in
+ * `roles.ts` / `permissions.ts`. Do not treat this enum as the role matrix.
+ */
 export const STAFF_ROLES = ["ADMIN"] as const;
 export type StaffRole = (typeof STAFF_ROLES)[number];
 
