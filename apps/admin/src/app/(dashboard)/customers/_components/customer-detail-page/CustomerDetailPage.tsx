@@ -12,10 +12,11 @@ import {
   sessionDisplayName,
 } from "@balanse/domain";
 import { Badge, StatusBadge } from "@balanse/ui";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { adminBundlesQuery, adminCustomerDetailQuery } from "@/lib/query/queries";
+import { useCanAdminAction, useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { GrantPackageForm } from "../grant-package-form/GrantPackageForm";
 
@@ -23,10 +24,12 @@ function BookingBlock({
   title,
   empty,
   rows,
+  canOpenBooking,
 }: {
   title: string;
   empty: string;
   rows: AdminCustomerDetail["upcoming"];
+  canOpenBooking: boolean;
 }) {
   return (
     <section className="mt-8">
@@ -38,10 +41,17 @@ function BookingBlock({
           {rows.map((booking) => (
             <li key={booking.id} className="rounded-xl border border-border p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Link className="underline underline-offset-4" href={`/bookings/${booking.id}`}>
-                  {sessionDisplayName(booking.session)} ·{" "}
-                  {formatSessionDate(booking.session.startsAt)}
-                </Link>
+                {canOpenBooking ? (
+                  <Link className="underline underline-offset-4" href={`/bookings/${booking.id}`}>
+                    {sessionDisplayName(booking.session)} ·{" "}
+                    {formatSessionDate(booking.session.startsAt)}
+                  </Link>
+                ) : (
+                  <span>
+                    {sessionDisplayName(booking.session)} ·{" "}
+                    {formatSessionDate(booking.session.startsAt)}
+                  </span>
+                )}
                 <StatusBadge status={booking.status} surface="admin" />
               </div>
               {bookingListTab(booking.status) === "history" ? null : null}
@@ -55,8 +65,15 @@ function BookingBlock({
 
 export function CustomerDetailPage({ customerId }: { customerId: string }) {
   const { principal } = useMockPrincipal();
+  const canReadBundles = useCanAdminRoute("/bundles");
+  const canManageBundles = useCanAdminAction("bundles-manage");
+  const canReadRefunds = useCanAdminAction("refunds-read");
+  const canOpenBooking = useCanAdminRoute("/bookings");
   const query = useSuspenseQuery(adminCustomerDetailQuery(principal, customerId));
-  const bundlesQuery = useSuspenseQuery(adminBundlesQuery(principal));
+  const bundlesQuery = useQuery({
+    ...adminBundlesQuery(principal),
+    enabled: canReadBundles,
+  });
   const detail = query.data;
   if (!detail) return null;
 
@@ -89,43 +106,64 @@ export function CustomerDetailPage({ customerId }: { customerId: string }) {
         </div>
       </dl>
 
-      <section className="mt-8">
-        <h2 className="font-display text-2xl">Packages</h2>
-        {(detail.entitlements ?? []).length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">No packages on this customer.</p>
-        ) : (
-          <ul className="mt-3 space-y-2">
-            {(detail.entitlements ?? []).map((entitlement) => (
-              <li key={entitlement.id} className="rounded-xl border border-border p-3 text-sm">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-medium">{entitlement.snapshot.name}</span>
-                  <Badge appearance="soft" size="sm">
-                    {entitlementStatusLabel(entitlement.status)}
-                  </Badge>
-                </div>
-                <p className="mt-1 text-muted-foreground">
-                  {formatSessionsRemaining(entitlement.remainingCredits)} · granted{" "}
-                  {entitlement.grantedCredits} · {formatPeso(entitlement.snapshot.pricePhp)}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-        <GrantPackageForm customerId={customerId} bundles={bundlesQuery.data} />
-      </section>
+      {canReadBundles ? (
+        <section className="mt-8">
+          <h2 className="font-display text-2xl">Packages</h2>
+          {(detail.entitlements ?? []).length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">No packages on this customer.</p>
+          ) : (
+            <ul className="mt-3 space-y-2">
+              {(detail.entitlements ?? []).map((entitlement) => (
+                <li key={entitlement.id} className="rounded-xl border border-border p-3 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-medium">{entitlement.snapshot.name}</span>
+                    <Badge appearance="soft" size="sm">
+                      {entitlementStatusLabel(entitlement.status)}
+                    </Badge>
+                  </div>
+                  <p className="mt-1 text-muted-foreground">
+                    {formatSessionsRemaining(entitlement.remainingCredits)} · granted{" "}
+                    {entitlement.grantedCredits} · {formatPeso(entitlement.snapshot.pricePhp)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+          {canManageBundles && bundlesQuery.data ? (
+            <GrantPackageForm customerId={customerId} bundles={bundlesQuery.data} />
+          ) : null}
+        </section>
+      ) : null}
 
-      <BookingBlock title="Upcoming" empty="No upcoming bookings." rows={detail.upcoming} />
-      <BookingBlock title="Pending" empty="No pending bookings." rows={detail.pending} />
-      <BookingBlock title="History" empty="No booking history." rows={detail.history} />
+      <BookingBlock
+        title="Upcoming"
+        empty="No upcoming bookings."
+        rows={detail.upcoming}
+        canOpenBooking={canOpenBooking}
+      />
+      <BookingBlock
+        title="Pending"
+        empty="No pending bookings."
+        rows={detail.pending}
+        canOpenBooking={canOpenBooking}
+      />
+      <BookingBlock
+        title="History"
+        empty="No booking history."
+        rows={detail.history}
+        canOpenBooking={canOpenBooking}
+      />
       <BookingBlock
         title="Cancellation / reschedule history"
         empty="No cancellation or reschedule history."
         rows={detail.requestHistory}
+        canOpenBooking={canOpenBooking}
       />
       <BookingBlock
         title="Attendance / no-show history"
         empty="No attendance history."
         rows={detail.attendanceHistory}
+        canOpenBooking={canOpenBooking}
       />
 
       <section className="mt-8">
@@ -148,14 +186,16 @@ export function CustomerDetailPage({ customerId }: { customerId: string }) {
                     {paymentStatusLabel(booking.paymentStatus)}
                   </Badge>
                 </p>
-                <p className="mt-1 flex flex-wrap items-center gap-2">
-                  <span className="text-muted-foreground">Refund</span>
-                  <Badge appearance="soft" size="sm">
-                    {booking.refundStatus === "NOT_APPLICABLE"
-                      ? "Not applicable"
-                      : refundStatusLabel(booking.refundStatus)}
-                  </Badge>
-                </p>
+                {canReadRefunds ? (
+                  <p className="mt-1 flex flex-wrap items-center gap-2">
+                    <span className="text-muted-foreground">Refund</span>
+                    <Badge appearance="soft" size="sm">
+                      {booking.refundStatus === "NOT_APPLICABLE"
+                        ? "Not applicable"
+                        : refundStatusLabel(booking.refundStatus)}
+                    </Badge>
+                  </p>
+                ) : null}
               </li>
             ))}
           </ul>

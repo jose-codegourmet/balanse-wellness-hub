@@ -13,19 +13,24 @@ import {
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { StatusBadge } from "@balanse/ui";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { adminCustomersQuery, adminSessionRosterQuery } from "@/lib/query/queries";
+import { AdminCan, useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export function RosterPage({ sessionId }: { sessionId: string }) {
   const { principal } = useMockPrincipal();
+  const canReadCustomers = useCanAdminRoute("/customers");
   const rosterQuery = useSuspenseQuery(adminSessionRosterQuery(principal, sessionId));
-  const customersQuery = useSuspenseQuery(adminCustomersQuery(principal));
+  const customersQuery = useQuery({
+    ...adminCustomersQuery(principal),
+    enabled: canReadCustomers,
+  });
   const roster = rosterQuery.data;
-  const customers = customersQuery.data;
+  const customers = customersQuery.data ?? [];
 
   const name = (id: string) => customers.find((row) => row.id === id)?.fullName ?? id;
   const occ = occupancyRatio(roster.confirmedCount, roster.capacity);
@@ -75,9 +80,11 @@ export function RosterPage({ sessionId }: { sessionId: string }) {
               <p className="font-medium">
                 {index + 1}. {name(row.customerId)}
               </p>
-              <Link className="text-sm underline" href={`/bookings/${row.id}`}>
-                Inspect booking
-              </Link>
+              <AdminCan href="/bookings">
+                <Link className="text-sm underline" href={`/bookings/${row.id}`}>
+                  Inspect booking
+                </Link>
+              </AdminCan>
             </li>
           ))}
         </ol>
@@ -121,25 +128,29 @@ function RosterGroup({
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <ConfirmAction
-                  triggerLabel="Check In"
-                  title="Check this guest in?"
-                  description="Attendance updates immediately in this mock."
-                  onConfirm={() => getMockAdapter().checkIn(row.id).then(onChange)}
-                />
-                <ConfirmAction
-                  triggerLabel="Mark no-show"
-                  title="Mark as no-show?"
-                  description={NO_REFUND_ON_NOSHOW_NOTE}
-                  variant="outline"
-                  onConfirm={() => getMockAdapter().markNoShow(row.id).then(onChange)}
-                />
-                <Link
-                  className="inline-flex min-h-11 items-center underline"
-                  href={`/bookings/${row.id}`}
-                >
-                  Inspect booking/payment
-                </Link>
+                <AdminCan action="attendance">
+                  <ConfirmAction
+                    triggerLabel="Check In"
+                    title="Check this guest in?"
+                    description="Attendance updates immediately in this mock."
+                    onConfirm={() => getMockAdapter().checkIn(row.id).then(onChange)}
+                  />
+                  <ConfirmAction
+                    triggerLabel="Mark no-show"
+                    title="Mark as no-show?"
+                    description={NO_REFUND_ON_NOSHOW_NOTE}
+                    variant="outline"
+                    onConfirm={() => getMockAdapter().markNoShow(row.id).then(onChange)}
+                  />
+                </AdminCan>
+                <AdminCan href="/bookings">
+                  <Link
+                    className="inline-flex min-h-11 items-center underline"
+                    href={`/bookings/${row.id}`}
+                  >
+                    Inspect booking/payment
+                  </Link>
+                </AdminCan>
               </div>
             </div>
           </li>

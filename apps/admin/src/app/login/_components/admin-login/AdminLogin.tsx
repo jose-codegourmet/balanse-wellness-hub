@@ -1,10 +1,15 @@
 "use client";
 
-import { ADMIN_LOGIN_HELP, safeAdminPath, validateAdminLogin } from "@balanse/domain";
+import { ADMIN_LOGIN_HELP, validateAdminLogin } from "@balanse/domain";
+import { resolveMockStaffActor } from "@balanse/mock/session";
 import { BrandLockup, LocalizedSkeleton } from "@balanse/ui";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  firstImplementedPermittedAdminRoute,
+  resolvePermittedReturnTo,
+} from "@/lib/authorization/admin-access";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { AdminLoginForm } from "./admin-login-form/AdminLoginForm";
 
@@ -17,7 +22,7 @@ export function AdminLogin({
 }) {
   const router = useRouter();
   const { setPrincipal } = useMockPrincipal();
-  const returnTo = safeAdminPath(returnToProp);
+  const requestedReturnTo = returnToProp;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<Partial<Record<"email" | "password" | "form", string>>>(
@@ -60,8 +65,10 @@ export function AdminLogin({
                 setErrors({});
                 setStatus("submitting");
                 window.setTimeout(() => {
-                  setPrincipal({ role: "admin", staffId: result.staffId });
-                  router.push(returnTo);
+                  const nextPrincipal = setPrincipal({ role: "admin", staffId: result.staffId });
+                  const actor = resolveMockStaffActor(nextPrincipal);
+                  const landing = firstImplementedPermittedAdminRoute(actor, "/login") ?? "/login";
+                  router.push(resolvePermittedReturnTo(actor, requestedReturnTo, landing));
                   router.refresh();
                 }, 350);
               }}

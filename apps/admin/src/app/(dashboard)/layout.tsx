@@ -12,11 +12,11 @@ export default async function DashboardLayout({
 }) {
   const collapsed = (await cookies()).get(ADMIN_SIDEBAR_COOKIE)?.value === "collapsed";
   return (
-    <AdminGuard>
-      <AdminShell defaultCollapsed={collapsed}>
+    <AdminShell defaultCollapsed={collapsed}>
+      <AdminGuard>
         <div className="px-4 py-8 md:px-8">{children}</div>
         {modal}
-      </AdminShell>
-    </AdminGuard>
+      </AdminGuard>
+    </AdminShell>
   );
 }

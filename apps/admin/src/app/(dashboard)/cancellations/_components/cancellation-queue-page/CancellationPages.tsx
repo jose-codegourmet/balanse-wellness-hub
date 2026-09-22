@@ -25,6 +25,7 @@ import {
   useRejectAdminCancellation,
 } from "@/lib/query/mutations";
 import { adminCancellationsInfiniteQuery } from "@/lib/query/queries";
+import { AdminCan } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
@@ -119,58 +120,62 @@ function CancellationRequestCard({
         }
         actions={
           <div className="flex w-full min-w-0 flex-col gap-3">
-            <div className="flex flex-wrap gap-2">
-              <ConfirmAction
-                triggerLabel="Complete Cancellation"
-                title="Complete cancellation?"
-                description={`${stamp} ${SLOT_LOCKED_UNTIL_CANCEL_NOTE}`}
-                disabled={busy || leaving}
-                onConfirm={() =>
-                  runResolution(() => complete.mutateAsync(row.id), "cancellation.completed")
-                }
-              />
-              <ConfirmAction
-                triggerLabel="Reject Request"
-                title="Reject cancellation request?"
-                description={stamp}
-                variant="outline"
-                requireReason
-                reasonLabel="Reason"
-                reasonPlaceholder="Tell the customer why this request is rejected."
-                disabled={busy || leaving}
-                onConfirm={(adminReason) =>
-                  runResolution(
-                    () =>
-                      reject.mutateAsync({
-                        bookingId: row.id,
-                        reason: adminReason ?? "",
-                      }),
-                    "cancellation.rejected",
-                  )
-                }
-              />
-            </div>
-            <div className="flex w-full min-w-0 flex-col gap-2 border-t border-border pt-3">
-              <p className="text-xs text-muted-foreground">{MANUAL_REFUND_NOTE}</p>
+            <AdminCan action="cancellations-manage">
               <div className="flex flex-wrap gap-2">
                 <ConfirmAction
-                  triggerLabel="Mark Refund Pending"
-                  title="Mark refund pending?"
-                  description={`${stamp} Refund status is separate from cancellation. ${MANUAL_REFUND_NOTE}`}
-                  variant="outline"
-                  disabled={busy || leaving || row.refundStatus === "REFUND_PENDING"}
-                  onConfirm={() => runRefund(() => markPending.mutateAsync(row.id))}
+                  triggerLabel="Complete Cancellation"
+                  title="Complete cancellation?"
+                  description={`${stamp} ${SLOT_LOCKED_UNTIL_CANCEL_NOTE}`}
+                  disabled={busy || leaving}
+                  onConfirm={() =>
+                    runResolution(() => complete.mutateAsync(row.id), "cancellation.completed")
+                  }
                 />
                 <ConfirmAction
-                  triggerLabel="Mark Refunded"
-                  title="Mark refunded?"
-                  description={`${stamp} ${MANUAL_REFUND_NOTE}`}
+                  triggerLabel="Reject Request"
+                  title="Reject cancellation request?"
+                  description={stamp}
                   variant="outline"
-                  disabled={busy || leaving || row.refundStatus === "REFUNDED"}
-                  onConfirm={() => runRefund(() => markRefunded.mutateAsync(row.id))}
+                  requireReason
+                  reasonLabel="Reason"
+                  reasonPlaceholder="Tell the customer why this request is rejected."
+                  disabled={busy || leaving}
+                  onConfirm={(adminReason) =>
+                    runResolution(
+                      () =>
+                        reject.mutateAsync({
+                          bookingId: row.id,
+                          reason: adminReason ?? "",
+                        }),
+                      "cancellation.rejected",
+                    )
+                  }
                 />
               </div>
-            </div>
+            </AdminCan>
+            <AdminCan action="refunds-manage">
+              <div className="flex w-full min-w-0 flex-col gap-2 border-t border-border pt-3">
+                <p className="text-xs text-muted-foreground">{MANUAL_REFUND_NOTE}</p>
+                <div className="flex flex-wrap gap-2">
+                  <ConfirmAction
+                    triggerLabel="Mark Refund Pending"
+                    title="Mark refund pending?"
+                    description={`${stamp} Refund status is separate from cancellation. ${MANUAL_REFUND_NOTE}`}
+                    variant="outline"
+                    disabled={busy || leaving || row.refundStatus === "REFUND_PENDING"}
+                    onConfirm={() => runRefund(() => markPending.mutateAsync(row.id))}
+                  />
+                  <ConfirmAction
+                    triggerLabel="Mark Refunded"
+                    title="Mark refunded?"
+                    description={`${stamp} ${MANUAL_REFUND_NOTE}`}
+                    variant="outline"
+                    disabled={busy || leaving || row.refundStatus === "REFUNDED"}
+                    onConfirm={() => runRefund(() => markRefunded.mutateAsync(row.id))}
+                  />
+                </div>
+              </div>
+            </AdminCan>
           </div>
         }
       />

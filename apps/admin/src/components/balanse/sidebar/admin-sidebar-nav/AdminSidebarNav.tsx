@@ -28,6 +28,10 @@ export function AdminSidebarNav({
       {...props}
     >
       {NAV_GROUPS.map((group, index) => {
+        const groupItems = group.ids
+          .map((id) => items.find((entry) => entry.id === id))
+          .filter((item): item is (typeof items)[number] => Boolean(item));
+        if (groupItems.length === 0) return null;
         const headingId = `${headingPrefix}-${group.label}`;
         return (
           <div className={cn(collapsed ? "pb-3" : "pb-6")} key={group.label}>
@@ -42,9 +46,7 @@ export function AdminSidebarNav({
               {group.label}
             </h2>
             <ul aria-labelledby={headingId} className={cn("space-y-1", !collapsed && "mt-1")}>
-              {group.ids.map((id) => {
-                const item = items.find((entry) => entry.id === id);
-                if (!item) return null;
+              {groupItems.map((item) => {
                 const Icon = NAV_ICONS[item.id];
                 const active = isAdminNavActive(item, pathname);
                 const count = countForItem(item.id, snapshot);

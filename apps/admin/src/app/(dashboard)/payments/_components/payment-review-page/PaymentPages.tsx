@@ -49,6 +49,7 @@ import {
   useRejectAdminBooking,
 } from "@/lib/query/mutations";
 import { adminPaymentsQueueInfiniteQuery } from "@/lib/query/queries";
+import { AdminCan, useHasPermission } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
@@ -257,116 +258,128 @@ function PaymentQueueCard({
           <div className="flex w-full min-w-0 flex-col gap-3">
             {tab === "gcash" ? (
               <div className="flex flex-wrap gap-2">
-                <ConfirmAction
-                  triggerLabel="Confirm Payment & Booking"
-                  title="Confirm payment and booking?"
-                  description={stamp}
-                  disabled={busy || leaving}
-                  onConfirm={() =>
-                    run(
-                      () => confirm.mutateAsync(row.id),
-                      "payment.confirmed",
-                      "payment.action-failed",
-                    )
-                  }
-                />
-                <ConfirmAction
-                  triggerLabel="Reject"
-                  title="Reject this payment?"
-                  description={stamp}
-                  variant="outline"
-                  requireReason
-                  reasonLabel="Reject reason"
-                  reasonPlaceholder="Tell the customer why this payment is rejected."
-                  disabled={busy || leaving}
-                  onConfirm={(reason) =>
-                    run(
-                      () => reject.mutateAsync({ id: row.id, reason: reason ?? "" }),
-                      "payment.rejected",
-                      "payment.action-failed",
-                      true,
-                    )
-                  }
-                />
+                <AdminCan action="bookings-confirm">
+                  <ConfirmAction
+                    triggerLabel="Confirm Payment & Booking"
+                    title="Confirm payment and booking?"
+                    description={stamp}
+                    disabled={busy || leaving}
+                    onConfirm={() =>
+                      run(
+                        () => confirm.mutateAsync(row.id),
+                        "payment.confirmed",
+                        "payment.action-failed",
+                      )
+                    }
+                  />
+                </AdminCan>
+                <AdminCan action="bookings-reject">
+                  <ConfirmAction
+                    triggerLabel="Reject"
+                    title="Reject this payment?"
+                    description={stamp}
+                    variant="outline"
+                    requireReason
+                    reasonLabel="Reject reason"
+                    reasonPlaceholder="Tell the customer why this payment is rejected."
+                    disabled={busy || leaving}
+                    onConfirm={(reason) =>
+                      run(
+                        () => reject.mutateAsync({ id: row.id, reason: reason ?? "" }),
+                        "payment.rejected",
+                        "payment.action-failed",
+                        true,
+                      )
+                    }
+                  />
+                </AdminCan>
               </div>
             ) : null}
             {tab === "counter" ? (
               <div className="flex flex-wrap gap-2">
-                <ConfirmAction
-                  triggerLabel="Record payment"
-                  title="Record cash received?"
-                  description={stamp}
-                  disabled={busy || leaving}
-                  onConfirm={() =>
-                    run(
-                      () => recordCash.mutateAsync(row.id),
-                      "payment.cash-recorded",
-                      "payment.action-failed",
-                    )
-                  }
-                />
-                <ConfirmAction
-                  triggerLabel="Confirm Payment & Booking"
-                  title="Confirm payment and booking?"
-                  description={stamp}
-                  disabled={busy || leaving}
-                  onConfirm={() =>
-                    run(
-                      () => confirm.mutateAsync(row.id),
-                      "payment.confirmed",
-                      "payment.action-failed",
-                    )
-                  }
-                />
-                <ConfirmAction
-                  triggerLabel="Check in"
-                  title="Check this guest in?"
-                  description={stamp}
-                  variant="outline"
-                  disabled={busy || leaving}
-                  onConfirm={() =>
-                    run(
-                      () => checkIn.mutateAsync(row.id),
-                      "booking.checked-in",
-                      "booking.check-in-failed",
-                    )
-                  }
-                />
+                <AdminCan action="payments-record-cash">
+                  <ConfirmAction
+                    triggerLabel="Record payment"
+                    title="Record cash received?"
+                    description={stamp}
+                    disabled={busy || leaving}
+                    onConfirm={() =>
+                      run(
+                        () => recordCash.mutateAsync(row.id),
+                        "payment.cash-recorded",
+                        "payment.action-failed",
+                      )
+                    }
+                  />
+                </AdminCan>
+                <AdminCan action="bookings-confirm">
+                  <ConfirmAction
+                    triggerLabel="Confirm Payment & Booking"
+                    title="Confirm payment and booking?"
+                    description={stamp}
+                    disabled={busy || leaving}
+                    onConfirm={() =>
+                      run(
+                        () => confirm.mutateAsync(row.id),
+                        "payment.confirmed",
+                        "payment.action-failed",
+                      )
+                    }
+                  />
+                </AdminCan>
+                <AdminCan action="attendance">
+                  <ConfirmAction
+                    triggerLabel="Check in"
+                    title="Check this guest in?"
+                    description={stamp}
+                    variant="outline"
+                    disabled={busy || leaving}
+                    onConfirm={() =>
+                      run(
+                        () => checkIn.mutateAsync(row.id),
+                        "booking.checked-in",
+                        "booking.check-in-failed",
+                      )
+                    }
+                  />
+                </AdminCan>
               </div>
             ) : null}
             {tab === "refunds" ? (
-              <div className="flex w-full min-w-0 flex-col gap-2">
-                <p className="text-xs text-muted-foreground">{MANUAL_REFUND_NOTE}</p>
-                <div className="flex flex-wrap gap-2">
-                  <ConfirmAction
-                    triggerLabel="Mark Refund Pending"
-                    title="Mark refund pending?"
-                    description={`${stamp} ${MANUAL_REFUND_NOTE}`}
-                    disabled={busy || leaving || row.refundStatus === "REFUND_PENDING"}
-                    onConfirm={() =>
-                      run(
-                        () => markPending.mutateAsync(row.id),
-                        "refund.status-updated",
-                        "refund.action-failed",
-                      )
-                    }
-                  />
-                  <ConfirmAction
-                    triggerLabel="Mark Refunded"
-                    title="Mark refunded?"
-                    description={`${stamp} ${MANUAL_REFUND_NOTE}`}
-                    variant="outline"
-                    disabled={busy || leaving || row.refundStatus === "REFUNDED"}
-                    onConfirm={() =>
-                      run(
-                        () => markRefunded.mutateAsync(row.id),
-                        "refund.status-updated",
-                        "refund.action-failed",
-                      )
-                    }
-                  />
+              <AdminCan action="refunds-manage">
+                <div className="flex w-full min-w-0 flex-col gap-2">
+                  <p className="text-xs text-muted-foreground">{MANUAL_REFUND_NOTE}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <ConfirmAction
+                      triggerLabel="Mark Refund Pending"
+                      title="Mark refund pending?"
+                      description={`${stamp} ${MANUAL_REFUND_NOTE}`}
+                      disabled={busy || leaving || row.refundStatus === "REFUND_PENDING"}
+                      onConfirm={() =>
+                        run(
+                          () => markPending.mutateAsync(row.id),
+                          "refund.status-updated",
+                          "refund.action-failed",
+                        )
+                      }
+                    />
+                    <ConfirmAction
+                      triggerLabel="Mark Refunded"
+                      title="Mark refunded?"
+                      description={`${stamp} ${MANUAL_REFUND_NOTE}`}
+                      variant="outline"
+                      disabled={busy || leaving || row.refundStatus === "REFUNDED"}
+                      onConfirm={() =>
+                        run(
+                          () => markRefunded.mutateAsync(row.id),
+                          "refund.status-updated",
+                          "refund.action-failed",
+                        )
+                      }
+                    />
+                  </div>
                 </div>
-              </div>
+              </AdminCan>
             ) : null}
           </div>
         }
@@ -385,8 +398,19 @@ export function PaymentReviewPage({
   proofOpen,
 }: PaymentReviewPageProps) {
   const { principal } = useMockPrincipal();
-  const [urlTab, setUrlTab] = useTabParam("tab", PAYMENT_TABS, "gcash");
-  const tab = tabOverride ?? urlTab;
+  const canReadPayments = useHasPermission("payments.read");
+  const canReadRefunds = useHasPermission("refunds.read");
+  const visibleTabs = PAYMENT_TABS.filter((item) =>
+    item.id === "refunds" ? canReadRefunds : canReadPayments,
+  );
+  const defaultTab = visibleTabs[0]?.id ?? "gcash";
+  const [urlTab, setUrlTab] = useTabParam(
+    "tab",
+    visibleTabs.length ? visibleTabs : PAYMENT_TABS,
+    defaultTab,
+  );
+  const tab =
+    tabOverride && visibleTabs.some((item) => item.id === tabOverride) ? tabOverride : urlTab;
   const query = useInfiniteQuery(adminPaymentsQueueInfiniteQuery(principal, tab));
   const nowIso = adminNowIso();
   const stamp = auditConfirmationCopy("This payment action", "Admin", nowIso);
@@ -432,7 +456,7 @@ export function PaymentReviewPage({
       title="Payments"
       tabs={
         <AdminPageTabs
-          tabs={PAYMENT_TABS}
+          tabs={visibleTabs.length ? visibleTabs : PAYMENT_TABS}
           value={tab}
           onValueChange={(id) => setUrlTab(id as AdminPaymentTab)}
         >

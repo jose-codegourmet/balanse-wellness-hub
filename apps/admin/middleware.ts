@@ -1,21 +1,34 @@
-import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
+import {
+  MOCK_HARNESS_COOKIE,
+  parseMockPrincipal,
+  resolveMockStaffActor,
+} from "@balanse/mock/session";
 import { type NextRequest, NextResponse } from "next/server";
+import { resolveAdminShellDestination } from "@/lib/authorization/admin-access";
 
 export function middleware(request: NextRequest) {
   const principal = parseMockPrincipal(request.cookies.get(MOCK_HARNESS_COOKIE)?.value);
   const isLogin = request.nextUrl.pathname.startsWith("/login");
   const isDev = request.nextUrl.pathname.startsWith("/dev");
 
-  if (principal.role !== "admin" && !isLogin && !isDev) {
+  if (principal.role === "guest" && !isLogin && !isDev) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("returnTo", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 
-  if (principal.role === "admin" && isLogin) {
+  if (principal.role === "customer" && isLogin) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
+
+  if (principal.role === "admin" && isLogin) {
+    const actor = resolveMockStaffActor(principal);
+    const url = request.nextUrl.clone();
+    url.pathname = resolveAdminShellDestination(actor, principal, "/dashboard");
     url.search = "";
     return NextResponse.redirect(url);
   }

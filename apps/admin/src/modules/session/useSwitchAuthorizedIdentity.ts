@@ -1,6 +1,5 @@
 "use client";
 
-import { firstPermittedAdminRoute } from "@balanse/domain";
 import {
   type MockPrincipal,
   type MockStaffIdentityId,
@@ -11,12 +10,11 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
+import { resolveAdminShellDestination } from "@/lib/authorization/admin-access";
 import { type ResolveAllowedAdminRoute, removeAuthorizedAdminCache } from "@/lib/query/auth-scope";
 import { useMockPrincipal } from "./MockSessionProvider";
 
-export function useSwitchAuthorizedIdentity(
-  resolveAllowedRoute: ResolveAllowedAdminRoute = firstPermittedAdminRoute,
-) {
+export function useSwitchAuthorizedIdentity(resolveAllowedRoute?: ResolveAllowedAdminRoute) {
   const { principal, setPrincipal } = useMockPrincipal();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -33,7 +31,9 @@ export function useSwitchAuthorizedIdentity(
         return;
       }
       const actor = resolveMockStaffActor(merged);
-      const href = resolveAllowedRoute(actor, "/login") ?? "/login";
+      const href = resolveAllowedRoute
+        ? (resolveAllowedRoute(actor, "/login") ?? "/login")
+        : resolveAdminShellDestination(actor, merged, "/login");
       router.replace(href);
       router.refresh();
     },
@@ -41,9 +41,7 @@ export function useSwitchAuthorizedIdentity(
   );
 }
 
-export function useSwitchMockStaffIdentity(
-  resolveAllowedRoute: ResolveAllowedAdminRoute = firstPermittedAdminRoute,
-) {
+export function useSwitchMockStaffIdentity(resolveAllowedRoute?: ResolveAllowedAdminRoute) {
   const switchIdentity = useSwitchAuthorizedIdentity(resolveAllowedRoute);
   return useCallback(
     (staffId: MockStaffIdentityId) => {

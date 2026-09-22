@@ -48,6 +48,7 @@ import {
   coachFormSchema,
   coachPublicFormSchema,
 } from "@/modules/admin/forms/coach/coach-form.schema";
+import { useCanAdminAction, useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
@@ -110,9 +111,13 @@ export function CoachFormPage({ coachId, initialTab }: CoachFormPageProps) {
   const router = useRouter();
   const isNew = coachId === "new";
   const { principal } = useMockPrincipal();
-  const canSeeRates = principal.role === "admin";
+  const canSeeRates = useCanAdminAction("coach-rates-read");
+  const canReadStaff = useCanAdminRoute("/staff");
   const coachesQuery = useQuery(adminCoachesQuery(principal));
-  const staffQuery = useQuery(adminStaffQuery(principal));
+  const staffQuery = useQuery({
+    ...adminStaffQuery(principal),
+    enabled: canReadStaff,
+  });
   const sessionsQuery = useQuery(adminSessionsQuery(principal));
   const upsert = useUpsertAdminCoach();
   const existing = isNew ? undefined : coachesQuery.data?.find((row) => row.id === coachId);

@@ -20,7 +20,9 @@ import { NeedsAttentionTile } from "@/components/balanse/dashboard/needs-attenti
 import { SalesSeriesChart } from "@/components/balanse/dashboard/sales-series-chart/SalesSeriesChart";
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
+import { canAccessAdminHref } from "@/lib/authorization/admin-access";
 import { adminDashboardQuery } from "@/lib/query/queries";
+import { useCanAdminAction } from "@/modules/authorization/useAdminAccess";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 type ScheduleRow = AdminDashboardSnapshot["todaysSchedule"][number];
@@ -32,8 +34,10 @@ export function DashboardPage({
   initial?: AdminDashboardSnapshot;
   loading?: boolean;
 }) {
-  const { principal } = useMockPrincipal();
-  const canViewCoachCost = principal.role === "admin";
+  const { principal, actor } = useMockPrincipal();
+  const canViewFinancials = useCanAdminAction("dashboard-financial");
+  const canViewOperations = useCanAdminAction("dashboard-operations");
+  const canViewCoachCost = canViewFinancials;
   const query = useQuery({
     ...adminDashboardQuery(principal),
     ...(initial ? { initialData: initial } : {}),
@@ -141,7 +145,7 @@ export function DashboardPage({
       href: "/bookings?tab=waitlisted",
       icon: Ticket,
     },
-  ];
+  ].filter((stat) => canAccessAdminHref(actor, stat.href));
 
   const attention = [
     {
@@ -168,35 +172,41 @@ export function DashboardPage({
       waitingLabel: `${data.attention.reschedules} request${data.attention.reschedules === 1 ? "" : "s"} waiting`,
       clearLabel: "No reschedule requests",
     },
-  ];
+  ].filter((item) => canAccessAdminHref(actor, item.href));
 
-  const scheduleLink = (
+  const scheduleLink = canAccessAdminHref(actor, "/schedule") ? (
     <Button nativeButton={false} variant="outline" size="sm" render={<Link href="/schedule" />}>
       Open schedule
     </Button>
-  );
+  ) : null;
 
   return (
     <AdminPageShell title="Dashboard" description="Operations first. Analytics stay secondary.">
       <DashboardBento>
-        <DashboardTile span="metric">
-          <p className="text-sm text-muted-foreground">Today&apos;s Sales</p>
-          <p className="mt-2 font-display text-2xl tabular-nums">
-            {formatPeso(data.todaysSalesPhp)}
-          </p>
-        </DashboardTile>
-        <DashboardTile span="metric">
-          <p className="text-sm text-muted-foreground">Pending Refunds</p>
-          <p className="mt-2 font-display text-2xl tabular-nums">
-            {formatPeso(data.pendingRefundsPhp)}
-          </p>
-        </DashboardTile>
-        <DashboardTile span="metric">
-          <p className="text-sm text-muted-foreground">Today&apos;s Occupancy</p>
-          <p className="mt-2 font-display text-2xl tabular-nums">
-            {formatRatioPercent(data.todaysOccupancy)}
-          </p>
-        </DashboardTile>
+        {canViewFinancials ? (
+          <DashboardTile span="metric">
+            <p className="text-sm text-muted-foreground">Today&apos;s Sales</p>
+            <p className="mt-2 font-display text-2xl tabular-nums">
+              {formatPeso(data.todaysSalesPhp)}
+            </p>
+          </DashboardTile>
+        ) : null}
+        {canViewFinancials ? (
+          <DashboardTile span="metric">
+            <p className="text-sm text-muted-foreground">Pending Refunds</p>
+            <p className="mt-2 font-display text-2xl tabular-nums">
+              {formatPeso(data.pendingRefundsPhp)}
+            </p>
+          </DashboardTile>
+        ) : null}
+        {canViewOperations ? (
+          <DashboardTile span="metric">
+            <p className="text-sm text-muted-foreground">Today&apos;s Occupancy</p>
+            <p className="mt-2 font-display text-2xl tabular-nums">
+              {formatRatioPercent(data.todaysOccupancy)}
+            </p>
+          </DashboardTile>
+        ) : null}
         {canViewCoachCost ? (
           <DashboardTile span="metric">
             <p className="text-sm text-muted-foreground">Coach Cost Today</p>
@@ -206,7 +216,7 @@ export function DashboardPage({
           </DashboardTile>
         ) : null}
 
-        <NeedsAttentionTile items={attention} />
+        {attention.length > 0 ? <NeedsAttentionTile items={attention} /> : null}
 
         <DashboardTile span="schedule" className="p-4 md:p-5">
           {data.todaysSchedule.length === 0 ? (
@@ -233,9 +243,11 @@ export function DashboardPage({
           )}
         </DashboardTile>
 
-        <AdminStatStrip stats={stats} />
+        {stats.length > 0 ? <AdminStatStrip stats={stats} /> : null}
 
-        {data.series?.gross_sales ? <SalesSeriesChart series={data.series.gross_sales} /> : null}
+        {canViewFinancials && data.series?.gross_sales ? (
+          <SalesSeriesChart series={data.series.gross_sales} />
+        ) : null}
       </DashboardBento>
     </AdminPageShell>
   );

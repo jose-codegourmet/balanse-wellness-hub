@@ -18,6 +18,7 @@ import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction
 import { adminNowIso } from "@/lib/clock";
 import { useCancelAdminSession } from "@/lib/query/mutations";
 import { adminCoachesQuery } from "@/lib/query/queries";
+import { useCanAdminAction, useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { editSessionHref, rosterHref } from "../../_lib/schedule-href";
@@ -37,7 +38,15 @@ export function SelectedSessionPanel({
 }) {
   const cancel = useCancelAdminSession();
   const { principal } = useMockPrincipal();
-  const coachesQuery = useQuery(adminCoachesQuery(principal));
+  const canReadCoaches = useCanAdminRoute("/coaches");
+  const coachesQuery = useQuery({
+    ...adminCoachesQuery(principal),
+    enabled: canReadCoaches,
+  });
+  const canCancelSession = useCanAdminAction("schedule-cancel");
+  const canUpdateSession = useCanAdminAction("schedule-update");
+  const canOpenRoster = useCanAdminAction("roster-read");
+  const canRecur = useCanAdminAction("schedule-recurrence");
   const assignedCoaches = session.coaches.map(
     (coach) => coachesQuery.data?.find((row) => row.id === coach.id) ?? coach,
   );
@@ -96,21 +105,25 @@ export function SelectedSessionPanel({
         <InventoryStat label="Available" value={inventory.available} />
       </dl>
       <div className="mt-4 flex flex-wrap gap-2">
-        <Button
-          nativeButton={false}
-          variant="outline"
-          render={<Link href={rosterHref(session.id)} />}
-        >
-          View Roster
-        </Button>
-        <Button
-          nativeButton={false}
-          variant="outline"
-          render={<Link href={editSessionHref(session.id)} />}
-        >
-          Edit
-        </Button>
-        {canCancel && !session.recurrenceRuleId ? (
+        {canOpenRoster ? (
+          <Button
+            nativeButton={false}
+            variant="outline"
+            render={<Link href={rosterHref(session.id)} />}
+          >
+            View Roster
+          </Button>
+        ) : null}
+        {canUpdateSession ? (
+          <Button
+            nativeButton={false}
+            variant="outline"
+            render={<Link href={editSessionHref(session.id)} />}
+          >
+            Edit
+          </Button>
+        ) : null}
+        {canCancel && canRecur && !session.recurrenceRuleId ? (
           <Button
             nativeButton={false}
             variant="outline"
@@ -120,7 +133,7 @@ export function SelectedSessionPanel({
             Make recurring
           </Button>
         ) : null}
-        {canCancel ? (
+        {canCancel && canCancelSession ? (
           <ConfirmAction
             triggerLabel="Cancel Session"
             title="Cancel this session?"

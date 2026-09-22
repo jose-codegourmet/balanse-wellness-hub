@@ -18,6 +18,7 @@ import type { AdminSidebarMobileProps } from "./AdminSidebarMobile.meta";
 
 export function AdminSidebarMobile({
   pathname,
+  items,
   snapshot = null,
   open: openProp,
   onOpenChange,
@@ -62,7 +63,7 @@ export function AdminSidebarMobile({
                 <SheetTitle className="sr-only">Admin navigation</SheetTitle>
                 <BrandLockup showTagline={false} />
               </SheetHeader>
-              <AdminSidebarNav pathname={pathname} snapshot={snapshot} />
+              <AdminSidebarNav items={items} pathname={pathname} snapshot={snapshot} />
               <AdminSidebarFooter onLogout={onLogout} onSettings={onSettings} />
             </SheetContent>
           </Sheet>

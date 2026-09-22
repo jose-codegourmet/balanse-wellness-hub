@@ -31,6 +31,7 @@ import { adminNowIso } from "@/lib/clock";
 import { useApproveAdminReschedule, useRejectAdminReschedule } from "@/lib/query/mutations";
 import { adminBookingsQuery, adminReschedulesInfiniteQuery } from "@/lib/query/queries";
 import { checkCanApproveReschedule } from "@/modules/admin/forms/session/session-form.schema";
+import { AdminCan } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
@@ -237,43 +238,45 @@ function RescheduleRequestCard({
           </div>
         }
         actions={
-          <div className="flex w-full min-w-0 flex-col gap-2">
-            <div className="flex flex-wrap gap-2">
-              {canApprove ? (
-                approveTrigger
-              ) : (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger render={<span className="inline-flex max-w-full" />}>
-                      {approveTrigger}
-                    </TooltipTrigger>
-                    <TooltipContent>{blockReason}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-              <ConfirmAction
-                triggerLabel="Reject"
-                title="Reject this reschedule request?"
-                description={stamp}
-                variant="outline"
-                requireReason
-                reasonLabel="Reason"
-                reasonPlaceholder="Tell the customer why this request is rejected."
-                disabled={busy || leaving}
-                onConfirm={(adminReason) =>
-                  run(
-                    () =>
-                      reject.mutateAsync({
-                        bookingId: row.id,
-                        reason: adminReason ?? "",
-                      }),
-                    "reschedule.rejected",
-                  )
-                }
-              />
+          <AdminCan action="reschedules-manage">
+            <div className="flex w-full min-w-0 flex-col gap-2">
+              <div className="flex flex-wrap gap-2">
+                {canApprove ? (
+                  approveTrigger
+                ) : (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger render={<span className="inline-flex max-w-full" />}>
+                        {approveTrigger}
+                      </TooltipTrigger>
+                      <TooltipContent>{blockReason}</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                <ConfirmAction
+                  triggerLabel="Reject"
+                  title="Reject this reschedule request?"
+                  description={stamp}
+                  variant="outline"
+                  requireReason
+                  reasonLabel="Reason"
+                  reasonPlaceholder="Tell the customer why this request is rejected."
+                  disabled={busy || leaving}
+                  onConfirm={(adminReason) =>
+                    run(
+                      () =>
+                        reject.mutateAsync({
+                          bookingId: row.id,
+                          reason: adminReason ?? "",
+                        }),
+                      "reschedule.rejected",
+                    )
+                  }
+                />
+              </div>
+              {!canApprove ? <p className="text-xs text-muted-foreground">{blockReason}</p> : null}
             </div>
-            {!canApprove ? <p className="text-xs text-muted-foreground">{blockReason}</p> : null}
-          </div>
+          </AdminCan>
         }
       />
     </div>

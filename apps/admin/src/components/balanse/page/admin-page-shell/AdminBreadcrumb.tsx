@@ -12,6 +12,8 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment } from "react";
+import { canAccessAdminHref } from "@/lib/authorization/admin-access";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 import type { AdminBreadcrumbItem } from "./AdminPageShell.meta";
 
 function deriveTrail(pathname: string, recordName?: string): AdminBreadcrumbItem[] {
@@ -37,7 +39,11 @@ export function AdminBreadcrumb({
   recordName?: string;
 }) {
   const pathname = usePathname() ?? "";
-  const trail = items && items.length > 0 ? items : deriveTrail(pathname, recordName);
+  const actor = useStaffActor();
+  const trail = (items && items.length > 0 ? items : deriveTrail(pathname, recordName)).map(
+    (item) =>
+      item.href && !canAccessAdminHref(actor, item.href) ? { ...item, href: undefined } : item,
+  );
   if (trail.length === 0) return null;
 
   return (

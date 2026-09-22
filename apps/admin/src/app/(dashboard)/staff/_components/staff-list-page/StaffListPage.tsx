@@ -8,7 +8,7 @@ import {
   staffStatusLabel,
 } from "@balanse/domain";
 import { Badge, Button, FeedbackState } from "@balanse/ui";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -16,14 +16,24 @@ import { CoachOption } from "@/components/balanse/coach/coach-option/CoachOption
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { adminCoachesQuery, adminStaffQuery } from "@/lib/query/queries";
+import {
+  AdminCan,
+  useCanAdminAction,
+  useCanAdminRoute,
+} from "@/modules/authorization/useAdminAccess";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export type StaffListPageProps = { empty?: boolean };
 
 export function StaffListPage({ empty }: StaffListPageProps) {
   const { principal } = useMockPrincipal();
+  const canManageStaff = useCanAdminAction("staff-manage");
   const query = useSuspenseQuery(adminStaffQuery(principal));
-  const coachesQuery = useSuspenseQuery(adminCoachesQuery(principal));
+  const canReadCoaches = useCanAdminRoute("/coaches");
+  const coachesQuery = useQuery({
+    ...adminCoachesQuery(principal),
+    enabled: canReadCoaches,
+  });
   const rows = empty ? [] : query.data;
 
   const columns = useMemo<ColumnDef<AdminStaff, unknown>[]>(
@@ -90,21 +100,23 @@ export function StaffListPage({ empty }: StaffListPageProps) {
         meta: { mobile: { role: "hidden" } },
         cell: ({ row }) => (
           <Link className="underline underline-offset-4" href={`/staff/${row.original.id}`}>
-            View/Edit
+            {canManageStaff ? "View/Edit" : "View"}
           </Link>
         ),
       },
     ],
-    [coachesQuery.data],
+    [canManageStaff, coachesQuery.data],
   );
 
   return (
     <AdminPageShell
       title="Staff Management"
       actions={
-        <Button nativeButton={false} render={<Link href="/staff/new" />}>
-          Add Staff
-        </Button>
+        <AdminCan action="staff-manage">
+          <Button nativeButton={false} render={<Link href="/staff/new" />}>
+            Add Staff
+          </Button>
+        </AdminCan>
       }
     >
       <p className="max-w-2xl text-sm text-muted-foreground">{ADMIN_ROLE_CAPABILITY_NOTE}</p>

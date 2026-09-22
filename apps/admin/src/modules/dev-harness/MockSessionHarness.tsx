@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { canAccessAdminHref } from "@/lib/authorization/admin-access";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { useSwitchAuthorizedIdentity } from "@/modules/session/useSwitchAuthorizedIdentity";
 
@@ -84,7 +85,8 @@ type Scenario = "normal" | "schedule-failed" | "session-became-full" | "empty-ad
 
 export function MockSessionHarness() {
   const enabled = isMockHarnessEnabled();
-  const { principal } = useMockPrincipal();
+  const { principal, actor } = useMockPrincipal();
+  const permittedQueues = QUEUES.filter((queue) => canAccessAdminHref(actor, queue.href));
   const switchIdentity = useSwitchAuthorizedIdentity();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -257,7 +259,7 @@ export function MockSessionHarness() {
               }}
             >
               <option value="">Jump to…</option>
-              {QUEUES.map((queue) => (
+              {permittedQueues.map((queue) => (
                 <option key={queue.id} value={queue.href}>
                   {queue.label}
                 </option>

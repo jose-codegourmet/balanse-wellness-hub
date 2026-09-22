@@ -1,10 +1,12 @@
 "use client";
 
+import { DASHBOARD_READ_PERMISSIONS, hasAnyPermission } from "@balanse/domain";
 import { BrandLockup, TooltipProvider } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useId } from "react";
 import { cn } from "@/components/jabkit/lib/cn";
 import { adminDashboardQuery } from "@/lib/query/queries";
+import { usePermittedAdminNavItems } from "@/modules/authorization/useAdminAccess";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { AdminSidebarFooter } from "../admin-sidebar-footer/AdminSidebarFooter";
 import { AdminSidebarMobile } from "../admin-sidebar-mobile/AdminSidebarMobile";
@@ -27,10 +29,11 @@ export function AdminSidebar({
   ...props
 }: AdminSidebarProps) {
   const navId = useId();
-  const { principal } = useMockPrincipal();
+  const { principal, actor } = useMockPrincipal();
+  const navItems = usePermittedAdminNavItems();
   const dashboardQuery = useQuery({
     ...adminDashboardQuery(principal),
-    enabled: snapshotProp === undefined,
+    enabled: snapshotProp === undefined && hasAnyPermission(actor, DASHBOARD_READ_PERMISSIONS),
   });
 
   const { collapsed, toggleCollapsed } = useSidebarCollapsed({
@@ -49,6 +52,7 @@ export function AdminSidebar({
         onSettings={onSettings}
         open={mobileOpen}
         pathname={pathname}
+        items={navItems}
         snapshot={snapshot}
       />
       <aside
@@ -75,7 +79,13 @@ export function AdminSidebar({
           )}
           <AdminSidebarToggle collapsed={collapsed} controlsId={navId} onToggle={toggleCollapsed} />
         </div>
-        <AdminSidebarNav collapsed={collapsed} id={navId} pathname={pathname} snapshot={snapshot} />
+        <AdminSidebarNav
+          collapsed={collapsed}
+          id={navId}
+          items={navItems}
+          pathname={pathname}
+          snapshot={snapshot}
+        />
         <AdminSidebarFooter collapsed={collapsed} onLogout={onLogout} onSettings={onSettings} />
       </aside>
     </TooltipProvider>

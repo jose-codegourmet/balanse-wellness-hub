@@ -27,6 +27,7 @@ import {
   type StaffFormValues,
   staffFormSchema,
 } from "@/modules/admin/forms/staff/staff-form.schema";
+import { useCanAdminAction } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import type { StaffDetailPageProps } from "./StaffDetailPage.schema";
@@ -35,6 +36,7 @@ export function StaffDetailPage({ staffId }: StaffDetailPageProps) {
   const router = useRouter();
   const isNew = staffId === "new";
   const { principal } = useMockPrincipal();
+  const canManageStaff = useCanAdminAction("staff-manage");
   const query = useQuery(adminStaffQuery(principal));
   const upsert = useUpsertAdminStaff();
   const disable = useDisableAdminStaff();
@@ -102,6 +104,7 @@ export function StaffDetailPage({ staffId }: StaffDetailPageProps) {
       >
         <StaffFormFields
           isNew={isNew}
+          canManage={canManageStaff}
           coachId={existing?.coachId ?? null}
           status={existing?.status ?? "active"}
           onDisable={async () => {
@@ -121,11 +124,13 @@ export function StaffDetailPage({ staffId }: StaffDetailPageProps) {
 
 function StaffFormFields({
   isNew,
+  canManage,
   coachId,
   status,
   onDisable,
 }: {
   isNew: boolean;
+  canManage: boolean;
   coachId: string | null;
   status: "active" | "disabled";
   onDisable: () => Promise<void>;
@@ -172,21 +177,25 @@ function StaffFormFields({
         </FormField>
         <StaffCoachProfileLink coachId={coachId} />
       </FormSection>
-      <FormActions
-        submitLabel="Save"
-        cancelHref="/staff"
-        destructive={
-          isNew ? undefined : (
-            <ConfirmAction
-              triggerLabel="Disable Access"
-              title="Disable staff access?"
-              description="This staff account will no longer reach the admin portal. A linked coach goes inactive; assigned sessions stay in history."
-              variant="outline"
-              onConfirm={onDisable}
-            />
-          )
-        }
-      />
+      {canManage ? (
+        <FormActions
+          submitLabel="Save"
+          cancelHref="/staff"
+          destructive={
+            isNew ? undefined : (
+              <ConfirmAction
+                triggerLabel="Disable Access"
+                title="Disable staff access?"
+                description="This staff account will no longer reach the admin portal. A linked coach goes inactive; assigned sessions stay in history."
+                variant="outline"
+                onConfirm={onDisable}
+              />
+            )
+          }
+        />
+      ) : (
+        <FormActions submitLabel="Save" cancelHref="/staff" hideSubmit />
+      )}
     </>
   );
 }
