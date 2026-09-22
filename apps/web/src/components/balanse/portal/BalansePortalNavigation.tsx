@@ -10,6 +10,7 @@ import {
   Flower2,
   LogOut,
   Menu,
+  Package,
   UserRound,
   X,
 } from "lucide-react";
@@ -36,6 +37,7 @@ import "@/components/balanse/portal/portal.css";
 const icons = {
   home: CalendarCheck2,
   schedule: CalendarDays,
+  packages: Package,
   profile: UserRound,
   achievements: Flower2,
 };

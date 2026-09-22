@@ -55,8 +55,8 @@
 - Automated refunds
 - Store credit
 - Wallet/balance
-- Membership packages
-- Bundled class passes
+- Membership packages / monthly plans
+- Transferable or unlimited class passes beyond the session-package model in #290
 - Coach self-service schedule management
 - Full coach portal
 - Automated recurring-class generation

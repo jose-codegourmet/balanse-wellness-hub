@@ -30,6 +30,10 @@ export const adminKeys = {
   cancellations: { all: (role: MockRole) => [...adminKeys.all(role), "cancellations"] as const },
   reschedules: { all: (role: MockRole) => [...adminKeys.all(role), "reschedules"] as const },
   classes: { all: (role: MockRole) => [...adminKeys.all(role), "classes"] as const },
+  bundles: {
+    all: (role: MockRole) => [...adminKeys.all(role), "bundles"] as const,
+    acquisitions: (role: MockRole) => [...adminKeys.bundles.all(role), "acquisitions"] as const,
+  },
   coaches: { all: (role: MockRole) => [...adminKeys.all(role), "coaches"] as const },
   sessions: { all: (role: MockRole) => [...adminKeys.all(role), "sessions"] as const },
   staff: { all: (role: MockRole) => [...adminKeys.all(role), "staff"] as const },

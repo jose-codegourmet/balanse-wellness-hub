@@ -16,6 +16,8 @@
 
 **2026-09-22 product amendment — recurring schedules (#288):** Admin schedule automation now supports duplicating an inclusive range of up to 63 days and creating a bounded weekly series from one existing session. Generated occurrences are ordinary sessions, default to draft, skip exact class/start-time matches, and capture current coach rates as new immutable snapshots. Holiday exceptions and series-wide mutation remain future scope. See `openspec/specs/recurring-schedules.md`.
 
+**2026-09-22 product amendment — session packages (#290):** Customers can hold reusable session entitlements (“packages”). Admin configures definitions; customers claim free packages or request paid ones for manual review; booking can hold one credit with one slot. Credits are not cash, store credit, or a membership. Backend schema/RLS/HTTP remain a WIRE follow-up. See `openspec/specs/session-bundles.md`.
+
 ---
 
 ## Table of contents
@@ -2391,7 +2393,7 @@ The intended mechanics: every mocked screen reads through the `MockDataAdapter` 
 | **WIRE-012** | Serve coach and marketing imagery from Supabase Storage instead of bundled assets | FE | `ASSET-030`, `FE-SHR-004` | Bundled asset paths in the manifest |
 | **WIRE-013** | End-to-end verification of the canonical loop and the edge cases in `16-edge-cases.md` | FE+BE | all above | — |
 
-**Deliberately excluded from the wiring phase as well** (still future scope per `docs/business-requirements/19-future-scope.md`): payment gateways, automated verification/refunds, memberships/packages/credits, recurrence exceptions and series-wide mutation, a coach portal, Resend email notifications, SMS/push, multi-branch, and admin-editable hold/cutoff settings.
+**Deliberately excluded from the wiring phase as well** (still future scope per `docs/business-requirements/19-future-scope.md`): payment gateways, automated verification/refunds, memberships/wallets, recurrence exceptions and series-wide mutation, a coach portal, Resend email notifications, SMS/push, multi-branch, and admin-editable hold/cutoff settings. Session packages (#290) are mock-first; Prisma/RLS/HTTP WIRE is a dedicated follow-up.
 
 ---
 

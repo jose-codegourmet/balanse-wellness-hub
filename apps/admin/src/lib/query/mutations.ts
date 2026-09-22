@@ -310,6 +310,75 @@ export function useUpdateAdminSettings() {
   });
 }
 
+function bundleKeys(role: MockRole): QueryKey[] {
+  return [adminKeys.bundles.all(role), adminKeys.customers.all(role)];
+}
+
+export function useUpsertAdminBundle() {
+  const role = useAdminRole();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["upsertAdminBundle"]>[0]) =>
+      getMockAdapter().upsertAdminBundle(input),
+    onSuccess: () => invalidateForRole(queryClient, bundleKeys(role)),
+  });
+}
+
+export function useSetAdminBundleStatus() {
+  const role = useAdminRole();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      status,
+    }: {
+      id: string;
+      status: Parameters<ReturnType<typeof getMockAdapter>["setAdminBundleStatus"]>[1];
+    }) => getMockAdapter().setAdminBundleStatus(id, status),
+    onSuccess: () => invalidateForRole(queryClient, bundleKeys(role)),
+  });
+}
+
+export function useGrantCustomerBundle() {
+  const role = useAdminRole();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["grantCustomerBundle"]>[0]) =>
+      getMockAdapter().grantCustomerBundle(input),
+    onSuccess: () => invalidateForRole(queryClient, bundleKeys(role)),
+  });
+}
+
+export function useRevokeCustomerEntitlement() {
+  const role = useAdminRole();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      input: Parameters<ReturnType<typeof getMockAdapter>["revokeCustomerEntitlement"]>[0],
+    ) => getMockAdapter().revokeCustomerEntitlement(input),
+    onSuccess: () => invalidateForRole(queryClient, bundleKeys(role)),
+  });
+}
+
+export function useApproveBundleAcquisition() {
+  const role = useAdminRole();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => getMockAdapter().approveBundleAcquisition(id),
+    onSuccess: () => invalidateForRole(queryClient, bundleKeys(role)),
+  });
+}
+
+export function useRejectBundleAcquisition() {
+  const role = useAdminRole();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+      getMockAdapter().rejectBundleAcquisition(id, reason),
+    onSuccess: () => invalidateForRole(queryClient, bundleKeys(role)),
+  });
+}
+
 export function usePromotePolicyVersion() {
   const role = useAdminRole();
   const queryClient = useQueryClient();

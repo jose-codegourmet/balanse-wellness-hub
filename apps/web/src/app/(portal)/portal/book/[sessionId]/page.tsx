@@ -19,9 +19,10 @@ export default async function Page({
   const { intent } = await searchParams;
   const principal = await getServerMockPrincipal();
   const adapter = getMockAdapter();
-  const [session, profile] = await Promise.all([
+  const [session, profile, entitlements] = await Promise.all([
     adapter.getPublicSession(sessionId),
     adapter.getMe(principal.customerId),
+    adapter.getEligibleEntitlements(principal.customerId, sessionId),
   ]);
 
   if (!session || !profile) {
@@ -39,6 +40,7 @@ export default async function Page({
     <BookingForm
       session={session}
       profile={profile}
+      entitlements={entitlements}
       intent={intent === "waitlist" ? "waitlist" : "reserve"}
     />
   );

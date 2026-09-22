@@ -79,14 +79,17 @@ The application should record refund-related state/history.
 
 ## No store credit
 
-**CONFIRMED:** MVP refunds are refunds only.
+**CONFIRMED:** cash refunds are refunds only.
 
 Do not implement:
 
 - wallet credit,
-- class credits,
 - store balance,
-- vouchers as a replacement for refund.
+- vouchers as a replacement for a cash refund.
+
+Session packages (#290) are a separate entitlement ledger. Cash is never refunded into package credits. Restoring a package redemption returns only the same session entitlement.
+
+Paid packages follow the same manual-review principle as GCash: no automated gateway, and credits activate only after studio approval.
 
 ## Future
 

@@ -27,6 +27,21 @@ export function PaymentMethodPage({
     booking.status === "EXPIRED" ||
     isHoldExpired(booking.holdExpiresAt, booking.session.startsAt, MOCK_NOW_ISO);
 
+  if (booking.entitlementId) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-12">
+        <h1 className="font-display text-3xl">Package applied</h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          {booking.packageName ?? "Your package"} reserved one session. This is not a cash payment.
+          The studio still confirms the spot.
+        </p>
+        <Button className="mt-6" onClick={() => router.push(`/portal/bookings/${booking.id}`)}>
+          Back to booking
+        </Button>
+      </div>
+    );
+  }
+
   if (status === "submitting") {
     return <LocalizedSkeleton lines={4} label="Saving payment method" />;
   }

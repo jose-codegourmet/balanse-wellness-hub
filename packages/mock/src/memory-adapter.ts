@@ -39,6 +39,33 @@ import {
   validateSessionCapacity,
 } from "@balanse/domain";
 import type { AdminPaymentQueueQuery, AdminRequestQueueQuery, MockDataAdapter } from "./adapter";
+import type { BundleState } from "./bundle-engine";
+import {
+  approveAcquisition,
+  claimFreeBundle,
+  consumeCredit,
+  grantCustomerBundle,
+  holdCredit,
+  listEligible,
+  listPublishedBundles,
+  markPromotionBlocked,
+  materializeEntitlement,
+  moveRedemption,
+  rejectAcquisition,
+  requestPaidBundle,
+  restoreCredit,
+  revokeEntitlement,
+  setBundleStatus,
+  toPublicBundle,
+  upsertBundle,
+} from "./bundle-engine";
+import {
+  bundleAcquisitions,
+  bundleAudits,
+  bundleDefinitions,
+  bundleRedemptions,
+  customerEntitlements,
+} from "./bundle-fixtures";
 import { deriveGrossSalesSeries } from "./dashboard-series";
 import {
   customers,
@@ -141,6 +168,61 @@ export function createMemoryAdapter(): MockDataAdapter {
   let coaches = seedCoaches.map((c) => clone(c));
   let staffRows = seedStaff.map((s) => clone(s));
   let settings = clone(seedSettings);
+  const bundleState: BundleState = {
+    bundles: clone(bundleDefinitions),
+    acquisitions: clone(bundleAcquisitions),
+    entitlements: clone(customerEntitlements),
+    redemptions: clone(bundleRedemptions),
+    audits: clone(bundleAudits),
+  };
+
+  function decorateBooking(booking: CustomerBooking): CustomerBooking {
+    const redemption = bundleState.redemptions.find(
+      (row) => row.bookingId === booking.id && row.status !== "RESTORED",
+    );
+    if (!redemption) return booking;
+    const entitlement = bundleState.entitlements.find((row) => row.id === redemption.entitlementId);
+    booking.entitlementId = redemption.entitlementId;
+    booking.packageName = entitlement?.snapshot.name ?? booking.packageName ?? null;
+    return booking;
+  }
+
+  function promoteWaitlisted(booking: CustomerBooking): CustomerBooking {
+    const session = sessions.find((row) => row.id === booking.sessionId);
+    if (!session) throw new Error("Session not found");
+    const intendedId = booking.intendedEntitlementId;
+    if (intendedId) {
+      try {
+        holdCredit(bundleState, {
+          customerId: booking.customerId,
+          entitlementId: intendedId,
+          booking,
+          session: asPublic(session),
+        });
+        booking.entitlementId = intendedId;
+        booking.intendedEntitlementId = null;
+        booking.packagePromotionBlocked = false;
+        booking.status = "PAYMENT_SUBMITTED";
+        booking.paymentStatus = "VERIFIED";
+        booking.holdExpiresAt = null;
+        const entitlement = bundleState.entitlements.find((row) => row.id === intendedId);
+        booking.packageName = entitlement?.snapshot.name ?? booking.packageName ?? null;
+        return decorateBooking(booking);
+      } catch (error) {
+        markPromotionBlocked(
+          bundleState,
+          booking,
+          error instanceof Error
+            ? error.message
+            : "The intended package could not be reserved. The customer stays on the waitlist.",
+        );
+        return booking;
+      }
+    }
+    booking.status = "HELD_AWAITING_PAYMENT";
+    booking.holdExpiresAt = computeHoldExpiresAt(MOCK_NOW_ISO, session.startsAt).toISOString();
+    return booking;
+  }
 
   function slugPerson(name: string): string {
     return (
@@ -301,6 +383,15 @@ export function createMemoryAdapter(): MockDataAdapter {
     getPublicClasses: () =>
       applyMockEffects(() => classes.filter((c) => c.active).map((c) => clone(c))),
     getPublicContent: () => applyMockEffects(() => clone(publicContent)),
+    getPublicBundles: () => applyMockEffects(() => clone(listPublishedBundles(bundleState))),
+    getPublicBundle: (slugOrId) =>
+      applyMockEffects(() => {
+        const bundle = bundleState.bundles.find(
+          (row) => row.slug === slugOrId || row.id === slugOrId,
+        );
+        if (bundle?.status !== "PUBLISHED") return null;
+        return clone(toPublicBundle(bundle));
+      }),
 
     getMe: (customerId) =>
       applyMockEffects(() => profiles.find((p) => p.id === customerId) ?? null),
@@ -327,39 +418,111 @@ export function createMemoryAdapter(): MockDataAdapter {
         return clone(profile);
       }),
 
-    createBooking: ({ customerId, sessionId, policyAcceptances }) =>
+    getMyEntitlements: (customerId) =>
+      applyMockEffects(() =>
+        bundleState.entitlements
+          .filter((row) => row.customerId === customerId)
+          .map((row) => clone(materializeEntitlement(bundleState, row))),
+      ),
+    getMyEntitlement: (customerId, entitlementId) =>
+      applyMockEffects(() => {
+        const entitlement = bundleState.entitlements.find(
+          (row) => row.id === entitlementId && row.customerId === customerId,
+        );
+        return entitlement ? clone(materializeEntitlement(bundleState, entitlement)) : null;
+      }),
+    getMyAcquisitions: (customerId) =>
+      applyMockEffects(() =>
+        bundleState.acquisitions
+          .filter((row) => row.customerId === customerId)
+          .map((row) => clone(row)),
+      ),
+    getEligibleEntitlements: (customerId, sessionId) =>
+      applyMockEffects(() => {
+        const session = sessions.find((s) => s.id === sessionId);
+        if (!session) return [];
+        return clone(listEligible(bundleState, customerId, asPublic(session)));
+      }),
+    getEntitlementRedemptions: (customerId, entitlementId) =>
+      applyMockEffects(() => {
+        const entitlement = bundleState.entitlements.find(
+          (row) => row.id === entitlementId && row.customerId === customerId,
+        );
+        if (!entitlement) return [];
+        return bundleState.redemptions
+          .filter((row) => row.entitlementId === entitlementId)
+          .map((row) => clone(row));
+      }),
+    claimFreeBundle: (input) => applyMockEffects(() => clone(claimFreeBundle(bundleState, input))),
+    requestPaidBundle: (input) =>
+      applyMockEffects(() => clone(requestPaidBundle(bundleState, input))),
+    createBooking: ({
+      customerId,
+      sessionId,
+      policyAcceptances,
+      entitlementId,
+      intendedEntitlementId,
+    }) =>
       applyMockEffects(() => {
         const session = sessions.find((s) => s.id === sessionId);
         if (!session) throw new Error("Session not found");
         const publicSession = asPublic(session);
         const waitlisted = session.remainingSlots <= 0;
-        const created = {
-          id: `booking-new-${sessionId}`,
+        const packageId = entitlementId ?? intendedEntitlementId ?? null;
+        const entitlement = packageId
+          ? bundleState.entitlements.find((row) => row.id === packageId)
+          : null;
+        const created: CustomerBooking = {
+          id: `booking-new-${sessionId}-${customerId}`,
           customerId,
           customerName:
             profiles.find((profile) => profile.id === customerId)?.fullName ?? "Studio guest",
           sessionId,
-          status: waitlisted ? ("WAITLISTED" as const) : ("HELD_AWAITING_PAYMENT" as const),
+          status: waitlisted
+            ? "WAITLISTED"
+            : packageId
+              ? "PAYMENT_SUBMITTED"
+              : "HELD_AWAITING_PAYMENT",
           paymentMethod: null,
-          paymentStatus: "NONE" as const,
-          refundStatus: "NOT_APPLICABLE" as const,
-          holdExpiresAt: waitlisted
-            ? null
-            : computeHoldExpiresAt(MOCK_NOW_ISO, session.startsAt).toISOString(),
+          paymentStatus: packageId && !waitlisted ? "VERIFIED" : "NONE",
+          refundStatus: "NOT_APPLICABLE",
+          holdExpiresAt:
+            waitlisted || packageId
+              ? null
+              : computeHoldExpiresAt(MOCK_NOW_ISO, session.startsAt).toISOString(),
           createdAt: MOCK_NOW_ISO,
           session: publicSession,
+          entitlementId: waitlisted ? null : packageId,
+          intendedEntitlementId: waitlisted ? packageId : null,
+          packageName: entitlement?.snapshot.name ?? null,
         };
         if (policyAcceptances?.length) {
           acceptances[customerId] = [...(acceptances[customerId] ?? []), ...policyAcceptances];
         }
+        if (waitlisted) {
+          bookings = [created, ...bookings];
+          return clone(created);
+        }
+        if (packageId) {
+          holdCredit(bundleState, {
+            customerId,
+            entitlementId: packageId,
+            booking: created,
+            session: publicSession,
+          });
+        }
         bookings = [created, ...bookings];
-        return clone(created);
+        return clone(decorateBooking(created));
       }),
     getBookings: (customerId) =>
       applyMockEffects(() =>
-        bookings.filter((b) => b.customerId === customerId).map((b) => clone(b)),
+        bookings.filter((b) => b.customerId === customerId).map((b) => clone(decorateBooking(b))),
       ),
-    getBooking: (id) => applyMockEffects(() => clone(findBooking(id))),
+    getBooking: (id) =>
+      applyMockEffects(() => {
+        const booking = findBooking(id);
+        return booking ? clone(decorateBooking(booking)) : null;
+      }),
     joinWaitlist: (bookingId) =>
       applyMockEffects(() => {
         const booking = findBooking(bookingId);
@@ -440,7 +603,8 @@ export function createMemoryAdapter(): MockDataAdapter {
         booking.status = "CONFIRMED";
         booking.paymentStatus =
           booking.paymentStatus === "NONE" ? "VERIFIED" : booking.paymentStatus;
-        return clone(booking);
+        consumeCredit(bundleState, booking.id);
+        return clone(decorateBooking(booking));
       }),
     rejectAdminBooking: (id, reason) =>
       applyMockEffects(() => {
@@ -449,7 +613,8 @@ export function createMemoryAdapter(): MockDataAdapter {
         booking.status = "REJECTED";
         booking.paymentStatus = "REJECTED";
         booking.rejectReason = reason;
-        return clone(booking);
+        restoreCredit(bundleState, booking.id, reason);
+        return clone(decorateBooking(booking));
       }),
     getAdminPayments: ((query?: AdminPaymentQueueQuery) =>
       applyMockEffects(() => {
@@ -726,7 +891,12 @@ export function createMemoryAdapter(): MockDataAdapter {
         booking.status = "CANCELLED";
         const session = sessions.find((s) => s.id === booking.sessionId);
         if (session) session.remainingSlots += 1;
-        return clone(booking);
+        restoreCredit(bundleState, booking.id, "Eligible cancellation completed");
+        const nextWaitlisted = bookings
+          .filter((row) => row.sessionId === booking.sessionId && row.status === "WAITLISTED")
+          .sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0];
+        if (nextWaitlisted) promoteWaitlisted(nextWaitlisted);
+        return clone(decorateBooking(booking));
       }),
     rejectAdminCancellation: (bookingId, reason) =>
       applyMockEffects(() => {
@@ -764,7 +934,9 @@ export function createMemoryAdapter(): MockDataAdapter {
         booking.session = asPublic(target);
         booking.status = "CONFIRMED";
         target.remainingSlots = Math.max(0, target.remainingSlots - 1);
-        return clone(booking);
+        moveRedemption(bundleState, booking, asPublic(target));
+        consumeCredit(bundleState, booking.id);
+        return clone(decorateBooking(booking));
       }),
     rejectAdminReschedule: (bookingId, reason) =>
       applyMockEffects(() => {
@@ -812,14 +984,16 @@ export function createMemoryAdapter(): MockDataAdapter {
         const booking = findBooking(bookingId);
         if (!booking) throw new Error("Booking not found");
         booking.status = "CHECKED_IN";
-        return clone(booking);
+        consumeCredit(bundleState, booking.id);
+        return clone(decorateBooking(booking));
       }),
     markNoShow: (bookingId) =>
       applyMockEffects(() => {
         const booking = findBooking(bookingId);
         if (!booking) throw new Error("Booking not found");
         booking.status = "NO_SHOW";
-        return clone(booking);
+        consumeCredit(bundleState, booking.id);
+        return clone(decorateBooking(booking));
       }),
     getAdminReportsSales: () =>
       applyMockEffects(() => {
@@ -928,6 +1102,12 @@ export function createMemoryAdapter(): MockDataAdapter {
             (b) => b.paymentStatus !== "NONE" || b.refundStatus !== "NOT_APPLICABLE",
           ),
           policyAcceptances: clone(acceptances[id] ?? []),
+          entitlements: bundleState.entitlements
+            .filter((row) => row.customerId === id)
+            .map((row) => clone(materializeEntitlement(bundleState, row))),
+          acquisitions: bundleState.acquisitions
+            .filter((row) => row.customerId === id)
+            .map((row) => clone(row)),
         };
       }),
     getAdminSettings: () =>
@@ -1078,6 +1258,55 @@ export function createMemoryAdapter(): MockDataAdapter {
           };
         }
         return { ...snap, series };
+      }),
+    getAdminBundles: () => applyMockEffects(() => clone(bundleState.bundles)),
+    getAdminBundle: (id) =>
+      applyMockEffects(() => clone(bundleState.bundles.find((row) => row.id === id) ?? null)),
+    upsertAdminBundle: (input) => applyMockEffects(() => clone(upsertBundle(bundleState, input))),
+    setAdminBundleStatus: (id, status) =>
+      applyMockEffects(() => clone(setBundleStatus(bundleState, id, status))),
+    grantCustomerBundle: (input) =>
+      applyMockEffects(() => clone(grantCustomerBundle(bundleState, input))),
+    revokeCustomerEntitlement: (input) =>
+      applyMockEffects(() => clone(revokeEntitlement(bundleState, input))),
+    getAdminBundleAcquisitions: (status) =>
+      applyMockEffects(() =>
+        clone(bundleState.acquisitions.filter((row) => (status ? row.status === status : true))),
+      ),
+    approveBundleAcquisition: (id, actorId) =>
+      applyMockEffects(() => clone(approveAcquisition(bundleState, id, actorId))),
+    rejectBundleAcquisition: (id, reason, actorId) =>
+      applyMockEffects(() => clone(rejectAcquisition(bundleState, id, reason, actorId))),
+    getAdminCustomerEntitlements: (customerId) =>
+      applyMockEffects(() =>
+        bundleState.entitlements
+          .filter((row) => row.customerId === customerId)
+          .map((row) => clone(materializeEntitlement(bundleState, row))),
+      ),
+    getBundleAudit: (query) =>
+      applyMockEffects(() =>
+        clone(
+          bundleState.audits.filter((row) => {
+            if (query?.entitlementId && row.entitlementId !== query.entitlementId) return false;
+            if (query?.customerId && row.customerId !== query.customerId) return false;
+            if (query?.bundleId && row.bundleId !== query.bundleId) return false;
+            return true;
+          }),
+        ),
+      ),
+    expireHeldBooking: (bookingId) =>
+      applyMockEffects(() => {
+        const booking = findBooking(bookingId);
+        if (!booking) throw new Error("Booking not found");
+        booking.status = "EXPIRED";
+        restoreCredit(bundleState, booking.id, "Payment hold expired");
+        return clone(decorateBooking(booking));
+      }),
+    promoteWaitlistedBooking: (bookingId) =>
+      applyMockEffects(() => {
+        const booking = findBooking(bookingId);
+        if (!booking) throw new Error("Booking not found");
+        return clone(promoteWaitlisted(booking));
       }),
   };
 }

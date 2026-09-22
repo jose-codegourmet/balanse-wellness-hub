@@ -61,6 +61,7 @@ export const VALIDATION_ERROR_CODES = [
   "already_linked",
   "cannot_remove_active",
   "duplicate_value",
+  "already_exists",
   "developer_config_forbidden",
 ] as const;
 
@@ -115,6 +116,17 @@ export const FIELD_CONSTRAINTS = {
     bookable: { required: false, type: "boolean" },
     status: { required: false, enum: ["DRAFT", "PUBLISHED", "CANCELLED"] },
     coachAssignments: { adminOnly: true, readOnly: true, snapshot: true },
+  },
+  bundle: {
+    name: { required: true, max: 80 },
+    slug: { required: true, max: 80, unique: true },
+    summary: { required: true, max: 200 },
+    description: { required: true, max: 4000, format: "markdown" },
+    sessionCredits: { required: true, min: 1, max: 365 },
+    pricePhp: { required: true, min: 0, unit: MONEY_UNIT },
+    validityDays: { required: false, min: 1, max: 730 },
+    perCustomerLimit: { required: false, min: 1, max: 20 },
+    status: { required: true, enum: ["DRAFT", "PUBLISHED", "ARCHIVED"] },
   },
   settings: {
     businessName: { required: true, max: 80 },

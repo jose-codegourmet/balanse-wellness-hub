@@ -6,6 +6,7 @@
 3. Contact
 4. FAQs
 5. Coaches
+5a. Packages
 
 ## Customer Auth
 6. Login
@@ -23,6 +24,7 @@
 16. Booking Detail
 17. Cancellation Request
 18. Reschedule Request
+18a. Packages / owned entitlements
 
 ## Admin Portal
 19. Login
@@ -38,6 +40,7 @@
 29. Reschedule Requests
 30. Session Roster / Check-In
 31. Settings
+31a. Bundle / package management
 
 ## Added because the business flows require them
 Admin Dashboard, Coach Management, Booking Management, Payment Review, Cancellation Requests, Reschedule Requests, Session Roster/Check-In, Settings, and the customer booking/payment/request detail screens.

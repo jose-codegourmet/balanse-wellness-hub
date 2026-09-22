@@ -12,6 +12,8 @@
 - No history
 - Proof upload failed
 - Reservation expired
+- No packages yet
+- No packages published
 
 ## Admin
 - No pending payments
@@ -21,5 +23,7 @@
 - No sessions scheduled
 - No staff found
 - No payment QRs uploaded
+- No packages yet
+- No package reviews
 
 Prefer localized skeletons/errors over full-page spinners.

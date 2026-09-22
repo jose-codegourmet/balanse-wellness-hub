@@ -1,4 +1,4 @@
-# API routes (BE-030–BE-043 + BE-050–056)
+# API routes (BE-030–BE-043 + BE-050–058)
 
 HTTP handlers live in `@balanse/api` and are mounted on `apps/web` at `/api/*` (`src/app/api/[[...path]]/route.ts`). Screens stay mock-only this phase — no FE `fetch` to these routes (`WIRE-*` later).
 
@@ -9,6 +9,10 @@ Contract inventory: `packages/db/contracts/routes.ts`. OpenAPI: `packages/db/con
 `POST /api/admin/sessions/duplicate` copies non-cancelled sessions from an inclusive source range of at most 63 days to a new start date. `POST /api/admin/sessions/{id}/recurrence` stores a bounded weekly rule (one or more weekdays, at most one year) and eagerly creates ordinary session rows. Both endpoints are admin-only, default generated sessions to `DRAFT`, skip exact class/start-time matches, reject inactive class/coach references, capture current coach rates, and never copy bookings.
 
 Authorisation matches RLS (`docs/backend/rls-policies.md`): Prisma uses the service/owner role and **bypasses RLS**, so every handler re-checks the caller.
+
+## Session packages (BE-058 / #290)
+
+Inventory only. Handlers are not implemented. Mock adapter methods in `@balanse/mock` are the current behavior source. See `docs/backend/session-bundles.md`.
 
 ## Customer vs admin
 
