@@ -168,7 +168,13 @@ export async function patchRole(deps: ApiDeps, req: Request, id: string): Promis
   if (name && customRoleIdentityConflicts(name, existing.key)) {
     throw new ApiError(400, "reserved_role", "Custom roles cannot reuse a built-in name or key.");
   }
-  if (permissionKeys) assertCanGrantPermissions(actor, permissionKeys);
+  if (permissionKeys) {
+    const currentKeys = resolveRolePermissions({
+      allAccess: existing.allAccess,
+      permissionKeys: existing.permissions.map((row) => row.permission.key as never),
+    });
+    assertCanGrantPermissions(actor, [...new Set([...currentKeys, ...permissionKeys])]);
+  }
   const before = presentRole(existing);
   const updated = await deps.prisma.$transaction(async (tx) => {
     if (permissionKeys) {

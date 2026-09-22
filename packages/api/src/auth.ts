@@ -15,7 +15,12 @@ import {
 import { type AdminApiActor, type ApiActor, type ApiDeps, staffAuthorizationOf } from "./deps";
 import { ApiError } from "./errors";
 import { searchParams } from "./http";
-import { assertLastSuperAdminSafe, dbOwnsSession } from "./sql";
+import {
+  assertLastSuperAdminSafe,
+  dbHasAnyPermission,
+  dbLinkedCoachId,
+  dbOwnsSession,
+} from "./sql";
 
 const staffActorInclude = {
   coach: { select: { id: true } },
@@ -39,6 +44,8 @@ export async function resolveActor(deps: ApiDeps, req: Request): Promise<ApiActo
   const role = staff?.roleDefinition;
   if (staff && role && staff.status === "ACTIVE" && role.status === "ACTIVE") {
     const permissions = filterPermissionKeys(role.permissions.map((row) => row.permission.key));
+    const linkedCoachId = await dbLinkedCoachId(deps, user.id);
+    const coachId = linkedCoachId === undefined ? (staff.coach?.id ?? null) : linkedCoachId;
     return {
       kind: "admin",
       userId: user.id,
@@ -50,8 +57,8 @@ export async function resolveActor(deps: ApiDeps, req: Request): Promise<ApiActo
       roleKey: role.key,
       roleActive: true,
       permissions,
-      coachId: staff.coach?.id ?? null,
-      isCoach: Boolean(staff.coach),
+      coachId,
+      isCoach: Boolean(coachId),
       isSystem: false,
     };
   }
@@ -135,18 +142,43 @@ export async function requireOwnedSession(
   return actor;
 }
 
+const PAYMENT_TAB_ALIASES: Record<string, "gcash" | "counter" | "refunds"> = {
+  gcash: "gcash",
+  gcash_pending: "gcash",
+  counter: "counter",
+  pay_at_counter: "counter",
+  refunds: "refunds",
+  refund: "refunds",
+};
+
+function adminAccessQuery(req: Request, pathname: string): URLSearchParams {
+  const params = new URLSearchParams(searchParams(req));
+  if (pathname === "/api/admin/payments") {
+    const raw = (params.get("tab") ?? "gcash").toLowerCase();
+    const tab = PAYMENT_TAB_ALIASES[raw];
+    if (tab) params.set("tab", tab);
+  }
+  return params;
+}
+
 export async function authorizeAdminRequest(
   deps: ApiDeps,
   req: Request,
   pathname: string,
 ): Promise<AdminApiActor> {
   const actor = requireActiveStaff(await resolveActor(deps, req));
-  const access = matchAdminApiAccess(req.method, pathname, searchParams(req));
+  const access = matchAdminApiAccess(req.method, pathname, adminAccessQuery(req, pathname));
   if (!access) {
     throw new ApiError(403, "forbidden", "No permission mapping for this route.");
   }
   const auth = staffAuthorizationOf(actor);
   if (!actorSatisfiesAccess(auth, access)) {
+    throw new ApiError(403, "forbidden", "Missing permission.", {
+      details: { anyOf: [...access.anyOf] },
+    });
+  }
+  const sql = await dbHasAnyPermission(deps, actor.userId, access.anyOf);
+  if (sql === false) {
     throw new ApiError(403, "forbidden", "Missing permission.", {
       details: { anyOf: [...access.anyOf] },
     });

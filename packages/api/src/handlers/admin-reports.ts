@@ -3,7 +3,7 @@ import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { ok, pagination, requiredDateRange, searchParams } from "../http";
 import { money } from "../presenters";
-import { shapeClassPerformance } from "../sensitive";
+import { actorHas, shapeClassPerformance } from "../sensitive";
 import { REPORTS_PERFORMANCE_BUDGET } from "../settings";
 import {
   type ReportFilters,
@@ -81,10 +81,11 @@ export async function getCoachCosts(deps: ApiDeps, req: Request): Promise<Respon
 }
 
 export async function getSessionPerformance(deps: ApiDeps, req: Request): Promise<Response> {
-  requireAdmin(await resolveActor(deps, req));
+  const actor = requireAdmin(await resolveActor(deps, req));
   const { page, pageSize, skip } = pagination(searchParams(req));
   const rows = await reportSessionPerformance(deps, filters(req));
   const pageRows = rows.slice(skip, skip + pageSize);
+  const includeCost = actorHas(actor, "reports.coach_costs.read");
   const body = {
     page,
     pageSize,
@@ -96,7 +97,7 @@ export async function getSessionPerformance(deps: ApiDeps, req: Request): Promis
       Capacity: Number(row.capacity),
       Confirmed: Number(row.confirmed),
       Revenue: money(row.revenue),
-      Cost: money(row.coachCost),
+      ...(includeCost ? { Cost: money(row.coachCost) } : {}),
     })),
   };
   assertNoProfit(body);
@@ -104,9 +105,11 @@ export async function getSessionPerformance(deps: ApiDeps, req: Request): Promis
 }
 
 export async function getSessionReport(deps: ApiDeps, req: Request, id: string): Promise<Response> {
-  requireAdmin(await resolveActor(deps, req));
+  const actor = requireAdmin(await resolveActor(deps, req));
   const row = (await reportSessionDrilldown(deps, id))[0];
   if (!row) throw new ApiError(404, "session_not_found", "Session not found.");
+  const includeCost = actorHas(actor, "reports.coach_costs.read");
+  const includeSales = actorHas(actor, "reports.sales.read");
   const body = {
     Capacity: Number(row.capacity),
     Confirmed: Number(row.confirmed),
@@ -115,11 +118,19 @@ export async function getSessionReport(deps: ApiDeps, req: Request, id: string):
     Waitlisted: Number(row.waitlisted),
     "Checked In": Number(row.checkedIn),
     "No-show": Number(row.noShow),
-    "Customer Price": money(row.customerPrice),
-    "Gross Revenue": money(row.grossRevenue),
-    Refunds: money(row.refunds),
-    "Coach Cost": money(row.coachCost),
-    "Gross Contribution": money(row.grossContribution),
+    ...(includeSales
+      ? {
+          "Customer Price": money(row.customerPrice),
+          "Gross Revenue": money(row.grossRevenue),
+          Refunds: money(row.refunds),
+        }
+      : {}),
+    ...(includeCost
+      ? {
+          "Coach Cost": money(row.coachCost),
+          ...(includeSales ? { "Gross Contribution": money(row.grossContribution) } : {}),
+        }
+      : {}),
     Occupancy: Number(row.occupancy),
     "Attendance Utilisation": Number(row.attendanceUtilisation),
   };

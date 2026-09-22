@@ -78,16 +78,13 @@ export function shapeDashboard(actor: AdminApiActor, body: Record<string, unknow
     },
   };
   if (!financial) {
-    next.todaysSalesPhp = 0;
-    next.pendingRefundsPhp = 0;
-    next.coachCostTodayPhp = 0;
+    delete next.todaysSalesPhp;
+    delete next.pendingRefundsPhp;
+    delete next.coachCostTodayPhp;
     const comparisons = next.comparisons as Record<string, unknown> | undefined;
     if (comparisons) {
-      next.comparisons = {
-        ...comparisons,
-        todaysSalesPhp: { current: 0, prior: null, priorWindow: "previous_manila_day" },
-        coachCostTodayPhp: { current: 0, prior: null, priorWindow: "previous_manila_day" },
-      };
+      const { todaysSalesPhp: _sales, coachCostTodayPhp: _cost, ...rest } = comparisons;
+      next.comparisons = rest;
     }
     if (Array.isArray(next.series)) {
       next.series = (next.series as Array<{ metric: string }>).filter(

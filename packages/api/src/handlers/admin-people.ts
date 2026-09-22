@@ -17,6 +17,7 @@ import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { asString, ok, pagination, readJson, searchParams } from "../http";
 import { bookingStatusPayload, presentStaff } from "../presenters";
+import { actorHas } from "../sensitive";
 import { CUSTOMER_SENSITIVE_READ_POLICY } from "../settings";
 import { fieldError, requireString, throwFields } from "../validation";
 
@@ -87,31 +88,65 @@ export async function postStaff(deps: ApiDeps, req: Request): Promise<Response> 
     where: { userId: profile.id },
     include: staffCoachInclude,
   });
+  const requestedCoachId = asString(body.coachId)?.trim() ?? null;
   assertRoleAssignable({
     roleKey: role.key,
     roleActive: role.status === "ACTIVE",
     roleArchived: role.status === "ARCHIVED",
-    coachId: existingStaff?.coach?.id ?? asString(body.coachId) ?? null,
+    coachId: existingStaff?.coach?.id ?? requestedCoachId,
   });
-  const staff = await deps.prisma.staffMember.upsert({
-    where: { userId: profile.id },
-    create: {
-      userId: profile.id,
-      name,
-      email,
-      role: "ADMIN",
-      roleId: role.id,
-      status: "ACTIVE",
-    },
-    update: { name, email, status: "ACTIVE", roleId: role.id },
-    include: staffCoachInclude,
+  const staff = await deps.prisma.$transaction(async (tx) => {
+    const leavingSuperAdmin = Boolean(existingStaff?.roleDefinition?.allAccess) && !role.allAccess;
+    if (leavingSuperAdmin && existingStaff) {
+      await assertLastSuperAdminAction({ prisma: tx } as ApiDeps, existingStaff.id, "demote");
+    }
+    const upserted = await tx.staffMember.upsert({
+      where: { userId: profile.id },
+      create: {
+        userId: profile.id,
+        name,
+        email,
+        role: "ADMIN",
+        roleId: role.id,
+        status: "ACTIVE",
+      },
+      update: { name, email, status: "ACTIVE", roleId: role.id },
+      include: staffCoachInclude,
+    });
+    if (requestedCoachId && !upserted.coach) {
+      const coach = await tx.coach.findUnique({ where: { id: requestedCoachId } });
+      if (!coach) throw new ApiError(404, "coach_not_found", "Coach not found.");
+      if (coach.staffMemberId && coach.staffMemberId !== upserted.id) {
+        throwFields(
+          fieldError(
+            "coachId",
+            "already_linked",
+            "This coach is already linked to a staff member.",
+          ),
+        );
+      }
+      await tx.coach.update({
+        where: { id: requestedCoachId },
+        data: { staffMemberId: upserted.id },
+      });
+      return tx.staffMember.findUniqueOrThrow({
+        where: { id: upserted.id },
+        include: staffCoachInclude,
+      });
+    }
+    return upserted;
   });
   await writeAudit(deps, {
     entityType: "staff",
     entityId: staff.id,
     action: "staff.provision",
     actor,
-    metadata: { after: { roleId: role.id, roleKey: role.key } },
+    metadata: {
+      before: existingStaff
+        ? { roleId: existingStaff.roleId, roleKey: existingStaff.roleDefinition?.key ?? null }
+        : null,
+      after: { roleId: role.id, roleKey: role.key, coachId: staff.coach?.id ?? null },
+    },
   });
   return ok({ staff: presentStaff(staff) });
 }
@@ -425,8 +460,12 @@ export async function getCustomer(deps: ApiDeps, req: Request, id: string): Prom
         at: item.checkedInAt ?? item.noShowMarkedAt,
       })),
     paymentRefundHistory: {
-      payments: profile.bookings.flatMap((item) => item.payments),
-      refunds: profile.bookings.flatMap((item) => item.refunds),
+      payments: actorHas(actor, "payments.read")
+        ? profile.bookings.flatMap((item) => item.payments)
+        : [],
+      refunds: actorHas(actor, "refunds.read")
+        ? profile.bookings.flatMap((item) => item.refunds)
+        : [],
     },
     acceptedPolicyVersions: profile.policyAcceptances.map((row) => ({
       documentName: row.policyVersion.document.title,

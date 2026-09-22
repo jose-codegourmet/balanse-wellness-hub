@@ -347,7 +347,7 @@ export async function postAdminSession(deps: ApiDeps, req: Request): Promise<Res
     actor,
     metadata: { coachIds },
   });
-  return ok({ session: created });
+  return ok({ session: maybeStripRates(actor, created) });
 }
 
 export async function postDuplicateAdminSessions(deps: ApiDeps, req: Request): Promise<Response> {
@@ -627,7 +627,7 @@ export async function patchAdminSession(
     });
   });
   await writeAudit(deps, { entityType: "session", entityId: id, action: "session.update", actor });
-  return ok({ session: updated });
+  return ok({ session: maybeStripRates(actor, updated) });
 }
 
 function assertAssignmentFields(body: Record<string, unknown>): void {

@@ -268,11 +268,12 @@ export async function reportSessionPerformance(deps: ApiDeps, filters: ReportFil
   );
 }
 
+/** `null` means the helper is unavailable (migrations not applied). */
 export async function dbHasPermission(
   deps: ApiDeps,
   userId: string,
   key: string,
-): Promise<boolean> {
+): Promise<boolean | null> {
   try {
     const rows = await deps.prisma.$queryRawUnsafe<Array<{ v: boolean }>>(
       `SELECT app_private.has_permission($1::uuid, $2) AS v`,
@@ -281,11 +282,36 @@ export async function dbHasPermission(
     );
     return Boolean(rows[0]?.v);
   } catch {
-    return false;
+    return null;
   }
 }
 
-export async function dbLinkedCoachId(deps: ApiDeps, userId: string): Promise<string | null> {
+export async function dbHasAnyPermission(
+  deps: ApiDeps,
+  userId: string,
+  keys: readonly string[],
+): Promise<boolean | null> {
+  if (keys.length === 0) return true;
+  try {
+    const rows = await deps.prisma.$queryRawUnsafe<Array<{ v: boolean }>>(
+      `SELECT EXISTS (
+         SELECT 1 FROM unnest($2::text[]) AS k(key)
+         WHERE app_private.has_permission($1::uuid, k.key)
+       ) AS v`,
+      userId,
+      [...keys],
+    );
+    return Boolean(rows[0]?.v);
+  } catch {
+    return null;
+  }
+}
+
+/** `undefined` means the helper is unavailable. `null` means no linked coach. */
+export async function dbLinkedCoachId(
+  deps: ApiDeps,
+  userId: string,
+): Promise<string | null | undefined> {
   try {
     const rows = await deps.prisma.$queryRawUnsafe<Array<{ v: string | null }>>(
       `SELECT app_private.linked_coach_id($1::uuid) AS v`,
@@ -293,7 +319,7 @@ export async function dbLinkedCoachId(deps: ApiDeps, userId: string): Promise<st
     );
     return rows[0]?.v ?? null;
   } catch {
-    return null;
+    return undefined;
   }
 }
 
