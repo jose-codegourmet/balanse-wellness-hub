@@ -157,7 +157,7 @@ These are lifted from `docs/business-requirements/21-canonical-rules.md` (highes
 
 ### 2.5 Financial and inventory
 
-- Coach compensation is **internal admin-only** data and must never appear on public coach pages, the public calendar, customer booking screens, or customer confirmations [R67, R68, `03-roles-and-permissions.md` §Coach-rate privacy].
+- Coach compensation is **internal** data and must never appear on public coach pages, the public calendar, customer booking screens, or customer confirmations [R67, R68, `03-roles-and-permissions.md` §Coach-rate privacy]. Inside admin, rates, costs, sales, refund totals, and financial reports require explicit sensitive permissions from `@balanse/domain` (`PERMISSION_KEYS`). Super Admin has all-access; Front Desk and Coach defaults do not include those keys (epic #289 / #294).
 - A coach may have `defaultRate` + `rateType` (`per_session` / `per_hour`) [R69].
 - Scheduled sessions must **snapshot** customer price, coach rate, and rate type; changing a coach's current rate must not rewrite historical session costs [R70, R71, `22-inventory-and-sales-reporting.md` §2].
 - Class capacity is the primary sellable inventory [R72].
@@ -493,7 +493,7 @@ Three buckets, all created in `INF-004` and secured in `BE-021`:
 - **Lane:** BE
 - **Depends on:** BE-002
 - **Source docs:** `docs/business-requirements/03-roles-and-permissions.md`; `docs/screen-specs/admin/03-staff-management.md`
-- **Scope notes:** Admins are Coach Rex and his wife [R60]. Model staff as rows linked to auth users with `role` and `status` (active/disabled — the spec has a `[Disable Access]` action). Provide a reusable authorisation helper (`is_admin(auth.uid())` SQL function + server-side equivalent) used by every admin RLS policy and admin route. `admin/03-staff-management.md` requires that only authorised admins can reach coach rates, sales reports, refund totals, coach-cost reports, and capacity reporting — the helper is the single gate for that.
+- **Scope notes:** Admins are Coach Rex and his wife [R60]. Model staff as rows linked to auth users with `role` and `status` (active/disabled — the spec has a `[Disable Access]` action). The shipped `is_admin()` helper remains Super-Admin compatibility until epic #289/#298 replaces binary admin with role definitions and `has_permission`. `admin/03-staff-management.md` and `@balanse/domain` require explicit permissions for coach rates, sales reports, refund totals, coach-cost reports, and capacity reporting — do not treat the legacy `StaffRole` enum as that matrix.
 - **Acceptance criteria:**
   - [ ] `staff_members` table with name, email, role, status, timestamps, unique auth-user link.
   - [ ] SQL `is_admin()` helper is `SECURITY DEFINER`, stable, and unit-tested for active vs disabled staff.
@@ -1786,14 +1786,14 @@ apps/admin (port 9001)
 - **Lane:** FE
 - **Depends on:** FE-FND-009
 - **Source docs:** `docs/screen-specs/admin/03-staff-management.md`; `docs/business-requirements/03-roles-and-permissions.md`
-- **Scope notes:** Spec: list (`Name | Role | Status | Action`) with `[Add Staff]`, and a staff detail form (Name, Email, Role, Status, `[Save]`, `[Disable Access]`). Spec note: staff roles should be designed so only authorised admins reach coach rates, sales reports, refund totals, coach-cost reports, and capacity reporting. No public admin registration.
+- **Scope notes:** Spec: list (`Name | Role | Status | Action`) with `[Add Staff]`, and a staff detail form (Name, Email, Role, Status, `[Save]`, `[Disable Access]`). Role choice is a dynamic `StaffRoleDefinition` (Super Admin / Front Desk / Coach / custom), separate from `isCoach`. Sensitive data is gated by `@balanse/domain` `PERMISSION_KEYS`. No public admin registration. Role-management screens are #297.
 - **Acceptance criteria:**
   - [ ] List and detail render exactly the specced fields and actions.
   - [ ] `[Disable Access]` has a confirmation step and a disabled-state presentation.
   - [ ] Add Staff is an invite/provision flow, never a public sign-up.
   - [ ] The UI documents (in-page helper text or tooltip) which capabilities the role grants, consistent with the financial-access note.
   - [ ] "No staff found" empty state wired.
-- **Out of scope:** Granular permission matrices (not specced).
+- **Out of scope:** Implementing the permission registry (owned by #294 in `@balanse/domain`); role CRUD UI (#297); nav/action gating (#295).
 - **Phase:** P4
 
 #### FE-ADM-004 — Customer management
@@ -1957,7 +1957,7 @@ apps/admin (port 9001)
   - [ ] Policy/waiver block lists current versions and allows promoting a new version without editing prior ones.
   - [ ] Public content editing is plain and scoped to the three named pages — no general CMS.
   - [ ] Seeded business profile matches the Facebook findings; opening hours are left blank rather than invented.
-- **Out of scope:** Developer configuration; permission toggles.
+- **Out of scope:** Developer configuration. Permission-aware settings gating is #295 consuming `@balanse/domain` (`settings.content.manage`, `settings.policies.manage`, `settings.payment_qr.manage`).
 - **Phase:** P4
 
 #### FE-ADM-014 — Sales and inventory reports
