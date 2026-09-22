@@ -37,7 +37,7 @@ export function SelectedSessionPanel({
 }) {
   const cancel = useCancelAdminSession();
   const { principal } = useMockPrincipal();
-  const coachesQuery = useQuery(adminCoachesQuery(principal.role));
+  const coachesQuery = useQuery(adminCoachesQuery(principal));
   const assignedCoaches = session.coaches.map(
     (coach) => coachesQuery.data?.find((row) => row.id === coach.id) ?? coach,
   );

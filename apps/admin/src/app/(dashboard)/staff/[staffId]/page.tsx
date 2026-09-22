@@ -15,7 +15,7 @@ export default async function Page({ params }: { params: Promise<{ staffId: stri
   const { staffId } = await params;
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [adminStaffQuery(principal.role)],
+    [adminStaffQuery(principal)],
     <AdminQuerySuspense>
       <StaffDetailPage staffId={staffId} />
     </AdminQuerySuspense>,

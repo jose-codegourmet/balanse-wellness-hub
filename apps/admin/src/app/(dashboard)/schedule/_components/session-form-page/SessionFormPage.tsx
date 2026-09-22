@@ -105,11 +105,11 @@ export function SessionFormPage({ sessionId, date, surface = "page", step }: Ses
   const isNew = sessionId === "new";
   const { principal } = useMockPrincipal();
   const canSeeRates = principal.role === "admin";
-  const classesQuery = useQuery(adminClassesQuery(principal.role));
-  const coachesQuery = useQuery(adminCoachesQuery(principal.role));
-  const sessionsQuery = useQuery(adminSessionsQuery(principal.role));
+  const classesQuery = useQuery(adminClassesQuery(principal));
+  const coachesQuery = useQuery(adminCoachesQuery(principal));
+  const sessionsQuery = useQuery(adminSessionsQuery(principal));
   const rosterQuery = useQuery({
-    ...adminSessionRosterQuery(principal.role, sessionId),
+    ...adminSessionRosterQuery(principal, sessionId),
     enabled: !isNew,
   });
   const upsert = useUpsertAdminSession();

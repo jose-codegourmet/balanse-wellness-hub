@@ -1,6 +1,6 @@
 "use client";
 
-import { resetMockRuntime, setMockRuntime } from "@balanse/mock";
+import { MOCK_STAFF_IDENTITIES, resetMockRuntime, setMockRuntime } from "@balanse/mock";
 import { isMockHarnessEnabled } from "@balanse/mock/session";
 import { MockHarnessAffordance } from "@balanse/ui";
 import { useQueryClient } from "@tanstack/react-query";
@@ -8,6 +8,7 @@ import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useSwitchAuthorizedIdentity } from "@/modules/session/useSwitchAuthorizedIdentity";
 
 // Collapse store is duplicated with apps/web MockSessionHarness (sessionStorage +
 // event contract from #258). Collapsed chrome is shared MockHarnessAffordance.
@@ -83,16 +84,15 @@ type Scenario = "normal" | "schedule-failed" | "session-became-full" | "empty-ad
 
 export function MockSessionHarness() {
   const enabled = isMockHarnessEnabled();
-  const { principal, setPrincipal } = useMockPrincipal();
+  const { principal } = useMockPrincipal();
+  const switchIdentity = useSwitchAuthorizedIdentity();
   const queryClient = useQueryClient();
   const router = useRouter();
   const [scenario, setScenario] = useState<Scenario>("normal");
   const [latencyMs, setLatencyMs] = useState(0);
 
-  function clearAdminCache() {
-    // Clear (do not invalidate): another role's data must not stay reachable.
-    queryClient.clear();
-  }
+  const identityValue =
+    principal.role === "admin" && principal.staffId ? principal.staffId : principal.role;
 
   function applyRuntimeAndRefetch(next: Parameters<typeof setMockRuntime>[0]) {
     // Runtime knobs live on the browser adapter only. Do not router.refresh() —
@@ -163,19 +163,27 @@ export function MockSessionHarness() {
         </div>
         <div className="mt-2 flex flex-wrap gap-3 text-sm">
           <label className="flex items-center gap-2">
-            Principal
+            Identity
             <select
+              data-testid="harness-identity"
               className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
-              value={principal.role}
+              value={identityValue}
               onChange={(event) => {
-                clearAdminCache();
-                setPrincipal({ role: event.target.value as typeof principal.role });
-                router.refresh();
+                const next = event.target.value;
+                if (next === "guest" || next === "customer") {
+                  switchIdentity({ role: next, staffId: null });
+                  return;
+                }
+                switchIdentity({ role: "admin", staffId: next });
               }}
             >
-              <option value="guest">Guest</option>
-              <option value="customer">Customer</option>
-              <option value="admin">Admin</option>
+              <option value="guest">Guest (rejected)</option>
+              <option value="customer">Customer (rejected)</option>
+              {MOCK_STAFF_IDENTITIES.map((identity) => (
+                <option key={identity.id} value={identity.id}>
+                  {identity.label}
+                </option>
+              ))}
             </select>
           </label>
           <label className="flex items-center gap-2">
@@ -184,9 +192,7 @@ export function MockSessionHarness() {
               className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
               value={principal.customerId}
               onChange={(event) => {
-                clearAdminCache();
-                setPrincipal({ customerId: event.target.value });
-                router.refresh();
+                switchIdentity({ customerId: event.target.value }, { navigate: false });
               }}
             >
               {CUSTOMERS.map((c) => (
@@ -202,9 +208,7 @@ export function MockSessionHarness() {
               className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
               value={principal.showcaseBookingId}
               onChange={(event) => {
-                clearAdminCache();
-                setPrincipal({ showcaseBookingId: event.target.value });
-                router.refresh();
+                switchIdentity({ showcaseBookingId: event.target.value }, { navigate: false });
               }}
             >
               {BOOKINGS.map((id) => (

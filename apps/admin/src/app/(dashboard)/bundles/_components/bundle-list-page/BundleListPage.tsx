@@ -36,8 +36,8 @@ function statusVariant(status: BundleDefinition["status"]) {
 
 export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
   const { principal } = useMockPrincipal();
-  const bundlesQuery = useSuspenseQuery(adminBundlesQuery(principal.role));
-  const acquisitionsQuery = useSuspenseQuery(adminBundleAcquisitionsQuery(principal.role));
+  const bundlesQuery = useSuspenseQuery(adminBundlesQuery(principal));
+  const acquisitionsQuery = useSuspenseQuery(adminBundleAcquisitionsQuery(principal));
   const setStatus = useSetAdminBundleStatus();
   const approve = useApproveBundleAcquisition();
   const reject = useRejectBundleAcquisition();

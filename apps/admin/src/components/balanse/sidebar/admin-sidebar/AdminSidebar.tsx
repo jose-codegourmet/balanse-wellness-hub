@@ -29,7 +29,7 @@ export function AdminSidebar({
   const navId = useId();
   const { principal } = useMockPrincipal();
   const dashboardQuery = useQuery({
-    ...adminDashboardQuery(principal.role),
+    ...adminDashboardQuery(principal),
     enabled: snapshotProp === undefined,
   });
 

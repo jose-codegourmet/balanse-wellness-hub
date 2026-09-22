@@ -111,9 +111,9 @@ export function CoachFormPage({ coachId, initialTab }: CoachFormPageProps) {
   const isNew = coachId === "new";
   const { principal } = useMockPrincipal();
   const canSeeRates = principal.role === "admin";
-  const coachesQuery = useQuery(adminCoachesQuery(principal.role));
-  const staffQuery = useQuery(adminStaffQuery(principal.role));
-  const sessionsQuery = useQuery(adminSessionsQuery(principal.role));
+  const coachesQuery = useQuery(adminCoachesQuery(principal));
+  const staffQuery = useQuery(adminStaffQuery(principal));
+  const sessionsQuery = useQuery(adminSessionsQuery(principal));
   const upsert = useUpsertAdminCoach();
   const existing = isNew ? undefined : coachesQuery.data?.find((row) => row.id === coachId);
 

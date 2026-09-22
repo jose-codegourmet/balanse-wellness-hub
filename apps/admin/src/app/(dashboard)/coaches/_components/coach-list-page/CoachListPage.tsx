@@ -51,8 +51,8 @@ export function CoachListPage({
 }: CoachListPageProps) {
   const { principal } = useMockPrincipal();
   const canSeeRates = principal.role === "admin";
-  const coachesQuery = useSuspenseQuery(adminCoachesQuery(principal.role));
-  const sessionsQuery = useSuspenseQuery(adminSessionsQuery(principal.role));
+  const coachesQuery = useSuspenseQuery(adminCoachesQuery(principal));
+  const sessionsQuery = useSuspenseQuery(adminSessionsQuery(principal));
   const upsertCoach = useUpsertAdminCoach();
   const nowIso = adminNowIso();
 

@@ -38,7 +38,7 @@ const FORM_ID = "duplicate-schedule-form";
 
 export function DuplicateScheduleForm({ sourceStart, sourceEnd }: DuplicateScheduleFormProps) {
   const { principal } = useMockPrincipal();
-  const sessions = useSuspenseQuery(adminSessionsQuery(principal.role)).data;
+  const sessions = useSuspenseQuery(adminSessionsQuery(principal)).data;
   const duplicate = useDuplicateAdminSchedule();
   const router = useRouter();
   const defaults = duplicateScheduleFormDefaultValues(adminTodayYmd());

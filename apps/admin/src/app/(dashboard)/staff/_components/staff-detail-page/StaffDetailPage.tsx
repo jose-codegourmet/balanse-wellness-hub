@@ -35,7 +35,7 @@ export function StaffDetailPage({ staffId }: StaffDetailPageProps) {
   const router = useRouter();
   const isNew = staffId === "new";
   const { principal } = useMockPrincipal();
-  const query = useQuery(adminStaffQuery(principal.role));
+  const query = useQuery(adminStaffQuery(principal));
   const upsert = useUpsertAdminStaff();
   const disable = useDisableAdminStaff();
   const existing = isNew ? undefined : query.data?.find((row) => row.id === staffId);

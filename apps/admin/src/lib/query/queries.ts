@@ -1,156 +1,222 @@
 import type { AdminPaymentTab, AdminReportFilters } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import type { MockRole } from "@balanse/mock/session";
+import type { MockPrincipal } from "@balanse/mock/session";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
+import { adminAuthScope, bindAdminQueryPrincipal } from "./auth-scope";
 import { type AdminBookingListFilters, type AdminCustomerListFilters, adminKeys } from "./keys";
 
-export const adminDashboardQuery = (role: MockRole) =>
-  queryOptions({
-    queryKey: adminKeys.dashboard(role),
-    queryFn: () => getMockAdapter().getAdminDashboard(),
-  });
+function withPrincipal<T>(principal: MockPrincipal, work: () => Promise<T>): Promise<T> {
+  bindAdminQueryPrincipal(principal);
+  return work();
+}
 
-export const adminBookingsQuery = (role: MockRole, filters?: AdminBookingListFilters) =>
-  queryOptions({
-    queryKey: adminKeys.bookings.list(role, filters),
-    queryFn: () => getMockAdapter().getAdminBookings(filters),
+export const adminDashboardQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.dashboard(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminDashboard()),
   });
+};
 
-export const adminBookingDetailQuery = (role: MockRole, id: string) =>
-  queryOptions({
-    queryKey: adminKeys.bookings.detail(role, id),
-    queryFn: () => getMockAdapter().getBooking(id),
+export const adminBookingsQuery = (principal: MockPrincipal, filters?: AdminBookingListFilters) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.bookings.list(scope, filters),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminBookings(filters)),
   });
+};
 
-export const adminPaymentsQuery = (role: MockRole) =>
-  queryOptions({
-    queryKey: adminKeys.payments.all(role),
-    queryFn: () => getMockAdapter().getAdminPayments(),
+export const adminBookingDetailQuery = (principal: MockPrincipal, id: string) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.bookings.detail(scope, id),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getBooking(id)),
   });
+};
 
-export const adminPaymentProofUrlQuery = (role: MockRole, bookingId: string) =>
-  queryOptions({
-    queryKey: adminKeys.proofUrl(role, bookingId),
-    queryFn: () => getMockAdapter().getAdminPaymentProofSignedUrl(bookingId),
+export const adminPaymentsQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.payments.all(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminPayments()),
   });
+};
 
-export const adminClassesQuery = (role: MockRole) =>
-  queryOptions({
-    queryKey: adminKeys.classes.all(role),
-    queryFn: () => getMockAdapter().getAdminClasses(),
+export const adminPaymentProofUrlQuery = (principal: MockPrincipal, bookingId: string) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.proofUrl(scope, bookingId),
+    queryFn: () =>
+      withPrincipal(principal, () => getMockAdapter().getAdminPaymentProofSignedUrl(bookingId)),
   });
+};
 
-export const adminCoachesQuery = (role: MockRole) =>
-  queryOptions({
-    queryKey: adminKeys.coaches.all(role),
-    queryFn: () => getMockAdapter().getAdminCoaches(),
+export const adminClassesQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.classes.all(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminClasses()),
   });
+};
 
-export const adminSessionsQuery = (role: MockRole) =>
-  queryOptions({
-    queryKey: adminKeys.sessions.all(role),
-    queryFn: () => getMockAdapter().getAdminSessions(),
+export const adminCoachesQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.coaches.all(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminCoaches()),
   });
+};
 
-export const adminCancellationsQuery = (role: MockRole) =>
-  queryOptions({
-    queryKey: adminKeys.cancellations.all(role),
-    queryFn: () => getMockAdapter().getAdminCancellationRequests(),
+export const adminSessionsQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.sessions.all(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminSessions()),
   });
+};
 
-export const adminReschedulesQuery = (role: MockRole) =>
-  queryOptions({
-    queryKey: adminKeys.reschedules.all(role),
-    queryFn: () => getMockAdapter().getAdminRescheduleRequests(),
+export const adminCancellationsQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.cancellations.all(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminCancellationRequests()),
   });
+};
 
-export const adminSessionRosterQuery = (role: MockRole, sessionId: string) =>
-  queryOptions({
-    queryKey: adminKeys.roster(role, sessionId),
-    queryFn: () => getMockAdapter().getAdminSessionRoster(sessionId),
+export const adminReschedulesQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.reschedules.all(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminRescheduleRequests()),
   });
+};
 
-export const adminStaffQuery = (role: MockRole) =>
-  queryOptions({
-    queryKey: adminKeys.staff.all(role),
-    queryFn: () => getMockAdapter().getAdminStaff(),
+export const adminSessionRosterQuery = (principal: MockPrincipal, sessionId: string) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.roster(scope, sessionId),
+    queryFn: () =>
+      withPrincipal(principal, () => getMockAdapter().getAdminSessionRoster(sessionId)),
   });
+};
 
-export const adminCustomersQuery = (role: MockRole, filters?: AdminCustomerListFilters) =>
-  queryOptions({
-    queryKey: adminKeys.customers.list(role, filters),
-    queryFn: () => getMockAdapter().getAdminCustomers(filters),
+export const adminStaffQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.staff.all(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminStaff()),
   });
+};
 
-export const adminBundlesQuery = (role: MockRole) =>
-  queryOptions({
-    queryKey: adminKeys.bundles.all(role),
-    queryFn: () => getMockAdapter().getAdminBundles(),
+export const adminCustomersQuery = (
+  principal: MockPrincipal,
+  filters?: AdminCustomerListFilters,
+) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.customers.list(scope, filters),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminCustomers(filters)),
   });
+};
 
-export const adminBundleAcquisitionsQuery = (role: MockRole) =>
-  queryOptions({
-    queryKey: adminKeys.bundles.acquisitions(role),
-    queryFn: () => getMockAdapter().getAdminBundleAcquisitions(),
+export const adminBundlesQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.bundles.all(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminBundles()),
   });
+};
 
-export const adminCustomerDetailQuery = (role: MockRole, id: string) =>
-  queryOptions({
-    queryKey: adminKeys.customers.detail(role, id),
-    queryFn: () => getMockAdapter().getAdminCustomer(id),
+export const adminBundleAcquisitionsQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.bundles.acquisitions(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminBundleAcquisitions()),
   });
+};
 
-export const adminSettingsQuery = (role: MockRole) =>
-  queryOptions({
-    queryKey: adminKeys.settings.all(role),
-    queryFn: () => getMockAdapter().getAdminSettings(),
+export const adminCustomerDetailQuery = (principal: MockPrincipal, id: string) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.customers.detail(scope, id),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminCustomer(id)),
   });
+};
 
-export const adminPaymentQrsQuery = (role: MockRole) =>
-  queryOptions({
-    queryKey: adminKeys.paymentQrs.all(role),
-    queryFn: () => getMockAdapter().listPaymentQrs(),
+export const adminSettingsQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.settings.all(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminSettings()),
   });
+};
 
-export const adminReportsQuery = (role: MockRole, filters: AdminReportFilters) =>
-  queryOptions({
-    queryKey: adminKeys.reports.list(role, filters),
-    queryFn: () => getMockAdapter().getAdminReports(filters),
+export const adminPaymentQrsQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.paymentQrs.all(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().listPaymentQrs()),
   });
+};
 
-export const adminReportsSalesQuery = (role: MockRole) =>
-  queryOptions({
-    queryKey: adminKeys.reports.sales(role),
-    queryFn: () => getMockAdapter().getAdminReportsSales(),
+export const adminReportsQuery = (principal: MockPrincipal, filters: AdminReportFilters) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.reports.list(scope, filters),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminReports(filters)),
   });
+};
 
-export const adminSessionReportQuery = (role: MockRole, sessionId: string) =>
-  queryOptions({
-    queryKey: adminKeys.reports.session(role, sessionId),
-    queryFn: () => getMockAdapter().getAdminSessionReport(sessionId),
+export const adminReportsSalesQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.reports.sales(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminReportsSales()),
   });
+};
 
-export const adminPaymentsQueueInfiniteQuery = (role: MockRole, tab: AdminPaymentTab) =>
-  infiniteQueryOptions({
-    queryKey: adminKeys.queues.payments(role, tab),
-    queryFn: ({ pageParam }) => getMockAdapter().getAdminPayments({ tab, cursor: pageParam }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
+export const adminSessionReportQuery = (principal: MockPrincipal, sessionId: string) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.reports.session(scope, sessionId),
+    queryFn: () =>
+      withPrincipal(principal, () => getMockAdapter().getAdminSessionReport(sessionId)),
   });
+};
 
-export const adminCancellationsInfiniteQuery = (role: MockRole) =>
-  infiniteQueryOptions({
-    queryKey: adminKeys.queues.cancellations(role),
+export const adminPaymentsQueueInfiniteQuery = (principal: MockPrincipal, tab: AdminPaymentTab) => {
+  const scope = adminAuthScope(principal);
+  return infiniteQueryOptions({
+    queryKey: adminKeys.queues.payments(scope, tab),
     queryFn: ({ pageParam }) =>
-      getMockAdapter().getAdminCancellationRequests({ cursor: pageParam }),
+      withPrincipal(principal, () => getMockAdapter().getAdminPayments({ tab, cursor: pageParam })),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
+};
 
-export const adminReschedulesInfiniteQuery = (role: MockRole) =>
-  infiniteQueryOptions({
-    queryKey: adminKeys.queues.reschedules(role),
-    queryFn: ({ pageParam }) => getMockAdapter().getAdminRescheduleRequests({ cursor: pageParam }),
+export const adminCancellationsInfiniteQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return infiniteQueryOptions({
+    queryKey: adminKeys.queues.cancellations(scope),
+    queryFn: ({ pageParam }) =>
+      withPrincipal(principal, () =>
+        getMockAdapter().getAdminCancellationRequests({ cursor: pageParam }),
+      ),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
+};
+
+export const adminReschedulesInfiniteQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return infiniteQueryOptions({
+    queryKey: adminKeys.queues.reschedules(scope),
+    queryFn: ({ pageParam }) =>
+      withPrincipal(principal, () =>
+        getMockAdapter().getAdminRescheduleRequests({ cursor: pageParam }),
+      ),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+  });
+};

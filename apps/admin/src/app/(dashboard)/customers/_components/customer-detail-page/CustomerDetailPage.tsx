@@ -55,8 +55,8 @@ function BookingBlock({
 
 export function CustomerDetailPage({ customerId }: { customerId: string }) {
   const { principal } = useMockPrincipal();
-  const query = useSuspenseQuery(adminCustomerDetailQuery(principal.role, customerId));
-  const bundlesQuery = useSuspenseQuery(adminBundlesQuery(principal.role));
+  const query = useSuspenseQuery(adminCustomerDetailQuery(principal, customerId));
+  const bundlesQuery = useSuspenseQuery(adminBundlesQuery(principal));
   const detail = query.data;
   if (!detail) return null;
 

@@ -25,8 +25,8 @@ export type PaymentQrPageProps = {
 
 export function PaymentQrPage({ empty, items: itemsProp }: PaymentQrPageProps) {
   const { principal } = useMockPrincipal();
-  const settingsQuery = useSuspenseQuery(adminSettingsQuery(principal.role));
-  const listQuery = useSuspenseQuery(adminPaymentQrsQuery(principal.role));
+  const settingsQuery = useSuspenseQuery(adminSettingsQuery(principal));
+  const listQuery = useSuspenseQuery(adminPaymentQrsQuery(principal));
   const items = empty ? [] : (itemsProp ?? listQuery.data.items);
   const settings = settingsQuery.data;
   const active = items.find((row) => row.isActive) ?? null;

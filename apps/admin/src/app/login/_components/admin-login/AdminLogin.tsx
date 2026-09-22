@@ -60,7 +60,7 @@ export function AdminLogin({
                 setErrors({});
                 setStatus("submitting");
                 window.setTimeout(() => {
-                  setPrincipal({ role: "admin" });
+                  setPrincipal({ role: "admin", staffId: result.staffId });
                   router.push(returnTo);
                   router.refresh();
                 }, 350);

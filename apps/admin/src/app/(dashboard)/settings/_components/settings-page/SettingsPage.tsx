@@ -112,7 +112,7 @@ export function SettingsPage({
   policyId,
 }: SettingsPageProps) {
   const { principal } = useMockPrincipal();
-  const query = useSuspenseQuery(adminSettingsQuery(principal.role));
+  const query = useSuspenseQuery(adminSettingsQuery(principal));
   const settings = query.data;
   const defaultTab = initialTab && SETTINGS_SECTIONS.includes(initialTab) ? initialTab : "business";
   const [tab, setTab] = useTabParam("tab", SETTINGS_TABS, defaultTab);

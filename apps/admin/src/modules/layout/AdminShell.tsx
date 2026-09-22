@@ -21,7 +21,7 @@ export function AdminShell({
       <AdminSidebar
         defaultCollapsed={defaultCollapsed}
         onLogout={() => {
-          setPrincipal({ role: "guest" });
+          setPrincipal({ role: "guest", staffId: null });
           router.push("/login");
           router.refresh();
         }}

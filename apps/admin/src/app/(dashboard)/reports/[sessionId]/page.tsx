@@ -15,7 +15,7 @@ export default async function Page({ params }: { params: Promise<{ sessionId: st
   const { sessionId } = await params;
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [adminSessionReportQuery(principal.role, sessionId)],
+    [adminSessionReportQuery(principal, sessionId)],
     <AdminQuerySuspense>
       <ReportDrilldownPage sessionId={sessionId} />
     </AdminQuerySuspense>,

@@ -14,11 +14,7 @@ export default async function Page({ params }: { params: Promise<{ coachId: stri
   const { coachId } = await params;
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [
-      adminCoachesQuery(principal.role),
-      adminSessionsQuery(principal.role),
-      adminStaffQuery(principal.role),
-    ],
+    [adminCoachesQuery(principal), adminSessionsQuery(principal), adminStaffQuery(principal)],
     <CoachFormPage coachId={coachId} />,
   );
 }

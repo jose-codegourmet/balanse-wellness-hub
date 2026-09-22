@@ -35,8 +35,8 @@ export function BundleFormPage({ bundleId }: { bundleId: string }) {
   const isNew = bundleId === "new";
   const router = useRouter();
   const { principal } = useMockPrincipal();
-  const bundlesQuery = useSuspenseQuery(adminBundlesQuery(principal.role));
-  const classesQuery = useSuspenseQuery(adminClassesQuery(principal.role));
+  const bundlesQuery = useSuspenseQuery(adminBundlesQuery(principal));
+  const classesQuery = useSuspenseQuery(adminClassesQuery(principal));
   const upsert = useUpsertAdminBundle();
   const existing = bundlesQuery.data.find((row) => row.id === bundleId);
 

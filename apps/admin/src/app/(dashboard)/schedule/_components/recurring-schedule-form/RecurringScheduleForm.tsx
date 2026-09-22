@@ -41,7 +41,7 @@ const FORM_ID = "recurring-schedule-form";
 
 export function RecurringScheduleForm({ sessionId }: RecurringScheduleFormProps) {
   const { principal } = useMockPrincipal();
-  const sessions = useSuspenseQuery(adminSessionsQuery(principal.role)).data;
+  const sessions = useSuspenseQuery(adminSessionsQuery(principal)).data;
   const source = sessions.find((session) => session.id === sessionId);
   const createRecurring = useCreateAdminRecurringSchedule();
   const router = useRouter();

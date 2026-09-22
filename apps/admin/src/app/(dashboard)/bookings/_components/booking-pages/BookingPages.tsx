@@ -44,9 +44,9 @@ export function BookingListPage() {
   );
   const [classId, setClassId] = useState("all");
   const [date, setDate] = useState("");
-  const { data: bookings } = useSuspenseQuery(adminBookingsQuery(principal.role));
-  const { data: classes } = useSuspenseQuery(adminClassesQuery(principal.role));
-  const { data: customers } = useSuspenseQuery(adminCustomersQuery(principal.role));
+  const { data: bookings } = useSuspenseQuery(adminBookingsQuery(principal));
+  const { data: classes } = useSuspenseQuery(adminClassesQuery(principal));
+  const { data: customers } = useSuspenseQuery(adminCustomersQuery(principal));
 
   const names = useMemo(() => customerNameLookup(customers), [customers]);
   const filtered = useMemo(
@@ -162,8 +162,8 @@ export function BookingListPage() {
 
 export function BookingDetailPage({ bookingId }: { bookingId: string }) {
   const { principal } = useMockPrincipal();
-  const bookingQuery = useSuspenseQuery(adminBookingDetailQuery(principal.role, bookingId));
-  const { data: customers } = useSuspenseQuery(adminCustomersQuery(principal.role));
+  const bookingQuery = useSuspenseQuery(adminBookingDetailQuery(principal, bookingId));
+  const { data: customers } = useSuspenseQuery(adminCustomersQuery(principal));
   const booking = bookingQuery.data;
   const [reason, setReason] = useState("");
   const [proofOpen, setProofOpen] = useState(false);

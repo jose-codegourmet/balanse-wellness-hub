@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default async function Page() {
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [adminPaymentsQueueInfiniteQuery(principal.role, "gcash")],
+    [adminPaymentsQueueInfiniteQuery(principal, "gcash")],
     <AdminQuerySuspense>
       <PaymentReviewPage />
     </AdminQuerySuspense>,

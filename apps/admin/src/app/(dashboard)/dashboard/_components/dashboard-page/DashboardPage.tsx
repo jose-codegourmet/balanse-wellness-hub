@@ -35,7 +35,7 @@ export function DashboardPage({
   const { principal } = useMockPrincipal();
   const canViewCoachCost = principal.role === "admin";
   const query = useQuery({
-    ...adminDashboardQuery(principal.role),
+    ...adminDashboardQuery(principal),
     ...(initial ? { initialData: initial } : {}),
   });
   const data = query.data ?? null;

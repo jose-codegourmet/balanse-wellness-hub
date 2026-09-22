@@ -269,4 +269,11 @@ Both apps currently have the same four top-level folders. Neither app has `hooks
 | `app/` | Next.js App Router routes and route files only. Colocated `_components/<kebab-name>/`, `_hooks/`, and `_lib/` for UI used by that route or group. |
 | `components/` | Shared app UI, one kebab-case folder per component. `jabkit/` is vendored and stays pristine; `balanse/` is app composition used by 2+ unrelated routes. |
 | `lib/` | Non-UI helpers (classnames, class-catalogue loaders, admin React Query). Not React components. |
+
+Admin React Query keys (`apps/admin/src/lib/query/keys.ts`) are rooted at
+`["admin", adminAuthScope(principal)]`. The scope is a staff authorization
+fingerprint (staff id + role/permission revision), not the coarse
+`guest | customer | admin` shell role. Identity switches must
+`removeQueries` / `clear` before navigating through
+`firstPermittedAdminRoute`.
 | `modules/` | Current home for screen-level implementations and app infrastructure (auth, public, customer, admin pages; `layout/`, `providers/`, `session/`, `notifications/`). **Do not add new route-specific screens here** — colocate them under the matching `app/` route. Promote into `src/components/` only when a second unrelated route needs the piece. Cross-cutting kits that already serve many routes (admin `forms/`, session providers) stay here or in `src/components/` until a dedicated migration. |

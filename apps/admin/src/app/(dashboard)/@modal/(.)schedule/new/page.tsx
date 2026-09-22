@@ -9,11 +9,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ d
   const { date } = await searchParams;
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [
-      adminClassesQuery(principal.role),
-      adminCoachesQuery(principal.role),
-      adminSessionsQuery(principal.role),
-    ],
+    [adminClassesQuery(principal), adminCoachesQuery(principal), adminSessionsQuery(principal)],
     <SessionFormPage
       sessionId="new"
       date={isManilaYmd(date) ? date : undefined}

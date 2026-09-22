@@ -15,7 +15,7 @@ export default async function Page({ params }: { params: Promise<{ bookingId: st
   const { bookingId } = await params;
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [adminBookingDetailQuery(principal.role, bookingId), adminCustomersQuery(principal.role)],
+    [adminBookingDetailQuery(principal, bookingId), adminCustomersQuery(principal)],
     <AdminQuerySuspense>
       <BookingDetailPage bookingId={bookingId} />
     </AdminQuerySuspense>,

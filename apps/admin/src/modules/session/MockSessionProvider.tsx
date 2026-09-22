@@ -1,18 +1,23 @@
 "use client";
 
+import type { StaffAuthorizationActor } from "@balanse/domain";
 import {
   DEFAULT_MOCK_PRINCIPAL,
   isMockHarnessEnabled,
   MOCK_HARNESS_COOKIE,
   type MockPrincipal,
+  normalizeMockPrincipal,
   parseMockPrincipal,
+  resolveMockStaffActor,
   serializeMockPrincipal,
 } from "@balanse/mock/session";
 import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from "react";
+import { bindAdminQueryPrincipal } from "@/lib/query/auth-scope";
 
 const SessionContext = createContext<{
   principal: MockPrincipal;
-  setPrincipal: (next: Partial<MockPrincipal>) => void;
+  actor: StaffAuthorizationActor | null;
+  setPrincipal: (next: Partial<MockPrincipal>) => MockPrincipal;
   harnessEnabled: boolean;
 } | null>(null);
 
@@ -37,21 +42,29 @@ export function MockSessionProvider({
   children: ReactNode;
   initialPrincipal?: MockPrincipal;
 }) {
-  const [principal, setPrincipalState] = useState<MockPrincipal>(
-    () => initialPrincipal ?? parseMockPrincipal(readCookie()) ?? DEFAULT_MOCK_PRINCIPAL,
-  );
+  const [principal, setPrincipalState] = useState<MockPrincipal>(() => {
+    const resolved = initialPrincipal ?? parseMockPrincipal(readCookie()) ?? DEFAULT_MOCK_PRINCIPAL;
+    const normalized = normalizeMockPrincipal(resolved);
+    bindAdminQueryPrincipal(normalized);
+    return normalized;
+  });
 
   const setPrincipal = useCallback((next: Partial<MockPrincipal>) => {
+    let merged = normalizeMockPrincipal(next);
     setPrincipalState((current) => {
-      const merged = { ...current, ...next };
+      merged = normalizeMockPrincipal({ ...current, ...next });
       writeCookie(merged);
+      bindAdminQueryPrincipal(merged);
       return merged;
     });
+    return merged;
   }, []);
 
+  const actor = useMemo(() => resolveMockStaffActor(principal), [principal]);
+
   const value = useMemo(
-    () => ({ principal, setPrincipal, harnessEnabled: isMockHarnessEnabled() }),
-    [principal, setPrincipal],
+    () => ({ principal, actor, setPrincipal, harnessEnabled: isMockHarnessEnabled() }),
+    [principal, actor, setPrincipal],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

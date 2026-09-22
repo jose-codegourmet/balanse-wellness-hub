@@ -33,10 +33,10 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
   const [classId, setClassId] = useState("all");
   const [coachId, setCoachId] = useState("all");
   const [sessionStatus, setSessionStatus] = useState("all");
-  const classesQuery = useSuspenseQuery(adminClassesQuery(principal.role));
-  const coachesQuery = useSuspenseQuery(adminCoachesQuery(principal.role));
+  const classesQuery = useSuspenseQuery(adminClassesQuery(principal));
+  const coachesQuery = useSuspenseQuery(adminCoachesQuery(principal));
   const reportsQuery = useSuspenseQuery(
-    adminReportsQuery(principal.role, {
+    adminReportsQuery(principal, {
       from,
       to,
       classId,
@@ -206,7 +206,7 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
 
 export function ReportDrilldownPage({ sessionId }: { sessionId: string }) {
   const { principal } = useMockPrincipal();
-  const query = useSuspenseQuery(adminSessionReportQuery(principal.role, sessionId));
+  const query = useSuspenseQuery(adminSessionReportQuery(principal, sessionId));
   const row = query.data;
   if (!row) return null;
 

@@ -8,7 +8,7 @@ import { SettingsPage } from "../../_components/settings-page/SettingsPage";
 export default async function Page() {
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [adminSettingsQuery(principal.role)],
+    [adminSettingsQuery(principal)],
     <AdminQuerySuspense>
       <SettingsPage initialTab="content" contentPage="contact" />
     </AdminQuerySuspense>,
