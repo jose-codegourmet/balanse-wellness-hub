@@ -194,8 +194,16 @@ describe("FE-PUB public page contracts", () => {
     expect(filterPublicCoaches(coaches, "Yoga").map((coach) => coach.id)).toEqual(["coach-wolf"]);
     expect(filterPublicCoaches(coaches, "Boxing")).toEqual([]);
     const sessions = [
-      { id: "a", classId: "class-yoga", coachId: "coach-wolf" },
-      { id: "b", classId: "class-pilates", coachId: "coach-jodi" },
+      {
+        id: "a",
+        classId: "class-yoga",
+        coaches: [{ id: "coach-wolf", name: "Wolf", photoKey: "" }],
+      },
+      {
+        id: "b",
+        classId: "class-pilates",
+        coaches: [{ id: "coach-jodi", name: "Jodi", photoKey: "" }],
+      },
     ] as PublicSession[];
     expect(filterPublicSessions(sessions, { coachId: "coach-wolf" }).map((s) => s.id)).toEqual([
       "a",

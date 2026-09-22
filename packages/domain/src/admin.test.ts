@@ -18,8 +18,9 @@ const session = (id: string, extras: Partial<AdminSession> = {}): AdminSession =
   id,
   classId: "class-yoga",
   className: "Yoga",
-  coachId: "coach-wolf",
+  coaches: [{ id: "coach-wolf", name: "Wolf", photoKey: "coach-photos/wolf" }],
   coachName: "Wolf",
+  coachAssignments: [{ coachId: "coach-wolf", coachRatePhp: 650, coachRateType: "PER_SESSION" }],
   startsAt: "2026-09-16T07:00:00.000Z",
   endsAt: "2026-09-16T08:30:00.000Z",
   pricePhp: 500,
@@ -30,7 +31,6 @@ const session = (id: string, extras: Partial<AdminSession> = {}): AdminSession =
   status: "PUBLISHED",
   bookable: true,
   coachRatePhp: 650,
-  coachRateType: "PER_SESSION",
   ...extras,
 });
 
