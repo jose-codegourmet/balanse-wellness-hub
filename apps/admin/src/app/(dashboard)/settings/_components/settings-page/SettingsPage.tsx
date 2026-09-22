@@ -20,6 +20,7 @@ import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/Admin
 import { AdminPageTabs } from "@/components/balanse/page/admin-page-tabs/AdminPageTabs";
 import { useTabParam } from "@/components/balanse/page/useTabParam";
 import { adminSettingsQuery } from "@/lib/query/queries";
+import { useCanSettingsSection } from "@/modules/authorization/useAdminAccess";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { SETTINGS_TAB_LABELS, SETTINGS_TABS } from "../../_lib/settings-tabs";
 import { BusinessProfileSection } from "../business-profile-section/BusinessProfileSection";
@@ -112,10 +113,27 @@ export function SettingsPage({
   policyId,
 }: SettingsPageProps) {
   const { principal } = useMockPrincipal();
+  const canBusiness = useCanSettingsSection("business");
+  const canPayment = useCanSettingsSection("payment");
+  const canContent = useCanSettingsSection("content");
+  const canPolicies = useCanSettingsSection("policies");
+  const visibleTabs = SETTINGS_TABS.filter((item) => {
+    if (item.id === "business") return canBusiness;
+    if (item.id === "payment") return canPayment;
+    if (item.id === "content") return canContent;
+    return canPolicies;
+  });
   const query = useSuspenseQuery(adminSettingsQuery(principal));
   const settings = query.data;
-  const defaultTab = initialTab && SETTINGS_SECTIONS.includes(initialTab) ? initialTab : "business";
-  const [tab, setTab] = useTabParam("tab", SETTINGS_TABS, defaultTab);
+  const defaultTab =
+    (initialTab && visibleTabs.some((tab) => tab.id === initialTab)
+      ? initialTab
+      : visibleTabs[0]?.id) ?? "business";
+  const [tab, setTab] = useTabParam(
+    "tab",
+    visibleTabs.length ? visibleTabs : SETTINGS_TABS,
+    defaultTab,
+  );
   const router = useRouter();
   const pathname = usePathname();
   const contentPage = contentPageProp;
@@ -202,7 +220,7 @@ export function SettingsPage({
       eyebrow={tab === "content" ? "Website settings" : undefined}
       tabs={
         <AdminPageTabs
-          tabs={SETTINGS_TABS}
+          tabs={visibleTabs.length ? visibleTabs : SETTINGS_TABS}
           value={tab}
           onValueChange={(next) => requestTab(next as SettingsSection)}
           mobileBehavior="tabs"

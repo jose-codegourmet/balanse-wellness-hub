@@ -275,5 +275,9 @@ Admin React Query keys (`apps/admin/src/lib/query/keys.ts`) are rooted at
 fingerprint (staff id + role/permission revision), not the coarse
 `guest | customer | admin` shell role. Identity switches must
 `removeQueries` / `clear` before navigating through
-`firstPermittedAdminRoute`.
+`firstImplementedPermittedAdminRoute` (domain `firstPermittedAdminRoute`,
+skipping unimplemented `/staff/roles` until #297). Admin nav, guards, and
+actions consume `ADMIN_NAV_ACCESS` / `ADMIN_ROUTE_ACCESS` /
+`ADMIN_ACTION_ACCESS` via `apps/admin/src/lib/authorization/admin-access.ts`
+and `useAdminAccess` — never copy permission lists into screens.
 | `modules/` | Current home for screen-level implementations and app infrastructure (auth, public, customer, admin pages; `layout/`, `providers/`, `session/`, `notifications/`). **Do not add new route-specific screens here** — colocate them under the matching `app/` route. Promote into `src/components/` only when a second unrelated route needs the piece. Cross-cutting kits that already serve many routes (admin `forms/`, session providers) stay here or in `src/components/` until a dedicated migration. |

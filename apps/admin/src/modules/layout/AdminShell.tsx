@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { AdminNotificationHeader } from "@/components/balanse/admin-notification-header/AdminNotificationHeader";
 import { AdminSidebar } from "@/components/balanse/sidebar/admin-sidebar/AdminSidebar";
+import { useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export function AdminShell({
@@ -15,6 +16,7 @@ export function AdminShell({
   const pathname = usePathname();
   const router = useRouter();
   const { setPrincipal } = useMockPrincipal();
+  const canOpenSettings = useCanAdminRoute("/settings");
 
   return (
     <div className="flex min-h-dvh flex-col md:flex-row">
@@ -25,7 +27,7 @@ export function AdminShell({
           router.push("/login");
           router.refresh();
         }}
-        onSettings={() => router.push("/settings")}
+        onSettings={canOpenSettings ? () => router.push("/settings") : undefined}
         pathname={pathname}
       />
       <div className="min-w-0 flex-1 bg-background">

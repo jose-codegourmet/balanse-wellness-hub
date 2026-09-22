@@ -19,6 +19,7 @@ import {
   useSetAdminBundleStatus,
 } from "@/lib/query/mutations";
 import { adminBundleAcquisitionsQuery, adminBundlesQuery } from "@/lib/query/queries";
+import { AdminCan, useCanAdminAction } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
@@ -36,6 +37,7 @@ function statusVariant(status: BundleDefinition["status"]) {
 
 export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
   const { principal } = useMockPrincipal();
+  const canManageBundles = useCanAdminAction("bundles-manage");
   const bundlesQuery = useSuspenseQuery(adminBundlesQuery(principal));
   const acquisitionsQuery = useSuspenseQuery(adminBundleAcquisitionsQuery(principal));
   const setStatus = useSetAdminBundleStatus();
@@ -86,9 +88,11 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
     <AdminPageShell
       title="Bundles"
       actions={
-        <Button nativeButton={false} render={<Link href="/bundles/new" />}>
-          Add package
-        </Button>
+        <AdminCan action="bundles-manage">
+          <Button nativeButton={false} render={<Link href="/bundles/new" />}>
+            Add package
+          </Button>
+        </AdminCan>
       }
     >
       <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
@@ -115,35 +119,39 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
           searchPlaceholder="Search packages"
           emptyStateId="admin.no-bundles"
           emptyFilterLabel="No packages match your filter."
-          rowActions={(row) => [
-            { id: "edit", label: "Edit", href: `/bundles/${row.id}` },
-            {
-              id: "publish",
-              label: row.status === "PUBLISHED" ? "Unpublish" : "Publish",
-              onClick: (current) => {
-                void setStatus
-                  .mutateAsync({
-                    id: current.id,
-                    status: current.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED",
-                  })
-                  .then(() => notify.admin("bundle.status-updated"))
-                  .catch(() => notify.admin("bundle.status-failed"));
-              },
-            },
-            {
-              id: "archive",
-              label: row.status === "ARCHIVED" ? "Restore draft" : "Archive",
-              onClick: (current) => {
-                void setStatus
-                  .mutateAsync({
-                    id: current.id,
-                    status: current.status === "ARCHIVED" ? "DRAFT" : "ARCHIVED",
-                  })
-                  .then(() => notify.admin("bundle.status-updated"))
-                  .catch(() => notify.admin("bundle.status-failed"));
-              },
-            },
-          ]}
+          rowActions={
+            canManageBundles
+              ? (row) => [
+                  { id: "edit", label: "Edit", href: `/bundles/${row.id}` },
+                  {
+                    id: "publish",
+                    label: row.status === "PUBLISHED" ? "Unpublish" : "Publish",
+                    onClick: (current) => {
+                      void setStatus
+                        .mutateAsync({
+                          id: current.id,
+                          status: current.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED",
+                        })
+                        .then(() => notify.admin("bundle.status-updated"))
+                        .catch(() => notify.admin("bundle.status-failed"));
+                    },
+                  },
+                  {
+                    id: "archive",
+                    label: row.status === "ARCHIVED" ? "Restore draft" : "Archive",
+                    onClick: (current) => {
+                      void setStatus
+                        .mutateAsync({
+                          id: current.id,
+                          status: current.status === "ARCHIVED" ? "DRAFT" : "ARCHIVED",
+                        })
+                        .then(() => notify.admin("bundle.status-updated"))
+                        .catch(() => notify.admin("bundle.status-failed"));
+                    },
+                  },
+                ]
+              : (row) => [{ id: "view", label: "View", href: `/bundles/${row.id}` }]
+          }
         />
       )}
 
@@ -162,33 +170,35 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
                       {row.customerId} · {formatPeso(row.pricePhp)} · manual review
                     </p>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => {
-                        void approve
-                          .mutateAsync(row.id)
-                          .then(() => notify.admin("bundle.acquisition-reviewed"))
-                          .catch(() => notify.admin("bundle.review-failed"));
-                      }}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        void reject
-                          .mutateAsync({ id: row.id, reason: "Manual review rejected" })
-                          .then(() => notify.admin("bundle.acquisition-reviewed"))
-                          .catch(() => notify.admin("bundle.review-failed"));
-                      }}
-                    >
-                      Reject
-                    </Button>
-                  </div>
+                  <AdminCan action="bundles-manage">
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          void approve
+                            .mutateAsync(row.id)
+                            .then(() => notify.admin("bundle.acquisition-reviewed"))
+                            .catch(() => notify.admin("bundle.review-failed"));
+                        }}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          void reject
+                            .mutateAsync({ id: row.id, reason: "Manual review rejected" })
+                            .then(() => notify.admin("bundle.acquisition-reviewed"))
+                            .catch(() => notify.admin("bundle.review-failed"));
+                        }}
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  </AdminCan>
                 </div>
               </li>
             ))}

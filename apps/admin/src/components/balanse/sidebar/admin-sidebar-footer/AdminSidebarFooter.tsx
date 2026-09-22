@@ -1,6 +1,6 @@
 "use client";
 
-import { MOCK_ADMIN_CREDENTIALS } from "@balanse/domain";
+import { roleLabel } from "@balanse/domain";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,11 +41,13 @@ export function AdminSidebarFooter({
   className,
   ...props
 }: AdminSidebarFooterProps) {
-  const { principal } = useMockPrincipal();
+  const { principal, actor } = useMockPrincipal();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const email = MOCK_ADMIN_CREDENTIALS[0].email;
+  const email = actor?.email ?? "staff@balanse.example";
   const initials = email.slice(0, 1).toUpperCase();
-  const roleLabel = ROLE_LABELS[principal.role] ?? principal.role;
+  const accountLabel = actor
+    ? roleLabel(actor.roleKey)
+    : (ROLE_LABELS[principal.role] ?? principal.role);
 
   return (
     <div
@@ -57,7 +59,7 @@ export function AdminSidebarFooter({
     >
       <DropdownMenu>
         <DropdownMenuTrigger
-          aria-label={`${roleLabel}, ${email}`}
+          aria-label={`${accountLabel}, ${email}`}
           className={cn(
             "inline-flex h-12 w-full items-center rounded-lg bg-sidebar-accent text-sidebar-foreground ring-1 ring-sidebar-border outline-none transition-colors hover:bg-[color-mix(in_oklab,var(--sidebar-accent)_80%,var(--balanse-tan))] focus-visible:ring-2 focus-visible:ring-sidebar-ring",
             collapsed ? "justify-center px-0" : "gap-2 px-2",
@@ -70,17 +72,21 @@ export function AdminSidebarFooter({
           </Avatar>
           {collapsed ? null : (
             <span className="min-w-0 flex-1 truncate text-left">
-              <span className="block text-sm font-medium">{roleLabel}</span>
+              <span className="block text-sm font-medium">{accountLabel}</span>
               <span className="block truncate text-xs text-sidebar-foreground/55">{email}</span>
             </span>
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => onSettings?.()}>Settings</DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
+          {onSettings ? (
+            <>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => onSettings()}>Settings</DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+            </>
+          ) : null}
           <DropdownMenuItem onClick={() => setConfirmOpen(true)} variant="destructive">
             Log out
           </DropdownMenuItem>

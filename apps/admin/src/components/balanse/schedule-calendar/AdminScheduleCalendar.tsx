@@ -182,7 +182,7 @@ export function AdminScheduleCalendar({
           today={localDateFromYmd(todayYmd)}
           defaultMonth={localDateFromYmd(startOfManilaMonth(selectedDay))}
           defaultSelectedDay={localDateFromYmd(selectedDay)}
-          addEventLabel="Create Session"
+          addEventLabel={onCreateSession ? "Create Session" : undefined}
           onMonthChange={(month) => onSelectDay(startOfManilaMonth(ymdFromLocalDate(month)))}
           onSelectDay={(day) => {
             const ymd = ymdFromLocalDate(day);
@@ -190,7 +190,7 @@ export function AdminScheduleCalendar({
             const match = sessionsOnDay(sessions, ymd)[0];
             onSelectSession(match?.id ?? null);
           }}
-          onAddEvent={(day) => onCreateSession(ymdFromLocalDate(day))}
+          onAddEvent={onCreateSession ? (day) => onCreateSession(ymdFromLocalDate(day)) : undefined}
         />
       ) : null}
 
@@ -230,7 +230,6 @@ function WeekView({
   selectedSessionId,
   onSelectDay,
   onSelectSession,
-  onCreateSession,
 }: {
   days: string[];
   sessions: AdminSession[];
@@ -239,7 +238,7 @@ function WeekView({
   selectedSessionId: string | null;
   onSelectDay: (ymd: string) => void;
   onSelectSession: (id: string | null) => void;
-  onCreateSession: (ymd: string) => void;
+  onCreateSession?: (ymd: string) => void;
 }) {
   return (
     <div className="grid grid-cols-1 gap-2 p-3 sm:grid-cols-7">
@@ -264,7 +263,6 @@ function WeekView({
                 aria-current={isSelected ? "date" : undefined}
                 onClick={() => {
                   onSelectDay(ymd);
-                  onCreateSession(ymd);
                 }}
                 onKeyDown={(event) => {
                   if (event.key === "ArrowLeft") {
@@ -320,7 +318,7 @@ function DayView({
   selectedSessionId: string | null;
   onSelectDay: (ymd: string) => void;
   onSelectSession: (id: string | null) => void;
-  onCreateSession: (ymd: string) => void;
+  onCreateSession?: (ymd: string) => void;
 }) {
   return (
     <div className="grid gap-3 p-4">
@@ -338,21 +336,30 @@ function DayView({
             }}
           />
         </label>
-        <Button type="button" onClick={() => onCreateSession(ymd)}>
-          Create Session
-        </Button>
+        {onCreateSession ? (
+          <Button type="button" onClick={() => onCreateSession(ymd)}>
+            Create Session
+          </Button>
+        ) : null}
       </div>
       {sessions.length === 0 ? (
-        <button
-          type="button"
-          className={cn(
-            "min-h-24 rounded-xl border border-dashed border-border p-4 text-left text-sm text-muted-foreground",
-            ymd === todayYmd && "ring-1 ring-accent",
-          )}
-          onClick={() => onCreateSession(ymd)}
-        >
-          Nothing scheduled on {formatSessionDate(`${ymd}T04:00:00.000Z`)}. Tap to create a session.
-        </button>
+        onCreateSession ? (
+          <button
+            type="button"
+            className={cn(
+              "min-h-24 rounded-xl border border-dashed border-border p-4 text-left text-sm text-muted-foreground",
+              ymd === todayYmd && "ring-1 ring-accent",
+            )}
+            onClick={() => onCreateSession(ymd)}
+          >
+            Nothing scheduled on {formatSessionDate(`${ymd}T04:00:00.000Z`)}. Tap to create a
+            session.
+          </button>
+        ) : (
+          <p className="min-h-24 rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+            Nothing scheduled on {formatSessionDate(`${ymd}T04:00:00.000Z`)}.
+          </p>
+        )
       ) : (
         <ul className="grid gap-2" aria-label="Sessions on selected day">
           {sessions.map((session) => (

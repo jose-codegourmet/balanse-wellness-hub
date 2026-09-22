@@ -1,4 +1,4 @@
-import { firstPermittedAdminRoute, type StaffAuthorizationActor } from "@balanse/domain";
+import type { StaffAuthorizationActor } from "@balanse/domain";
 import { mockStaffAuthorizationFingerprint } from "@balanse/mock";
 import {
   bindMockPrincipal,
@@ -6,6 +6,7 @@ import {
   resolveMockStaffActor,
 } from "@balanse/mock/session";
 import type { QueryClient } from "@tanstack/react-query";
+import { firstImplementedPermittedAdminRoute } from "@/lib/authorization/admin-access";
 
 /** Opaque query-key partition. Never pass a bare `guest|customer|admin` role. */
 export type AdminAuthScope = string;
@@ -30,7 +31,7 @@ export function allowedAdminRouteForPrincipal(
   fallback = "/login",
 ): string {
   const actor = resolveMockStaffActor(principal);
-  return firstPermittedAdminRoute(actor, fallback) ?? fallback;
+  return firstImplementedPermittedAdminRoute(actor, fallback) ?? fallback;
 }
 
 export type ResolveAllowedAdminRoute = (

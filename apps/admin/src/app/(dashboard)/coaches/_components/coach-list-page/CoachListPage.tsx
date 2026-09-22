@@ -16,6 +16,7 @@ import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/Admin
 import { adminNowIso } from "@/lib/clock";
 import { useUpsertAdminCoach } from "@/lib/query/mutations";
 import { adminCoachesQuery, adminSessionsQuery } from "@/lib/query/queries";
+import { AdminCan, useCanAdminAction } from "@/modules/authorization/useAdminAccess";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export type CoachListPageProps = {
@@ -50,7 +51,8 @@ export function CoachListPage({
   extraSpecialties,
 }: CoachListPageProps) {
   const { principal } = useMockPrincipal();
-  const canSeeRates = principal.role === "admin";
+  const canSeeRates = useCanAdminAction("coach-rates-read");
+  const canManageCoaches = useCanAdminAction("coaches-manage");
   const coachesQuery = useSuspenseQuery(adminCoachesQuery(principal));
   const sessionsQuery = useSuspenseQuery(adminSessionsQuery(principal));
   const upsertCoach = useUpsertAdminCoach();
@@ -171,9 +173,11 @@ export function CoachListPage({
     <AdminPageShell
       title="Coaches"
       actions={
-        <Button nativeButton={false} render={<Link href="/coaches/new" />}>
-          Add Coach
-        </Button>
+        <AdminCan action="coaches-manage">
+          <Button nativeButton={false} render={<Link href="/coaches/new" />}>
+            Add Coach
+          </Button>
+        </AdminCan>
       }
     >
       {loading ? (
@@ -201,25 +205,29 @@ export function CoachListPage({
           searchPlaceholder="Search coaches"
           emptyStateId="admin.no-coaches"
           emptyFilterLabel="No coaches match your filter."
-          rowActions={(row) => [
-            { id: "edit", label: "Edit", href: `/coaches/${row.id}` },
-            {
-              id: row.active ? "deactivate" : "activate",
-              label: row.active ? "Deactivate" : "Activate",
-              onClick: (current) => {
-                void upsertCoach.mutateAsync({
-                  id: current.id,
-                  name: current.name,
-                  specialties: current.specialties,
-                  shortBio: current.shortBio,
-                  photoKey: current.photoKey,
-                  active: !current.active,
-                  defaultRatePhp: current.defaultRatePhp,
-                  rateType: current.rateType,
-                });
-              },
-            },
-          ]}
+          rowActions={
+            canManageCoaches
+              ? (row) => [
+                  { id: "edit", label: "Edit", href: `/coaches/${row.id}` },
+                  {
+                    id: row.active ? "deactivate" : "activate",
+                    label: row.active ? "Deactivate" : "Activate",
+                    onClick: (current) => {
+                      void upsertCoach.mutateAsync({
+                        id: current.id,
+                        name: current.name,
+                        specialties: current.specialties,
+                        shortBio: current.shortBio,
+                        photoKey: current.photoKey,
+                        active: !current.active,
+                        defaultRatePhp: current.defaultRatePhp,
+                        rateType: current.rateType,
+                      });
+                    },
+                  },
+                ]
+              : undefined
+          }
         />
       )}
     </AdminPageShell>

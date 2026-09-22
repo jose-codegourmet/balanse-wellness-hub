@@ -9,6 +9,7 @@ import { useCallback, useMemo } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
 import type { AdminDataTableRowAction } from "@/components/balanse/data-table/admin-data-table/AdminDataTable.meta";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
+import { AdminCan, useCanAdminAction } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
 import { useClassCatalogue } from "../class-catalogue-provider/ClassCatalogueProvider";
 import { ClassDatabaseAccess } from "../class-database-access/ClassDatabaseAccess";
@@ -32,6 +33,7 @@ export function ClassListPage({ empty, loading, error }: ClassListPageProps) {
   const upsert = catalogue.mutation;
   const coaches = classesQuery.data.coaches;
   const canSave = classesQuery.data.canSave;
+  const canManageClasses = useCanAdminAction("classes-manage");
   const rows = empty ? [] : classesQuery.data.classes;
 
   const saveClass = useCallback(
@@ -137,7 +139,7 @@ export function ClassListPage({ empty, loading, error }: ClassListPageProps) {
 
   const rowActions = useCallback(
     (row: AdminClass): AdminDataTableRowAction<AdminClass>[] =>
-      !canSave
+      !canSave || !canManageClasses
         ? [{ id: "edit", label: "View editor", href: `/classes/${row.id}` }]
         : [
             {
@@ -185,7 +187,7 @@ export function ClassListPage({ empty, loading, error }: ClassListPageProps) {
               },
             },
           ],
-    [saveClass, canSave],
+    [saveClass, canSave, canManageClasses],
   );
 
   return (
@@ -193,9 +195,11 @@ export function ClassListPage({ empty, loading, error }: ClassListPageProps) {
       className="min-w-0 [&>div]:min-w-0"
       title="Classes"
       actions={
-        <Link href="/classes/new" className={buttonVariants()}>
-          Add Class
-        </Link>
+        <AdminCan action="classes-manage">
+          <Link href="/classes/new" className={buttonVariants()}>
+            Add Class
+          </Link>
+        </AdminCan>
       }
     >
       <div className="mb-4">

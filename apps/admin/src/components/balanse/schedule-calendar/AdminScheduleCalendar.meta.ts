@@ -13,7 +13,7 @@ export type AdminScheduleCalendarProps = {
   onViewChange?: (view: AdminCalendarView) => void;
   onSelectDay: (ymd: string) => void;
   onSelectSession: (sessionId: string | null) => void;
-  onCreateSession: (ymd: string) => void;
+  onCreateSession?: (ymd: string) => void;
   loading?: boolean;
   className?: string;
 };

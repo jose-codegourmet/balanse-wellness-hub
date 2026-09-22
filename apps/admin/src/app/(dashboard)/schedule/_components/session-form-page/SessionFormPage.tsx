@@ -67,6 +67,7 @@ import {
   toSessionIso,
 } from "@/modules/admin/forms/session/session-form.schema";
 import { useUnsavedChangesGuard } from "@/modules/admin/forms/useUnsavedChangesGuard";
+import { useCanAdminAction } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import type { SessionFormPageProps } from "./SessionFormPage.schema";
@@ -104,7 +105,8 @@ export function sessionWizardSteps(canSeeRates: boolean): AdminWizardStep[] {
 export function SessionFormPage({ sessionId, date, surface = "page", step }: SessionFormPageProps) {
   const isNew = sessionId === "new";
   const { principal } = useMockPrincipal();
-  const canSeeRates = principal.role === "admin";
+  const canSeeRates = useCanAdminAction("coach-rates-read");
+  const canCancelSession = useCanAdminAction("schedule-cancel");
   const classesQuery = useQuery(adminClassesQuery(principal));
   const coachesQuery = useQuery(adminCoachesQuery(principal));
   const sessionsQuery = useQuery(adminSessionsQuery(principal));
@@ -188,7 +190,7 @@ export function SessionFormPage({ sessionId, date, surface = "page", step }: Ses
         coaches={coaches}
         assignments={existing?.coachAssignments ?? []}
         canSeeRates={canSeeRates}
-        canCancel={!isNew && existing?.status !== "CANCELLED"}
+        canCancel={!isNew && existing?.status !== "CANCELLED" && canCancelSession}
         surface={surface}
         step={step}
         onLeaveList={leaveList}

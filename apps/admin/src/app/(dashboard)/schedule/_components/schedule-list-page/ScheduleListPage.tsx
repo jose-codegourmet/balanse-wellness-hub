@@ -15,6 +15,11 @@ import {
 } from "@/components/balanse/schedule-calendar/AdminScheduleCalendar";
 import { adminTodayYmd } from "@/lib/clock";
 import { adminBookingsQuery, adminSessionsQuery } from "@/lib/query/queries";
+import {
+  AdminCan,
+  useCanAdminAction,
+  useCanAdminRoute,
+} from "@/modules/authorization/useAdminAccess";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { createSessionHref } from "../../_lib/schedule-href";
 import { SelectedSessionPanel } from "../selected-session-panel/SelectedSessionPanel";
@@ -78,8 +83,13 @@ function ScheduleListPageInner({
 }) {
   const router = useRouter();
   const { principal } = useMockPrincipal();
+  const canReadBookings = useCanAdminRoute("/bookings");
+  const canCreate = useCanAdminAction("schedule-create");
   const sessionsQuery = useSuspenseQuery(adminSessionsQuery(principal));
-  const bookingsQuery = useQuery(adminBookingsQuery(principal));
+  const bookingsQuery = useQuery({
+    ...adminBookingsQuery(principal),
+    enabled: canReadBookings,
+  });
   const sessions = empty ? [] : sessionsQuery.data;
   const bookings = bookingsQuery.data ?? [];
   const todayYmd = adminTodayYmd();
@@ -97,21 +107,25 @@ function ScheduleListPageInner({
       title="Schedule"
       actions={
         <>
-          <Button
-            nativeButton={false}
-            variant="outline"
-            render={
-              <Link
-                href={`/schedule/duplicate?from=${selectedDay}&to=${addCalendarDays(selectedDay, 6)}`}
-              />
-            }
-          >
-            <Copy className="size-4" aria-hidden />
-            Duplicate range
-          </Button>
-          <Button nativeButton={false} render={<Link href={createSessionHref(selectedDay)} />}>
-            Create Session
-          </Button>
+          <AdminCan action="schedule-recurrence">
+            <Button
+              nativeButton={false}
+              variant="outline"
+              render={
+                <Link
+                  href={`/schedule/duplicate?from=${selectedDay}&to=${addCalendarDays(selectedDay, 6)}`}
+                />
+              }
+            >
+              <Copy className="size-4" aria-hidden />
+              Duplicate range
+            </Button>
+          </AdminCan>
+          <AdminCan action="schedule-create">
+            <Button nativeButton={false} render={<Link href={createSessionHref(selectedDay)} />}>
+              Create Session
+            </Button>
+          </AdminCan>
         </>
       }
     >
@@ -131,7 +145,7 @@ function ScheduleListPageInner({
               setSelectedId(match?.id ?? null);
             }}
             onSelectSession={setSelectedId}
-            onCreateSession={(ymd) => router.push(createSessionHref(ymd))}
+            onCreateSession={canCreate ? (ymd) => router.push(createSessionHref(ymd)) : undefined}
           />
         </div>
         <div className="mt-8 xl:sticky xl:top-8 xl:mt-0">
@@ -148,10 +162,10 @@ function ScheduleListPageInner({
                   bookings.filter((booking) => booking.sessionId === selected.id),
                 )}
               />
-              <CreateOnDateCard ymd={selectedDay} />
+              {canCreate ? <CreateOnDateCard ymd={selectedDay} /> : null}
             </div>
           ) : (
-            <EmptyDayPanel ymd={selectedDay} />
+            <EmptyDayPanel ymd={selectedDay} canCreate={canCreate} />
           )}
         </div>
       </div>
@@ -159,18 +173,22 @@ function ScheduleListPageInner({
   );
 }
 
-function EmptyDayPanel({ ymd }: { ymd: string }) {
+function EmptyDayPanel({ ymd, canCreate }: { ymd: string; canCreate: boolean }) {
   return (
     <aside className="rounded-xl border border-dashed border-border bg-card p-4">
       <h2 className="font-display text-2xl">No sessions</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Nothing is scheduled on {ymd}. Create a session on this date.
+        {canCreate
+          ? `Nothing is scheduled on ${ymd}. Create a session on this date.`
+          : `Nothing is scheduled on ${ymd}.`}
       </p>
-      <div className="mt-4">
-        <Button nativeButton={false} render={<Link href={createSessionHref(ymd)} />}>
-          Create session
-        </Button>
-      </div>
+      {canCreate ? (
+        <div className="mt-4">
+          <Button nativeButton={false} render={<Link href={createSessionHref(ymd)} />}>
+            Create session
+          </Button>
+        </div>
+      ) : null}
     </aside>
   );
 }

@@ -30,6 +30,7 @@ import {
   adminClassesQuery,
   adminCustomersQuery,
 } from "@/lib/query/queries";
+import { AdminCan } from "@/modules/authorization/useAdminAccess";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 function customerNameLookup(customers: { id: string; fullName: string }[]) {
@@ -193,7 +194,9 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
         <StatusBadge status={booking.status} surface="admin" />
         <p className="text-sm">Payment: {paymentStatusLabel(booking.paymentStatus)}</p>
         {booking.refundStatus !== "NOT_APPLICABLE" ? (
-          <p className="text-sm">Refund: {refundStatusLabel(booking.refundStatus)}</p>
+          <AdminCan action="refunds-read">
+            <p className="text-sm">Refund: {refundStatusLabel(booking.refundStatus)}</p>
+          </AdminCan>
         ) : null}
       </div>
       {policies ? <p className="mt-3 text-sm">{policies}</p> : null}
@@ -213,31 +216,39 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
         </dialog>
       ) : null}
       <div className="mt-6 grid gap-3">
-        <ConfirmAction
-          triggerLabel="Confirm"
-          title="Confirm this booking?"
-          description={actorStamp}
-          onConfirm={() => getMockAdapter().confirmAdminBooking(booking.id).then(refresh)}
-        />
-        <div className="grid gap-2">
-          <Label htmlFor="reject-reason">Reject reason</Label>
-          <Input
-            id="reject-reason"
-            value={reason}
-            onChange={(event) => setReason(event.target.value)}
-          />
+        <AdminCan action="bookings-confirm">
           <ConfirmAction
-            triggerLabel="Reject"
-            title="Reject this booking?"
-            description={`${actorStamp} A free-text reason is stored. Refund eligibility rules are not implied.`}
-            variant="outline"
-            disabled={!reason.trim()}
-            onConfirm={() => getMockAdapter().rejectAdminBooking(booking.id, reason).then(refresh)}
+            triggerLabel="Confirm"
+            title="Confirm this booking?"
+            description={actorStamp}
+            onConfirm={() => getMockAdapter().confirmAdminBooking(booking.id).then(refresh)}
           />
-        </div>
-        <Button type="button" variant="outline" onClick={() => setProofOpen(true)}>
-          View proof
-        </Button>
+        </AdminCan>
+        <AdminCan action="bookings-reject">
+          <div className="grid gap-2">
+            <Label htmlFor="reject-reason">Reject reason</Label>
+            <Input
+              id="reject-reason"
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+            />
+            <ConfirmAction
+              triggerLabel="Reject"
+              title="Reject this booking?"
+              description={`${actorStamp} A free-text reason is stored. Refund eligibility rules are not implied.`}
+              variant="outline"
+              disabled={!reason.trim()}
+              onConfirm={() =>
+                getMockAdapter().rejectAdminBooking(booking.id, reason).then(refresh)
+              }
+            />
+          </div>
+        </AdminCan>
+        <AdminCan action="payments-review">
+          <Button type="button" variant="outline" onClick={() => setProofOpen(true)}>
+            View proof
+          </Button>
+        </AdminCan>
         <Button
           type="button"
           variant="outline"
@@ -256,25 +267,31 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
         >
           View policy acceptance
         </Button>
-        <Link className="underline underline-offset-4" href="/cancellations">
-          Open cancellation request
-        </Link>
-        <Link className="underline underline-offset-4" href="/reschedules">
-          Open reschedule request
-        </Link>
-        <ConfirmAction
-          triggerLabel="Check in"
-          title="Check this guest in?"
-          description={actorStamp}
-          onConfirm={() => getMockAdapter().checkIn(booking.id).then(refresh)}
-        />
-        <ConfirmAction
-          triggerLabel="Mark no-show"
-          title="Mark as no-show?"
-          description={`${actorStamp} No refund is issued.`}
-          variant="outline"
-          onConfirm={() => getMockAdapter().markNoShow(booking.id).then(refresh)}
-        />
+        <AdminCan href="/cancellations">
+          <Link className="underline underline-offset-4" href="/cancellations">
+            Open cancellation request
+          </Link>
+        </AdminCan>
+        <AdminCan href="/reschedules">
+          <Link className="underline underline-offset-4" href="/reschedules">
+            Open reschedule request
+          </Link>
+        </AdminCan>
+        <AdminCan action="attendance">
+          <ConfirmAction
+            triggerLabel="Check in"
+            title="Check this guest in?"
+            description={actorStamp}
+            onConfirm={() => getMockAdapter().checkIn(booking.id).then(refresh)}
+          />
+          <ConfirmAction
+            triggerLabel="Mark no-show"
+            title="Mark as no-show?"
+            description={`${actorStamp} No refund is issued.`}
+            variant="outline"
+            onConfirm={() => getMockAdapter().markNoShow(booking.id).then(refresh)}
+          />
+        </AdminCan>
       </div>
     </AdminPageShell>
   );

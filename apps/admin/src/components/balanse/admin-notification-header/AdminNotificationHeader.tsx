@@ -1,5 +1,6 @@
 "use client";
 
+import { DASHBOARD_READ_PERMISSIONS, hasAnyPermission } from "@balanse/domain";
 import {
   Badge,
   Button,
@@ -13,6 +14,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Bell, CalendarClock, ChevronRight, CircleAlert, CreditCard, Ticket } from "lucide-react";
 import Link from "next/link";
+import { canAccessAdminHref } from "@/lib/authorization/admin-access";
 import { adminDashboardQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import type { AdminNotificationHeaderProps } from "./AdminNotificationHeader.meta";
@@ -21,8 +23,11 @@ export function AdminNotificationHeader({
   pathname,
   compact = false,
 }: AdminNotificationHeaderProps) {
-  const { principal } = useMockPrincipal();
-  const { data } = useQuery(adminDashboardQuery(principal));
+  const { principal, actor } = useMockPrincipal();
+  const { data } = useQuery({
+    ...adminDashboardQuery(principal),
+    enabled: hasAnyPermission(actor, DASHBOARD_READ_PERMISSIONS),
+  });
   const items = data
     ? [
         {
@@ -57,7 +62,7 @@ export function AdminNotificationHeader({
           href: "/reschedules",
           icon: CalendarClock,
         },
-      ].filter((item) => item.count > 0)
+      ].filter((item) => item.count > 0 && canAccessAdminHref(actor, item.href))
     : [];
   const total = items.reduce((sum, item) => sum + item.count, 0);
 

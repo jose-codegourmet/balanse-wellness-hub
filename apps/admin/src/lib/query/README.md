@@ -66,7 +66,9 @@ queryClient.invalidateQueries({ queryKey: adminKeys.bookings.all(scope) });
 
 ## Cache + mock principal
 
-Identity switches go through `useSwitchAuthorizedIdentity`, which calls `removeAuthorizedAdminCache` (remove `["admin"]` + `clear`) and navigates with a consumer-supplied allowed-route function (`firstPermittedAdminRoute` by default). Clear, do not invalidate — another staff principal’s data must not stay reachable even briefly.
+Identity switches go through `useSwitchAuthorizedIdentity`, which calls `removeAuthorizedAdminCache` (remove `["admin"]` + `clear`) and navigates to the first implemented permitted route (`firstImplementedPermittedAdminRoute`, wrapping `firstPermittedAdminRoute` and skipping `/staff/roles` until #297). Clear, do not invalidate — another staff principal’s data must not stay reachable even briefly.
+
+Admin UI permission checks live in `apps/admin/src/lib/authorization/admin-access.ts` and `useAdminAccess`. They consume `ADMIN_*_ACCESS` from `@balanse/domain` — do not copy permission lists. Sidebar and mobile share `visibleAdminNavItems`. `AdminGuard` presents login / forbidden / revoked / 403. Screens hide actions with `AdminCan` / `useCanAdminAction`.
 
 `AdminSidebar` still calls `getAdminDashboard()` directly. FE-ADM-016 (#205) should adopt `adminDashboardQuery` so `/dashboard` and the sidebar share one key.
 

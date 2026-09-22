@@ -23,11 +23,16 @@ import {
   adminReportsQuery,
   adminSessionReportQuery,
 } from "@/lib/query/queries";
+import { useCanAdminAction } from "@/modules/authorization/useAdminAccess";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { ReportsFilterForm } from "./reports-filter-form/ReportsFilterForm";
 
 export function ReportsPage({ empty }: { empty?: boolean }) {
   const { principal } = useMockPrincipal();
+  const canSales = useCanAdminAction("reports-sales");
+  const canCapacity = useCanAdminAction("reports-capacity");
+  const canCoachCosts = useCanAdminAction("reports-coach-costs");
+  const canSession = useCanAdminAction("reports-session");
   const [from, setFrom] = useState("2026-09-01");
   const [to, setTo] = useState("2026-09-30");
   const [classId, setClassId] = useState("all");
@@ -144,16 +149,18 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
 
   return (
     <AdminPageShell title="Reports">
-      <ReportsOverview
-        hideTitle
-        reports={reports}
-        from={from}
-        to={to}
-        onRangeChange={(next) => {
-          setFrom(next.from);
-          setTo(next.to);
-        }}
-      />
+      {canSales ? (
+        <ReportsOverview
+          hideTitle
+          reports={reports}
+          from={from}
+          to={to}
+          onRangeChange={(next) => {
+            setFrom(next.from);
+            setTo(next.to);
+          }}
+        />
+      ) : null}
       <ReportsFilterForm
         classes={classes}
         coachFilterOptions={coachFilterOptions}
@@ -170,34 +177,55 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
         <p className="mt-8 text-sm text-muted-foreground">No data for the selected range.</p>
       ) : (
         <div className="mt-10 grid gap-10">
-          <AdminDataTable
-            tableId="reports-classes"
-            title="Class Performance"
-            data={reports.classPerformance}
-            columns={classColumns}
-            getRowId={(row) => row.classId}
-            searchPlaceholder="Search classes"
-          />
-          <p className="text-sm text-muted-foreground">
-            Coach costs use each coach’s saved rate. Related revenue includes the full class session
-            for each coach and should not be added across coaches.
-          </p>
-          <AdminDataTable
-            tableId="reports-coaches"
-            title="Coach Costs"
-            data={reports.coachCosts}
-            columns={coachColumns}
-            getRowId={(row) => row.coachId}
-            searchPlaceholder="Search coaches"
-          />
-          <AdminDataTable
-            tableId="reports-sessions"
-            title="Session Performance"
-            data={reports.sessionPerformance}
-            columns={sessionColumns}
-            getRowId={(row) => row.sessionId}
-            searchPlaceholder="Search sessions"
-          />
+          {canSales || canCapacity ? (
+            <AdminDataTable
+              tableId="reports-classes"
+              title="Class Performance"
+              data={reports.classPerformance}
+              columns={
+                canSales
+                  ? classColumns
+                  : classColumns.filter(
+                      (column) => !("accessorKey" in column && column.accessorKey === "revenuePhp"),
+                    )
+              }
+              getRowId={(row) => row.classId}
+              searchPlaceholder="Search classes"
+            />
+          ) : null}
+          {canCoachCosts ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Coach costs use each coach’s saved rate. Related revenue includes the full class
+                session for each coach and should not be added across coaches.
+              </p>
+              <AdminDataTable
+                tableId="reports-coaches"
+                title="Coach Costs"
+                data={reports.coachCosts}
+                columns={coachColumns}
+                getRowId={(row) => row.coachId}
+                searchPlaceholder="Search coaches"
+              />
+            </>
+          ) : null}
+          {canSession ? (
+            <AdminDataTable
+              tableId="reports-sessions"
+              title="Session Performance"
+              data={reports.sessionPerformance}
+              columns={
+                canCoachCosts
+                  ? sessionColumns
+                  : sessionColumns.filter(
+                      (column) =>
+                        !("accessorKey" in column && column.accessorKey === "coachCostPhp"),
+                    )
+              }
+              getRowId={(row) => row.sessionId}
+              searchPlaceholder="Search sessions"
+            />
+          ) : null}
         </div>
       )}
     </AdminPageShell>
