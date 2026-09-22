@@ -1,8 +1,9 @@
 import type { AdminPaymentTab, PermissionKey } from "@balanse/domain";
-import { hasPermission, isSuperAdminRoleKey } from "@balanse/domain";
+import { canGrantPermissions, hasPermission, isSuperAdminRoleKey } from "@balanse/domain";
 import type { AdminPaymentQueueQuery, MockDataAdapter } from "./adapter";
 import {
   assertLastSuperAdminDisable,
+  MockAuthorizationError,
   redactDashboardFinancials,
   redactReports,
   requireAnyPermission,
@@ -217,6 +218,28 @@ export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter
     upsertAdminStaff: (input) => {
       requirePermission("staff.manage");
       return inner.upsertAdminStaff(input);
+    },
+    getAdminStaffRoles: () => {
+      requireAnyPermission(["roles.read", "roles.manage"]);
+      return inner.getAdminStaffRoles();
+    },
+    getAdminStaffRole: (id) => {
+      requireAnyPermission(["roles.read", "roles.manage"]);
+      return inner.getAdminStaffRole(id);
+    },
+    upsertAdminStaffRole: (input) => {
+      const actor = requirePermission("roles.manage");
+      if (!canGrantPermissions(actor, input.permissionKeys)) {
+        throw new MockAuthorizationError(
+          "forbidden",
+          "You can only grant permissions your own role already has.",
+        );
+      }
+      return inner.upsertAdminStaffRole(input);
+    },
+    archiveAdminStaffRole: (id) => {
+      requirePermission("roles.manage");
+      return inner.archiveAdminStaffRole(id);
     },
     disableAdminStaff: async (id) => {
       requirePermission("staff.manage");

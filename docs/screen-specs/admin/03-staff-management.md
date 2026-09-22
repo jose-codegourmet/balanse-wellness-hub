@@ -22,18 +22,21 @@ filter on the derived `isCoach` capability — not the authorization role.
 
 No public admin registration.
 
-## Role management (planned screens — #297)
+## Role management (#297)
 
-- `/staff/roles`
-- `/staff/roles/new`
-- `/staff/roles/[roleId]`
+- `/staff/roles` — catalogue with loading, empty, error, and forbidden states
+- `/staff/roles/new` — create or clone (`?from=roleId`)
+- `/staff/roles/[roleId]` — view built-in / edit custom / archive unassigned custom
 
 List: name, built-in/custom, active/archived, assigned staff count,
-permission count, actions.
+permission count, view/edit and clone.
 
 Create/edit form: name, description, grouped checklist from
-`PERMISSION_REGISTRY`, select/clear group, sensitive-permission copy,
-clone-from-role, live accessible-pages summary. Built-in keys cannot change.
+`PERMISSION_REGISTRY` (never a local key list), select/clear group,
+sensitive-permission warnings, clone-from-role, live accessible-pages and
+sensitive-data summary. Built-in keys cannot change. Zero-permission roles
+cannot save. Mock writes go through `getAdminStaffRoles` /
+`upsertAdminStaffRole` — no UI `/api` or Supabase.
 
 ## Assignment rules
 

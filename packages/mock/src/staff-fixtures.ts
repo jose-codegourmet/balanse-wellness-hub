@@ -30,6 +30,7 @@ export type MockStaffRoleRecord = StaffRoleDefinition & {
   id: string;
   /** Bumps authorization fingerprints when a role matrix is edited in the harness. */
   revision: number;
+  cloneSourceId?: string | null;
 };
 
 export const mockStaffRoles: readonly MockStaffRoleRecord[] = [
@@ -118,64 +119,130 @@ export const MOCK_STAFF_IDENTITIES: readonly MockStaffIdentity[] = [
   },
 ];
 
+function staffRow(
+  id: MockStaffIdentityId,
+  name: string,
+  email: string,
+  roleId: string,
+  status: AdminStaff["status"],
+  coachId: string | null,
+): AdminStaff {
+  const role = mockStaffRoles.find((item) => item.id === roleId);
+  return {
+    id,
+    name,
+    email,
+    role: "ADMIN",
+    roleId,
+    roleKey: role?.key ?? "",
+    roleName: role?.name ?? "",
+    status,
+    isCoach: Boolean(coachId),
+    coachId,
+  };
+}
+
 export const mockStaffMembers: AdminStaff[] = [
-  {
-    id: MOCK_STAFF_IDS.rex,
-    name: "Rex Francis Regis",
-    email: "rex@balanse.example",
-    role: "ADMIN",
-    status: "active",
-    isCoach: true,
-    coachId: "coach-rex",
-  },
-  {
-    id: MOCK_STAFF_IDS.partner,
-    name: "Studio Partner",
-    email: "partner@balanse.example",
-    role: "ADMIN",
-    status: "active",
-    isCoach: false,
-    coachId: null,
-  },
-  {
-    id: MOCK_STAFF_IDS.coach,
-    name: "Ephraim Bacaltos",
-    email: "ephraim@balanse.example",
-    role: "ADMIN",
-    status: "active",
-    isCoach: true,
-    coachId: "coach-ephraim",
-  },
-  {
-    id: MOCK_STAFF_IDS.disabled,
-    name: "Inactive Coordinator",
-    email: "disabled@balanse.example",
-    role: "ADMIN",
-    status: "disabled",
-    isCoach: false,
-    coachId: null,
-  },
-  {
-    id: MOCK_STAFF_IDS.custom,
-    name: "Mia Reyes",
-    email: "mia@balanse.example",
-    role: "ADMIN",
-    status: "active",
-    isCoach: false,
-    coachId: null,
-  },
+  staffRow(
+    MOCK_STAFF_IDS.rex,
+    "Rex Francis Regis",
+    "rex@balanse.example",
+    MOCK_STAFF_ROLE_IDS.superAdmin,
+    "active",
+    "coach-rex",
+  ),
+  staffRow(
+    MOCK_STAFF_IDS.partner,
+    "Studio Partner",
+    "partner@balanse.example",
+    MOCK_STAFF_ROLE_IDS.frontDesk,
+    "active",
+    null,
+  ),
+  staffRow(
+    MOCK_STAFF_IDS.coach,
+    "Ephraim Bacaltos",
+    "ephraim@balanse.example",
+    MOCK_STAFF_ROLE_IDS.coach,
+    "active",
+    "coach-ephraim",
+  ),
+  staffRow(
+    MOCK_STAFF_IDS.disabled,
+    "Inactive Coordinator",
+    "disabled@balanse.example",
+    MOCK_STAFF_ROLE_IDS.frontDesk,
+    "disabled",
+    null,
+  ),
+  staffRow(
+    MOCK_STAFF_IDS.custom,
+    "Mia Reyes",
+    "mia@balanse.example",
+    MOCK_STAFF_ROLE_IDS.communityHost,
+    "active",
+    null,
+  ),
 ];
 
-const staffRoleIdByStaffId: Record<string, string> = Object.fromEntries(
+const seedAssignments: Record<string, string> = Object.fromEntries(
   MOCK_STAFF_IDENTITIES.map((row) => [row.staffId, row.roleId]),
 );
 
+let liveRoles: MockStaffRoleRecord[] = mockStaffRoles.map((role) => structuredClone(role));
+let liveAssignments: Record<string, string> = { ...seedAssignments };
+
+export function resetMockStaffRoleStore(): void {
+  liveRoles = mockStaffRoles.map((role) => structuredClone(role));
+  liveAssignments = { ...seedAssignments };
+}
+
+export function listLiveMockStaffRoles(): MockStaffRoleRecord[] {
+  return liveRoles.map((role) => structuredClone(role));
+}
+
+export function liveMockStaffRoleById(roleId: string): MockStaffRoleRecord | undefined {
+  const role = liveRoles.find((item) => item.id === roleId);
+  return role ? structuredClone(role) : undefined;
+}
+
 export function mockStaffRoleById(roleId: string): MockStaffRoleRecord | undefined {
-  return mockStaffRoles.find((role) => role.id === roleId);
+  return liveMockStaffRoleById(roleId) ?? mockStaffRoles.find((role) => role.id === roleId);
+}
+
+export function assignedMockStaffCount(roleId: string, staffRows: readonly AdminStaff[]): number {
+  return staffRows.filter((row) => (liveAssignments[row.id] ?? row.roleId) === roleId).length;
+}
+
+export function getMockStaffRoleAssignment(staffId: string): string | undefined {
+  return liveAssignments[staffId];
+}
+
+export function setMockStaffRoleAssignment(staffId: string, roleId: string): void {
+  liveAssignments[staffId] = roleId;
+}
+
+export function saveLiveMockStaffRole(record: MockStaffRoleRecord): MockStaffRoleRecord {
+  const index = liveRoles.findIndex((item) => item.id === record.id);
+  if (index >= 0) liveRoles[index] = structuredClone(record);
+  else liveRoles = [structuredClone(record), ...liveRoles];
+  return structuredClone(record);
+}
+
+export function decorateAdminStaff(staff: AdminStaff): AdminStaff {
+  const roleId = liveAssignments[staff.id] ?? staff.roleId;
+  const role = roleId ? liveRoles.find((item) => item.id === roleId) : undefined;
+  return {
+    ...staff,
+    roleId: role?.id ?? roleId,
+    roleKey: role?.key ?? staff.roleKey,
+    roleName: role?.name ?? staff.roleName,
+  };
 }
 
 export function mockStaffMemberById(staffId: string): AdminStaff | undefined {
-  return mockStaffMembers.find((row) => row.id === staffId);
+  const staff = mockStaffMembers.find((row) => row.id === staffId);
+  return staff ? decorateAdminStaff(staff) : undefined;
 }
 
 export function isMockStaffIdentityId(value: unknown): value is MockStaffIdentityId {
@@ -187,8 +254,8 @@ export function resolveMockStaffActorFromStaffId(
 ): StaffAuthorizationActor | null {
   if (!staffId) return null;
   const staff = mockStaffMemberById(staffId);
-  const roleId = staffRoleIdByStaffId[staffId];
-  const role = roleId ? mockStaffRoleById(roleId) : undefined;
+  const roleId = liveAssignments[staffId] ?? staff?.roleId;
+  const role = roleId ? liveRoles.find((item) => item.id === roleId) : undefined;
   if (!staff || !role) return null;
   const permissions = filterPermissionKeys(resolveRolePermissions(role));
   return {
@@ -209,6 +276,6 @@ export function resolveMockStaffActorFromStaffId(
 export function mockStaffAuthorizationFingerprint(staffId: string): string {
   const actor = resolveMockStaffActorFromStaffId(staffId);
   if (!actor) return `staff:${staffId}:unresolved`;
-  const role = mockStaffRoleById(actor.roleId);
+  const role = liveRoles.find((item) => item.id === actor.roleId);
   return `${actorAuthorizationFingerprint(actor)}:r${role?.revision ?? 0}`;
 }

@@ -108,6 +108,22 @@ export const adminStaffQuery = (principal: MockPrincipal) => {
   });
 };
 
+export const adminStaffRolesQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.staff.roles.list(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminStaffRoles()),
+  });
+};
+
+export const adminStaffRoleQuery = (principal: MockPrincipal, roleId: string) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.staff.roles.detail(scope, roleId),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminStaffRole(roleId)),
+  });
+};
+
 export const adminCustomersQuery = (
   principal: MockPrincipal,
   filters?: AdminCustomerListFilters,

@@ -5,6 +5,7 @@ import type {
   AdminSession,
   AdminSettings,
   AdminStaff,
+  AdminStaffRole,
   CursorPage,
   CustomerBooking,
   PaymentMethod,
@@ -23,20 +24,28 @@ import {
   buildAdminDashboard,
   calendarDayDistance,
   canApproveReschedule,
+  coachRoleRequiresLinkedCoach,
   computeAdminReports,
   computeHoldExpiresAt,
   computeSessionDrilldown,
   computeSessionInventory,
+  customRoleIdentityConflicts,
+  customRoleKeyFromName,
   datesForWeeklyRecurrence,
   FIELD_CONSTRAINTS,
   filterPaymentQueue,
+  filterPermissionKeys,
   formatPeso,
+  isSuperAdminRoleKey,
+  isValidCustomPermissionSet,
   manilaYmd,
+  roleAssignmentDeniedReason,
   sessionCoachCost,
   shiftSessionIsoToDate,
   sliceCursorPage,
   toPublicSession,
   validateSessionCapacity,
+  violatesLastSuperAdminInvariant,
 } from "@balanse/domain";
 import type { AdminPaymentQueueQuery, AdminRequestQueueQuery, MockDataAdapter } from "./adapter";
 import { applyAdminAuthorization } from "./apply-admin-authorization";
@@ -84,6 +93,16 @@ import {
   toPublicCoach,
 } from "./fixtures";
 import { applyMockEffects, getMockRuntime } from "./runtime";
+import {
+  assignedMockStaffCount,
+  decorateAdminStaff,
+  getMockStaffRoleAssignment,
+  listLiveMockStaffRoles,
+  liveMockStaffRoleById,
+  type MockStaffRoleRecord,
+  saveLiveMockStaffRole,
+  setMockStaffRoleAssignment,
+} from "./staff-fixtures";
 
 function clone<T>(value: T): T {
   return structuredClone(value);
@@ -158,6 +177,74 @@ function syncDerivedQr(settings: AdminSettings): void {
   }
   const active = livePaymentQrs(settings).find((row) => row.isActive) ?? null;
   settings.qrImageKey = active?.imageKey ?? null;
+}
+
+function toAdminStaffRole(
+  record: MockStaffRoleRecord,
+  staffRows: readonly AdminStaff[],
+): AdminStaffRole {
+  const cloneSource = record.cloneSourceId ? liveMockStaffRoleById(record.cloneSourceId) : null;
+  return {
+    id: record.id,
+    key: record.key,
+    name: record.name,
+    description: record.description,
+    builtIn: record.builtIn,
+    builtInKey: record.builtInKey,
+    status: record.status,
+    allAccess: record.allAccess,
+    permissionKeys: record.permissionKeys,
+    assignedStaffCount: assignedMockStaffCount(record.id, staffRows),
+    permissionCount: record.allAccess ? record.permissionKeys.length : record.permissionKeys.length,
+    cloneSourceId: record.cloneSourceId ?? null,
+    cloneSourceName: cloneSource?.name ?? null,
+  };
+}
+
+function uniqueCustomRoleKey(base: string): string {
+  const existing = new Set(listLiveMockStaffRoles().map((role) => role.key));
+  if (!existing.has(base)) return base;
+  let index = 2;
+  while (existing.has(`${base}_${index}`)) index += 1;
+  return `${base}_${index}`;
+}
+
+function assertStaffRoleChangeAllowed(input: {
+  currentRoleId: string;
+  nextRoleId: string;
+  nextStatus: AdminStaff["status"];
+  staffRows: readonly AdminStaff[];
+}): void {
+  const currentRole = liveMockStaffRoleById(input.currentRoleId);
+  const nextRole = liveMockStaffRoleById(input.nextRoleId);
+  if (!currentRole || !nextRole) return;
+  const demoting = isSuperAdminRoleKey(currentRole.key) && !isSuperAdminRoleKey(nextRole.key);
+  const activeSuperAdminCount = input.staffRows.filter((row) => {
+    if (row.status !== "active") return false;
+    const roleId = getMockStaffRoleAssignment(row.id) ?? row.roleId;
+    const role = liveMockStaffRoleById(roleId);
+    return role ? isSuperAdminRoleKey(role.key) : false;
+  }).length;
+  if (
+    demoting &&
+    violatesLastSuperAdminInvariant({
+      targetHoldsSuperAdmin: true,
+      remainingActiveSuperAdminCount: activeSuperAdminCount,
+      action: "demote",
+    })
+  ) {
+    throw new Error("The last active Super Admin cannot be demoted.");
+  }
+  if (
+    input.nextStatus === "disabled" &&
+    violatesLastSuperAdminInvariant({
+      targetHoldsSuperAdmin: isSuperAdminRoleKey(currentRole.key),
+      remainingActiveSuperAdminCount: activeSuperAdminCount,
+      action: "disable",
+    })
+  ) {
+    throw new Error("The last active Super Admin cannot be disabled.");
+  }
 }
 
 export function createMemoryAdapter(): MockDataAdapter {
@@ -1018,28 +1105,64 @@ export function createMemoryAdapter(): MockDataAdapter {
         return computeSessionDrilldown(session, bookings);
       }),
     getAdminStaff: () =>
-      applyMockEffects(() => (emptyQueues() ? [] : staffRows.map((s) => clone(s)))),
+      applyMockEffects(() =>
+        emptyQueues() ? [] : staffRows.map((s) => clone(decorateAdminStaff(s))),
+      ),
     upsertAdminStaff: (input) =>
       applyMockEffects(() => {
-        if (input.id) {
-          const existing = staffRows.find((s) => s.id === input.id);
-          if (!existing) throw new Error("Staff not found");
+        const role = liveMockStaffRoleById(input.roleId);
+        if (!role) throw new Error("Role not found");
+        const existing = input.id ? staffRows.find((s) => s.id === input.id) : undefined;
+        if (input.id && !existing) throw new Error("Staff not found");
+        const nextCoachId =
+          input.isCoach === true
+            ? (existing?.coachId ??
+              `coach-${(existing?.id ?? input.email).replace(/[^a-z0-9]+/gi, "-")}`)
+            : input.isCoach === false
+              ? null
+              : (existing?.coachId ?? null);
+        const assignmentDenied = roleAssignmentDeniedReason({
+          roleKey: role.key,
+          roleActive: role.status === "active",
+          roleArchived: role.status === "archived",
+          coachId: nextCoachId,
+        });
+        if (assignmentDenied) throw new Error(assignmentDenied);
+        assertStaffRoleChangeAllowed({
+          currentRoleId: existing
+            ? (getMockStaffRoleAssignment(existing.id) ?? existing.roleId)
+            : "",
+          nextRoleId: role.id,
+          nextStatus: input.status,
+          staffRows,
+        });
+        if (existing) {
           existing.name = input.name;
           existing.email = input.email;
           existing.role = input.role;
           existing.status = input.status;
+          existing.roleId = role.id;
+          existing.roleKey = role.key;
+          existing.roleName = role.name;
           if (input.isCoach === true) {
             linkStaffCoach(existing);
           } else if (input.isCoach === false) {
             unlinkStaffCoach(existing);
           }
-          return clone(existing);
+          setMockStaffRoleAssignment(existing.id, role.id);
+          if (coachRoleRequiresLinkedCoach(role.key, existing.coachId)) {
+            throw new Error("The Coach role requires a linked coach profile.");
+          }
+          return clone(decorateAdminStaff(existing));
         }
-        const created = {
+        const created: AdminStaff = {
           id: `staff-${input.email.split("@")[0]}`,
           name: input.name,
           email: input.email,
           role: input.role,
+          roleId: role.id,
+          roleKey: role.key,
+          roleName: role.name,
           status: input.status,
           isCoach: false,
           coachId: null,
@@ -1047,8 +1170,12 @@ export function createMemoryAdapter(): MockDataAdapter {
         if (input.isCoach) {
           linkStaffCoach(created);
         }
+        if (coachRoleRequiresLinkedCoach(role.key, created.coachId)) {
+          throw new Error("The Coach role requires a linked coach profile.");
+        }
         staffRows = [created, ...staffRows];
-        return clone(created);
+        setMockStaffRoleAssignment(created.id, role.id);
+        return clone(decorateAdminStaff(created));
       }),
     disableAdminStaff: (id) =>
       applyMockEffects(() => {
@@ -1059,7 +1186,83 @@ export function createMemoryAdapter(): MockDataAdapter {
           const coach = coaches.find((row) => row.id === existing.coachId);
           if (coach) coach.active = false;
         }
-        return clone(existing);
+        return clone(decorateAdminStaff(existing));
+      }),
+    getAdminStaffRoles: () =>
+      applyMockEffects(() =>
+        listLiveMockStaffRoles().map((role) => toAdminStaffRole(role, staffRows)),
+      ),
+    getAdminStaffRole: (id) =>
+      applyMockEffects(() => {
+        const role = liveMockStaffRoleById(id);
+        return role ? toAdminStaffRole(role, staffRows) : null;
+      }),
+    upsertAdminStaffRole: (input) =>
+      applyMockEffects(() => {
+        const permissionKeys = filterPermissionKeys(input.permissionKeys);
+        if (!isValidCustomPermissionSet(permissionKeys)) {
+          throw new Error("A custom role must include at least one permission.");
+        }
+        if (input.id) {
+          const existing = liveMockStaffRoleById(input.id);
+          if (!existing) throw new Error("Role not found");
+          if (existing.builtIn) {
+            throw new Error("Built-in roles are protected and cannot be edited.");
+          }
+          const key = existing.key;
+          if (customRoleIdentityConflicts(input.name, key)) {
+            throw new Error("Custom roles cannot reuse a built-in name or key.");
+          }
+          return toAdminStaffRole(
+            saveLiveMockStaffRole({
+              ...existing,
+              name: input.name,
+              description: input.description,
+              permissionKeys,
+              revision: existing.revision + 1,
+              cloneSourceId: input.cloneSourceId ?? existing.cloneSourceId,
+            }),
+            staffRows,
+          );
+        }
+        const key = uniqueCustomRoleKey(customRoleKeyFromName(input.name) || "custom_role");
+        if (customRoleIdentityConflicts(input.name, key)) {
+          throw new Error("Custom roles cannot reuse a built-in name or key.");
+        }
+        const cloneSource = input.cloneSourceId ? liveMockStaffRoleById(input.cloneSourceId) : null;
+        const created = saveLiveMockStaffRole({
+          id: `role-${key}-${Date.now().toString(36)}`,
+          revision: 1,
+          key,
+          name: input.name,
+          description: input.description,
+          builtIn: false,
+          builtInKey: null,
+          status: "active",
+          allAccess: false,
+          permissionKeys,
+          cloneSourceId: cloneSource?.id ?? input.cloneSourceId ?? null,
+        });
+        return toAdminStaffRole(created, staffRows);
+      }),
+    archiveAdminStaffRole: (id) =>
+      applyMockEffects(() => {
+        const existing = liveMockStaffRoleById(id);
+        if (!existing) throw new Error("Role not found");
+        if (existing.builtIn) {
+          throw new Error("Built-in roles cannot be archived.");
+        }
+        if (assignedMockStaffCount(existing.id, staffRows) > 0) {
+          throw new Error("Assigned custom roles cannot be archived.");
+        }
+        return toAdminStaffRole(
+          saveLiveMockStaffRole({
+            ...existing,
+            status: "archived",
+            revision: existing.revision + 1,
+          }),
+          staffRows,
+        );
       }),
     getAdminCustomers: (filters) =>
       applyMockEffects(() => {

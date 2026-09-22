@@ -26,6 +26,14 @@ export type StaffRoleDefinition = {
   permissionKeys: readonly PermissionKey[];
 };
 
+export type AdminStaffRole = StaffRoleDefinition & {
+  id: string;
+  assignedStaffCount: number;
+  permissionCount: number;
+  cloneSourceId?: string | null;
+  cloneSourceName?: string | null;
+};
+
 export const FRONT_DESK_PERMISSION_KEYS = [
   "dashboard.operations.read",
   "schedule.read.all",
@@ -137,6 +145,14 @@ export function resolveRolePermissions(
 }
 
 /** Custom roles cannot impersonate a built-in by key or display name. */
+export function customRoleKeyFromName(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
 export function customRoleIdentityConflicts(name: string, key: string): boolean {
   const nameNorm = name.trim().toLowerCase();
   const keyNorm = key.trim().toLowerCase();

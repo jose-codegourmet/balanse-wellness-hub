@@ -147,8 +147,12 @@ export type AdminStaff = {
   id: string;
   name: string;
   email: string;
-  /** Legacy enum until #298 backfills `roleId`. Not authorization truth. */
+  /** Legacy enum until the leftover StaffRole column is dropped. Not authorization truth. */
   role: StaffRole;
+  /** Assigned StaffRoleDefinition id. Authorization truth with `roleKey`. */
+  roleId: string;
+  roleKey: string;
+  roleName: string;
   status: "active" | "disabled";
   /** Derived from a linked Coach row (BE-055). Not an authorization role. */
   isCoach: boolean;

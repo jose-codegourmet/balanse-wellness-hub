@@ -10,6 +10,7 @@ import { HOLD_DURATION_HOURS } from "./customer-portal";
 import type { CoachRateType, PaymentStatus, SessionStatus } from "./enums";
 import { BOOKING_STATUSES } from "./enums";
 import { manilaYmd } from "./format";
+import { roleLabel } from "./roles";
 import type {
   AdminCoach,
   AdminCustomer,
@@ -40,7 +41,7 @@ export const MOCK_NON_ADMIN_CREDENTIALS = [
 export const ADMIN_LOGIN_HELP = "Need access or password help? Contact the system administrator.";
 
 export const ADMIN_ROLE_CAPABILITY_NOTE =
-  "Admin role: coach compensation rates, sales reports, refund totals, coach-cost reports, and capacity/utilization reporting. Coach compensation stays internal.";
+  "Authorization role (Super Admin, Front Desk, Coach, or custom) is separate from “This staff member is a coach.” Sensitive pages need explicit permissions. Coach compensation stays internal.";
 
 export const SESSION_RATE_SNAPSHOT_NOTE =
   "Each assigned coach has a stored rate and rate type. Existing assignments keep their snapshots; newly assigned coaches use their current default rates.";
@@ -718,21 +719,22 @@ export function staffStatusLabel(status: AdminStaff["status"]): string {
   return status === "active" ? "Active" : "Disabled";
 }
 
-/** Authorisation role only — never invent a COACH StaffRole. */
+/** Legacy enum label only — prefer `roleLabel(staff.roleKey, staff.roleName)`. */
 export function staffRoleLabel(role: AdminStaff["role"]): string {
   return role === "ADMIN" ? "Admin" : role;
 }
 
 /**
- * Capability line for staff tables: Admin / Admin · Coach / Coach.
+ * Capability line for staff tables: Super Admin · Coach, Front Desk, etc.
  * Teaching is the `isCoach` flag, not a role.
  */
-export function staffCapabilityLabel(staff: Pick<AdminStaff, "role" | "isCoach">): string {
-  const role = staffRoleLabel(staff.role);
-  if (staff.isCoach) {
-    return role === "Admin" ? "Admin · Coach" : "Coach";
-  }
-  return role;
+export function staffCapabilityLabel(
+  staff: Pick<AdminStaff, "role" | "isCoach"> & Partial<Pick<AdminStaff, "roleKey" | "roleName">>,
+): string {
+  const role = staff.roleKey
+    ? roleLabel(staff.roleKey, staff.roleName)
+    : staffRoleLabel(staff.role);
+  return staff.isCoach ? `${role} · Coach` : role;
 }
 
 export function staffCoachFacetLabel(isCoach: boolean): string {

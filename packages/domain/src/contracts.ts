@@ -107,8 +107,14 @@ export const FIELD_CONSTRAINTS = {
   staff: {
     name: { required: true, max: 80 },
     email: { required: true, format: "email" },
+    roleId: { required: true },
     coachId: { required: false, nullable: true },
     isCoach: { readOnly: true, derivedFrom: "coach" },
+  },
+  role: {
+    name: { required: true, max: 80 },
+    description: { required: false, max: 400 },
+    permissionKeys: { required: true, minItems: 1 },
   },
   session: {
     classId: { required: true },
