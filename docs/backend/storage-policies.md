@@ -12,7 +12,9 @@ MIME/size limits stay on `storage.buckets` (server-enforced). Upsert of payment 
 | --- | --- | --- |
 | anon | deny | read |
 | customer | own booking prefix only | read |
-| admin (`is_admin()`) | all + signed URLs later (BE-037) | write/delete |
+| Super Admin (`is_admin()`) | all + signed URLs later (BE-037) | write/delete |
+| Front Desk (`payments.read` / `payments.review`) | payment-proofs read; review writes | — |
+| `coaches.manage` / `settings.content.manage` | — | matching bucket writes |
 
 Admin review signed URLs are **not** minted in this schema PR; the SQL policy allows admin SELECT so a later service-role signer can work.
 

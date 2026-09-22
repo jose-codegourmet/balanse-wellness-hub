@@ -1,0 +1,55 @@
+/// #298 / epic #289 — normalized staff roles and canonical permissions.
+/// Import keys from `@balanse/domain`. Do not invent permission strings here.
+
+model StaffRoleDefinition {
+  id          String                    @id @default(cuid())
+  key         String                    @unique
+  name        String
+  description String                    @default("")
+  builtIn     Boolean                   @default(false)
+  builtInKey  String?                   @unique
+  allAccess   Boolean                   @default(false)
+  status      StaffRoleDefinitionStatus @default(ACTIVE)
+  archivedAt  DateTime?                 @db.Timestamptz
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+
+  permissions  StaffRolePermission[]
+  staffMembers StaffMember[]
+
+  @@index([status])
+  @@index([builtIn, status])
+  @@map("staff_role_definitions")
+}
+
+model PermissionDefinition {
+  id          String   @id
+  key         String   @unique
+  category    String
+  label       String
+  description String   @default("")
+  sensitive   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  roles StaffRolePermission[]
+
+  @@index([category])
+  @@index([sensitive])
+  @@map("permission_definitions")
+}
+
+model StaffRolePermission {
+  id           String   @id @default(cuid())
+  roleId       String
+  permissionId String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  role       StaffRoleDefinition  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission PermissionDefinition @relation(fields: [permissionId], references: [id], onDelete: Restrict)
+
+  @@unique([roleId, permissionId])
+  @@index([permissionId])
+  @@map("staff_role_permissions")
+}

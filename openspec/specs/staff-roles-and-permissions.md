@@ -25,5 +25,11 @@ Wave 1 contract for epic #289 (ticket #294). Downstream tickets import
    `hasAllPermissions`, `hasScopedPermission`, `firstPermittedAdminRoute`,
    `roleLabel`, `sensitivePermissionsOf`, `violatesLastSuperAdminInvariant`.
    Own-scope never implies all-scope.
-7. This ticket does not ship Prisma migrations, API handlers, mock
+7. Wave 1 (#294) does not ship Prisma migrations, API handlers, mock
    identities, or admin gating UI.
+8. Wave 2 (#298) owns Prisma models `StaffRoleDefinition`,
+   `PermissionDefinition`, `StaffRolePermission`, `StaffMember.roleId`,
+   expand/seed/backfill SQL, `has_permission` / `owns_session` helpers,
+   last-Super-Admin locking, and RLS/RPC gates. `is_admin()` stays Super
+   Admin only. The leftover `StaffRole` enum is not dropped yet. API
+   handler authorization is #292.

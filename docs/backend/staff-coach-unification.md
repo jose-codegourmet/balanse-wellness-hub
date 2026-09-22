@@ -36,7 +36,7 @@ A coach with `staffMemberId = null` stays valid. A staff member with no coach st
 | Add `COACH` to `StaffRole` | `StaffRole` is **authorisation**. `is_admin()` is `role = ADMIN` + `status = ACTIVE` + `isSystem = false`. Teaching is not admin access. A coach who is not staff must not gain Data API/admin writes; a staff admin who does not teach must not become assignable on `ClassCoach` / `GymSession` just because of a role enum. |
 | Merge `Profile` + `StaffMember` + `Coach` into one `Person` | Coaches have **no auth principal** today. Staff require `auth.users` + `profiles`. Sessions, `class_coaches`, and rate snapshots hang off `Coach`. A merged table would force every coach to be a login (out of scope) or a pile of nullable auth columns. The 1:1 link keeps the teaching profile intact. |
 
-`StaffRole` remains `{ ADMIN }` only on the current Prisma enum (BE-001) until #298 replaces it with `staff_role_definitions`. Do not add `isCoach` as a stored column or as a `StaffRole` value. Authorization roles (`super_admin`, `front_desk`, `coach`, custom) live in `@balanse/domain` and stay separate from this teaching link (epic #289 / #294).
+`StaffRole` remains `{ ADMIN }` only on the leftover Prisma enum (BE-001). #298 added `staff_role_definitions` + `StaffMember.roleId`; the enum is not authorization truth and is not dropped in this wave. Do not add `isCoach` as a stored column or as a `StaffRole` value. Authorization roles (`super_admin`, `front_desk`, `coach`, custom) live in `@balanse/domain` and stay separate from this teaching link (epic #289 / #294 / #298).
 
 ## Unlink / delete semantics
 
@@ -98,7 +98,7 @@ This migration is **not** applied to `xydundrayuusqizssgby` by this PR.
 | `coaches_public` | Unchanged — `id, name, specialties, shortBio, photoKey, active`. **No** `staffMemberId`, **no** rates. | — |
 | `staff_members` | Admin only. | Admin only (`isSystem = false` on insert/update). |
 
-`public.is_admin()` is unchanged. There is **no** coach JWT / `app_metadata` role this phase. Linking a coach does **not** grant session or rate reads to that person.
+`public.is_admin()` is Super Admin compatibility only after #298 (active non-system staff with `allAccess` / `builtInKey = super_admin`). It was **not** broadened to every staff member. There is **no** coach JWT / `app_metadata` role. Linking a coach does **not** grant session or rate reads. Own-scope uses `session_coaches` + this link — see [staff-roles.md](./staff-roles.md).
 
 Rate columns stay admin-only (`defaultRate`, `rateType` omitted from `coaches_public`; listed in `PUBLIC_FORBIDDEN_KEYS`). `staffId` is also forbidden on public catalogue payloads.
 
@@ -163,7 +163,7 @@ Audit: `staff.coach.link`, `staff.coach.unlink`, `staff.disable` (metadata inclu
 | `AdminStaff.isCoach` | Derived boolean on staff payloads |
 | `AdminStaff.coachId` | Linked `Coach.id` or `null` |
 | `AdminCoach.staffId` | `Coach.staffMemberId` or `null` |
-| `StaffRole` | Still `"ADMIN"` only on the Prisma enum until #298 |
+| `StaffRole` | Leftover `"ADMIN"` enum; HTTP role for #292 is `StaffRoleDefinition.key` |
 | Mock `staff-rex` ↔ `coach-rex` | Documented backfill pair; IDs differ (kebab vs seed `coach_rex`) |
 
 If the FE mock later diverges, **this contract wins**.

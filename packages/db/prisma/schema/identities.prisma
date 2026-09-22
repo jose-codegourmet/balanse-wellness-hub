@@ -21,15 +21,20 @@ model Profile {
   @@map("profiles")
 }
 
-/// BE-003 — admin authorisation. Rate/report access derives from this role.
-/// Only authorised admins reach coach rates, sales, refunds, and capacity reports.
-/// BE-055 — optional 1:1 coach capability (`coach`); not a StaffRole value.
+/// BE-003 — admin authorisation. Rate/report access derives from `roleId`
+/// (StaffRoleDefinition + permissions), not the leftover `role` enum.
+/// Only Super Admin / `coach_rates.*` / report keys reach compensation and
+/// financial reports. BE-055 — optional 1:1 coach capability (`coach`);
+/// not a StaffRole value and not an authorization role.
 model StaffMember {
   id        String      @id @default(cuid())
   userId    String      @unique @db.Uuid
   name      String
   email     String
+  /// Leftover BE-001 enum. Not authorization truth. Contract drop is a later wave.
   role      StaffRole   @default(ADMIN)
+  /// Defaults to Super Admin so pre-#292 writers stay valid. Authorization still reads this FK.
+  roleId    String      @default("role_super_admin")
   status    StaffStatus @default(ACTIVE)
   /// When true this row is the system actor for jobs (hold expiry, promotion).
   isSystem  Boolean     @default(false)
@@ -37,6 +42,7 @@ model StaffMember {
   updatedAt DateTime    @updatedAt
 
   profile               Profile                  @relation(fields: [userId], references: [id])
+  roleDefinition        StaffRoleDefinition      @relation(fields: [roleId], references: [id])
   /// Teaching profile when this staff member is also a coach (derived `isCoach`).
   coach                 Coach?
   reviewedPayments      Payment[]                @relation("PaymentReviewedBy")
@@ -55,5 +61,6 @@ model StaffMember {
 
   @@index([status])
   @@index([email])
+  @@index([roleId])
   @@map("staff_members")
 }

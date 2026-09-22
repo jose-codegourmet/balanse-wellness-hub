@@ -20,7 +20,8 @@ Customer-facing booking/refund labels: `docs/screen-specs/shared/02-status-langu
 | `refund_status` | `NOT_APPLICABLE` plus the two labelled values | `NOT_APPLICABLE` is bookkeeping. |
 | `session_status` | `DRAFT`, `PUBLISHED`, `CANCELLED` | Admin publish state. |
 | `coach_rate_type` | `PER_SESSION`, `PER_HOUR` | Admin-only compensation. |
-| `staff_role` | `ADMIN` | Authorisation, not a customer status. **No `COACH` value** (BE-055: teaching is a link, not a role). |
+| `staff_role` | `ADMIN` | Leftover BE-001 enum. **Not authorization truth** after #298 (`roleId` + `staff_role_definitions`). **No `COACH` value** (teaching is a link). Enum drop is a later wave. |
+| `staff_role_definition_status` | `ACTIVE`, `ARCHIVED` | Custom roles archive; built-ins stay `ACTIVE`. |
 | `staff_status` | `ACTIVE`, `DISABLED` | Staff access switch. |
 | `waitlist_status` | `WAITING`, `PROMOTED`, `WITHDRAWN`, `EXPIRED` | FIFO machinery. |
 | `request_resolution` | `OPEN`, `COMPLETED`, `REJECTED` | Request rows, not booking status. |
