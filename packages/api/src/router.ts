@@ -2,6 +2,22 @@ import { API_CONTRACT_ROUTES, type HttpMethod } from "@balanse/db/contracts/rout
 import type { ApiDeps } from "./deps";
 import { getAdminBookings, postAdminConfirm, postAdminReject } from "./handlers/admin-bookings";
 import {
+  getAdminAcquisitions,
+  getAdminBundle,
+  getAdminBundles,
+  getAdminCustomerPackages,
+  getAdminEntitlementRedemptions,
+  patchAdminBundle,
+  postAdminBundle,
+  postApproveAcquisition,
+  postArchiveBundle,
+  postGrantPackage,
+  postPublishBundle,
+  postRejectAcquisition,
+  postRevokePackage,
+  postUnpublishBundle,
+} from "./handlers/admin-bundles";
+import {
   deleteCoachPhoto,
   getAdminClasses,
   getAdminCoaches,
@@ -80,6 +96,18 @@ import {
 } from "./handlers/bookings";
 import { getMe, getPolicyAcceptances, patchMe } from "./handlers/me";
 import {
+  getEligiblePackages,
+  getMyPackage,
+  getMyPackageRedemptions,
+  getMyPackages,
+  getPublicPackage,
+  getPublicPackages,
+  postAcquisitionPaymentMethod,
+  postAcquisitionPaymentProof,
+  postClaimPackage,
+  postPaidAcquisition,
+} from "./handlers/packages";
+import {
   getPublicClasses,
   getPublicCoaches,
   getPublicContent,
@@ -123,6 +151,44 @@ const handlers: Record<string, RouteHandler> = {
   "GET /api/public/coaches": (deps) => getPublicCoaches(deps),
   "GET /api/public/classes": (deps) => getPublicClasses(deps),
   "GET /api/public/content": (deps) => getPublicContent(deps),
+  "GET /api/public/packages": (deps) => getPublicPackages(deps),
+  "GET /api/public/packages/{slug}": (deps, _req, params) => getPublicPackage(deps, params.slug),
+  "GET /api/me/packages": (deps, req) => getMyPackages(deps, req),
+  "GET /api/me/packages/{id}": (deps, req, params) => getMyPackage(deps, req, params.id),
+  "GET /api/me/packages/{id}/redemptions": (deps, req, params) =>
+    getMyPackageRedemptions(deps, req, params.id),
+  "POST /api/packages/{id}/claim": (deps, req, params) => postClaimPackage(deps, req, params.id),
+  "POST /api/packages/{id}/acquisitions": (deps, req, params) =>
+    postPaidAcquisition(deps, req, params.id),
+  "POST /api/packages/acquisitions/{id}/payment-method": (deps, req, params) =>
+    postAcquisitionPaymentMethod(deps, req, params.id),
+  "POST /api/packages/acquisitions/{id}/payment-proof": (deps, req, params) =>
+    postAcquisitionPaymentProof(deps, req, params.id),
+  "GET /api/sessions/{id}/eligible-packages": (deps, req, params) =>
+    getEligiblePackages(deps, req, params.id),
+  "GET /api/admin/bundles": (deps, req) => getAdminBundles(deps, req),
+  "POST /api/admin/bundles": (deps, req) => postAdminBundle(deps, req),
+  "GET /api/admin/bundles/{id}": (deps, req, params) => getAdminBundle(deps, req, params.id),
+  "PATCH /api/admin/bundles/{id}": (deps, req, params) => patchAdminBundle(deps, req, params.id),
+  "POST /api/admin/bundles/{id}/publish": (deps, req, params) =>
+    postPublishBundle(deps, req, params.id),
+  "POST /api/admin/bundles/{id}/unpublish": (deps, req, params) =>
+    postUnpublishBundle(deps, req, params.id),
+  "POST /api/admin/bundles/{id}/archive": (deps, req, params) =>
+    postArchiveBundle(deps, req, params.id),
+  "GET /api/admin/customers/{id}/packages": (deps, req, params) =>
+    getAdminCustomerPackages(deps, req, params.id),
+  "POST /api/admin/customers/{id}/packages/grant": (deps, req, params) =>
+    postGrantPackage(deps, req, params.id),
+  "POST /api/admin/packages/{id}/revoke": (deps, req, params) =>
+    postRevokePackage(deps, req, params.id),
+  "GET /api/admin/package-acquisitions": (deps, req) => getAdminAcquisitions(deps, req),
+  "POST /api/admin/package-acquisitions/{id}/approve": (deps, req, params) =>
+    postApproveAcquisition(deps, req, params.id),
+  "POST /api/admin/package-acquisitions/{id}/reject": (deps, req, params) =>
+    postRejectAcquisition(deps, req, params.id),
+  "GET /api/admin/packages/{id}/redemptions": (deps, req, params) =>
+    getAdminEntitlementRedemptions(deps, req, params.id),
   "GET /api/me": (deps, req) => getMe(deps, req),
   "PATCH /api/me": (deps, req) => patchMe(deps, req),
   "GET /api/me/policy-acceptances": (deps, req) => getPolicyAcceptances(deps, req),

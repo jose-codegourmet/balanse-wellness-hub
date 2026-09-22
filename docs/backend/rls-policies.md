@@ -22,6 +22,9 @@ Authorisation: `public.is_admin()` → active `staff_members.role = ADMIN` and `
 | `pending_uploads` | — | — | all |
 | `payment_qr_codes` | — | — | all (BE-056) |
 | `payment_qr_codes_public` | select active (`id`, `imageKey`) | select | select |
+| `bundles` / applicability | published select | published select | all |
+| `bundle_acquisitions` / payments | — | own | all |
+| `customer_bundles` / `bundle_redemptions` | — | own read | all |
 | `coaches.staffMemberId` | — (not on `coaches_public`) | — | admin write (BE-055) |
 
 Negative guarantees:
@@ -32,5 +35,6 @@ Negative guarantees:
 - Coach rate columns are not granted through `coaches_public`.
 - There is no coach principal. Linking `Coach.staffMemberId` grants **no** extra Data API access (BE-055).
 - Archived / labeled receive QRs are not granted through `payment_qr_codes_public` (BE-056).
+- Customer A cannot read or spend customer B’s package entitlement (BE-058).
 
 `session_roster_metrics` and report functions are revoked from Data API roles.

@@ -328,6 +328,7 @@ Three buckets, all created in `INF-004` and secured in `BE-021`:
 | `BE-043` Admin settings & content | `GET/PUT /api/admin/settings`, `/api/admin/policies` | `admin/13-settings.md` |
 | `BE-055` Staff/coach unification | `POST/DELETE /api/admin/staff/:id/coach`; `isCoach`/`coachId`/`staffId` | `admin/03`, `admin/07` |
 | `BE-056` Payment QR collection | `/api/admin/settings/payment-qrs` (+ legacy `/settings/qr`) | `admin/13-settings.md` |
+| `BE-058` Session bundles / packages | `/api/public/packages`, `/api/me/packages`, claim/acquire, eligible entitlements, admin `/api/admin/bundles`, grant/revoke, paid-acquisition review | `#290`, `docs/backend/session-bundles.md` |
 
 ---
 
@@ -2393,7 +2394,7 @@ The intended mechanics: every mocked screen reads through the `MockDataAdapter` 
 | **WIRE-012** | Serve coach and marketing imagery from Supabase Storage instead of bundled assets | FE | `ASSET-030`, `FE-SHR-004` | Bundled asset paths in the manifest |
 | **WIRE-013** | End-to-end verification of the canonical loop and the edge cases in `16-edge-cases.md` | FE+BE | all above | — |
 
-**Deliberately excluded from the wiring phase as well** (still future scope per `docs/business-requirements/19-future-scope.md`): payment gateways, automated verification/refunds, memberships/wallets, recurrence exceptions and series-wide mutation, a coach portal, Resend email notifications, SMS/push, multi-branch, and admin-editable hold/cutoff settings. Session packages (#290) are mock-first; Prisma/RLS/HTTP WIRE is a dedicated follow-up.
+**Deliberately excluded from the wiring phase as well** (still future scope per `docs/business-requirements/19-future-scope.md`): payment gateways, automated verification/refunds, memberships/wallets, recurrence exceptions and series-wide mutation, a coach portal, Resend email notifications, SMS/push, multi-branch, and admin-editable hold/cutoff settings. Session packages (BE-058 / #290) ship mock screens plus backend contracts; screens stay unwired to `/api/*`.
 
 ---
 
@@ -2612,6 +2613,7 @@ Every file under `docs/screen-specs/` and the FE ticket(s) that cover it.
 | BE-043 | Admin settings and public content API | P4 |
 | BE-055 | Staff/coach unification contract (`StaffMember` ↔ `Coach`) | P4 |
 | BE-056 | Payment-receive QR collection contract | P4 |
+| BE-058 | Session bundles / packages (catalogue, entitlements, ledger, HTTP + mock) | P4 |
 
 ### FE foundation and shared
 

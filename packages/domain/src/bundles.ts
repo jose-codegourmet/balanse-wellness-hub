@@ -1,22 +1,24 @@
 /**
  * Session bundles (customer-facing name: packages).
  * Credits are session entitlements, never cash, store credit, or a wallet.
+ *
+ * Screen/mocks use BundleDefinition, PublicBundle, CustomerEntitlement, and
+ * sessionCredits. HTTP/Prisma presenters use PublicPackage, AdminBundle,
+ * PackageEntitlement, and sessionCreditCount.
  */
-
-export const BUNDLE_STATUSES = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
-export type BundleStatus = (typeof BUNDLE_STATUSES)[number];
+import { classSlug } from "./classes";
+import type {
+  BundleAcquisitionKind,
+  BundleAcquisitionStatus,
+  BundleApplicabilityMode,
+  BundleStatus,
+  CustomerBundleStatus,
+  PaymentMethod,
+  PaymentStatus,
+} from "./enums";
 
 export const BUNDLE_ACQUISITION_CHANNELS = ["SELF_CLAIM", "SELF_PURCHASE", "ADMIN_GRANT"] as const;
 export type BundleAcquisitionChannel = (typeof BUNDLE_ACQUISITION_CHANNELS)[number];
-
-export const BUNDLE_ACQUISITION_STATUSES = [
-  "PENDING_PAYMENT",
-  "PENDING_REVIEW",
-  "ACTIVE",
-  "REJECTED",
-  "CANCELLED",
-] as const;
-export type BundleAcquisitionStatus = (typeof BUNDLE_ACQUISITION_STATUSES)[number];
 
 export const ENTITLEMENT_STATUSES = [
   "PENDING",
@@ -50,6 +52,9 @@ export const BUNDLE_AUDIT_ACTIONS = [
 ] as const;
 export type BundleAuditAction = (typeof BUNDLE_AUDIT_ACTIONS)[number];
 
+/** Admin/backend name. Customer-facing copy is always “Package”. */
+export const PACKAGE_CUSTOMER_LABEL = "Package";
+
 export const BUNDLE_STATUS_LABELS: Record<BundleStatus, string> = {
   DRAFT: "Draft",
   PUBLISHED: "Published",
@@ -73,6 +78,7 @@ export const REDEMPTION_STATUS_LABELS: Record<RedemptionStatus, string> = {
 export const BUNDLE_ACQUISITION_STATUS_LABELS: Record<BundleAcquisitionStatus, string> = {
   PENDING_PAYMENT: "Awaiting payment",
   PENDING_REVIEW: "Awaiting studio review",
+  APPROVED: "Approved",
   ACTIVE: "Approved",
   REJECTED: "Not approved",
   CANCELLED: "Cancelled",
@@ -114,12 +120,41 @@ export type PublicBundle = Pick<
   | "status"
 >;
 
+export type PublicPackage = {
+  id: string;
+  slug: string;
+  name: string;
+  summary: string;
+  description: string;
+  sessionCreditCount: number;
+  pricePhp: number;
+  applicabilityMode: BundleApplicabilityMode;
+  classIds: string[];
+  validityDays: number | null;
+  perCustomerLimit: number | null;
+  status: Extract<BundleStatus, "PUBLISHED">;
+};
+
+export type AdminBundle = Omit<PublicPackage, "status"> & {
+  status: BundleStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type EntitlementSnapshot = {
   name: string;
   sessionCredits: number;
   pricePhp: number;
   applicability: BundleApplicability;
   validityDays: number | null;
+};
+
+export type EntitlementBalances = {
+  granted: number;
+  held: number;
+  consumed: number;
+  restored: number;
+  remaining: number;
 };
 
 export type CustomerEntitlement = {
@@ -146,8 +181,19 @@ export type BundleRedemption = {
   sessionId: string;
   status: RedemptionStatus;
   createdAt: string;
+  heldAt?: string;
   consumedAt: string | null;
   restoredAt: string | null;
+  restoreReason?: string | null;
+};
+
+export type BundleAcquisitionPayment = {
+  id: string;
+  method: PaymentMethod;
+  status: PaymentStatus;
+  amountPhp: number;
+  proofObjectKey: string | null;
+  submittedAt: string | null;
 };
 
 export type BundleAcquisition = {
@@ -166,6 +212,50 @@ export type BundleAcquisition = {
   reviewedAt: string | null;
   rejectReason: string | null;
 };
+
+/** HTTP/Prisma acquisition row (BE-058). Screens use BundleAcquisition. */
+export type PackageAcquisition = {
+  id: string;
+  bundleId: string;
+  profileId: string;
+  kind: BundleAcquisitionKind;
+  status: BundleAcquisitionStatus;
+  idempotencyKey: string;
+  overrideLimit: boolean;
+  overrideReason: string | null;
+  adminNote: string | null;
+  rejectionNote: string | null;
+  createdAt: string;
+  reviewedAt: string | null;
+  payment: BundleAcquisitionPayment | null;
+  entitlementId: string | null;
+};
+
+/** HTTP/Prisma entitlement row (BE-058). Screens use CustomerEntitlement. */
+export type PackageEntitlement = {
+  id: string;
+  bundleId: string;
+  profileId: string;
+  status: CustomerBundleStatus;
+  name: string;
+  sessionCreditCount: number;
+  pricePhp: number;
+  applicabilityMode: BundleApplicabilityMode;
+  classIds: string[];
+  validityDays: number | null;
+  expiresAt: string | null;
+  grantedAt: string;
+  revokedAt: string | null;
+  revokeReason: string | null;
+  balances: EntitlementBalances;
+  acquisition: PackageAcquisition | null;
+  redemptions?: BundleRedemption[];
+};
+
+export type EligibleEntitlement = Pick<
+  PackageEntitlement,
+  "id" | "name" | "status" | "expiresAt" | "balances" | "classIds" | "applicabilityMode"
+>;
 
 export type BundleAuditEvent = {
   id: string;
@@ -282,4 +372,101 @@ export function addValidityDays(fromIso: string, days: number): string {
 
 export function formatSessionsRemaining(count: number): string {
   return count === 1 ? "1 session remaining" : `${count} sessions remaining`;
+}
+
+export function bundleSlug(name: string): string {
+  return classSlug(name);
+}
+
+export function deriveEntitlementBalances(
+  granted: number,
+  redemptions: Array<Pick<BundleRedemption, "status">>,
+): EntitlementBalances {
+  const counts = countRedemptions(redemptions);
+  return {
+    granted,
+    held: counts.held,
+    consumed: counts.consumed,
+    restored: counts.restored,
+    remaining: counts.remainingFrom(granted),
+  };
+}
+
+export function deriveCustomerBundleStatus(
+  current: CustomerBundleStatus,
+  balances: EntitlementBalances,
+  expiresAt: string | null,
+  nowIso: string,
+): CustomerBundleStatus {
+  if (current === "REVOKED") return "REVOKED";
+  if (expiresAt && new Date(expiresAt).getTime() <= new Date(nowIso).getTime()) return "EXPIRED";
+  if (balances.remaining <= 0) return "EXHAUSTED";
+  return "ACTIVE";
+}
+
+export function isEntitlementEligibleForSession(
+  entitlement: Pick<
+    PackageEntitlement,
+    "status" | "expiresAt" | "balances" | "applicabilityMode" | "classIds" | "profileId"
+  >,
+  session: { classId: string; startsAt: string },
+  customerId: string,
+  nowIso: string,
+): { ok: true } | { ok: false; code: string } {
+  if (entitlement.profileId !== customerId) return { ok: false, code: "entitlement_foreign" };
+  if (entitlement.status === "REVOKED") return { ok: false, code: "entitlement_revoked" };
+  if (entitlement.status === "EXPIRED") return { ok: false, code: "entitlement_expired" };
+  if (
+    entitlement.expiresAt &&
+    new Date(session.startsAt).getTime() >= new Date(entitlement.expiresAt).getTime()
+  ) {
+    return { ok: false, code: "entitlement_expired" };
+  }
+  if (
+    entitlement.expiresAt &&
+    new Date(entitlement.expiresAt).getTime() <= new Date(nowIso).getTime()
+  ) {
+    return { ok: false, code: "entitlement_expired" };
+  }
+  if (
+    entitlement.applicabilityMode === "EXPLICIT_CLASSES" &&
+    !entitlement.classIds.includes(session.classId)
+  ) {
+    return { ok: false, code: "entitlement_ineligible_class" };
+  }
+  if (entitlement.balances.remaining <= 0) return { ok: false, code: "entitlement_exhausted" };
+  if (entitlement.status !== "ACTIVE") return { ok: false, code: "entitlement_not_usable" };
+  return { ok: true };
+}
+
+export function sessionsRemainingCopy(remaining: number): string {
+  return formatSessionsRemaining(remaining);
+}
+
+export function claimIdempotencyKey(profileId: string, bundleId: string): string {
+  return `customer-claim:${profileId}:${bundleId}`;
+}
+
+export function paidAcquisitionIdempotencyKey(profileId: string, bundleId: string): string {
+  return `customer-paid:${profileId}:${bundleId}`;
+}
+
+export function toPublicPackage(bundle: PublicBundle): PublicPackage | null {
+  if (bundle.status !== "PUBLISHED") return null;
+  return {
+    id: bundle.id,
+    slug: bundle.slug,
+    name: bundle.name,
+    summary: bundle.summary,
+    description: bundle.description,
+    sessionCreditCount: bundle.sessionCredits,
+    pricePhp: bundle.pricePhp,
+    applicabilityMode: bundle.applicability.allActiveClasses
+      ? "ALL_ACTIVE_CLASSES"
+      : "EXPLICIT_CLASSES",
+    classIds: [...bundle.applicability.classIds],
+    validityDays: bundle.validityDays,
+    perCustomerLimit: bundle.perCustomerLimit,
+    status: "PUBLISHED",
+  };
 }

@@ -1,6 +1,7 @@
 /**
- * Shared HTTP contracts for BE-050–BE-056 (admin queues, validation, uploads,
- * settings writes, dashboard metrics, staff/coach link, payment QR collection).
+ * Shared HTTP contracts for BE-050–BE-058 (admin queues, validation, uploads,
+ * settings writes, dashboard metrics, staff/coach link, payment QR collection,
+ * session bundles / packages).
  * FE mocks may adopt the same shapes.
  */
 
@@ -63,6 +64,10 @@ export const VALIDATION_ERROR_CODES = [
   "duplicate_value",
   "already_exists",
   "developer_config_forbidden",
+  "already_exists",
+  "acquisition_limit_reached",
+  "explicit_classes_required",
+  "package_not_published",
 ] as const;
 
 export type ValidationErrorCode = (typeof VALIDATION_ERROR_CODES)[number];
@@ -117,17 +122,6 @@ export const FIELD_CONSTRAINTS = {
     status: { required: false, enum: ["DRAFT", "PUBLISHED", "CANCELLED"] },
     coachAssignments: { adminOnly: true, readOnly: true, snapshot: true },
   },
-  bundle: {
-    name: { required: true, max: 80 },
-    slug: { required: true, max: 80, unique: true },
-    summary: { required: true, max: 200 },
-    description: { required: true, max: 4000, format: "markdown" },
-    sessionCredits: { required: true, min: 1, max: 365 },
-    pricePhp: { required: true, min: 0, unit: MONEY_UNIT },
-    validityDays: { required: false, min: 1, max: 730 },
-    perCustomerLimit: { required: false, min: 1, max: 20 },
-    status: { required: true, enum: ["DRAFT", "PUBLISHED", "ARCHIVED"] },
-  },
   settings: {
     businessName: { required: true, max: 80 },
     "contact.phone": { required: true, max: 32 },
@@ -149,6 +143,26 @@ export const FIELD_CONSTRAINTS = {
       question: { required: true, max: 160 },
       answer: { required: true, max: 2000, format: "markdown" },
     },
+  },
+  bundle: {
+    name: { required: true, max: 80 },
+    slug: { required: true, max: 100, unique: true },
+    summary: { required: true, max: 280 },
+    description: { required: true, max: 8000, format: "markdown" },
+    sessionCredits: { required: true, min: 1, max: 365 },
+    sessionCreditCount: { required: true, min: 1, max: 500 },
+    pricePhp: { required: true, min: 0, unit: MONEY_UNIT },
+    applicabilityMode: {
+      required: true,
+      enum: ["ALL_ACTIVE_CLASSES", "EXPLICIT_CLASSES"],
+    },
+    classIds: { required: false, minItems: 1 },
+    validityDays: { required: false, min: 1, max: 3650 },
+    perCustomerLimit: { required: false, min: 1, max: 20 },
+    status: { required: false, enum: ["DRAFT", "PUBLISHED", "ARCHIVED"] },
+    adminNote: { required: false, max: 500 },
+    overrideReason: { required: false, max: 500 },
+    revokeReason: { required: true, max: 500 },
   },
 } as const;
 

@@ -21,14 +21,23 @@ These items are intentionally not required for the first proof-of-concept MVP.
 
 ## Customer commercial features
 
+Delivered in BE-058 (not future scope): **session packages / bundles** — fixed session credits for one customer (example: Newbie Package, 12 sessions, ₱0). Ledger-derived remaining sessions, admin catalogue, free claim, paid manual review, grant/revoke. See `docs/backend/session-bundles.md` and issue #290.
+
+Still future scope:
+
 - memberships
 - monthly plans
 - class passes as a separate product from session packages
 - monetary credits / wallet
+- wallet / gift cards / transferable store credit
 
-Session packages (fixed session entitlements, including a free Newbie Package) are delivered as mock-first catalogue + ledger behavior. See `openspec/specs/session-bundles.md` and GitHub #290. Remaining backend WIRE (Prisma, RLS, HTTP handlers) is a follow-up.
+Session packages (fixed session entitlements, including a free Newbie Package) are delivered as mock screens plus BE-058 contracts. See `openspec/specs/session-bundles.md` and GitHub #290. Screens do not call `/api/*` in this phase.
 - promo codes
 - loyalty
+- gifting or shared/family packages
+- coach-specific or unlimited packages
+- partial credits
+- automatic Newbie Package enrollment
 
 ## Notifications
 

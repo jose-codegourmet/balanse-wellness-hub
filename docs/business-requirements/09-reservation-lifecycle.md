@@ -117,6 +117,17 @@ Then after manual transfer:
 
 - refund = REFUNDED
 
+## Session package redemptions (BE-058)
+
+Package credits have their own ledger states (`HELD`, `CONSUMED`, `RESTORED`) attached to a booking/session. They do not replace booking status.
+
+- Main-list create → hold one credit with the slot.
+- Confirm / check-in / no-show → consume. `COMPLETED` remains unused (OQ-10).
+- Reject, hold expiry, completed eligible cancellation → restore once.
+- Cancellation requested but still open → do not restore.
+- Approved reschedule → move the same redemption after revalidation.
+- Waitlist → no credit reserved.
+
 ## State-history principle
 
 Status changes should be auditable enough to answer:

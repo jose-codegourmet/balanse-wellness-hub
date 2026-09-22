@@ -21,7 +21,7 @@ Phase closeout notes in `docs/metas/` are historical delivery records, not a sub
 - `@balanse/ui`: shared primitives and wrappers
 - `@balanse/config`: brand tokens and breakpoints
 - `@balanse/db`: Prisma schema (`AppMeta` + BE-001–BE-024 business models, RLS, jobs; BE-055/056 amendments)
-- `@balanse/api`: BE-030–BE-043 + BE-050–056 HTTP handlers (mounted on `apps/web` `/api/*`; no FE wiring)
+- `@balanse/api`: BE-030–BE-043 + BE-050–058 HTTP handlers (mounted on `apps/web` `/api/*`; no FE wiring). BE-058 session packages are contracts + mocks only.
 
 ## Project Structure & Documentation
 

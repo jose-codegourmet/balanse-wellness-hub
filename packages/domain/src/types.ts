@@ -117,6 +117,11 @@ export type CustomerBooking = {
   packageName?: string | null;
   /** True when waitlist promotion could not reserve the intended package. */
   packagePromotionBlocked?: boolean;
+  redemption?: {
+    id: string;
+    status: import("./enums").BundleRedemptionStatus;
+    entitlementId: string;
+  } | null;
 };
 
 export type PaymentInstructions = {

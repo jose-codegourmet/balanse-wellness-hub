@@ -69,6 +69,19 @@ const RULE_CODES = new Set([
   "no_show_requires_confirmed",
   "illegal_refund_transition",
   "target_session_required",
+  "entitlement_not_found",
+  "entitlement_foreign",
+  "entitlement_revoked",
+  "entitlement_expired",
+  "entitlement_exhausted",
+  "entitlement_ineligible_class",
+  "entitlement_not_usable",
+  "entitlement_snapshot_immutable",
+  "redemption_conflict",
+  "package_not_found",
+  "package_not_free",
+  "package_is_free",
+  "acquisition_not_found",
 ]);
 
 export function mapUnknownError(error: unknown): ApiError {

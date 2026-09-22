@@ -1,4 +1,5 @@
 export * from "./adapter";
+export * from "./bundle-fixtures";
 export * from "./dashboard-series";
 export * from "./fixtures";
 export * from "./memory-adapter";

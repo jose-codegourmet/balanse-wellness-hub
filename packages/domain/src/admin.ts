@@ -176,6 +176,7 @@ export type AdminCustomerDetail = AdminCustomer & {
   policyAcceptances: PolicyAcceptance[];
   entitlements: CustomerEntitlement[];
   acquisitions: BundleAcquisition[];
+  pendingAcquisitions?: BundleAcquisition[];
 };
 
 export type AdminDashboardSnapshot = {

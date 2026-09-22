@@ -10,11 +10,11 @@
 6. Booking shows “Use a package” only for entitlements eligible for that session’s class and start time. Multiple entitlements require an explicit choice. One credit is **held** with a main-list booking and **consumed** on confirm / check-in / completed / no-show. Rejection, hold expiry, and completed eligible cancellation restore exactly once.
 7. Waitlisting never holds a credit. An intended package is revalidated on promotion. If it is exhausted, expired, revoked, or ineligible, the customer remains waitlisted with a clear action-required state. The studio never silently charges cash or picks another package.
 8. Remaining sessions are derived from granted credits minus held and consumed redemptions. One booking has at most one non-restored redemption. History is append-only.
-9. Mock-phase UI uses `getMockAdapter()` (admin through `apps/admin/src/lib/query/`). No UI `/api/*` or Supabase calls. `MockDataAdapter` mirrors the intended contracts. Backend Prisma, RLS, and HTTP handlers are a WIRE follow-up documented in `docs/backend/session-bundles.md`.
+9. Screens use `getMockAdapter()` (admin through `apps/admin/src/lib/query/`). No UI `/api/*` or Supabase calls. Mock methods use FE names (`getPublicBundles`, `sessionCredits`). HTTP contracts use package paths (`GET /api/public/packages`) and Prisma field names (`sessionCreditCount`). See `docs/backend/session-bundles.md`.
 
 ## Routes
 
 - `/packages`, `/packages/[slug]`
 - `/portal/packages`, `/portal/packages/[entitlementId]`
 - `/bundles`, `/bundles/new`, `/bundles/[bundleId]`
-- Planned HTTP (not wired): `GET /api/public/bundles`, `GET /api/me/entitlements`, `POST /api/bundles/{id}/claim`, `POST /api/admin/bundles`, `POST /api/admin/customers/{id}/bundles`
+- HTTP (implemented, not wired to UI): `GET /api/public/packages`, `GET /api/me/packages`, `POST /api/packages/{id}/claim`, `POST /api/admin/bundles`, `POST /api/admin/customers/{id}/packages/grant`

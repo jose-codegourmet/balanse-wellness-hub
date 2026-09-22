@@ -3,7 +3,7 @@
   "info": {
     "title": "Balanse Wellness Hub API (BE-024 contract pack)",
     "version": "0.3.0",
-    "description": "Machine-readable contract for the wiring phase (BE-024 plus BE-050–BE-056). Hold duration and cutoff are absent from admin settings. Money is whole pesos as decimal strings. Admin lists use CursorPage. Validation failures use ValidationFailed (422)."
+    "description": "Machine-readable contract for the wiring phase (BE-024 plus BE-050–BE-058). Hold duration and cutoff are absent from admin settings. Money is whole pesos as decimal strings. Admin lists use CursorPage. Validation failures use ValidationFailed (422). Session bundles are session credits, not wallets."
   },
   "paths": {
     "/api/public/sessions": {
@@ -4875,13 +4875,13 @@
         }
       }
     },
-    "/api/public/bundles": {
+    "/api/public/packages": {
       "get": {
         "tags": [
           "BE-058"
         ],
-        "operationId": "BE-058_get__api_public_bundles",
-        "summary": "BE-058 GET /api/public/bundles",
+        "operationId": "BE-058_get__api_public_packages",
+        "summary": "BE-058 GET /api/public/packages",
         "responses": {
           "200": {
             "description": "Success",
@@ -4924,13 +4924,13 @@
         }
       }
     },
-    "/api/public/bundles/{slug}": {
+    "/api/public/packages/{slug}": {
       "get": {
         "tags": [
           "BE-058"
         ],
-        "operationId": "BE-058_get__api_public_bundles_slug_",
-        "summary": "BE-058 GET /api/public/bundles/{slug}",
+        "operationId": "BE-058_get__api_public_packages_slug_",
+        "summary": "BE-058 GET /api/public/packages/{slug}",
         "responses": {
           "200": {
             "description": "Success",
@@ -4973,13 +4973,13 @@
         }
       }
     },
-    "/api/me/entitlements": {
+    "/api/me/packages": {
       "get": {
         "tags": [
           "BE-058"
         ],
-        "operationId": "BE-058_get__api_me_entitlements",
-        "summary": "BE-058 GET /api/me/entitlements",
+        "operationId": "BE-058_get__api_me_packages",
+        "summary": "BE-058 GET /api/me/packages",
         "responses": {
           "200": {
             "description": "Success",
@@ -5022,13 +5022,13 @@
         }
       }
     },
-    "/api/me/entitlements/{id}": {
+    "/api/me/packages/{id}": {
       "get": {
         "tags": [
           "BE-058"
         ],
-        "operationId": "BE-058_get__api_me_entitlements_id_",
-        "summary": "BE-058 GET /api/me/entitlements/{id}",
+        "operationId": "BE-058_get__api_me_packages_id_",
+        "summary": "BE-058 GET /api/me/packages/{id}",
         "responses": {
           "200": {
             "description": "Success",
@@ -5071,13 +5071,62 @@
         }
       }
     },
-    "/api/bundles/{id}/claim": {
+    "/api/me/packages/{id}/redemptions": {
+      "get": {
+        "tags": [
+          "BE-058"
+        ],
+        "operationId": "BE-058_get__api_me_packages_id_redemptions",
+        "summary": "BE-058 GET /api/me/packages/{id}/redemptions",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/packages/{id}/claim": {
       "post": {
         "tags": [
           "BE-058"
         ],
-        "operationId": "BE-058_post__api_bundles_id_claim",
-        "summary": "BE-058 POST /api/bundles/{id}/claim",
+        "operationId": "BE-058_post__api_packages_id_claim",
+        "summary": "BE-058 POST /api/packages/{id}/claim",
         "responses": {
           "200": {
             "description": "Success",
@@ -5140,13 +5189,13 @@
         }
       }
     },
-    "/api/bundles/{id}/purchase": {
+    "/api/packages/{id}/acquisitions": {
       "post": {
         "tags": [
           "BE-058"
         ],
-        "operationId": "BE-058_post__api_bundles_id_purchase",
-        "summary": "BE-058 POST /api/bundles/{id}/purchase",
+        "operationId": "BE-058_post__api_packages_id_acquisitions",
+        "summary": "BE-058 POST /api/packages/{id}/acquisitions",
         "responses": {
           "200": {
             "description": "Success",
@@ -5209,13 +5258,151 @@
         }
       }
     },
-    "/api/sessions/{id}/eligible-entitlements": {
+    "/api/packages/acquisitions/{id}/payment-method": {
+      "post": {
+        "tags": [
+          "BE-058"
+        ],
+        "operationId": "BE-058_post__api_packages_acquisitions_id_payment_method",
+        "summary": "BE-058 POST /api/packages/acquisitions/{id}/payment-method",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/packages/acquisitions/{id}/payment-proof": {
+      "post": {
+        "tags": [
+          "BE-058"
+        ],
+        "operationId": "BE-058_post__api_packages_acquisitions_id_payment_proof",
+        "summary": "BE-058 POST /api/packages/acquisitions/{id}/payment-proof",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sessions/{id}/eligible-packages": {
       "get": {
         "tags": [
           "BE-058"
         ],
-        "operationId": "BE-058_get__api_sessions_id_eligible_entitlements",
-        "summary": "BE-058 GET /api/sessions/{id}/eligible-entitlements",
+        "operationId": "BE-058_get__api_sessions_id_eligible_packages",
+        "summary": "BE-058 GET /api/sessions/{id}/eligible-packages",
         "responses": {
           "200": {
             "description": "Success",
@@ -5375,6 +5562,53 @@
       }
     },
     "/api/admin/bundles/{id}": {
+      "get": {
+        "tags": [
+          "BE-058"
+        ],
+        "operationId": "BE-058_get__api_admin_bundles_id_",
+        "summary": "BE-058 GET /api/admin/bundles/{id}",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      },
       "patch": {
         "tags": [
           "BE-058"
@@ -5443,13 +5677,13 @@
         }
       }
     },
-    "/api/admin/customers/{id}/bundles": {
+    "/api/admin/bundles/{id}/publish": {
       "post": {
         "tags": [
           "BE-058"
         ],
-        "operationId": "BE-058_post__api_admin_customers_id_bundles",
-        "summary": "BE-058 POST /api/admin/customers/{id}/bundles",
+        "operationId": "BE-058_post__api_admin_bundles_id_publish",
+        "summary": "BE-058 POST /api/admin/bundles/{id}/publish",
         "responses": {
           "200": {
             "description": "Success",
@@ -5512,13 +5746,13 @@
         }
       }
     },
-    "/api/admin/bundle-acquisitions/{id}/approve": {
+    "/api/admin/bundles/{id}/unpublish": {
       "post": {
         "tags": [
           "BE-058"
         ],
-        "operationId": "BE-058_post__api_admin_bundle_acquisitions_id_approve",
-        "summary": "BE-058 POST /api/admin/bundle-acquisitions/{id}/approve",
+        "operationId": "BE-058_post__api_admin_bundles_id_unpublish",
+        "summary": "BE-058 POST /api/admin/bundles/{id}/unpublish",
         "responses": {
           "200": {
             "description": "Success",
@@ -5581,13 +5815,13 @@
         }
       }
     },
-    "/api/admin/bundle-acquisitions/{id}/reject": {
+    "/api/admin/bundles/{id}/archive": {
       "post": {
         "tags": [
           "BE-058"
         ],
-        "operationId": "BE-058_post__api_admin_bundle_acquisitions_id_reject",
-        "summary": "BE-058 POST /api/admin/bundle-acquisitions/{id}/reject",
+        "operationId": "BE-058_post__api_admin_bundles_id_archive",
+        "summary": "BE-058 POST /api/admin/bundles/{id}/archive",
         "responses": {
           "200": {
             "description": "Success",
@@ -5646,6 +5880,429 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/admin/customers/{id}/packages": {
+      "get": {
+        "tags": [
+          "BE-058"
+        ],
+        "operationId": "BE-058_get__api_admin_customers_id_packages",
+        "summary": "BE-058 GET /api/admin/customers/{id}/packages",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/customers/{id}/packages/grant": {
+      "post": {
+        "tags": [
+          "BE-058"
+        ],
+        "operationId": "BE-058_post__api_admin_customers_id_packages_grant",
+        "summary": "BE-058 POST /api/admin/customers/{id}/packages/grant",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/packages/{id}/revoke": {
+      "post": {
+        "tags": [
+          "BE-058"
+        ],
+        "operationId": "BE-058_post__api_admin_packages_id_revoke",
+        "summary": "BE-058 POST /api/admin/packages/{id}/revoke",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/package-acquisitions": {
+      "get": {
+        "tags": [
+          "BE-058"
+        ],
+        "operationId": "BE-058_get__api_admin_package_acquisitions",
+        "summary": "BE-058 GET /api/admin/package-acquisitions",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          }
+        }
+      }
+    },
+    "/api/admin/package-acquisitions/{id}/approve": {
+      "post": {
+        "tags": [
+          "BE-058"
+        ],
+        "operationId": "BE-058_post__api_admin_package_acquisitions_id_approve",
+        "summary": "BE-058 POST /api/admin/package-acquisitions/{id}/approve",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/package-acquisitions/{id}/reject": {
+      "post": {
+        "tags": [
+          "BE-058"
+        ],
+        "operationId": "BE-058_post__api_admin_package_acquisitions_id_reject",
+        "summary": "BE-058 POST /api/admin/package-acquisitions/{id}/reject",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
+          },
+          "409": {
+            "description": "Conflict (unique name, capacity race)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Field validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationFailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/packages/{id}/redemptions": {
+      "get": {
+        "tags": [
+          "BE-058"
+        ],
+        "operationId": "BE-058_get__api_admin_packages_id_redemptions",
+        "summary": "BE-058 GET /api/admin/packages/{id}/redemptions",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericSuccess"
+                },
+                "example": {
+                  "id": "cbookingexample01",
+                  "customerId": "00000000-0000-0000-0000-0000000000aa",
+                  "sessionId": "sess_2026-09-14_0800_class_calisthenics",
+                  "status": "HELD_AWAITING_PAYMENT",
+                  "statusLabel": "Reserved — Payment Needed",
+                  "paymentMethod": "GCASH",
+                  "paymentStatus": "NONE",
+                  "refundStatus": "NOT_APPLICABLE",
+                  "holdExpiresAt": "2026-09-14T08:00:00.000+08:00",
+                  "bookingReference": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed cursor or request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "description": "Forbidden (RLS/route equivalent)"
           }
         }
       }
@@ -5716,6 +6373,56 @@
           "ADMIN"
         ]
       },
+      "BundleStatus": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "PUBLISHED",
+          "ARCHIVED"
+        ]
+      },
+      "BundleApplicabilityMode": {
+        "type": "string",
+        "enum": [
+          "ALL_ACTIVE_CLASSES",
+          "EXPLICIT_CLASSES"
+        ]
+      },
+      "BundleAcquisitionKind": {
+        "type": "string",
+        "enum": [
+          "CUSTOMER_CLAIM",
+          "CUSTOMER_PAID",
+          "ADMIN_GRANT"
+        ]
+      },
+      "BundleAcquisitionStatus": {
+        "type": "string",
+        "enum": [
+          "PENDING_PAYMENT",
+          "PENDING_REVIEW",
+          "APPROVED",
+          "REJECTED",
+          "CANCELLED"
+        ]
+      },
+      "CustomerBundleStatus": {
+        "type": "string",
+        "enum": [
+          "ACTIVE",
+          "EXHAUSTED",
+          "EXPIRED",
+          "REVOKED"
+        ]
+      },
+      "BundleRedemptionStatus": {
+        "type": "string",
+        "enum": [
+          "HELD",
+          "CONSUMED",
+          "RESTORED"
+        ]
+      },
       "GenericSuccess": {
         "type": "object",
         "additionalProperties": true
@@ -5774,8 +6481,11 @@
           "already_linked",
           "cannot_remove_active",
           "duplicate_value",
+          "developer_config_forbidden",
           "already_exists",
-          "developer_config_forbidden"
+          "acquisition_limit_reached",
+          "explicit_classes_required",
+          "package_not_published"
         ]
       },
       "ValidationFailed": {
