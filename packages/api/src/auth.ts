@@ -227,6 +227,30 @@ export async function assertLastSuperAdminAction(
   await assertLastSuperAdminSafe(deps, staffId, action);
 }
 
+export async function writeRejectedLastSuperAdminAudit(
+  deps: ApiDeps,
+  actor: ApiActor,
+  input: {
+    staffId: string;
+    attemptedAction: "disable" | "demote" | "delete" | "strip_all_access";
+    roleId?: string | null;
+    roleKey?: string | null;
+  },
+): Promise<void> {
+  await writeAudit(deps, {
+    entityType: "staff",
+    entityId: input.staffId,
+    action: "staff.last_super_admin.rejected",
+    actor,
+    metadata: {
+      attemptedAction: input.attemptedAction,
+      targetStaffId: input.staffId,
+      before: { roleId: input.roleId ?? null, roleKey: input.roleKey ?? null },
+      after: null,
+    },
+  });
+}
+
 export async function writeAudit(
   deps: ApiDeps,
   input: {

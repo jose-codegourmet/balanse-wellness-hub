@@ -124,10 +124,11 @@ export function assertLastSuperAdminDisable(input: {
   const remaining = input.activeSuperAdminStaffIds.filter(
     (id) => id !== input.targetStaffId,
   ).length;
-  const includingTarget = remaining + (input.targetRoleKey === "super_admin" ? 1 : 0);
+  const targetHoldsSuperAdmin = input.targetRoleKey === "super_admin";
+  const includingTarget = remaining + (targetHoldsSuperAdmin ? 1 : 0);
   if (
     violatesLastSuperAdminInvariant({
-      targetHoldsSuperAdmin: input.targetRoleKey === "super_admin",
+      targetHoldsSuperAdmin,
       remainingActiveSuperAdminCount: includingTarget,
       action: "disable",
     })
@@ -216,8 +217,10 @@ export function stripRosterBooking(row: CustomerBooking, includePayment: boolean
 }
 
 export function redactReports(reports: AdminReports, actor: StaffAuthorizationActor): AdminReports {
+  const includeSales = hasPermission(actor, "reports.sales.read");
+  const includeCost = hasPermission(actor, "reports.coach_costs.read");
   return {
-    overview: hasPermission(actor, "reports.sales.read")
+    overview: includeSales
       ? reports.overview
       : {
           ...reports.overview,
@@ -226,15 +229,19 @@ export function redactReports(reports: AdminReports, actor: StaffAuthorizationAc
           netSalesPhp: 0,
         },
     classPerformance:
-      hasPermission(actor, "reports.sales.read") || hasPermission(actor, "reports.capacity.read")
+      includeSales || hasPermission(actor, "reports.capacity.read")
         ? reports.classPerformance.map((row) => ({
             ...row,
-            revenuePhp: hasPermission(actor, "reports.sales.read") ? row.revenuePhp : 0,
+            revenuePhp: includeSales ? row.revenuePhp : 0,
           }))
         : [],
-    coachCosts: hasPermission(actor, "reports.coach_costs.read") ? reports.coachCosts : [],
+    coachCosts: includeCost ? reports.coachCosts : [],
     sessionPerformance: hasPermission(actor, "reports.session.read")
-      ? reports.sessionPerformance
+      ? reports.sessionPerformance.map((row) => ({
+          ...row,
+          revenuePhp: includeSales ? row.revenuePhp : 0,
+          coachCostPhp: includeCost ? row.coachCostPhp : 0,
+        }))
       : [],
   };
 }

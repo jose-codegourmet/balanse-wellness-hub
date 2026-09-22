@@ -422,10 +422,18 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
     },
   ),
   api("GET", "/api/admin/reports/coach-costs", "Coach costs", ["reports.coach_costs.read"]),
-  api("GET", "/api/admin/reports/session-performance", "Session performance", [
-    "reports.session.read",
-  ]),
-  api("GET", "/api/admin/reports/sessions/:id", "Session report", ["reports.session.read"]),
+  api(
+    "GET",
+    "/api/admin/reports/session-performance",
+    "Session performance",
+    ["reports.session.read"],
+    {
+      includeFieldsIf: ["reports.sales.read", "reports.coach_costs.read"],
+    },
+  ),
+  api("GET", "/api/admin/reports/sessions/:id", "Session report", ["reports.session.read"], {
+    includeFieldsIf: ["reports.sales.read", "reports.coach_costs.read"],
+  }),
   api("GET", "/api/admin/staff", "List staff", STAFF_READ),
   api("POST", "/api/admin/staff", "Create staff", ["staff.manage"]),
   api("PATCH", "/api/admin/staff/:id", "Update staff", ["staff.manage"]),

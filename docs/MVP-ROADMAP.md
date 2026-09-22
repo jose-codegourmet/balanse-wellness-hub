@@ -1793,7 +1793,7 @@ apps/admin (port 9001)
   - [ ] Add Staff is an invite/provision flow, never a public sign-up.
   - [ ] The UI documents (in-page helper text or tooltip) which capabilities the role grants, consistent with the financial-access note.
   - [ ] "No staff found" empty state wired.
-- **Out of scope:** Implementing the permission registry (owned by #294 in `@balanse/domain`); role CRUD UI (#297); nav/action gating (#295).
+- **Out of scope:** Permission registry implementation history (#294 in `@balanse/domain`); role CRUD UI (#297); nav/action gating (#295). Those children shipped; FE-ADM-003 consumes them. Epic closeout is #293 (`docs/backend/authorization-closeout.md`).
 - **Phase:** P4
 
 #### FE-ADM-004 — Customer management

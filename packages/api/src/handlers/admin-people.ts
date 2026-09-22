@@ -7,6 +7,7 @@ import {
   requirePermission,
   resolveActor,
   writeAudit,
+  writeRejectedLastSuperAdminAudit,
 } from "../auth";
 import {
   entitlementWithLedger,
@@ -14,7 +15,7 @@ import {
   presentEntitlement,
 } from "../bundle-presenters";
 import type { ApiDeps } from "../deps";
-import { ApiError } from "../errors";
+import { ApiError, isLastSuperAdminProtectedError, mapUnknownError } from "../errors";
 import { asString, ok, pagination, readJson, searchParams } from "../http";
 import { bookingStatusPayload, presentStaff } from "../presenters";
 import { actorHas } from "../sensitive";
@@ -25,6 +26,27 @@ const staffCoachInclude = {
   coach: { select: { id: true } },
   roleDefinition: { select: { id: true, key: true, name: true, status: true, allAccess: true } },
 } as const;
+
+async function runLastSuperAdminMutation<T>(
+  deps: ApiDeps,
+  actor: Parameters<typeof writeRejectedLastSuperAdminAudit>[1],
+  input: {
+    staffId: string;
+    attemptedAction: "disable" | "demote" | "delete" | "strip_all_access";
+    roleId?: string | null;
+    roleKey?: string | null;
+  },
+  work: () => Promise<T>,
+): Promise<T> {
+  try {
+    return await work();
+  } catch (error) {
+    if (isLastSuperAdminProtectedError(error)) {
+      await writeRejectedLastSuperAdminAudit(deps, actor, input);
+    }
+    throw mapUnknownError(error);
+  }
+}
 
 export async function getStaff(deps: ApiDeps, req: Request): Promise<Response> {
   requireAdmin(await resolveActor(deps, req));
@@ -38,7 +60,7 @@ export async function getStaff(deps: ApiDeps, req: Request): Promise<Response> {
 
 export async function postStaff(deps: ApiDeps, req: Request): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
-  requirePermission(actor, "roles.manage");
+  requirePermission(actor, "staff.manage");
   const body = await readJson(req);
   const roleId = asString(body.roleId)?.trim();
   if (!roleId) {
@@ -95,47 +117,59 @@ export async function postStaff(deps: ApiDeps, req: Request): Promise<Response> 
     roleArchived: role.status === "ARCHIVED",
     coachId: existingStaff?.coach?.id ?? requestedCoachId,
   });
-  const staff = await deps.prisma.$transaction(async (tx) => {
-    const leavingSuperAdmin = Boolean(existingStaff?.roleDefinition?.allAccess) && !role.allAccess;
-    if (leavingSuperAdmin && existingStaff) {
-      await assertLastSuperAdminAction({ prisma: tx } as ApiDeps, existingStaff.id, "demote");
-    }
-    const upserted = await tx.staffMember.upsert({
-      where: { userId: profile.id },
-      create: {
-        userId: profile.id,
-        name,
-        email,
-        role: "ADMIN",
-        roleId: role.id,
-        status: "ACTIVE",
-      },
-      update: { name, email, status: "ACTIVE", roleId: role.id },
-      include: staffCoachInclude,
-    });
-    if (requestedCoachId && !upserted.coach) {
-      const coach = await tx.coach.findUnique({ where: { id: requestedCoachId } });
-      if (!coach) throw new ApiError(404, "coach_not_found", "Coach not found.");
-      if (coach.staffMemberId && coach.staffMemberId !== upserted.id) {
-        throwFields(
-          fieldError(
-            "coachId",
-            "already_linked",
-            "This coach is already linked to a staff member.",
-          ),
-        );
-      }
-      await tx.coach.update({
-        where: { id: requestedCoachId },
-        data: { staffMemberId: upserted.id },
-      });
-      return tx.staffMember.findUniqueOrThrow({
-        where: { id: upserted.id },
-        include: staffCoachInclude,
-      });
-    }
-    return upserted;
-  });
+  const staff = await runLastSuperAdminMutation(
+    deps,
+    actor,
+    {
+      staffId: existingStaff?.id ?? "staff-new",
+      attemptedAction: "demote",
+      roleId: existingStaff?.roleId ?? null,
+      roleKey: existingStaff?.roleDefinition?.key ?? null,
+    },
+    () =>
+      deps.prisma.$transaction(async (tx) => {
+        const leavingSuperAdmin =
+          Boolean(existingStaff?.roleDefinition?.allAccess) && !role.allAccess;
+        if (leavingSuperAdmin && existingStaff) {
+          await assertLastSuperAdminAction({ prisma: tx } as ApiDeps, existingStaff.id, "demote");
+        }
+        const upserted = await tx.staffMember.upsert({
+          where: { userId: profile.id },
+          create: {
+            userId: profile.id,
+            name,
+            email,
+            role: "ADMIN",
+            roleId: role.id,
+            status: "ACTIVE",
+          },
+          update: { name, email, status: "ACTIVE", roleId: role.id },
+          include: staffCoachInclude,
+        });
+        if (requestedCoachId && !upserted.coach) {
+          const coach = await tx.coach.findUnique({ where: { id: requestedCoachId } });
+          if (!coach) throw new ApiError(404, "coach_not_found", "Coach not found.");
+          if (coach.staffMemberId && coach.staffMemberId !== upserted.id) {
+            throwFields(
+              fieldError(
+                "coachId",
+                "already_linked",
+                "This coach is already linked to a staff member.",
+              ),
+            );
+          }
+          await tx.coach.update({
+            where: { id: requestedCoachId },
+            data: { staffMemberId: upserted.id },
+          });
+          return tx.staffMember.findUniqueOrThrow({
+            where: { id: upserted.id },
+            include: staffCoachInclude,
+          });
+        }
+        return upserted;
+      }),
+  );
   await writeAudit(deps, {
     entityType: "staff",
     entityId: staff.id,
@@ -154,6 +188,13 @@ export async function postStaff(deps: ApiDeps, req: Request): Promise<Response> 
 export async function patchStaff(deps: ApiDeps, req: Request, id: string): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
   const body = await readJson(req);
+  const existing = await deps.prisma.staffMember.findUnique({
+    where: { id },
+    select: { name: true, email: true },
+  });
+  if (!existing) throw new ApiError(404, "staff_not_found", "Staff member not found.");
+  const nextName = asString(body.name) ?? existing.name;
+  const nextEmail = asString(body.email) ?? existing.email;
   const staff = await deps.prisma.staffMember.update({
     where: { id },
     data: {
@@ -162,7 +203,16 @@ export async function patchStaff(deps: ApiDeps, req: Request, id: string): Promi
     },
     include: staffCoachInclude,
   });
-  await writeAudit(deps, { entityType: "staff", entityId: id, action: "staff.update", actor });
+  await writeAudit(deps, {
+    entityType: "staff",
+    entityId: id,
+    action: "staff.update",
+    actor,
+    metadata: {
+      before: { name: existing.name, email: existing.email },
+      after: { name: nextName, email: nextEmail },
+    },
+  });
   return ok({ staff: presentStaff(staff) });
 }
 
@@ -175,21 +225,32 @@ export async function disableStaff(deps: ApiDeps, req: Request, id: string): Pro
   if (!existing || existing.isSystem) {
     throw new ApiError(404, "staff_not_found", "Staff member not found.");
   }
-  const staff = await deps.prisma.$transaction(async (tx) => {
-    await assertLastSuperAdminAction({ prisma: tx } as ApiDeps, id, "disable");
-    const updated = await tx.staffMember.update({
-      where: { id },
-      data: { status: "DISABLED" },
-      include: staffCoachInclude,
-    });
-    if (existing.coach) {
-      await tx.coach.update({
-        where: { id: existing.coach.id },
-        data: { active: false },
-      });
-    }
-    return updated;
-  });
+  const staff = await runLastSuperAdminMutation(
+    deps,
+    actor,
+    {
+      staffId: id,
+      attemptedAction: "disable",
+      roleId: existing.roleId,
+      roleKey: existing.roleDefinition?.key ?? null,
+    },
+    () =>
+      deps.prisma.$transaction(async (tx) => {
+        await assertLastSuperAdminAction({ prisma: tx } as ApiDeps, id, "disable");
+        const updated = await tx.staffMember.update({
+          where: { id },
+          data: { status: "DISABLED" },
+          include: staffCoachInclude,
+        });
+        if (existing.coach) {
+          await tx.coach.update({
+            where: { id: existing.coach.id },
+            data: { active: false },
+          });
+        }
+        return updated;
+      }),
+  );
   await writeAudit(deps, {
     entityType: "staff",
     entityId: id,
@@ -249,7 +310,11 @@ export async function linkStaffCoach(deps: ApiDeps, req: Request, id: string): P
     entityId: staff.id,
     action: "staff.coach.link",
     actor,
-    metadata: { coachId },
+    metadata: {
+      coachId,
+      before: { coachId: staff.coach?.id ?? null },
+      after: { coachId },
+    },
   });
   return ok({
     staff: presentStaff({ ...staff, coach: { id: updatedCoach.id } }),
@@ -324,16 +389,27 @@ export async function assignStaffRole(deps: ApiDeps, req: Request, id: string): 
     coachId: staff.coach?.id ?? null,
   });
   const leavingSuperAdmin = Boolean(staff.roleDefinition?.allAccess) && !role.allAccess;
-  const updated = await deps.prisma.$transaction(async (tx) => {
-    if (leavingSuperAdmin) {
-      await assertLastSuperAdminAction({ prisma: tx } as ApiDeps, id, "demote");
-    }
-    return tx.staffMember.update({
-      where: { id },
-      data: { roleId: role.id },
-      include: staffCoachInclude,
-    });
-  });
+  const updated = await runLastSuperAdminMutation(
+    deps,
+    actor,
+    {
+      staffId: id,
+      attemptedAction: "demote",
+      roleId: staff.roleId,
+      roleKey: staff.roleDefinition?.key ?? null,
+    },
+    () =>
+      deps.prisma.$transaction(async (tx) => {
+        if (leavingSuperAdmin) {
+          await assertLastSuperAdminAction({ prisma: tx } as ApiDeps, id, "demote");
+        }
+        return tx.staffMember.update({
+          where: { id },
+          data: { roleId: role.id },
+          include: staffCoachInclude,
+        });
+      }),
+  );
   await writeAudit(deps, {
     entityType: "staff",
     entityId: id,

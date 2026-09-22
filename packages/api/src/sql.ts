@@ -1,4 +1,5 @@
 import type { ApiDeps } from "./deps";
+import { ApiError } from "./errors";
 
 export async function updateSessionCapacity(
   deps: ApiDeps,
@@ -344,16 +345,75 @@ export async function dbOwnsSession(
   }
 }
 
+function isMissingSqlRoutine(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes("does not exist") || message.includes("42883") || message.includes("42704")
+  );
+}
+
+async function assertLastSuperAdminSafeViaPrisma(
+  deps: ApiDeps,
+  staffId: string,
+  action: "disable" | "demote" | "delete" | "strip_all_access",
+): Promise<void> {
+  const target = await deps.prisma.staffMember.findUnique({
+    where: { id: staffId },
+    include: {
+      roleDefinition: { select: { allAccess: true, builtInKey: true, key: true } },
+    },
+  });
+  if (!target || target.isSystem || target.status !== "ACTIVE") return;
+  const holds =
+    Boolean(target.roleDefinition?.allAccess) ||
+    target.roleDefinition?.builtInKey === "super_admin" ||
+    target.roleDefinition?.key === "super_admin";
+  if (!holds) return;
+  const remaining = await deps.prisma.staffMember.count({
+    where: {
+      isSystem: false,
+      status: "ACTIVE",
+      roleDefinition: {
+        OR: [{ allAccess: true }, { builtInKey: "super_admin" }, { key: "super_admin" }],
+      },
+    },
+  });
+  if (remaining <= 1) {
+    throw new ApiError(
+      403,
+      "last_super_admin_protected",
+      "The last active Super Admin cannot be disabled, demoted, or stripped of all-access.",
+      { details: { staffId, action } },
+    );
+  }
+}
+
 export async function assertLastSuperAdminSafe(
   deps: ApiDeps,
   staffId: string,
   action: "disable" | "demote" | "delete" | "strip_all_access",
 ): Promise<void> {
-  await deps.prisma.$executeRawUnsafe(
-    `SELECT app_private.assert_last_super_admin_safe($1, $2)`,
-    staffId,
-    action,
-  );
+  try {
+    await deps.prisma.$executeRawUnsafe(
+      `SELECT app_private.assert_last_super_admin_safe($1, $2)`,
+      staffId,
+      action,
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes("last_super_admin_protected")) {
+      throw new ApiError(
+        403,
+        "last_super_admin_protected",
+        "The last active Super Admin cannot be disabled, demoted, or stripped of all-access.",
+        { details: { staffId, action } },
+      );
+    }
+    if (!isMissingSqlRoutine(error)) throw error;
+    // #298 helpers not applied yet — count via Prisma. Concurrent FOR UPDATE
+    // is only guaranteed after the SQL helper is deployed.
+    await assertLastSuperAdminSafeViaPrisma(deps, staffId, action);
+  }
 }
 
 export async function reportSessionDrilldown(deps: ApiDeps, sessionId: string) {

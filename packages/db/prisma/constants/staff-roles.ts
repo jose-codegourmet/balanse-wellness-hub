@@ -1,7 +1,7 @@
 import {
   BUILT_IN_ROLE_DEFINITIONS,
   PERMISSION_REGISTRY,
-  SUPER_ADMIN_ROLE_KEY,
+  resolveRolePermissions,
 } from "@balanse/domain";
 import type { PrismaClient } from "@prisma/client";
 
@@ -54,20 +54,33 @@ export async function seedCanonicalRolesAndPermissions(prisma: PrismaClient): Pr
     });
   }
 
-  const superAdmin = await prisma.staffRoleDefinition.findUniqueOrThrow({
-    where: { key: SUPER_ADMIN_ROLE_KEY },
-  });
-  for (const permission of PERMISSION_REGISTRY) {
-    await prisma.staffRolePermission.upsert({
-      where: {
-        roleId_permissionId: { roleId: superAdmin.id, permissionId: permission.key },
-      },
-      create: {
-        id: `${superAdmin.id}:${permission.key}`,
-        roleId: superAdmin.id,
-        permissionId: permission.key,
-      },
-      update: {},
+  for (const role of BUILT_IN_ROLE_DEFINITIONS) {
+    const persisted = await prisma.staffRoleDefinition.findUniqueOrThrow({
+      where: { key: role.key },
     });
+    const existingCount = await prisma.staffRolePermission.count({
+      where: { roleId: persisted.id },
+    });
+    // After #298 helpers, Front Desk / Coach matrices are trigger-protected.
+    // Only fill an empty join (schema-only / seed-before-SQL). Super Admin
+    // upserts remain allowed so the snapshot stays current-registry complete.
+    if (existingCount > 0 && !role.allAccess) continue;
+    for (const key of resolveRolePermissions(role)) {
+      try {
+        await prisma.staffRolePermission.upsert({
+          where: {
+            roleId_permissionId: { roleId: persisted.id, permissionId: key },
+          },
+          create: {
+            id: `${persisted.id}:${key}`,
+            roleId: persisted.id,
+            permissionId: key,
+          },
+          update: {},
+        });
+      } catch {
+        // built_in_role_matrix_protected — migration SQL already seeded.
+      }
+    }
   }
 }

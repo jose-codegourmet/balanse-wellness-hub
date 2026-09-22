@@ -86,6 +86,7 @@ export async function getSessionPerformance(deps: ApiDeps, req: Request): Promis
   const rows = await reportSessionPerformance(deps, filters(req));
   const pageRows = rows.slice(skip, skip + pageSize);
   const includeCost = actorHas(actor, "reports.coach_costs.read");
+  const includeSales = actorHas(actor, "reports.sales.read");
   const body = {
     page,
     pageSize,
@@ -96,7 +97,7 @@ export async function getSessionPerformance(deps: ApiDeps, req: Request): Promis
       Class: row.className,
       Capacity: Number(row.capacity),
       Confirmed: Number(row.confirmed),
-      Revenue: money(row.revenue),
+      ...(includeSales ? { Revenue: money(row.revenue) } : {}),
       ...(includeCost ? { Cost: money(row.coachCost) } : {}),
     })),
   };

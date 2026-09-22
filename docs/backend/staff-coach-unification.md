@@ -36,7 +36,7 @@ A coach with `staffMemberId = null` stays valid. A staff member with no coach st
 | Add `COACH` to `StaffRole` | `StaffRole` is **authorisation**. `is_admin()` is `role = ADMIN` + `status = ACTIVE` + `isSystem = false`. Teaching is not admin access. A coach who is not staff must not gain Data API/admin writes; a staff admin who does not teach must not become assignable on `ClassCoach` / `GymSession` just because of a role enum. |
 | Merge `Profile` + `StaffMember` + `Coach` into one `Person` | Coaches have **no auth principal** today. Staff require `auth.users` + `profiles`. Sessions, `class_coaches`, and rate snapshots hang off `Coach`. A merged table would force every coach to be a login (out of scope) or a pile of nullable auth columns. The 1:1 link keeps the teaching profile intact. |
 
-`StaffRole` remains `{ ADMIN }` only on the leftover Prisma enum (BE-001). #298 added `staff_role_definitions` + `StaffMember.roleId`; the enum is not authorization truth and is not dropped in this wave. Do not add `isCoach` as a stored column or as a `StaffRole` value. Authorization roles (`super_admin`, `front_desk`, `coach`, custom) live in `@balanse/domain` and stay separate from this teaching link (epic #289 / #294 / #298).
+`StaffRole` remains `{ ADMIN }` only on the leftover Prisma enum (BE-001). #298 added `staff_role_definitions` + `StaffMember.roleId`; the enum is not authorization truth and is not dropped in this wave. Do not add `isCoach` as a stored column or as a `StaffRole` value. Authorization roles (`super_admin`, `front_desk`, `coach`, custom) live in `@balanse/domain` and stay separate from this teaching link (epic #289 / #294 / #298 / closeout #293).
 
 ## Unlink / delete semantics
 

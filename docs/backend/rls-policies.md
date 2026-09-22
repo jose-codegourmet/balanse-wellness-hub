@@ -54,7 +54,7 @@ Negative guarantees:
 - Archived / labeled receive QRs are not granted through `payment_qr_codes_public` (BE-056).
 - Customer A cannot read or spend customer B’s package entitlement (BE-058).
 
-`session_roster_metrics` and report functions are revoked from Data API roles. Report RPCs additionally require `reports.*` when `auth.uid()` is present.
+`session_roster_metrics` and report functions are revoked from Data API roles. Report RPCs additionally require `reports.*` when `auth.uid()` is present. #293 zeros sales/cost columns on class/session report RPCs unless the JWT holds the matching key (`20260922181200`).
 
 Policies use `(SELECT auth.uid())` / `(SELECT app_private.has_permission(...))` so Postgres can cache the value once per statement (init-plan).
 

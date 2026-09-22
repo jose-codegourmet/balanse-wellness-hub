@@ -24,7 +24,7 @@ Screens continue to use `getMockAdapter()` for catalogue and ledger UX.
 - Every `/api/admin/*` handler is mapped in `ADMIN_API_ACCESS` (`@balanse/domain`). Dispatch denies unmapped routes. Read permissions never authorize writes. Own-scope never implies all-scope.
 - Front Desk allow-list APIs succeed; privileged APIs (rates, refunds, reports, staff/roles, settings) return 403.
 - Coach own-session reads/attendance succeed; other session IDs return 403. Roster payloads omit rates and payment fields the actor cannot see.
-- Role CRUD: `GET/POST /api/admin/roles`, `GET/PATCH /api/admin/roles/{id}`, clone, archive, `GET /api/admin/permissions`, `POST /api/admin/staff/{id}/role`. No privilege escalation, no archived-role assignment, Coach role requires a linked coach, last active Super Admin cannot be disabled/demoted (`app_private.assert_last_super_admin_safe`). Changes write `audit_events` with actor/target/before/after.
+- Role CRUD: `GET/POST /api/admin/roles`, `GET/PATCH /api/admin/roles/{id}`, clone, archive, `GET /api/admin/permissions`, `POST /api/admin/staff/{id}/role`. No privilege escalation, no archived-role assignment, Coach role requires a linked coach, last active Super Admin cannot be disabled/demoted (`app_private.assert_last_super_admin_safe`, Prisma count fallback if the helper is missing). Changes write `audit_events` with actor/target/before/after. Rejected last-SA attempts write `staff.last_super_admin.rejected`. Permission mapping: `ADMIN_API_ACCESS` in `@balanse/domain` (OpenAPI does not duplicate the keys). Closeout: [authorization-closeout.md](./authorization-closeout.md).
 
 ## OQ-2 (reschedule) — deliberately not enforced
 

@@ -212,7 +212,8 @@ A coach is an operational resource assigned to sessions.
 - Compensation stays hidden without `coach_rates.*`.
 - Public and customer surfaces never receive rates.
 
-See `docs/backend/staff-coach-unification.md` and issue #289.
+See `docs/backend/staff-coach-unification.md`, issue #289, and
+`docs/backend/authorization-closeout.md` (#293).
 
 ---
 

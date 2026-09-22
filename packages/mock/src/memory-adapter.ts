@@ -36,10 +36,10 @@ import {
   filterPaymentQueue,
   filterPermissionKeys,
   formatPeso,
-  isSuperAdminRoleKey,
   isValidCustomPermissionSet,
   manilaYmd,
   roleAssignmentDeniedReason,
+  roleHoldsSuperAdminAccess,
   sessionCoachCost,
   shiftSessionIsoToDate,
   sliceCursorPage,
@@ -218,12 +218,12 @@ function assertStaffRoleChangeAllowed(input: {
   const currentRole = liveMockStaffRoleById(input.currentRoleId);
   const nextRole = liveMockStaffRoleById(input.nextRoleId);
   if (!currentRole || !nextRole) return;
-  const demoting = isSuperAdminRoleKey(currentRole.key) && !isSuperAdminRoleKey(nextRole.key);
+  const demoting = roleHoldsSuperAdminAccess(currentRole) && !roleHoldsSuperAdminAccess(nextRole);
   const activeSuperAdminCount = input.staffRows.filter((row) => {
     if (row.status !== "active") return false;
     const roleId = getMockStaffRoleAssignment(row.id) ?? row.roleId;
     const role = liveMockStaffRoleById(roleId);
-    return role ? isSuperAdminRoleKey(role.key) : false;
+    return role ? roleHoldsSuperAdminAccess(role) : false;
   }).length;
   if (
     demoting &&
@@ -238,7 +238,7 @@ function assertStaffRoleChangeAllowed(input: {
   if (
     input.nextStatus === "disabled" &&
     violatesLastSuperAdminInvariant({
-      targetHoldsSuperAdmin: isSuperAdminRoleKey(currentRole.key),
+      targetHoldsSuperAdmin: roleHoldsSuperAdminAccess(currentRole),
       remainingActiveSuperAdminCount: activeSuperAdminCount,
       action: "disable",
     })
