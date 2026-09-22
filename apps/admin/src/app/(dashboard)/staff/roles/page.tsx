@@ -1,0 +1,22 @@
+import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
+import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
+import { prefetchAdmin } from "@/lib/query/prefetch";
+import { adminStaffRolesQuery } from "@/lib/query/queries";
+import { RoleListPage } from "./_components/role-list-page/RoleListPage";
+
+export const metadata: Metadata = {
+  title: "Roles",
+  description: "Staff role catalogue.",
+};
+
+export default async function Page() {
+  const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
+  return prefetchAdmin(
+    [adminStaffRolesQuery(principal)],
+    <AdminQuerySuspense>
+      <RoleListPage />
+    </AdminQuerySuspense>,
+  );
+}

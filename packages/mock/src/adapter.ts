@@ -10,6 +10,7 @@ import type {
   AdminSession,
   AdminSettings,
   AdminStaff,
+  AdminStaffRole,
   BookingStatus,
   BundleAcquisition,
   BundleAuditEvent,
@@ -24,6 +25,7 @@ import type {
   PaymentInstructions,
   PaymentMethod,
   PaymentQrCode,
+  PermissionKey,
   PolicyAcceptance,
   PolicyDocumentVersion,
   PublicBundle,
@@ -211,11 +213,22 @@ export type MockDataAdapter = {
     name: string;
     email: string;
     role: AdminStaff["role"];
+    roleId: string;
     status: AdminStaff["status"];
     /** Capability flag. Setting it links/creates a coach; clearing unlinks and deactivates. */
     isCoach?: boolean;
   }) => Promise<AdminStaff>;
   disableAdminStaff: (id: string) => Promise<AdminStaff>;
+  getAdminStaffRoles: () => Promise<AdminStaffRole[]>;
+  getAdminStaffRole: (id: string) => Promise<AdminStaffRole | null>;
+  upsertAdminStaffRole: (input: {
+    id?: string;
+    name: string;
+    description: string;
+    permissionKeys: readonly PermissionKey[];
+    cloneSourceId?: string | null;
+  }) => Promise<AdminStaffRole>;
+  archiveAdminStaffRole: (id: string) => Promise<AdminStaffRole>;
   getAdminCustomers: (filters?: {
     query?: string;
     hasUpcoming?: boolean;

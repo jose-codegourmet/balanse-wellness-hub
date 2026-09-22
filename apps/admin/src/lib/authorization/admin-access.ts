@@ -10,9 +10,6 @@ import {
 } from "@balanse/domain";
 import type { MockPrincipal } from "@balanse/mock/session";
 
-/** Role CRUD lives on #297. Do not land here. */
-const UNIMPLEMENTED_ADMIN_ROUTES = new Set(["/staff/roles"]);
-
 export function adminPathname(href: string): string {
   const [path] = href.split("?");
   return path || "/";
@@ -23,13 +20,10 @@ export function firstImplementedPermittedAdminRoute(
   fallback: string | null = null,
 ): string | null {
   for (const href of ADMIN_LANDING_PATHS) {
-    if (UNIMPLEMENTED_ADMIN_ROUTES.has(href)) continue;
     const requirement = matchAdminRouteAccess(href);
     if (requirement && actorSatisfiesRequirement(actor, requirement)) return href;
   }
-  const domain = firstPermittedAdminRoute(actor, fallback);
-  if (domain && UNIMPLEMENTED_ADMIN_ROUTES.has(domain)) return fallback;
-  return domain;
+  return firstPermittedAdminRoute(actor, fallback);
 }
 
 export function visibleAdminNavItems(actor: StaffAuthorizationActor | null | undefined) {
@@ -44,9 +38,6 @@ export function canAccessAdminHref(
   href: string,
 ): boolean {
   const pathname = adminPathname(href);
-  if (UNIMPLEMENTED_ADMIN_ROUTES.has(pathname) || pathname.startsWith("/staff/roles")) {
-    return false;
-  }
   const requirement = matchAdminRouteAccess(pathname);
   if (!requirement) return false;
   return actorSatisfiesRequirement(actor, requirement);

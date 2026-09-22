@@ -20,5 +20,5 @@ export const List: Story = {};
 /** Fixture `staff-rex` is linked to `coach-rex` (same human, two rows). */
 export const StaffWhoIsACoach: Story = {};
 
-/** Studio Partner is staff-only — capability stays Admin. */
+/** Studio Partner is staff-only — Front Desk, not a coach. */
 export const StaffWhoIsNotACoach: Story = {};

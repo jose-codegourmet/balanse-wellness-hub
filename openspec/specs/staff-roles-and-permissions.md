@@ -27,7 +27,11 @@ Wave 1 contract for epic #289 (ticket #294). Downstream tickets import
    Own-scope never implies all-scope.
 7. Wave 1 (#294) does not ship Prisma migrations, API handlers, mock
    identities, or admin gating UI.
-8. Wave 2 (#298) owns Prisma models `StaffRoleDefinition`,
+8. Role catalogue screens (#297) live at `/staff/roles`, `/staff/roles/new`,
+   and `/staff/roles/[roleId]`. Staff assignment uses active roles from the
+   mock adapter, keeps Role separate from `isCoach`, and blocks Coach-without-link
+   plus last-Super-Admin / self-lockout. UI does not copy permission lists.
+9. Wave 2 (#298) owns Prisma models `StaffRoleDefinition`,
    `PermissionDefinition`, `StaffRolePermission`, `StaffMember.roleId`,
    expand/seed/backfill SQL, `has_permission` / `owns_session` helpers,
    last-Super-Admin locking, and RLS/RPC gates. `is_admin()` stays Super

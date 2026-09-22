@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
-import { adminStaffQuery } from "@/lib/query/queries";
+import { adminStaffQuery, adminStaffRolesQuery } from "@/lib/query/queries";
 import { StaffDetailPage } from "../_components/staff-detail-page/StaffDetailPage";
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default async function Page({ params }: { params: Promise<{ staffId: stri
   const { staffId } = await params;
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [adminStaffQuery(principal)],
+    [adminStaffQuery(principal), adminStaffRolesQuery(principal)],
     <AdminQuerySuspense>
       <StaffDetailPage staffId={staffId} />
     </AdminQuerySuspense>,

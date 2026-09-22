@@ -594,6 +594,34 @@ export const ADMIN_LANDING_PATHS = [
   "/settings",
 ] as const;
 
+export function previewActorForPermissions(
+  keys: readonly PermissionKey[],
+): StaffAuthorizationActor {
+  return {
+    userId: "preview",
+    staffId: "preview",
+    staffStatus: "active",
+    roleId: "preview",
+    roleKey: "custom_preview",
+    roleActive: true,
+    permissions: keys,
+    coachId: "preview-coach",
+    isCoach: true,
+  };
+}
+
+export function accessibleAdminPagesForPermissions(
+  keys: readonly PermissionKey[],
+): { href: string; label: string }[] {
+  const actor = previewActorForPermissions(keys);
+  return ADMIN_NAV_ACCESS.filter((requirement) =>
+    actorSatisfiesRequirement(actor, requirement),
+  ).map((requirement) => ({
+    href: requirement.href ?? "",
+    label: requirement.label,
+  }));
+}
+
 export function firstPermittedAdminRoute(
   actor: StaffAuthorizationActor | null | undefined,
   fallback: string | null = null,

@@ -15,6 +15,7 @@ import { useMemo } from "react";
 import { CoachOption } from "@/components/balanse/coach/coach-option/CoachOption";
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
+import { useHasAnyPermission } from "@/lib/auth/use-staff-permissions";
 import { adminCoachesQuery, adminStaffQuery } from "@/lib/query/queries";
 import {
   AdminCan,
@@ -28,6 +29,7 @@ export type StaffListPageProps = { empty?: boolean };
 export function StaffListPage({ empty }: StaffListPageProps) {
   const { principal } = useMockPrincipal();
   const canManageStaff = useCanAdminAction("staff-manage");
+  const canOpenRoles = useHasAnyPermission(["roles.read", "roles.manage"]);
   const query = useSuspenseQuery(adminStaffQuery(principal));
   const canReadCoaches = useCanAdminRoute("/coaches");
   const coachesQuery = useQuery({
@@ -112,11 +114,18 @@ export function StaffListPage({ empty }: StaffListPageProps) {
     <AdminPageShell
       title="Staff Management"
       actions={
-        <AdminCan action="staff-manage">
-          <Button nativeButton={false} render={<Link href="/staff/new" />}>
-            Add Staff
-          </Button>
-        </AdminCan>
+        <div className="flex flex-wrap gap-2">
+          {canOpenRoles ? (
+            <Button nativeButton={false} variant="outline" render={<Link href="/staff/roles" />}>
+              Manage roles
+            </Button>
+          ) : null}
+          <AdminCan action="staff-manage">
+            <Button nativeButton={false} render={<Link href="/staff/new" />}>
+              Add Staff
+            </Button>
+          </AdminCan>
+        </div>
       }
     >
       <p className="max-w-2xl text-sm text-muted-foreground">{ADMIN_ROLE_CAPABILITY_NOTE}</p>
