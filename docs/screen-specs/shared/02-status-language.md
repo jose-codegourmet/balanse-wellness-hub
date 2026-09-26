@@ -18,3 +18,14 @@
 | REFUNDED | Refunded |
 
 Never expose raw enum names to users.
+
+## Admin events
+
+Staff labels for `EventStatus`. These are not session statuses and not customer booking labels.
+
+| Internal | Staff label |
+|---|---|
+| DRAFT | Draft |
+| PUBLISHED | Published |
+| CANCELLED | Cancelled |
+| ARCHIVED | Archived |

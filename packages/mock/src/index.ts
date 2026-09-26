@@ -3,6 +3,8 @@ export * from "./apply-admin-authorization";
 export * from "./authorize";
 export * from "./bundle-fixtures";
 export * from "./dashboard-series";
+export * from "./event-engine";
+export * from "./event-fixtures";
 export * from "./fixtures";
 export * from "./memory-adapter";
 export * from "./runtime";

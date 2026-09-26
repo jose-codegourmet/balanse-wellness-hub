@@ -1,3 +1,4 @@
+import { EVENT_CONFLICT_MESSAGES } from "./contracts";
 import type { BookingStatus } from "./enums";
 import { CUSTOMER_STATUS_LABELS } from "./status-language";
 
@@ -226,6 +227,14 @@ export const ADMIN_TOAST_IDS = [
   "bundle.revoked",
   "bundle.acquisition-reviewed",
   "bundle.review-failed",
+  "event.saved",
+  "event.save-failed",
+  "event.published",
+  "event.publish-blocked",
+  "event.cancelled",
+  "event.cancel-failed",
+  "event.archived",
+  "event.archive-failed",
 ] as const;
 
 export type AdminToastId = (typeof ADMIN_TOAST_IDS)[number];
@@ -505,6 +514,55 @@ export const ADMIN_TOAST_COPY = {
     tone: "error",
     title: "Package request not updated",
     description: "That review could not be saved. Try again.",
+  },
+  "event.saved": {
+    id: "event.saved",
+    tone: "success",
+    title: "Event saved",
+    description:
+      "Event details are updated. Session date, price, and capacity stay on the session.",
+  },
+  "event.save-failed": {
+    id: "event.save-failed",
+    tone: "error",
+    title: "Event not saved",
+    description: "Those changes could not be saved. Try again.",
+  },
+  "event.published": {
+    id: "event.published",
+    tone: "success",
+    title: "Event published",
+    description: "The event is visible to staff as published. Bookings still follow the session.",
+  },
+  "event.publish-blocked": {
+    id: "event.publish-blocked",
+    tone: "warning",
+    title: "Event not published",
+    description: EVENT_CONFLICT_MESSAGES.event_publish_requires_published_session,
+  },
+  "event.cancelled": {
+    id: "event.cancelled",
+    tone: "success",
+    title: "Event cancelled",
+    description: "The event is cancelled. The session and its bookings are unchanged.",
+  },
+  "event.cancel-failed": {
+    id: "event.cancel-failed",
+    tone: "error",
+    title: "Event not cancelled",
+    description: "That event could not be cancelled. Try again.",
+  },
+  "event.archived": {
+    id: "event.archived",
+    tone: "success",
+    title: "Event archived",
+    description: "The event is archived. The session and its bookings stay in place.",
+  },
+  "event.archive-failed": {
+    id: "event.archive-failed",
+    tone: "error",
+    title: "Event not archived",
+    description: "That event could not be archived. Try again.",
   },
 } as const satisfies ExhaustiveAdminToastCopy;
 

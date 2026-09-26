@@ -4,6 +4,7 @@ import type {
   AdminCustomer,
   AdminCustomerDetail,
   AdminDashboardSnapshot,
+  AdminEvent,
   AdminPaymentTab,
   AdminReportFilters,
   AdminReports,
@@ -22,6 +23,7 @@ import type {
   CustomerEntitlement,
   CustomerProfile,
   DuplicateScheduleInput,
+  EventStatus,
   PaymentInstructions,
   PaymentMethod,
   PaymentQrCode,
@@ -257,6 +259,50 @@ export type MockDataAdapter = {
   archivePaymentQr: (id: string) => Promise<PaymentQrCode>;
   promotePolicyVersion: (documentName: string, version: string) => Promise<AdminSettings>;
   getAdminDashboard: () => Promise<AdminDashboardSnapshot>;
+  getAdminEvents: (query?: {
+    status?: EventStatus;
+    sessionId?: string;
+    from?: string;
+    to?: string;
+    search?: string;
+  }) => Promise<AdminEvent[]>;
+  getAdminEvent: (id: string) => Promise<AdminEvent | null>;
+  getAdminEventForSession: (sessionId: string) => Promise<AdminEvent | null>;
+  createAdminEvent: (input: {
+    sessionId: string;
+    title: string;
+    summary?: string;
+    description?: string;
+    posterImage?: string | null;
+    galleryImages?: string[];
+    venueName?: string;
+    venueAddress?: string;
+    beneficiary?: string;
+    whatToBring?: string;
+    internalNotes?: string;
+    registrationOpensAt?: string | null;
+    registrationClosesAt?: string | null;
+  }) => Promise<AdminEvent>;
+  updateAdminEvent: (
+    id: string,
+    patch: {
+      title?: string;
+      summary?: string;
+      description?: string;
+      posterImage?: string | null;
+      galleryImages?: string[];
+      venueName?: string;
+      venueAddress?: string;
+      beneficiary?: string;
+      whatToBring?: string;
+      internalNotes?: string;
+      registrationOpensAt?: string | null;
+      registrationClosesAt?: string | null;
+    },
+  ) => Promise<AdminEvent>;
+  publishAdminEvent: (id: string) => Promise<AdminEvent>;
+  cancelAdminEvent: (id: string) => Promise<AdminEvent>;
+  archiveAdminEvent: (id: string) => Promise<AdminEvent>;
   getAdminBundles: () => Promise<BundleDefinition[]>;
   getAdminBundle: (id: string) => Promise<BundleDefinition | null>;
   upsertAdminBundle: (input: {

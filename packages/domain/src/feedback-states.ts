@@ -26,6 +26,8 @@ export const FEEDBACK_STATE_IDS = [
   "admin.no-payment-qrs",
   "admin.no-bundles",
   "admin.no-package-reviews",
+  "admin.no-events",
+  "admin.event-not-found",
   "customer.no-packages",
   "public.no-packages",
 ] as const;
@@ -191,6 +193,21 @@ export const FEEDBACK_STATE_DEFAULTS: Record<FeedbackStateId, FeedbackStateCopy>
     kind: "empty",
     title: "No package reviews",
     description: "Paid package requests appear here after a customer submits them.",
+  },
+  "admin.no-events": {
+    id: "admin.no-events",
+    kind: "empty",
+    title: "No events yet",
+    description:
+      "Events wrap a scheduled session. Create one from a session that does not already have an event.",
+  },
+  "admin.event-not-found": {
+    id: "admin.event-not-found",
+    kind: "error",
+    title: "Event not found",
+    description:
+      "That event is not in the catalogue. It may have been archived, or the link is out of date.",
+    actionLabel: "Back to events",
   },
   "customer.no-packages": {
     id: "customer.no-packages",

@@ -21,6 +21,7 @@ export type CustomerProfileSectionId = "basic" | "account" | "password" | "polic
 export type AdminNavId =
   | "dashboard"
   | "schedule"
+  | "events"
   | "bookings"
   | "payments"
   | "payment-qr"
@@ -108,10 +109,11 @@ export const CUSTOMER_PROFILE_SECTIONS: readonly CustomerProfileSection[] = [
   },
 ] as const;
 
-/** Admin set in the prescribed order, Reports between Classes and Staff. */
+/** Admin set in the prescribed order. Events follows Schedule; Reports stays between Bundles and Staff. */
 export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
   { id: "dashboard", label: "Dashboard", href: "/dashboard" },
   { id: "schedule", label: "Schedule", href: "/schedule" },
+  { id: "events", label: "Events", href: "/events" },
   { id: "bookings", label: "Bookings", href: "/bookings" },
   { id: "payments", label: "Payments", href: "/payments" },
   { id: "payment-qr", label: "Payment QR", href: "/payment-qr" },
@@ -168,9 +170,12 @@ export function isCustomerNavActive(item: CustomerNavItem, pathname: string): bo
 }
 
 export function isAdminNavActive(item: AdminNavItem, pathname: string): boolean {
+  // Roster lives at `/sessions/:id/roster`, outside `/schedule`, so it highlights Schedule.
   if (item.id === "schedule" && /^\/sessions\/[^/]+\/roster(?:\/|$)/.test(pathname)) {
     return true;
   }
+  // `/schedule/:sessionId/event` is the authoring form, nested like recurrence.
+  // It highlights Schedule. `/events` and `/events/:eventId` highlight Events.
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 

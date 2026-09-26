@@ -2,6 +2,7 @@ import type { AdminDashboardSnapshot, AdminNavItem } from "@balanse/domain";
 import {
   BarChart3,
   CalendarDays,
+  CalendarRange,
   CreditCard,
   Dumbbell,
   LayoutDashboard,
@@ -18,6 +19,7 @@ import {
 export const NAV_ICONS: Record<AdminNavItem["id"], typeof LayoutDashboard> = {
   dashboard: LayoutDashboard,
   schedule: CalendarDays,
+  events: CalendarRange,
   bookings: Ticket,
   payments: CreditCard,
   "payment-qr": QrCode,
@@ -38,6 +40,7 @@ export const NAV_GROUPS: { label: string; ids: AdminNavItem["id"][] }[] = [
     ids: [
       "dashboard",
       "schedule",
+      "events",
       "bookings",
       "payments",
       "payment-qr",
