@@ -78,6 +78,19 @@ import {
 } from "./bundle-fixtures";
 import { deriveGrossSalesSeries } from "./dashboard-series";
 import {
+  archiveAdminEvent,
+  cancelAdminEvent,
+  cancelLiveEventsForSession,
+  createAdminEvent,
+  type EventEngineState,
+  getAdminEvent,
+  getAdminEventForSession,
+  listAdminEvents,
+  publishAdminEvent,
+  updateAdminEvent,
+} from "./event-engine";
+import { eventFixtures } from "./event-fixtures";
+import {
   customers,
   MOCK_NOW_ISO,
   MOCK_PROOF_PREVIEW_URL,
@@ -256,6 +269,9 @@ export function createMemoryAdapter(): MockDataAdapter {
   let coaches = seedCoaches.map((c) => clone(c));
   let staffRows = seedStaff.map((s) => clone(s));
   let settings = clone(seedSettings);
+  const eventState: EventEngineState = {
+    events: clone(eventFixtures),
+  };
   const bundleState: BundleState = {
     bundles: clone(bundleDefinitions),
     acquisitions: clone(bundleAcquisitions),
@@ -954,6 +970,7 @@ export function createMemoryAdapter(): MockDataAdapter {
         session.availability = "cancelled";
         session.reservable = false;
         session.bookable = false;
+        cancelLiveEventsForSession(eventState, session.id, new Date().toISOString());
         return clone(session);
       }),
     getAdminCancellationRequests: ((query?: AdminRequestQueueQuery) =>
@@ -1463,6 +1480,31 @@ export function createMemoryAdapter(): MockDataAdapter {
         }
         return { ...snap, series };
       }),
+    getAdminEvents: (query) =>
+      applyMockEffects(() => clone(listAdminEvents(eventState, sessions, query, MOCK_NOW_ISO))),
+    getAdminEvent: (id) => applyMockEffects(() => clone(getAdminEvent(eventState, sessions, id))),
+    getAdminEventForSession: (sessionId) =>
+      applyMockEffects(() => clone(getAdminEventForSession(eventState, sessions, sessionId))),
+    createAdminEvent: (input) =>
+      applyMockEffects(() =>
+        clone(createAdminEvent(eventState, sessions, input, new Date().toISOString())),
+      ),
+    updateAdminEvent: (id, patch) =>
+      applyMockEffects(() =>
+        clone(updateAdminEvent(eventState, sessions, id, patch, new Date().toISOString())),
+      ),
+    publishAdminEvent: (id) =>
+      applyMockEffects(() =>
+        clone(publishAdminEvent(eventState, sessions, id, new Date().toISOString())),
+      ),
+    cancelAdminEvent: (id) =>
+      applyMockEffects(() =>
+        clone(cancelAdminEvent(eventState, sessions, id, new Date().toISOString())),
+      ),
+    archiveAdminEvent: (id) =>
+      applyMockEffects(() =>
+        clone(archiveAdminEvent(eventState, sessions, id, new Date().toISOString())),
+      ),
     getAdminBundles: () => applyMockEffects(() => clone(bundleState.bundles)),
     getAdminBundle: (id) =>
       applyMockEffects(() => clone(bundleState.bundles.find((row) => row.id === id) ?? null)),

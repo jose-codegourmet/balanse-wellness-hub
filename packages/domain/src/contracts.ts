@@ -291,18 +291,6 @@ export function isPolicyVersion(value: string): boolean {
   return POLICY_VERSION_RE.test(value.trim());
 }
 
-/** Human labels for `EventStatus`. Distinct from session status labels. */
-export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
-  DRAFT: "Draft",
-  PUBLISHED: "Published",
-  CANCELLED: "Cancelled",
-  ARCHIVED: "Archived",
-};
-
-export function eventStatusLabel(status: EventStatus): string {
-  return EVENT_STATUS_LABELS[status];
-}
-
 /**
  * Stable conflict codes for #317 §2. Messages are the human-facing map.
  * `event_publish_requires_published_session` covers a DRAFT or CANCELLED session.

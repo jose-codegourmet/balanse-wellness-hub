@@ -1,4 +1,4 @@
-import type { BookingStatus, RefundStatus } from "./enums";
+import type { BookingStatus, EventStatus, RefundStatus } from "./enums";
 import { BOOKING_STATUSES } from "./enums";
 import type { PublicSession } from "./types";
 
@@ -96,4 +96,20 @@ export const SESSION_AVAILABILITY_LABELS: Record<PublicSession["availability"], 
 
 export function sessionAvailabilityLabel(availability: PublicSession["availability"]): string {
   return SESSION_AVAILABILITY_LABELS[availability];
+}
+
+/**
+ * Staff labels for the four event states (#317). Distinct from session status:
+ * an event can be archived while its session stays published, and an event
+ * cannot be published while its session is still draft.
+ */
+export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
+  DRAFT: "Draft",
+  PUBLISHED: "Published",
+  CANCELLED: "Cancelled",
+  ARCHIVED: "Archived",
+};
+
+export function eventStatusLabel(status: EventStatus): string {
+  return EVENT_STATUS_LABELS[status];
 }

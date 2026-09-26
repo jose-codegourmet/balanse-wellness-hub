@@ -36,10 +36,11 @@ describe("FE-SHR-001 navigation catalogs", () => {
     expect(CUSTOMER_NAV_ITEMS).toHaveLength(5);
   });
 
-  it("keeps the admin set with Payment QR after Payments and Reports between Classes and Staff", () => {
+  it("keeps the admin set with Events after Schedule and Reports between Bundles and Staff", () => {
     expect(ADMIN_NAV_ITEMS.map((item) => item.label)).toEqual([
       "Dashboard",
       "Schedule",
+      "Events",
       "Bookings",
       "Payments",
       "Payment QR",
@@ -53,7 +54,8 @@ describe("FE-SHR-001 navigation catalogs", () => {
       "Staff",
       "Settings",
     ]);
-    expect(ADMIN_NAV_ITEMS).toHaveLength(14);
+    expect(ADMIN_NAV_ITEMS).toHaveLength(15);
+    expect(ADMIN_NAV_ITEMS.find((item) => item.id === "events")?.href).toBe("/events");
   });
 
   it("does not leak admin-only destinations into public or customer catalogs", () => {
@@ -67,7 +69,22 @@ describe("FE-SHR-001 navigation catalogs", () => {
   });
 
   it("marks nested admin and customer routes active without lighting sibling items", () => {
-    expect(isAdminNavActive(ADMIN_NAV_ITEMS[2], "/bookings/abc")).toBe(true);
+    const schedule = ADMIN_NAV_ITEMS.find((item) => item.id === "schedule");
+    const events = ADMIN_NAV_ITEMS.find((item) => item.id === "events");
+    const bookings = ADMIN_NAV_ITEMS.find((item) => item.id === "bookings");
+    expect(schedule).toBeDefined();
+    expect(events).toBeDefined();
+    expect(bookings).toBeDefined();
+    if (!schedule || !events || !bookings) return;
+
+    expect(isAdminNavActive(bookings, "/bookings/abc")).toBe(true);
+    expect(isAdminNavActive(schedule, "/sessions/session-wed-open/roster")).toBe(true);
+    expect(isAdminNavActive(events, "/sessions/session-wed-open/roster")).toBe(false);
+    expect(isAdminNavActive(schedule, "/schedule/session-wed-open/event")).toBe(true);
+    expect(isAdminNavActive(events, "/schedule/session-wed-open/event")).toBe(false);
+    expect(isAdminNavActive(events, "/events")).toBe(true);
+    expect(isAdminNavActive(events, "/events/event-pilates-cause")).toBe(true);
+    expect(isAdminNavActive(schedule, "/events/event-pilates-cause")).toBe(false);
     expect(isCustomerNavActive(CUSTOMER_NAV_ITEMS[0], "/portal/bookings/new")).toBe(true);
     expect(isCustomerNavActive(CUSTOMER_NAV_ITEMS[0], "/portal/book/session-wed-open")).toBe(true);
     expect(isCustomerNavActive(CUSTOMER_NAV_ITEMS[0], "/portal/schedule")).toBe(false);

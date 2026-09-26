@@ -144,6 +144,7 @@ function api(
 export const ADMIN_NAV_ACCESS: readonly AdminAccessRequirement[] = [
   nav("dashboard", "/dashboard", "Dashboard", DASHBOARD_READ_PERMISSIONS),
   nav("schedule", "/schedule", "Schedule", SCHEDULE_READ_PERMISSIONS),
+  nav("events", "/events", "Events", EVENT_READ),
   nav("bookings", "/bookings", "Bookings", ["bookings.read"]),
   nav("payments", "/payments", "Payments", ["payments.read", "refunds.read"]),
   nav("payment-qr", "/payment-qr", "Payment QR", ["settings.payment_qr.manage"]),
@@ -184,6 +185,9 @@ export const ADMIN_ROUTE_ACCESS: readonly AdminAccessRequirement[] = [
     ["schedule.recurrence.manage"],
     { navId: "schedule" },
   ),
+  route("schedule-event", "/schedule/:sessionId/event", "Session event", ["events.manage"], {
+    navId: "schedule",
+  }),
   route("schedule-edit", "/schedule/:sessionId", "Edit session", ["schedule.update"], {
     navId: "schedule",
   }),
@@ -224,6 +228,8 @@ export const ADMIN_ROUTE_ACCESS: readonly AdminAccessRequirement[] = [
   route("classes-new", "/classes/new", "Create class", ["classes.manage"], { navId: "classes" }),
   route("classes", "/classes", "Classes", CLASS_READ, { navId: "classes" }),
   route("class-detail", "/classes/:classId", "Class detail", CLASS_READ, { navId: "classes" }),
+  route("events", "/events", "Events", EVENT_READ, { navId: "events" }),
+  route("event-detail", "/events/:eventId", "Event detail", EVENT_READ, { navId: "events" }),
   route("bundles-new", "/bundles/new", "Create bundle", ["bundles.manage"], { navId: "bundles" }),
   route("bundles", "/bundles", "Bundles", BUNDLE_READ, { navId: "bundles" }),
   route("bundle-detail", "/bundles/:bundleId", "Bundle detail", BUNDLE_READ, { navId: "bundles" }),
@@ -313,6 +319,7 @@ export const ADMIN_ACTION_ACCESS: readonly AdminAccessRequirement[] = [
   action("coach-rates-read", "View coach rates", ["coach_rates.read"]),
   action("coach-rates-manage", "Edit coach rates", ["coach_rates.manage"]),
   action("bundles-manage", "Create, edit, grant, or review bundles", ["bundles.manage"]),
+  action("events-manage", "Create, edit, publish, cancel, or archive events", ["events.manage"]),
   action("reports-sales", "Sales report section", ["reports.sales.read"]),
   action("reports-capacity", "Capacity report section", ["reports.capacity.read"]),
   action("reports-coach-costs", "Coach-cost report section", ["reports.coach_costs.read"]),
@@ -595,6 +602,7 @@ export function permittedAdminNavItems(
 export const ADMIN_LANDING_PATHS = [
   "/dashboard",
   "/schedule",
+  "/events",
   "/bookings",
   "/payments",
   "/payment-qr",

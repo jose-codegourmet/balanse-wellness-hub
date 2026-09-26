@@ -41,6 +41,7 @@
 30. Session Roster / Check-In
 31. Settings
 31a. Bundle / package management
+31b. Event management
 
 ## Added because the business flows require them
 Admin Dashboard, Coach Management, Booking Management, Payment Review, Cancellation Requests, Reschedule Requests, Session Roster/Check-In, Settings, and the customer booking/payment/request detail screens.

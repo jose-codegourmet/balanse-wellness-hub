@@ -338,6 +338,38 @@ export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter
       ]);
       return scopeDashboardSnapshot(snap, actor, bookings);
     },
+    getAdminEvents: (query) => {
+      requireAnyPermission(["events.read", "events.manage"]);
+      return inner.getAdminEvents(query);
+    },
+    getAdminEvent: (id) => {
+      requireAnyPermission(["events.read", "events.manage"]);
+      return inner.getAdminEvent(id);
+    },
+    getAdminEventForSession: (sessionId) => {
+      requireAnyPermission(["events.read", "events.manage"]);
+      return inner.getAdminEventForSession(sessionId);
+    },
+    createAdminEvent: (input) => {
+      requirePermission("events.manage");
+      return inner.createAdminEvent(input);
+    },
+    updateAdminEvent: (id, patch) => {
+      requirePermission("events.manage");
+      return inner.updateAdminEvent(id, patch);
+    },
+    publishAdminEvent: (id) => {
+      requirePermission("events.manage");
+      return inner.publishAdminEvent(id);
+    },
+    cancelAdminEvent: (id) => {
+      requirePermission("events.manage");
+      return inner.cancelAdminEvent(id);
+    },
+    archiveAdminEvent: (id) => {
+      requirePermission("events.manage");
+      return inner.archiveAdminEvent(id);
+    },
     getAdminBundles: () => {
       requireAnyPermission(["bundles.read", "bundles.manage"]);
       return inner.getAdminBundles();

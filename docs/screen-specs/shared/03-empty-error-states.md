@@ -25,5 +25,7 @@
 - No payment QRs uploaded
 - No packages yet
 - No package reviews
+- No events yet
+- Event not found
 
 Prefer localized skeletons/errors over full-page spinners.
