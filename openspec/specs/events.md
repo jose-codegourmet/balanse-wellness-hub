@@ -3,16 +3,17 @@
 ## Requirements
 
 1. An event is a `1:0..1` `SessionEvent` wrapper on one `GymSession`. The session is the bookable unit. Capacity, booking cutoff, manual payment, cancellation, reschedule, roster, and reporting rules apply unchanged. The event does not copy price, capacity, date, time, or coach assignments.
-2. Admin lists and opens events at `/events` and `/events/[eventId]`. Authoring is nested at `/schedule/[sessionId]/event`, the same way recurrence nests under a session. A session that already has an event cannot take a second one.
+2. Admin lists and opens events at `/events` and `/events/[eventId]`. Authoring is nested at `/schedule/[sessionId]/event`, the same way recurrence nests under a session. `/events/new` is the session picker for create. A session that already has an event cannot take a second one.
 3. Event status is `DRAFT` | `PUBLISHED` | `CANCELLED` | `ARCHIVED`, separate from session status. An event cannot be published while its session is `DRAFT` (or otherwise unpublished). Cancelling the session surfaces a still-live event as cancelled. Archiving an event never touches the session or its bookings. Cancelling an event does not cancel the session or its bookings.
 4. Event content is title, summary, description, poster, gallery, off-site venue, beneficiary, what to bring, internal notes, and an optional registration window. That window does not replace the canonical booking cutoff. Session date, time, capacity, and price are edited on the session form.
 5. Staff permissions are the #289 registry keys `events.read` and `events.manage`. Super Admin has both. Front Desk has `events.read`. Coach has neither. Hiding the nav item is not authorization.
 6. UI reads and writes through `MockDataAdapter` during the mock phase. Screens do not call `/api/*`. Backend schema and HTTP contracts are implemented independently. Fixture session prices are non-authoritative placeholders (**OQ-PRICE**), including the Pilates for a Cause ₱1,000 figure.
-7. `/events` and `/events/[eventId]` are the read surface. They use `getMockAdapter()` through the admin query layer, shared event status labels, and `feedback-states`. The authoring form at `/schedule/[sessionId]/event` is still a follow-up. Nav, permission keys, status and toast copy, and mock methods are in place.
+7. `/events` and `/events/[eventId]` are the read surface. Create and edit use one React Hook Form at `/schedule/[sessionId]/event` (session pre-bound) and `/events/new` (picker). Schema and defaults sit with that form. Writes use `getMockAdapter()` through the admin query layer and `events.manage`. Publishing is blocked while the session is `DRAFT`. Cancel and archive confirm that the session and its bookings stay in place. Screens do not call `/api/*`.
 
 ## Routes
 
 - `/events`
+- `/events/new`
 - `/events/[eventId]`
 - `/schedule/[sessionId]/event`
 - HTTP (implemented, not wired): `GET|POST /api/admin/events`, `GET|PATCH /api/admin/events/{id}`, `POST /api/admin/events/{id}/publish|cancel|archive`

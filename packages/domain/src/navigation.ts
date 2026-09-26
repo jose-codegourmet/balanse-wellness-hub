@@ -175,7 +175,7 @@ export function isAdminNavActive(item: AdminNavItem, pathname: string): boolean 
     return true;
   }
   // `/schedule/:sessionId/event` is the authoring form, nested like recurrence.
-  // It highlights Schedule. `/events` and `/events/:eventId` highlight Events.
+  // It highlights Schedule. `/events`, `/events/new`, and `/events/:eventId` highlight Events.
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 

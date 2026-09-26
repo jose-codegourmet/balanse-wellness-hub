@@ -5,7 +5,7 @@ export const eventDetailPageMeta = {
     "Read-only admin event: content, linked session, roster link, publish guard, and status history.",
   whenToUse: "Use on /events/[eventId]. Reads go through the admin query factories.",
   whenNotToUse:
-    "Do not add publish, cancel, archive, or edit controls. Do not list attendees; link to the session roster.",
+    "Do not host the authoring form or publish, cancel, and archive actions here. Link to /schedule/[sessionId]/event for those. Do not list attendees; link to the session roster.",
 } as const;
 
 export type EventDetailPageProps = {

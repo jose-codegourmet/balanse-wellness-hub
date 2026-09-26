@@ -183,7 +183,7 @@ function EventListPageInner({
   const scopedHasEvent =
     sessionId !== "all" && source.some((event) => event.sessionId === sessionId);
   const createHref =
-    sessionId !== "all" && !scopedHasEvent ? `/schedule/${sessionId}/event` : "/schedule";
+    sessionId !== "all" && !scopedHasEvent ? `/schedule/${sessionId}/event` : "/events/new";
   const filtersActive =
     status !== "all" || sessionId !== "all" || search.trim() !== "" || from !== "" || to !== "";
 
