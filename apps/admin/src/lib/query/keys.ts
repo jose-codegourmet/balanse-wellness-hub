@@ -41,6 +41,14 @@ export const adminKeys = {
   },
   coaches: { all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "coaches"] as const },
   sessions: { all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "sessions"] as const },
+  events: {
+    all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "events"] as const,
+    list: (scope: AdminAuthScope) => [...adminKeys.events.all(scope), "list"] as const,
+    detail: (scope: AdminAuthScope, id: string) =>
+      [...adminKeys.events.all(scope), "detail", id] as const,
+    forSession: (scope: AdminAuthScope, sessionId: string) =>
+      [...adminKeys.events.all(scope), "session", sessionId] as const,
+  },
   staff: {
     all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "staff"] as const,
     roles: {

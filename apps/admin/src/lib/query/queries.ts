@@ -75,6 +75,31 @@ export const adminSessionsQuery = (principal: MockPrincipal) => {
   });
 };
 
+export const adminEventsQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.events.list(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminEvents()),
+  });
+};
+
+export const adminEventDetailQuery = (principal: MockPrincipal, id: string) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.events.detail(scope, id),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminEvent(id)),
+  });
+};
+
+export const adminEventForSessionQuery = (principal: MockPrincipal, sessionId: string) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.events.forSession(scope, sessionId),
+    queryFn: () =>
+      withPrincipal(principal, () => getMockAdapter().getAdminEventForSession(sessionId)),
+  });
+};
+
 export const adminCancellationsQuery = (principal: MockPrincipal) => {
   const scope = adminAuthScope(principal);
   return queryOptions({

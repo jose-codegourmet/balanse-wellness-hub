@@ -4,6 +4,7 @@ import {
   type AdminSession,
   auditConfirmationCopy,
   type computeSessionInventory,
+  eventStatusLabel,
   formatSessionDate,
   formatSessionTime,
   sessionDisplayName,
@@ -17,7 +18,7 @@ import { CoachOption } from "@/components/balanse/coach/coach-option/CoachOption
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import { adminNowIso } from "@/lib/clock";
 import { useCancelAdminSession } from "@/lib/query/mutations";
-import { adminCoachesQuery } from "@/lib/query/queries";
+import { adminCoachesQuery, adminEventForSessionQuery } from "@/lib/query/queries";
 import { useCanAdminAction, useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
@@ -47,6 +48,14 @@ export function SelectedSessionPanel({
   const canUpdateSession = useCanAdminAction("schedule-update");
   const canOpenRoster = useCanAdminAction("roster-read");
   const canRecur = useCanAdminAction("schedule-recurrence");
+  const canReadEvents = useCanAdminRoute("/events");
+  const canManageEvents = useCanAdminAction("events-manage");
+  const eventQuery = useQuery({
+    ...adminEventForSessionQuery(principal, session.id),
+    enabled: canReadEvents,
+  });
+  const linkedEvent = eventQuery.data;
+  const eventReadsCancelled = session.status === "CANCELLED" || linkedEvent?.status === "CANCELLED";
   const assignedCoaches = session.coaches.map(
     (coach) => coachesQuery.data?.find((row) => row.id === coach.id) ?? coach,
   );
@@ -104,6 +113,47 @@ export function SelectedSessionPanel({
         <InventoryStat label="Waitlisted" value={inventory.waitlisted} />
         <InventoryStat label="Available" value={inventory.available} />
       </dl>
+      {canReadEvents ? (
+        <div className="mt-4 rounded-lg border border-border px-3 py-2 text-sm">
+          {eventQuery.isPending ? (
+            <p className="text-muted-foreground">Checking this session&apos;s event…</p>
+          ) : eventQuery.isError ? (
+            <p className="text-muted-foreground">The event link could not be loaded.</p>
+          ) : linkedEvent ? (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-muted-foreground">Event</p>
+                <p className="font-medium">{linkedEvent.title}</p>
+                <Badge className="mt-1" variant={eventReadsCancelled ? "danger" : "neutral"}>
+                  {eventReadsCancelled ? eventStatusLabel("CANCELLED") : linkedEvent.statusLabel}
+                </Badge>
+              </div>
+              <Button
+                nativeButton={false}
+                variant="outline"
+                render={<Link href={`/events/${linkedEvent.id}`} />}
+              >
+                View event
+              </Button>
+            </div>
+          ) : session.status === "CANCELLED" ? (
+            <p>This session is cancelled, so it cannot have an event.</p>
+          ) : (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p>No event on this session.</p>
+              {canManageEvents ? (
+                <Button
+                  nativeButton={false}
+                  variant="outline"
+                  render={<Link href={`/schedule/${session.id}/event`} />}
+                >
+                  Create event
+                </Button>
+              ) : null}
+            </div>
+          )}
+        </div>
+      ) : null}
       <div className="mt-4 flex flex-wrap gap-2">
         {canOpenRoster ? (
           <Button
