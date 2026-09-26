@@ -18,6 +18,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
   Badge,
   Button,
   FeedbackState,
@@ -348,6 +349,7 @@ function SessionFactsBody({ choice }: { choice: SessionChoice }) {
           This session price is a non-authoritative placeholder (OQ-PRICE).
         </p>
       ) : null}
+      <p>Saving this event does not change the session date, time, capacity, or price.</p>
       <Button
         nativeButton={false}
         variant="outline"
@@ -382,7 +384,7 @@ function SessionPicker({ choices }: { choices: SessionChoice[] }) {
       description="An event needs one existing session that is not cancelled and does not already have an event."
     >
       <FormField name="sessionId" label="Session" required>
-        {() => (
+        {(field) => (
           <div className="grid gap-3">
             <Input
               aria-label="Filter sessions"
@@ -408,10 +410,7 @@ function SessionPicker({ choices }: { choices: SessionChoice[] }) {
                         checked={selected === choice.id}
                         disabled={unavailable}
                         onChange={() => {
-                          form.setValue("sessionId", choice.id, {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          });
+                          field.onChange(choice.id);
                         }}
                       />
                       <span className="grid gap-1">
@@ -654,52 +653,49 @@ function EventLifecycle({
           </Button>
         ) : null}
         {canCancel ? (
-          <Button type="button" variant="outline" onClick={() => setDialog("cancel")}>
-            Cancel event
-          </Button>
+          <LifecycleDialog
+            open={dialog === "cancel"}
+            triggerLabel="Cancel event"
+            title="Cancel this event?"
+            confirmLabel="Cancel event"
+            sessionHref={sessionHref}
+            onOpenChange={(open) => setDialog(open ? "cancel" : null)}
+            onConfirm={() => {
+              setDialog(null);
+              void onCancel();
+            }}
+          >
+            This cancels the event only. It does not cancel the session or its bookings, and it does
+            not delete history. Cancel the session from the schedule when that is the real intent
+            (admin flow F).
+          </LifecycleDialog>
         ) : null}
         {canArchive ? (
-          <Button type="button" variant="outline" onClick={() => setDialog("archive")}>
-            Archive event
-          </Button>
+          <LifecycleDialog
+            open={dialog === "archive"}
+            triggerLabel="Archive event"
+            title="Archive this event?"
+            confirmLabel="Archive event"
+            sessionHref={sessionHref}
+            onOpenChange={(open) => setDialog(open ? "archive" : null)}
+            onConfirm={() => {
+              setDialog(null);
+              void onArchive();
+            }}
+          >
+            Archiving keeps the event on file and does not delete the session, its bookings, or
+            history. It does not cancel the session. Cancel the session from the schedule when that
+            is the real intent (admin flow F).
+          </LifecycleDialog>
         ) : null}
       </div>
-      <LifecycleDialog
-        open={dialog === "cancel"}
-        title="Cancel this event?"
-        confirmLabel="Cancel event"
-        sessionHref={sessionHref}
-        onOpenChange={(open) => setDialog(open ? "cancel" : null)}
-        onConfirm={() => {
-          setDialog(null);
-          void onCancel();
-        }}
-      >
-        This cancels the event only. It does not cancel the session or its bookings, and it does not
-        delete history. Cancel the session from the schedule when that is the real intent (admin
-        flow F).
-      </LifecycleDialog>
-      <LifecycleDialog
-        open={dialog === "archive"}
-        title="Archive this event?"
-        confirmLabel="Archive event"
-        sessionHref={sessionHref}
-        onOpenChange={(open) => setDialog(open ? "archive" : null)}
-        onConfirm={() => {
-          setDialog(null);
-          void onArchive();
-        }}
-      >
-        Archiving keeps the event on file and does not delete the session, its bookings, or history.
-        It does not cancel the session. Cancel the session from the schedule when that is the real
-        intent (admin flow F).
-      </LifecycleDialog>
     </FormSection>
   );
 }
 
 function LifecycleDialog({
   open,
+  triggerLabel,
   title,
   confirmLabel,
   sessionHref,
@@ -708,6 +704,7 @@ function LifecycleDialog({
   children,
 }: {
   open: boolean;
+  triggerLabel: string;
   title: string;
   confirmLabel: string;
   sessionHref: string;
@@ -717,6 +714,9 @@ function LifecycleDialog({
 }) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogTrigger render={<Button type="button" variant="outline" />}>
+        {triggerLabel}
+      </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
