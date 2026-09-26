@@ -17,6 +17,7 @@ packages/db/prisma/schema/
   reservations.prisma    # BE-008…BE-015 / BE-056 (PaymentQrCode)
   audit.prisma           # BE-016
   bundles.prisma         # BE-058 session packages
+  events.prisma          # #319 SessionEvent
 packages/db/prisma/migrations/
   migration_lock.toml
   YYYYMMDDHHMMSS_<ticket>_<verb>_<object>/

@@ -38,6 +38,10 @@ export type CoachRateType = (typeof COACH_RATE_TYPES)[number];
 export const SESSION_STATUSES = ["DRAFT", "PUBLISHED", "CANCELLED"] as const;
 export type SessionStatus = (typeof SESSION_STATUSES)[number];
 
+/** #319 — event publication layer. Distinct from session status. */
+export const EVENT_STATUSES = ["DRAFT", "PUBLISHED", "CANCELLED", "ARCHIVED"] as const;
+export type EventStatus = (typeof EVENT_STATUSES)[number];
+
 /**
  * Legacy persisted enum (BE-001 / current Prisma `StaffRole`).
  * Authorization truth is `StaffRoleDefinition.key` + `PERMISSION_KEYS` in

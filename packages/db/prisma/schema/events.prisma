@@ -1,0 +1,30 @@
+/// #319 — 1:0..1 operational wrapper on one GymSession.
+/// Price, capacity, schedule, and coach staffing stay on the session.
+/// No slug until a public event surface is approved (#317 Q1).
+model SessionEvent {
+  id                   String      @id @default(cuid())
+  sessionId            String      @unique
+  title                String
+  summary              String      @default("")
+  description          String      @default("")
+  /// Signed-upload object key. Same pattern as GymClass.heroImage (BE-052).
+  posterImage          String?
+  galleryImages        String[]    @default([])
+  venueName            String      @default("")
+  venueAddress         String      @default("")
+  beneficiary          String      @default("")
+  whatToBring          String      @default("")
+  internalNotes        String      @default("")
+  registrationOpensAt  DateTime?   @db.Timestamptz
+  registrationClosesAt DateTime?   @db.Timestamptz
+  status               EventStatus @default(DRAFT)
+  isPlaceholder        Boolean     @default(false)
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  session GymSession @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("session_events")
+}

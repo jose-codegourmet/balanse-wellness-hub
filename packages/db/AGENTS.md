@@ -114,6 +114,10 @@ The leftover `StaffRole` enum is not dropped in this wave.
 
 `GymClass` includes slug, custom page redirect, rich-text content, cover and gallery fields. `ClassMarketingCoach` stores the public teaching roster. The additive `20260921130000_class_marketing_catalogue` SQL was applied to the shared project through Supabase; reconcile migration history before any full Prisma deployment. See `docs/backend/class-catalogue.md`.
 
+## Session events (#319)
+
+`session_events` is a 1:0..1 wrapper on `GymSession` (`ON DELETE RESTRICT`). Price, capacity, and session status stay on the session. `EventStatus` is separate from `SessionStatus`. RLS is staff-only (`events.read` / `events.manage`); there is no anon read. Status changes write one `audit_events` row. The migration is staged and must not be applied to the shared project until histories are reconciled. See `docs/backend/session-events.md`.
+
 ## Session bundles (BE-058)
 
 `bundles`, `bundle_class_applicability`, `bundle_acquisitions`, `bundle_acquisition_payments`, `customer_bundles`, and `bundle_redemptions` implement session packages. Remaining credits are derived from the redemption ledger. The Prisma migration is staged and must not be applied to the shared project until histories are reconciled. See `docs/backend/session-bundles.md`.

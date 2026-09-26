@@ -73,6 +73,7 @@ model GymSession {
   rescheduleOrigins RescheduleRequest[] @relation("RescheduleFromSession")
   recurrenceRule    SessionRecurrenceRule? @relation("RecurrenceOccurrences", fields: [recurrenceRuleId], references: [id], onDelete: SetNull)
   recurrenceTemplates SessionRecurrenceRule[] @relation("RecurrenceTemplate")
+  event               SessionEvent?
 
   @@index([startsAt])
   @@index([status, startsAt])

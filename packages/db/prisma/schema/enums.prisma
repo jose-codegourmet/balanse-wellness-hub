@@ -59,6 +59,17 @@ enum SessionStatus {
   @@map("session_status")
 }
 
+/// #319 — event publication layer. Distinct from SessionStatus.
+/// An event must not be PUBLISHED unless its session is PUBLISHED.
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  ARCHIVED
+
+  @@map("event_status")
+}
+
 /// Legacy persisted enum. Authorization truth is `StaffRoleDefinition.key`
 /// (epic #289 / #298). Do not add FRONT_DESK / COACH here.
 enum StaffRole {
