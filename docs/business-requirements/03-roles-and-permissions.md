@@ -118,9 +118,11 @@ Allowed:
 - `customers.read`
 - `classes.read`
 - `coaches.read` (no rates)
+- `events.read` (#319; view session events, including internal notes)
 
 Not allowed by default:
 
+- `events.manage` (publish, cancel, archive, or edit an event)
 - schedule create / update / cancel / recurrence
 - coach rates
 - refunds
@@ -140,9 +142,9 @@ Allowed:
 - `roster.read.own`
 - `attendance.manage.own`
 
-Not allowed: global schedule, bookings/payments/refunds/requests, customer
-directory outside assigned rosters, rates (including own rate), catalogue
-mutation, reports, staff/roles/settings, schedule edit/cancel.
+Not allowed: global schedule, events, bookings/payments/refunds/requests,
+customer directory outside assigned rosters, rates (including own rate),
+catalogue mutation, reports, staff/roles/settings, schedule edit/cancel.
 
 **Own** means a `session_coaches` assignment references the coach linked to
 the signed-in `StaffMember`. Never match names or emails.
@@ -172,6 +174,10 @@ Groups: Schedule, Booking operations, Catalogue, Reports, Administration.
 `bundles.read` and `bundles.manage` were added so every current admin
 bundle/package route has a named permission. They are **not** on the Front
 Desk or Coach defaults.
+
+`events.read` and `events.manage` (#319) gate `session_events`. Front Desk
+receives `events.read` only. Coach receives neither. `events.manage` stays
+on Super Admin until #317 Q7 says otherwise.
 
 Sensitive keys (rates, refunds, financial dashboard/reports, staff/roles,
 settings) are flagged on the registry.

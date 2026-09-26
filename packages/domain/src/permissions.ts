@@ -22,6 +22,8 @@ export const PERMISSION_KEYS = [
   "schedule.update",
   "schedule.cancel",
   "schedule.recurrence.manage",
+  "events.read",
+  "events.manage",
   "roster.read.all",
   "roster.read.own",
   "attendance.manage.all",
@@ -143,6 +145,18 @@ export const PERMISSION_REGISTRY: readonly PermissionDefinition[] = [
     "schedule",
     "Manage recurrence",
     "Duplicate sessions and manage recurrence rules.",
+  ),
+  permission(
+    "events.read",
+    "schedule",
+    "Read events",
+    "View session events, including drafts and internal notes.",
+  ),
+  permission(
+    "events.manage",
+    "schedule",
+    "Manage events",
+    "Create, edit, publish, cancel, or archive a session event. Does not change session price, capacity, or status.",
   ),
   permission("roster.read.all", "schedule", "Read all rosters", "View every session roster."),
   permission(

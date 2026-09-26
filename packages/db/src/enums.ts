@@ -12,6 +12,7 @@ export {
   BundleStatus,
   CoachRateType,
   CustomerBundleStatus,
+  EventStatus,
   PaymentMethod,
   PaymentStatus,
   PolicyDocumentKind,

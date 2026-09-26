@@ -19,6 +19,7 @@ Customer-facing booking/refund labels: `docs/screen-specs/shared/02-status-langu
 | `payment_method` | `GCASH`, `PAY_AT_COUNTER` | Method, not lifecycle. |
 | `refund_status` | `NOT_APPLICABLE` plus the two labelled values | `NOT_APPLICABLE` is bookkeeping. |
 | `session_status` | `DRAFT`, `PUBLISHED`, `CANCELLED` | Admin publish state. |
+| `event_status` | `DRAFT`, `PUBLISHED`, `CANCELLED`, `ARCHIVED` | Event presentation layer (#319). Does not replace `session_status`. |
 | `coach_rate_type` | `PER_SESSION`, `PER_HOUR` | Admin-only compensation. |
 | `staff_role` | `ADMIN` | Leftover BE-001 enum. **Not authorization truth** after #298 (`roleId` + `staff_role_definitions`). **No `COACH` value** (teaching is a link). Enum drop is a later wave. |
 | `staff_role_definition_status` | `ACTIVE`, `ARCHIVED` | Custom roles archive; built-ins stay `ACTIVE`. |

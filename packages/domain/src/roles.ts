@@ -52,6 +52,7 @@ export const FRONT_DESK_PERMISSION_KEYS = [
   "customers.read",
   "classes.read",
   "coaches.read",
+  "events.read",
 ] as const satisfies readonly PermissionKey[];
 
 export const COACH_PERMISSION_KEYS = [

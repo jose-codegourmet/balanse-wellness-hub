@@ -39,6 +39,7 @@ The leftover `staff_members.role` enum (`ADMIN`) is not consulted by these helpe
 | `payment_qr_codes_public` | select active (`id`, `imageKey`) | select | select | select | select |
 | `policy_*` writes | public read | public read | — | — | `settings.policies.manage` |
 | `bundles` / applicability | published select | published select | — | — | `bundles.read` / `bundles.manage` |
+| `session_events` | — | — | select (`events.read`) | — | read + write (`events.read` / `events.manage`; `is_admin()`) |
 | `bundle_acquisitions` / payments | — | own | — | — | manage / admin |
 | `customer_bundles` / `bundle_redemptions` | — | own read | — | — | manage / admin |
 | `coaches.staffMemberId` | — (not on `coaches_public`) | — | — | — | admin write (BE-055) |
@@ -53,6 +54,7 @@ Negative guarantees:
 - Linking `Coach.staffMemberId` grants **no** extra access by itself. Own-scope requires the Coach **authorization role** (or another role with `*.own` keys) **and** a `session_coaches` assignment.
 - Archived / labeled receive QRs are not granted through `payment_qr_codes_public` (BE-056).
 - Customer A cannot read or spend customer B’s package entitlement (BE-058).
+- Anon and customers cannot read or write `session_events`. Coach has neither `events.read` nor `events.manage`. Front Desk can select (`events.read`) and cannot write. There is no public read until a public event surface is approved (#317 Q1). `internalNotes` is visible to anyone who can select the row; do not open anon read without splitting that column.
 
 `session_roster_metrics` and report functions are revoked from Data API roles. Report RPCs additionally require `reports.*` when `auth.uid()` is present. #293 zeros sales/cost columns on class/session report RPCs unless the JWT holds the matching key (`20260922181200`).
 
