@@ -2,7 +2,7 @@
 
 An event is a `1:0..1` wrapper on one scheduled session. The session stays the bookable unit: capacity, cutoff, manual payment, cancellation, reschedule, roster, and reporting do not change. Price, capacity, date, and time are read from the session and edited on the session form.
 
-Screens for this spec are not built here. Routes are reserved so list, detail, and the authoring form share one contract.
+List and detail are the read surface. The authoring form route is reserved and does not render the form yet.
 
 ## Routes
 

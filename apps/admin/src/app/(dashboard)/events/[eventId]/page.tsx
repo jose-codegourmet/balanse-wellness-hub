@@ -1,23 +1,27 @@
+import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import type { Metadata } from "next";
-import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
+import { cookies } from "next/headers";
+import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
+import { prefetchAdmin } from "@/lib/query/prefetch";
+import { adminEventDetailQuery } from "@/lib/query/queries";
+import { EventDetailPage } from "../_components/event-detail-page/EventDetailPage";
 
 export const metadata: Metadata = {
   title: "Event",
-  description: "Reserved event detail route.",
+  description: "Event content, linked session, and status history.",
 };
 
-/** Reserved detail. Does not load the event and does not call /api. */
 export default async function EventDetailRoute({
   params,
 }: {
   params: Promise<{ eventId: string }>;
 }) {
   const { eventId } = await params;
-  return (
-    <AdminPageShell
-      title="Event"
-      description="Event detail is reserved on this route."
-      breadcrumb={[{ label: "Events", href: "/events" }, { label: eventId }]}
-    />
+  const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
+  return prefetchAdmin(
+    [adminEventDetailQuery(principal, eventId)],
+    <AdminQuerySuspense>
+      <EventDetailPage eventId={eventId} />
+    </AdminQuerySuspense>,
   );
 }

@@ -8,7 +8,7 @@
 4. Event content is title, summary, description, poster, gallery, off-site venue, beneficiary, what to bring, internal notes, and an optional registration window. That window does not replace the canonical booking cutoff. Session date, time, capacity, and price are edited on the session form.
 5. Staff permissions are the #289 registry keys `events.read` and `events.manage`. Super Admin has both. Front Desk has `events.read`. Coach has neither. Hiding the nav item is not authorization.
 6. UI reads and writes through `MockDataAdapter` during the mock phase. Screens do not call `/api/*`. Backend schema and HTTP contracts are implemented independently. Fixture session prices are non-authoritative placeholders (**OQ-PRICE**), including the Pilates for a Cause ₱1,000 figure.
-7. List, detail, and form screens are follow-up work. This capability reserves the routes, nav entry, permission keys, status and toast copy, and mock methods those screens consume.
+7. `/events` and `/events/[eventId]` are the read surface. They use `getMockAdapter()` through the admin query layer, shared event status labels, and `feedback-states`. The authoring form at `/schedule/[sessionId]/event` is still a follow-up. Nav, permission keys, status and toast copy, and mock methods are in place.
 
 ## Routes
 

@@ -1,18 +1,22 @@
+import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import type { Metadata } from "next";
-import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
+import { cookies } from "next/headers";
+import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
+import { prefetchAdmin } from "@/lib/query/prefetch";
+import { adminEventsQuery } from "@/lib/query/queries";
+import { EventListPage } from "./_components/event-list-page/EventListPage";
 
 export const metadata: Metadata = {
   title: "Events",
-  description: "Session events. List and detail screens are not this route’s implementation.",
+  description: "Upcoming-first index of events tied to a scheduled session.",
 };
 
-/** Reserved index. The event list screen is a follow-up and must use getMockAdapter(). */
-export default function EventsIndexRoute() {
-  return (
-    <AdminPageShell
-      title="Events"
-      description="One-off events tied to a scheduled session. The list is not on this route yet."
-      breadcrumb={[{ label: "Events" }]}
-    />
+export default async function EventsIndexRoute() {
+  const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
+  return prefetchAdmin(
+    [adminEventsQuery(principal)],
+    <AdminQuerySuspense>
+      <EventListPage />
+    </AdminQuerySuspense>,
   );
 }

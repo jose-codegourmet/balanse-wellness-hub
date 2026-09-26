@@ -181,6 +181,7 @@ export function useUpsertAdminCoach() {
 function sessionKeys(role: AdminAuthScope): QueryKey[] {
   return [
     adminKeys.sessions.all(role),
+    adminKeys.events.all(role),
     adminKeys.dashboard(role),
     adminKeys.reports.all(role),
     adminKeys.bookings.all(role),
