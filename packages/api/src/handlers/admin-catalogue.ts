@@ -37,6 +37,7 @@ import {
   requireString,
   throwFields,
 } from "../validation";
+import { cancelLiveSessionEvent } from "./admin-events";
 
 export async function getAdminClasses(deps: ApiDeps, req: Request): Promise<Response> {
   requireAdmin(await resolveActor(deps, req));
@@ -696,9 +697,13 @@ export async function postCancelSession(
   const actor = requireAdmin(await resolveActor(deps, req));
   const session = await deps.prisma.gymSession.findUnique({ where: { id } });
   if (!session) throw new ApiError(404, "session_not_found", "Session not found.");
-  const updated = await deps.prisma.gymSession.update({
-    where: { id },
-    data: { status: "CANCELLED" },
+  const updated = await deps.prisma.$transaction(async (tx) => {
+    const row = await tx.gymSession.update({
+      where: { id },
+      data: { status: "CANCELLED" },
+    });
+    await cancelLiveSessionEvent(tx, actor.staffId, id);
+    return row;
   });
   const affected = await deps.prisma.booking.findMany({
     where: {

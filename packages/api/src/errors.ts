@@ -1,7 +1,9 @@
-import type {
-  ValidationFailedBody,
-  ValidationFieldError,
-  ValidationFormError,
+import {
+  EVENT_CONFLICT_CODES,
+  EVENT_CONFLICT_MESSAGES,
+  type ValidationFailedBody,
+  type ValidationFieldError,
+  type ValidationFormError,
 } from "@balanse/domain";
 
 export class ApiError extends Error {
@@ -88,12 +90,23 @@ const RULE_CODES = new Set([
   "archived_role",
   "coach_role_requires_link",
   "unknown_permission",
+  "event_not_found",
+  "event_session_taken",
+  "event_on_cancelled_session",
+  "event_publish_requires_published_session",
 ]);
 
 export function isLastSuperAdminProtectedError(error: unknown): boolean {
   if (error instanceof ApiError) return error.code === "last_super_admin_protected";
   const message = error instanceof Error ? error.message : String(error);
   return message.includes("last_super_admin_protected");
+}
+
+function uniqueTargets(error: object): string {
+  if (!("meta" in error)) return "";
+  const target = (error as { meta?: { target?: unknown } }).meta?.target;
+  if (Array.isArray(target)) return target.map(String).join(" ");
+  return typeof target === "string" ? target : "";
 }
 
 export function mapUnknownError(error: unknown): ApiError {
@@ -104,6 +117,10 @@ export function mapUnknownError(error: unknown): ApiError {
     "code" in error &&
     (error as { code?: string }).code === "P2002"
   ) {
+    const target = uniqueTargets(error);
+    if (target.includes("sessionId")) {
+      return new ApiError(409, "event_session_taken", EVENT_CONFLICT_MESSAGES.event_session_taken);
+    }
     return new ApiError(409, "conflict", "A unique value is already in use.", {
       fieldErrors: [
         { path: "name", code: "duplicate_value", message: "This name is already used." },
@@ -111,6 +128,10 @@ export function mapUnknownError(error: unknown): ApiError {
     });
   }
   const message = error instanceof Error ? error.message : String(error);
+  const eventConflict = EVENT_CONFLICT_CODES.find((code) => message.includes(code));
+  if (eventConflict) {
+    return new ApiError(409, eventConflict, EVENT_CONFLICT_MESSAGES[eventConflict]);
+  }
   const codeMatch = message.match(/(?:P0001|P0002):\s*([a-z0-9_]+)|([a-z0-9_]+)(?::|\s|$)/i);
   const extracted = (codeMatch?.[1] ?? codeMatch?.[2] ?? "").toLowerCase();
   if (extracted.includes("booking_cutoff_reached") || message.includes("booking_cutoff_reached")) {

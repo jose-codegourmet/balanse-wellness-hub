@@ -35,6 +35,15 @@ import {
 } from "./handlers/admin-catalogue";
 import { getAdminDashboard, getAdminDashboardMetrics } from "./handlers/admin-dashboard";
 import {
+  getAdminEvent,
+  getAdminEvents,
+  patchAdminEvent,
+  postAdminEvent,
+  postArchiveEvent,
+  postCancelEvent,
+  postPublishEvent,
+} from "./handlers/admin-events";
+import {
   getAdminPayments,
   getPaymentProofSignedUrl,
   postMarkRefunded,
@@ -302,6 +311,16 @@ const handlers: Record<string, RouteHandler> = {
   "POST /api/admin/settings/faqs/reorder": (deps, req) => reorderFaqs(deps, req),
   "POST /api/admin/settings/policies/{id}/promote": (deps, req, params) =>
     promotePolicy(deps, req, params.id),
+  "GET /api/admin/events": (deps, req) => getAdminEvents(deps, req),
+  "POST /api/admin/events": (deps, req) => postAdminEvent(deps, req),
+  "GET /api/admin/events/{id}": (deps, req, params) => getAdminEvent(deps, req, params.id),
+  "PATCH /api/admin/events/{id}": (deps, req, params) => patchAdminEvent(deps, req, params.id),
+  "POST /api/admin/events/{id}/publish": (deps, req, params) =>
+    postPublishEvent(deps, req, params.id),
+  "POST /api/admin/events/{id}/cancel": (deps, req, params) =>
+    postCancelEvent(deps, req, params.id),
+  "POST /api/admin/events/{id}/archive": (deps, req, params) =>
+    postArchiveEvent(deps, req, params.id),
   "GET /api/admin/dashboard": (deps, req) => getAdminDashboard(deps, req),
   "GET /api/admin/dashboard/metrics": (deps, req) => getAdminDashboardMetrics(deps, req),
 };

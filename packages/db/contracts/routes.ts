@@ -118,4 +118,11 @@ export const API_CONTRACT_ROUTES: ContractRoute[] = [
   { ticket: "BE-058", method: "post", path: "/api/admin/package-acquisitions/{id}/approve" },
   { ticket: "BE-058", method: "post", path: "/api/admin/package-acquisitions/{id}/reject" },
   { ticket: "BE-058", method: "get", path: "/api/admin/packages/{id}/redemptions" },
+  { ticket: "BE-320", method: "get", path: "/api/admin/events" },
+  { ticket: "BE-320", method: "post", path: "/api/admin/events" },
+  { ticket: "BE-320", method: "get", path: "/api/admin/events/{id}" },
+  { ticket: "BE-320", method: "patch", path: "/api/admin/events/{id}" },
+  { ticket: "BE-320", method: "post", path: "/api/admin/events/{id}/publish" },
+  { ticket: "BE-320", method: "post", path: "/api/admin/events/{id}/cancel" },
+  { ticket: "BE-320", method: "post", path: "/api/admin/events/{id}/archive" },
 ];

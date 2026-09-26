@@ -1,4 +1,4 @@
-# API routes (BE-030–BE-043 + BE-050–058 + #292 staff auth)
+# API routes (BE-030–BE-043 + BE-050–058 + #292 staff auth + #320 events)
 
 HTTP handlers live in `@balanse/api` and are mounted on `apps/web` at `/api/*` (`src/app/api/[[...path]]/route.ts`). Screens stay mock-only this phase — no FE `fetch` to these routes (`WIRE-*` later).
 
@@ -15,6 +15,34 @@ Public catalogue `GET /api/public/packages`. Customer owned packages, free claim
 Authorisation matches RLS (`docs/backend/rls-policies.md`): Prisma uses the service/owner role and **bypasses RLS**, so every handler re-checks the caller.
 
 Screens continue to use `getMockAdapter()` for catalogue and ledger UX.
+
+## Session events (#320)
+
+Admin HTTP contracts only. No public or customer event routes, and no screen calls these handlers. Shapes live in `packages/domain/src/contracts.ts` (`AdminEvent`, `AdminEventSessionSnapshot`, `EVENT_STATUS_LABELS`, `EVENT_CONFLICT_CODES`) and are re-exported from `@balanse/api`.
+
+| Method | Path | Permission |
+| --- | --- | --- |
+| `GET` | `/api/admin/events` | `events.read` or `events.manage` |
+| `POST` | `/api/admin/events` | `events.manage` |
+| `GET` | `/api/admin/events/{id}` | `events.read` or `events.manage` |
+| `PATCH` | `/api/admin/events/{id}` | `events.manage` |
+| `POST` | `/api/admin/events/{id}/publish` | `events.manage` |
+| `POST` | `/api/admin/events/{id}/cancel` | `events.manage` |
+| `POST` | `/api/admin/events/{id}/archive` | `events.manage` |
+
+Dispatch maps every route in `ADMIN_API_ACCESS` before the handler runs. Each handler then checks the same permission again before any event or session read. Missing permission, role, or an inactive staff member is denied. Service-role Prisma is not authorization. This matches RLS: select needs `events.read`, `events.manage`, or Super Admin; writes need `events.manage` or Super Admin. Coach has neither key.
+
+`GET /api/admin/events` filters with `status`, `sessionId` (alias `session`), and an optional session-start window `from` / `to` (`dateFrom` / `dateTo` accepted; `to` is exclusive). Ordering is upcoming-first: sessions that have not started yet, soonest first, then past sessions, most recent first.
+
+Create always inserts `DRAFT`. A second event for the same session returns `409 event_session_taken`. A `CANCELLED` session returns `409 event_on_cancelled_session`. Publish returns `409 event_publish_requires_published_session` unless the session status is `PUBLISHED` (this blocks a `DRAFT` session). A repeated publish, cancel, or archive of the current status does not write again and does not add an audit row.
+
+`PATCH` changes event copy only. `startsAt`, `endsAt`, `capacity`, `customerPrice`, coach fields, and `sessionId` are `422 read_only`. Status changes go through the action routes. Content edits do not write `audit_events`.
+
+Create and status changes set transaction-local `app.actor_staff_id` and rely on `app_private.audit_session_event_status` for exactly one `audit_events` row (`event.create` or `event.status`). Handlers do not insert a second row.
+
+`POST /api/admin/sessions/{id}/cancel` sets a `DRAFT` or `PUBLISHED` event on that session to `CANCELLED` in the same transaction. Archived and already-cancelled events are left unchanged. Cancelling or archiving an event does not cancel the session or its bookings.
+
+Responses use `EventStatus` / `SessionStatus` plus `statusLabel`. The nested session snapshot has schedule, capacity, and price only — no coach compensation. See [session-events.md](./session-events.md).
 
 ## Customer vs admin
 
