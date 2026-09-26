@@ -2,13 +2,14 @@
 
 An event is a `1:0..1` wrapper on one scheduled session. The session stays the bookable unit: capacity, cutoff, manual payment, cancellation, reschedule, roster, and reporting do not change. Price, capacity, date, and time are read from the session and edited on the session form.
 
-List and detail are the read surface. The authoring form route is reserved and does not render the form yet.
+List and detail are the read surface. Create and edit share one form.
 
 ## Routes
 
 - `/events` — upcoming-first index (title, linked session, venue, price, capacity vs booked, event state). Filter by state and date. Search by title. Scope by session.
-- `/events/[eventId]` — event content, linked session summary, link to `/sessions/[sessionId]/roster` (no second attendee list), status history.
-- `/schedule/[sessionId]/event` — create/edit nested under the session, same placement as recurrence. Blocks a session that already has an event, and says why.
+- `/events/[eventId]` — event content, linked session summary, link to `/sessions/[sessionId]/roster` (no second attendee list), status history, and a link to the authoring form when the actor has `events.manage`.
+- `/events/new` — create, starting with a session picker. A cancelled session and a session that already has an event are blocked in the picker, with the reason. A taken session links to the existing event.
+- `/schedule/[sessionId]/event` — create/edit nested under the session, same placement as recurrence. The session is pre-bound and read-only. An existing event opens the same form prefilled. A cancelled session with no event is blocked.
 
 Sidebar: Events, in Operations, immediately after Schedule. The nested authoring route highlights Schedule. The index and detail highlight Events.
 

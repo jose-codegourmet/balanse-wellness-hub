@@ -229,6 +229,7 @@ export const ADMIN_ROUTE_ACCESS: readonly AdminAccessRequirement[] = [
   route("classes", "/classes", "Classes", CLASS_READ, { navId: "classes" }),
   route("class-detail", "/classes/:classId", "Class detail", CLASS_READ, { navId: "classes" }),
   route("events", "/events", "Events", EVENT_READ, { navId: "events" }),
+  route("events-new", "/events/new", "Create event", ["events.manage"], { navId: "events" }),
   route("event-detail", "/events/:eventId", "Event detail", EVENT_READ, { navId: "events" }),
   route("bundles-new", "/bundles/new", "Create bundle", ["bundles.manage"], { navId: "bundles" }),
   route("bundles", "/bundles", "Bundles", BUNDLE_READ, { navId: "bundles" }),

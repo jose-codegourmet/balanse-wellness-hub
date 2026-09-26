@@ -401,6 +401,62 @@ export function useRejectBundleAcquisition() {
   });
 }
 
+function eventKeys(role: AdminAuthScope): QueryKey[] {
+  return [adminKeys.events.all(role)];
+}
+
+export function useCreateAdminEvent() {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["createAdminEvent"]>[0]) =>
+      getMockAdapter().createAdminEvent(input),
+    onSuccess: () => invalidateForRole(queryClient, eventKeys(role)),
+  });
+}
+
+export function useUpdateAdminEvent() {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      patch,
+    }: {
+      id: string;
+      patch: Parameters<ReturnType<typeof getMockAdapter>["updateAdminEvent"]>[1];
+    }) => getMockAdapter().updateAdminEvent(id, patch),
+    onSuccess: () => invalidateForRole(queryClient, eventKeys(role)),
+  });
+}
+
+export function usePublishAdminEvent() {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => getMockAdapter().publishAdminEvent(id),
+    onSuccess: () => invalidateForRole(queryClient, eventKeys(role)),
+  });
+}
+
+export function useCancelAdminEvent() {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => getMockAdapter().cancelAdminEvent(id),
+    onSuccess: () => invalidateForRole(queryClient, eventKeys(role)),
+  });
+}
+
+export function useArchiveAdminEvent() {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => getMockAdapter().archiveAdminEvent(id),
+    onSuccess: () => invalidateForRole(queryClient, eventKeys(role)),
+  });
+}
+
 export function usePromotePolicyVersion() {
   const role = useAdminAuthScope();
   const queryClient = useQueryClient();

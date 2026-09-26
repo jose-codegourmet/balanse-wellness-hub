@@ -128,13 +128,24 @@ export function SelectedSessionPanel({
                   {eventReadsCancelled ? eventStatusLabel("CANCELLED") : linkedEvent.statusLabel}
                 </Badge>
               </div>
-              <Button
-                nativeButton={false}
-                variant="outline"
-                render={<Link href={`/events/${linkedEvent.id}`} />}
-              >
-                View event
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  nativeButton={false}
+                  variant="outline"
+                  render={<Link href={`/events/${linkedEvent.id}`} />}
+                >
+                  View event
+                </Button>
+                {canManageEvents ? (
+                  <Button
+                    nativeButton={false}
+                    variant="outline"
+                    render={<Link href={`/schedule/${session.id}/event`} />}
+                  >
+                    Edit event
+                  </Button>
+                ) : null}
+              </div>
             </div>
           ) : session.status === "CANCELLED" ? (
             <p>This session is cancelled, so it cannot have an event.</p>

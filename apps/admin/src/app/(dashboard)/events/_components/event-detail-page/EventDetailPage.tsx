@@ -14,7 +14,7 @@ import {
   adminEventDetailQuery,
   adminSessionsQuery,
 } from "@/lib/query/queries";
-import { useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
+import { AdminCan, useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import {
   displayedEventStatus,
@@ -129,9 +129,20 @@ export function EventDetailPage({ eventId, loading, error, preview }: EventDetai
       description={event.summary || "Session event"}
       breadcrumb={[{ label: "Events", href: "/events" }, { label: event.title }]}
       actions={
-        <Badge variant={statusVariant(status)} appearance="solid" size="md" dot>
-          {displayedEventStatusLabel(event)}
-        </Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <AdminCan action="events-manage">
+            <Button
+              nativeButton={false}
+              variant="outline"
+              render={<Link href={`/schedule/${event.sessionId}/event`} />}
+            >
+              Edit event
+            </Button>
+          </AdminCan>
+          <Badge variant={statusVariant(status)} appearance="solid" size="md" dot>
+            {displayedEventStatusLabel(event)}
+          </Badge>
+        </div>
       }
     >
       {sessionCancelled ? (
