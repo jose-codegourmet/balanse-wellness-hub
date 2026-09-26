@@ -83,6 +83,7 @@ export const SETTINGS_MANAGE_PERMISSIONS = [
 const CLASS_READ = ["classes.read", "classes.manage"] as const satisfies readonly PermissionKey[];
 const COACH_READ = ["coaches.read", "coaches.manage"] as const satisfies readonly PermissionKey[];
 const BUNDLE_READ = ["bundles.read", "bundles.manage"] as const satisfies readonly PermissionKey[];
+const EVENT_READ = ["events.read", "events.manage"] as const satisfies readonly PermissionKey[];
 const STAFF_READ = ["staff.read", "staff.manage"] as const satisfies readonly PermissionKey[];
 const ROLE_READ = ["roles.read", "roles.manage"] as const satisfies readonly PermissionKey[];
 
@@ -393,6 +394,13 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
   }),
   api("POST", "/api/admin/coaches/:id/photo", "Upload coach photo", ["coaches.manage"]),
   api("DELETE", "/api/admin/coaches/:id/photo", "Remove coach photo", ["coaches.manage"]),
+  api("GET", "/api/admin/events", "List events", EVENT_READ),
+  api("POST", "/api/admin/events", "Create event", ["events.manage"]),
+  api("GET", "/api/admin/events/:id", "Event detail", EVENT_READ),
+  api("PATCH", "/api/admin/events/:id", "Update event", ["events.manage"]),
+  api("POST", "/api/admin/events/:id/publish", "Publish event", ["events.manage"]),
+  api("POST", "/api/admin/events/:id/cancel", "Cancel event", ["events.manage"]),
+  api("POST", "/api/admin/events/:id/archive", "Archive event", ["events.manage"]),
   api("GET", "/api/admin/bundles", "List bundles", BUNDLE_READ),
   api("POST", "/api/admin/bundles", "Create bundle", ["bundles.manage"]),
   api("GET", "/api/admin/bundles/:id", "Bundle detail", BUNDLE_READ),

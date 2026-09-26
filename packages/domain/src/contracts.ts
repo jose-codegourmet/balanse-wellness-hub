@@ -1,9 +1,11 @@
 /**
- * Shared HTTP contracts for BE-050–BE-058 (admin queues, validation, uploads,
- * settings writes, dashboard metrics, staff/coach link, payment QR collection,
- * session bundles / packages).
- * FE mocks may adopt the same shapes.
+ * Shared HTTP contracts for BE-050–BE-058 and #320 (admin queues, validation,
+ * uploads, settings writes, dashboard metrics, staff/coach link, payment QR
+ * collection, session bundles / packages, admin session events).
+ * FE mocks may adopt the same shapes. Event routes are not wired to screens.
  */
+
+import type { EventStatus, SessionStatus } from "./enums";
 
 /** One envelope for every paginated admin list (BE-050). */
 export type CursorPage<T> = {
@@ -170,6 +172,28 @@ export const FIELD_CONSTRAINTS = {
     overrideReason: { required: false, max: 500 },
     revokeReason: { required: true, max: 500 },
   },
+  /** #320 — presentation wrapper. Schedule, capacity, and price stay on the session. */
+  event: {
+    sessionId: { required: true },
+    title: { required: true, max: 120 },
+    summary: { required: false, max: 500 },
+    description: { required: false, max: 8000, format: "markdown" },
+    posterImage: { required: false, nullable: true, max: 500 },
+    galleryImages: { required: false, maxItems: 12, itemMax: 500 },
+    venueName: { required: false, max: 160 },
+    venueAddress: { required: false, max: 240 },
+    beneficiary: { required: false, max: 200 },
+    whatToBring: { required: false, max: 2000 },
+    internalNotes: { required: false, max: 4000, staffOnly: true },
+    registrationOpensAt: { required: false, nullable: true },
+    registrationClosesAt: { required: false, nullable: true, after: "registrationOpensAt" },
+    status: {
+      required: true,
+      enum: ["DRAFT", "PUBLISHED", "CANCELLED", "ARCHIVED"],
+      readOnlyOnEdit: true,
+    },
+    sessionSchedule: { readOnly: true, derivedFrom: "session" },
+  },
 } as const;
 
 export const PH_MOBILE_RE = /^(09|\+639)\d{9}$/;
@@ -266,3 +290,77 @@ export function maskPhMobileInput(raw: string): string {
 export function isPolicyVersion(value: string): boolean {
   return POLICY_VERSION_RE.test(value.trim());
 }
+
+/** Human labels for `EventStatus`. Distinct from session status labels. */
+export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
+  DRAFT: "Draft",
+  PUBLISHED: "Published",
+  CANCELLED: "Cancelled",
+  ARCHIVED: "Archived",
+};
+
+export function eventStatusLabel(status: EventStatus): string {
+  return EVENT_STATUS_LABELS[status];
+}
+
+/**
+ * Stable conflict codes for #317 §2. Messages are the human-facing map.
+ * `event_publish_requires_published_session` covers a DRAFT or CANCELLED session.
+ */
+export const EVENT_CONFLICT_CODES = [
+  "event_session_taken",
+  "event_on_cancelled_session",
+  "event_publish_requires_published_session",
+] as const;
+
+export type EventConflictCode = (typeof EVENT_CONFLICT_CODES)[number];
+
+export const EVENT_CONFLICT_MESSAGES: Record<EventConflictCode, string> = {
+  event_session_taken: "This session already has an event.",
+  event_on_cancelled_session: "An event cannot be created for a cancelled session.",
+  event_publish_requires_published_session: "Publish the session before publishing this event.",
+};
+
+/** Read-only session facts on an admin event. No coach rates or compensation. */
+export type AdminEventSessionSnapshot = {
+  id: string;
+  classId: string;
+  startsAt: string;
+  endsAt: string;
+  capacity: number;
+  customerPrice: string;
+  status: SessionStatus;
+  statusLabel: string;
+};
+
+/** Admin event resource. Not a customer or public payload. */
+export type AdminEvent = {
+  id: string;
+  sessionId: string;
+  title: string;
+  summary: string;
+  description: string;
+  posterImage: string | null;
+  galleryImages: string[];
+  venueName: string;
+  venueAddress: string;
+  beneficiary: string;
+  whatToBring: string;
+  internalNotes: string;
+  registrationOpensAt: string | null;
+  registrationClosesAt: string | null;
+  status: EventStatus;
+  statusLabel: string;
+  isPlaceholder: boolean;
+  createdAt: string;
+  updatedAt: string;
+  session: AdminEventSessionSnapshot;
+};
+
+export type AdminEventListResponse = {
+  items: AdminEvent[];
+};
+
+export type AdminEventResponse = {
+  event: AdminEvent;
+};

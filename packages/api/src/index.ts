@@ -1,3 +1,16 @@
+export type {
+  AdminEvent,
+  AdminEventListResponse,
+  AdminEventResponse,
+  AdminEventSessionSnapshot,
+  EventConflictCode,
+} from "@balanse/domain";
+export {
+  EVENT_CONFLICT_CODES,
+  EVENT_CONFLICT_MESSAGES,
+  EVENT_STATUS_LABELS,
+  eventStatusLabel,
+} from "@balanse/domain";
 export type { AdminApiActor, ApiActor, ApiDeps, StoragePort } from "./deps";
 export { createDefaultDeps, createDefaultStorage, staffAuthorizationOf } from "./deps";
 export { dispatch } from "./dispatch";

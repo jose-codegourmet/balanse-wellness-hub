@@ -2,7 +2,7 @@
 
 An event is a `1:0..1` operational wrapper on one existing `GymSession`. The session keeps `startsAt` / `endsAt`, `capacity`, `customerPrice`, `status`, and coach staffing (`SessionCoach`). The event stores presentation and logistics only.
 
-No HTTP handlers and no screen wiring in this ticket. Do not backfill existing sessions into events.
+HTTP contracts are #320, documented in [api-routes.md](./api-routes.md). Screens do not call them. Do not backfill existing sessions into events.
 
 ## Model
 
@@ -35,7 +35,7 @@ Enforced by `app_private.assert_session_event_invariants` (`BEFORE INSERT OR UPD
 - Insert, or a change of `sessionId`, fails with `event_on_cancelled_session` when the session status is `CANCELLED`.
 - Setting status to `PUBLISHED` fails with `event_publish_requires_published_session` unless the session status is `PUBLISHED` (blocks publish over `DRAFT` and over `CANCELLED`).
 
-Cancelling a session does not rewrite an existing event. Surfacing that event as cancelled is handler work (#320), not a backfill.
+Cancelling a session does not rewrite the event inside this trigger. `POST /api/admin/sessions/{id}/cancel` (#320) sets a `DRAFT` or `PUBLISHED` event to `CANCELLED` in the same transaction, with one `event.status` audit row. Archived and already-cancelled events stay as they are, so a retry does not add another audit row.
 
 ## Audit
 
