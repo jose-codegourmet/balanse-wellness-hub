@@ -249,16 +249,25 @@ export function publicCoachCardFields(
   };
 }
 
-export function landingScheduleHref(opts?: { coachId?: string; classId?: string }): string {
+/** Canonical public discovery routes; preserve a class or coach when switching modes. */
+export function publicBookingHref(
+  mode: "quick" | "calendar" = "calendar",
+  opts?: { coachId?: string; classId?: string },
+): string {
   const params = new URLSearchParams();
   if (opts?.coachId) params.set("coachId", opts.coachId);
   if (opts?.classId) params.set("classId", opts.classId);
   const query = params.toString();
-  return query ? `/?${query}#schedule` : "/#schedule";
+  return query ? `/book/${mode}?${query}` : `/book/${mode}`;
+}
+
+/** @deprecated Use publicBookingHref. Kept for existing consumers. */
+export function landingScheduleHref(opts?: { coachId?: string; classId?: string }): string {
+  return publicBookingHref("calendar", opts);
 }
 
 export function coachViewClassesHref(coachId: string): string {
-  return landingScheduleHref({ coachId });
+  return publicBookingHref("calendar", { coachId });
 }
 
 export function coachSpecialtyChips(coaches: readonly PublicCoach[]): string[] {

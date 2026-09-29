@@ -5,9 +5,11 @@ import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspen
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import {
   adminClassesQuery,
+  adminCoachesQuery,
   adminEventForSessionQuery,
   adminEventsQuery,
   adminSessionsQuery,
+  adminVenuesQuery,
 } from "@/lib/query/queries";
 import { EventFormPage } from "../../_components/event-form-page/EventFormPage";
 
@@ -26,6 +28,8 @@ export default async function SessionEventRoute({
   return prefetchAdmin(
     [
       adminSessionsQuery(principal),
+      adminVenuesQuery(principal),
+      adminCoachesQuery(principal),
       adminClassesQuery(principal),
       adminEventsQuery(principal),
       adminEventForSessionQuery(principal, sessionId),

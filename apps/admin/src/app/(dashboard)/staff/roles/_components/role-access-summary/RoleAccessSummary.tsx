@@ -18,7 +18,7 @@ export function RoleAccessSummary({ permissionKeys }: RoleAccessSummaryProps) {
       <section className="rounded-xl border border-border/70 bg-background/70 p-4">
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-sm font-semibold">Accessible pages</h3>
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium tabular-nums">
+          <span className="rounded-sm bg-muted px-2 py-0.5 text-xs font-medium tabular-nums">
             {pages.length}
           </span>
         </div>
@@ -40,7 +40,7 @@ export function RoleAccessSummary({ permissionKeys }: RoleAccessSummaryProps) {
       <section className="rounded-xl border border-border/70 bg-background/70 p-4">
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-sm font-semibold">Sensitive data</h3>
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium tabular-nums">
+          <span className="rounded-sm bg-muted px-2 py-0.5 text-xs font-medium tabular-nums">
             {sensitive.length}
           </span>
         </div>

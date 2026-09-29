@@ -4,7 +4,7 @@ import {
   BOOKING_STEPS,
   publicCoachCardFields,
 } from "@balanse/domain";
-import { CoachPhoto, MarketingImage, ScrollReveal } from "@balanse/ui";
+import { Button, CoachPhoto, MarketingImage, ScrollReveal } from "@balanse/ui";
 import {
   ArrowDown,
   ArrowUpRight,
@@ -71,9 +71,14 @@ export function AboutPage({ coaches }: AboutPageProps) {
                 A space to build strength, find your balance, and feel part of something. This is
                 Balansé.
               </p>
-              <Link href="/#schedule" className="about-button">
+              <Button
+                size="lg"
+                className="mt-6"
+                nativeButton={false}
+                render={<Link href="/book/quick" />}
+              >
                 Find your next class <ArrowUpRight aria-hidden="true" size={18} />
-              </Link>
+              </Button>
             </div>
           </div>
         </ScrollReveal>
@@ -175,7 +180,7 @@ export function AboutPage({ coaches }: AboutPageProps) {
               return (
                 <li key={name}>
                   <ScrollReveal delay={index * 0.04}>
-                    <Link href="/#schedule">
+                    <Link href="/book/calendar">
                       <Icon size={22} strokeWidth={1.35} aria-hidden="true" />
                       <span>{name}</span>
                       <ArrowUpRight className="about-class-arrow" size={20} aria-hidden="true" />
@@ -281,9 +286,9 @@ export function AboutPage({ coaches }: AboutPageProps) {
                 <em>Just for you.</em>
               </h2>
               <p>Start with one class. See how you feel.</p>
-              <Link href="/#schedule" className="about-button">
+              <Button size="lg" nativeButton={false} render={<Link href="/book/calendar" />}>
                 View the schedule <ArrowUpRight size={18} aria-hidden="true" />
-              </Link>
+              </Button>
             </div>
           </div>
         </ScrollReveal>

@@ -2,6 +2,7 @@ import type {
   AdminEvent,
   AdminEventSessionSnapshot,
   AdminSession,
+  AdminVenue,
   EventStatus,
 } from "@balanse/domain";
 import {
@@ -41,8 +42,6 @@ export type AdminEventWrite = {
   description?: string;
   posterImage?: string | null;
   galleryImages?: string[];
-  venueName?: string;
-  venueAddress?: string;
   beneficiary?: string;
   whatToBring?: string;
   internalNotes?: string;
@@ -62,6 +61,8 @@ export type AdminEventListQuery = {
 
 export type EventEngineState = {
   events: StoredSessionEvent[];
+  /** Shared with the adapter's venue store so event snapshots show the session's venue. */
+  venues: AdminVenue[];
 };
 
 const limits = FIELD_CONSTRAINTS.event;
@@ -95,7 +96,20 @@ function assertWindow(opens: string | null, closes: string | null): void {
   }
 }
 
-function snapshotFromLive(session: AdminSession): AdminEventSessionSnapshot {
+function venueSnapshot(
+  venueId: string,
+  venues: readonly AdminVenue[],
+): AdminEventSessionSnapshot["venue"] {
+  const venue = venues.find((row) => row.id === venueId);
+  return venue
+    ? { id: venue.id, name: venue.name, address: venue.address, kind: venue.kind }
+    : null;
+}
+
+function snapshotFromLive(
+  session: AdminSession,
+  venues: readonly AdminVenue[],
+): AdminEventSessionSnapshot {
   return {
     id: session.id,
     classId: session.classId,
@@ -105,10 +119,14 @@ function snapshotFromLive(session: AdminSession): AdminEventSessionSnapshot {
     customerPrice: session.pricePhp.toFixed(2),
     status: session.status,
     statusLabel: sessionStatusLabel(session.status),
+    venue: venueSnapshot(session.venueId, venues),
   };
 }
 
-function snapshotFromFixture(session: EventFixtureSession): AdminEventSessionSnapshot {
+function snapshotFromFixture(
+  session: EventFixtureSession,
+  venues: readonly AdminVenue[],
+): AdminEventSessionSnapshot {
   return {
     id: session.id,
     classId: session.classId,
@@ -118,21 +136,27 @@ function snapshotFromFixture(session: EventFixtureSession): AdminEventSessionSna
     customerPrice: session.customerPrice,
     status: session.status,
     statusLabel: sessionStatusLabel(session.status),
+    venue: venueSnapshot(session.venueId, venues),
   };
 }
 
 export function resolveEventSession(
   sessionId: string,
   liveSessions: readonly AdminSession[],
+  venues: readonly AdminVenue[] = [],
 ): AdminEventSessionSnapshot | null {
   const live = liveSessions.find((session) => session.id === sessionId);
-  if (live) return snapshotFromLive(live);
+  if (live) return snapshotFromLive(live, venues);
   const fixture = eventFixtureSessions.find((session) => session.id === sessionId);
-  return fixture ? snapshotFromFixture(fixture) : null;
+  return fixture ? snapshotFromFixture(fixture, venues) : null;
 }
 
-function present(row: StoredSessionEvent, liveSessions: readonly AdminSession[]): AdminEvent {
-  const session = resolveEventSession(row.sessionId, liveSessions);
+function present(
+  state: EventEngineState,
+  row: StoredSessionEvent,
+  liveSessions: readonly AdminSession[],
+): AdminEvent {
+  const session = resolveEventSession(row.sessionId, liveSessions, state.venues);
   if (!session) {
     throw new EventMockError("Session not found.", "session_not_found");
   }
@@ -169,7 +193,7 @@ export function listAdminEvents(
   }
   const search = query?.search?.trim().toLowerCase();
   const presented = rows
-    .map((row) => present(row, liveSessions))
+    .map((row) => present(state, row, liveSessions))
     .filter((event) => {
       const starts = Date.parse(event.session.startsAt);
       if (from !== null && starts < from) return false;
@@ -195,7 +219,7 @@ export function getAdminEvent(
   id: string,
 ): AdminEvent | null {
   const row = state.events.find((event) => event.id === id);
-  return row ? present(row, liveSessions) : null;
+  return row ? present(state, row, liveSessions) : null;
 }
 
 export function getAdminEventForSession(
@@ -204,7 +228,7 @@ export function getAdminEventForSession(
   sessionId: string,
 ): AdminEvent | null {
   const row = state.events.find((event) => event.sessionId === sessionId);
-  return row ? present(row, liveSessions) : null;
+  return row ? present(state, row, liveSessions) : null;
 }
 
 function readGallery(images: string[] | undefined): string[] {
@@ -229,7 +253,7 @@ export function createAdminEvent(
   input: AdminEventWrite,
   nowIso: string,
 ): AdminEvent {
-  const session = resolveEventSession(input.sessionId, liveSessions);
+  const session = resolveEventSession(input.sessionId, liveSessions, state.venues);
   if (!session) throw new EventMockError("Session not found.", "session_not_found");
   if (session.status === "CANCELLED") {
     throw new EventMockError(
@@ -256,8 +280,6 @@ export function createAdminEvent(
     description: clip(input.description, limits.description.max),
     posterImage: readPoster(input.posterImage),
     galleryImages: readGallery(input.galleryImages),
-    venueName: clip(input.venueName, limits.venueName.max),
-    venueAddress: clip(input.venueAddress, limits.venueAddress.max),
     beneficiary: clip(input.beneficiary, limits.beneficiary.max),
     whatToBring: clip(input.whatToBring, limits.whatToBring.max),
     internalNotes: clip(input.internalNotes, limits.internalNotes.max, EVENT_FIXTURE_PRICE_NOTE),
@@ -269,7 +291,7 @@ export function createAdminEvent(
     updatedAt: nowIso,
   };
   state.events.push(row);
-  return present(row, liveSessions);
+  return present(state, row, liveSessions);
 }
 
 export function updateAdminEvent(
@@ -292,10 +314,6 @@ export function updateAdminEvent(
   }
   if (patch.posterImage !== undefined) row.posterImage = readPoster(patch.posterImage);
   if (patch.galleryImages !== undefined) row.galleryImages = readGallery(patch.galleryImages);
-  if (patch.venueName !== undefined) row.venueName = clip(patch.venueName, limits.venueName.max);
-  if (patch.venueAddress !== undefined) {
-    row.venueAddress = clip(patch.venueAddress, limits.venueAddress.max);
-  }
   if (patch.beneficiary !== undefined) {
     row.beneficiary = clip(patch.beneficiary, limits.beneficiary.max);
   }
@@ -317,7 +335,7 @@ export function updateAdminEvent(
   row.registrationOpensAt = opens;
   row.registrationClosesAt = closes;
   row.updatedAt = nowIso;
-  return present(row, liveSessions);
+  return present(state, row, liveSessions);
 }
 
 function setStatus(
@@ -329,9 +347,9 @@ function setStatus(
 ): AdminEvent {
   const row = state.events.find((event) => event.id === id);
   if (!row) throw new EventMockError("Event not found.", "event_not_found");
-  if (row.status === status) return present(row, liveSessions);
+  if (row.status === status) return present(state, row, liveSessions);
   if (status === "PUBLISHED") {
-    const session = resolveEventSession(row.sessionId, liveSessions);
+    const session = resolveEventSession(row.sessionId, liveSessions, state.venues);
     if (!session) throw new EventMockError("Session not found.", "session_not_found");
     if (session.status !== "PUBLISHED") {
       const message =
@@ -343,7 +361,7 @@ function setStatus(
   }
   row.status = status;
   row.updatedAt = nowIso;
-  return present(row, liveSessions);
+  return present(state, row, liveSessions);
 }
 
 export function publishAdminEvent(

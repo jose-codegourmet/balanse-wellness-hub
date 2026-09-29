@@ -60,15 +60,15 @@ export function CustomerLogin({
 
           <Button
             type="button"
-            variant="secondary"
-            className="auth-google-button"
+            variant="outline"
+            className="mt-8 w-full md:mt-9"
             onClick={() => completeLogin("cust-ana")}
           >
             <span className="auth-google-mark" aria-hidden="true">
               G
             </span>
             Continue with Google
-            <ArrowUpRight className="ml-auto size-4" aria-hidden="true" />
+            <ArrowUpRight className="size-4" aria-hidden="true" />
           </Button>
 
           <div className="auth-divider">

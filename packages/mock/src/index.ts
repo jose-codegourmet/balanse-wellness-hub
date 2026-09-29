@@ -10,3 +10,4 @@ export * from "./memory-adapter";
 export * from "./runtime";
 export * from "./session";
 export * from "./staff-fixtures";
+export * from "./venue-fixtures";

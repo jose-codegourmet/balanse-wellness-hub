@@ -137,7 +137,7 @@ function RoleFormFields({
               triggerLabel="Archive role"
               title="Archive this role?"
               description="Archived roles cannot be assigned. Assigned custom roles cannot be archived."
-              variant="outline"
+              variant="destructive"
               onConfirm={onArchive}
             />
           ) : undefined

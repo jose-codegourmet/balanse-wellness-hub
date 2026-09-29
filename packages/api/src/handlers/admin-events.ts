@@ -27,6 +27,7 @@ const eventInclude = {
       capacity: true,
       customerPrice: true,
       status: true,
+      venue: { select: { id: true, name: true, address: true, kind: true } },
     },
   },
 } satisfies Prisma.SessionEventInclude;
@@ -48,6 +49,10 @@ const SESSION_OWNED_KEYS = [
   "coaches",
   "coachAssignments",
   "sessionStatus",
+  "venueId",
+  "venue",
+  "venueName",
+  "venueAddress",
 ] as const;
 
 /**
@@ -82,8 +87,6 @@ export function presentAdminEvent(row: EventRow): AdminEvent {
     description: row.description,
     posterImage: row.posterImage,
     galleryImages: row.galleryImages,
-    venueName: row.venueName,
-    venueAddress: row.venueAddress,
     beneficiary: row.beneficiary,
     whatToBring: row.whatToBring,
     internalNotes: row.internalNotes,
@@ -103,6 +106,13 @@ export function presentAdminEvent(row: EventRow): AdminEvent {
       customerPrice: php(row.session.customerPrice),
       status: row.session.status,
       statusLabel: sessionStatusLabel(row.session.status),
+      // Venue is required on sessions; `null` in the contract covers not-yet-migrated data.
+      venue: {
+        id: row.session.venue.id,
+        name: row.session.venue.name,
+        address: row.session.venue.address,
+        kind: row.session.venue.kind,
+      },
     },
   };
 }
@@ -114,7 +124,7 @@ function assertNoSessionMutation(body: Record<string, unknown>): void {
         fieldError(
           key,
           "read_only",
-          "Session date, time, capacity, and price are edited on the session, not the event.",
+          "Session date, time, venue, capacity, and price are edited on the session, not the event.",
         ),
       );
     }
@@ -222,14 +232,7 @@ function assertRegistrationWindow(opens: Date | null, closes: Date | null): void
 
 function textField(
   body: Record<string, unknown>,
-  path:
-    | "summary"
-    | "description"
-    | "venueName"
-    | "venueAddress"
-    | "beneficiary"
-    | "whatToBring"
-    | "internalNotes",
+  path: "summary" | "description" | "beneficiary" | "whatToBring" | "internalNotes",
 ): string | undefined {
   const max = FIELD_CONSTRAINTS.event[path].max;
   if (!(path in body)) return undefined;
@@ -337,8 +340,6 @@ export async function postAdminEvent(deps: ApiDeps, req: Request): Promise<Respo
   const description = textField(body, "description") ?? "";
   const posterImage = readPoster(body) ?? null;
   const galleryImages = readGallery(body) ?? [];
-  const venueName = textField(body, "venueName") ?? "";
-  const venueAddress = textField(body, "venueAddress") ?? "";
   const beneficiary = textField(body, "beneficiary") ?? "";
   const whatToBring = textField(body, "whatToBring") ?? "";
   const internalNotes = textField(body, "internalNotes") ?? "";
@@ -378,8 +379,6 @@ export async function postAdminEvent(deps: ApiDeps, req: Request): Promise<Respo
         description,
         posterImage,
         galleryImages,
-        venueName,
-        venueAddress,
         beneficiary,
         whatToBring,
         internalNotes,
@@ -412,8 +411,6 @@ export async function patchAdminEvent(deps: ApiDeps, req: Request, id: string): 
   const description = textField(body, "description");
   const posterImage = readPoster(body);
   const galleryImages = readGallery(body);
-  const venueName = textField(body, "venueName");
-  const venueAddress = textField(body, "venueAddress");
   const beneficiary = textField(body, "beneficiary");
   const whatToBring = textField(body, "whatToBring");
   const internalNotes = textField(body, "internalNotes");
@@ -430,8 +427,6 @@ export async function patchAdminEvent(deps: ApiDeps, req: Request, id: string): 
     ...(description !== undefined ? { description } : {}),
     ...(posterImage !== undefined ? { posterImage } : {}),
     ...(galleryImages !== undefined ? { galleryImages } : {}),
-    ...(venueName !== undefined ? { venueName } : {}),
-    ...(venueAddress !== undefined ? { venueAddress } : {}),
     ...(beneficiary !== undefined ? { beneficiary } : {}),
     ...(whatToBring !== undefined ? { whatToBring } : {}),
     ...(internalNotes !== undefined ? { internalNotes } : {}),

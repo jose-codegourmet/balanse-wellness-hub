@@ -16,6 +16,7 @@ import type { DateRange } from "react-day-picker";
 import { useMinWidth } from "../../hooks/use-breakpoint/UseBreakpoint";
 import { cn } from "../../lib/utils";
 import { Calendar } from "../calendar/Calendar";
+import { Chip } from "../chip/Chip";
 import { useFieldContext } from "../field/Field";
 import {
   InputGroup,
@@ -498,10 +499,10 @@ function DateRangePicker({
             <PopoverTitle className="sr-only">Choose date range</PopoverTitle>
             <div className="flex flex-wrap gap-1">
               {presets.map((preset) => (
-                <button
+                <Chip
                   key={preset.key}
-                  type="button"
-                  className="rounded-md px-2 py-1 text-xs font-medium text-foreground hover:bg-muted"
+                  size="sm"
+                  selected={value?.from === preset.range.from && value?.to === preset.range.to}
                   aria-label={`Preset: ${preset.label}`}
                   onClick={() => {
                     applyRange(preset.range);
@@ -513,7 +514,7 @@ function DateRangePicker({
                   }}
                 >
                   {preset.label}
-                </button>
+                </Chip>
               ))}
             </div>
             <Calendar

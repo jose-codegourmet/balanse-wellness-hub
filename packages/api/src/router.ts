@@ -102,6 +102,7 @@ import {
   promotePolicy,
   reorderFaqs,
 } from "./handlers/admin-settings";
+import { getAdminVenues, patchAdminVenue, postAdminVenue } from "./handlers/admin-venues";
 import {
   getBooking,
   getBookings,
@@ -241,6 +242,9 @@ const handlers: Record<string, RouteHandler> = {
   "GET /api/admin/classes": (deps, req) => getAdminClasses(deps, req),
   "POST /api/admin/classes": (deps, req) => postAdminClass(deps, req),
   "PATCH /api/admin/classes/{id}": (deps, req, params) => patchAdminClass(deps, req, params.id),
+  "GET /api/admin/venues": (deps, req) => getAdminVenues(deps, req),
+  "POST /api/admin/venues": (deps, req) => postAdminVenue(deps, req),
+  "PATCH /api/admin/venues/{id}": (deps, req, params) => patchAdminVenue(deps, req, params.id),
   "GET /api/admin/coaches": (deps, req) => getAdminCoaches(deps, req),
   "POST /api/admin/coaches": (deps, req) => postAdminCoach(deps, req),
   "PATCH /api/admin/coaches/{id}": (deps, req, params) => patchAdminCoach(deps, req, params.id),

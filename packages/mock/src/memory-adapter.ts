@@ -6,6 +6,7 @@ import type {
   AdminSettings,
   AdminStaff,
   AdminStaffRole,
+  AdminVenue,
   CursorPage,
   CustomerBooking,
   PaymentMethod,
@@ -116,6 +117,7 @@ import {
   saveLiveMockStaffRole,
   setMockStaffRoleAssignment,
 } from "./staff-fixtures";
+import { venueFixtures } from "./venue-fixtures";
 
 function clone<T>(value: T): T {
   return structuredClone(value);
@@ -269,8 +271,10 @@ export function createMemoryAdapter(): MockDataAdapter {
   let coaches = seedCoaches.map((c) => clone(c));
   let staffRows = seedStaff.map((s) => clone(s));
   let settings = clone(seedSettings);
+  const venues: AdminVenue[] = clone(venueFixtures);
   const eventState: EventEngineState = {
     events: clone(eventFixtures),
+    venues,
   };
   const bundleState: BundleState = {
     bundles: clone(bundleDefinitions),
@@ -419,6 +423,7 @@ export function createMemoryAdapter(): MockDataAdapter {
     const generated: AdminSession = {
       id: `session-${crypto.randomUUID()}`,
       classId: template.classId,
+      venueId: template.venueId,
       name: template.name ?? null,
       className: template.className,
       coaches: assigned.map(({ id, name, photoKey }) => ({ id, name, photoKey })),
@@ -818,6 +823,37 @@ export function createMemoryAdapter(): MockDataAdapter {
         coaches = [created, ...coaches];
         return clone(created);
       }),
+    getAdminVenues: () => applyMockEffects(() => venues.map((row) => clone(row))),
+    upsertAdminVenue: (input) =>
+      applyMockEffects(() => {
+        const limits = FIELD_CONSTRAINTS.venue;
+        const name = input.name.trim();
+        if (!name) throw new Error("Venue name is required.");
+        if (name.length > limits.name.max)
+          throw new Error(`Use ${limits.name.max} characters or fewer for the name.`);
+        if (
+          venues.some(
+            (row) => row.id !== input.id && row.name.trim().toLowerCase() === name.toLowerCase(),
+          )
+        )
+          throw new Error("A venue with that name already exists.");
+        const fields = {
+          name,
+          address: input.address.trim().slice(0, limits.address.max),
+          kind: input.kind,
+          active: input.active,
+          notes: input.notes.trim().slice(0, limits.notes.max),
+        };
+        if (input.id) {
+          const existing = venues.find((row) => row.id === input.id);
+          if (!existing) throw new Error("Venue not found");
+          Object.assign(existing, fields);
+          return clone(existing);
+        }
+        const created: AdminVenue = { id: `venue-${crypto.randomUUID()}`, ...fields };
+        venues.unshift(created);
+        return clone(created);
+      }),
     getAdminSessions: () =>
       applyMockEffects(() => (emptyQueues() ? [] : sessions.map((s) => clone(s)))),
     upsertAdminSession: (input) =>
@@ -826,6 +862,9 @@ export function createMemoryAdapter(): MockDataAdapter {
         const previous = sessions.find((s) => s.id === input.id);
         if (!cls || (!cls.active && previous?.classId !== cls.id))
           throw new Error("Choose an active class.");
+        const venue = venues.find((row) => row.id === input.venueId);
+        if (!venue || (!venue.active && previous?.venueId !== venue.id))
+          throw new Error("Choose an active venue.");
         if (!Array.isArray(input.coachIds) || input.coachIds.length === 0)
           throw new Error("Choose at least one coach.");
         if (new Set(input.coachIds).size !== input.coachIds.length)
@@ -867,6 +906,7 @@ export function createMemoryAdapter(): MockDataAdapter {
           if (!capacityCheck.ok) throw new Error(capacityCheck.error);
           Object.assign(existing, {
             classId: input.classId,
+            venueId: venue.id,
             name: input.name === undefined ? existing.name : input.name?.trim() || null,
             className: cls?.name ?? existing.className,
             ...coachFields,
@@ -885,6 +925,7 @@ export function createMemoryAdapter(): MockDataAdapter {
         const created: AdminSession = {
           id: `session-${crypto.randomUUID()}`,
           classId: input.classId,
+          venueId: venue.id,
           name: input.name?.trim() || null,
           className: cls?.name ?? "Class",
           ...coachFields,

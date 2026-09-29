@@ -180,7 +180,7 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
           </p>
           <div className="mt-1 flex items-end justify-between gap-4">
             <h2 className="font-display text-2xl">Paid package reviews</h2>
-            <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium tabular-nums">
+            <span className="rounded-sm bg-muted px-2.5 py-1 text-xs font-medium tabular-nums">
               {reviews.length} pending
             </span>
           </div>

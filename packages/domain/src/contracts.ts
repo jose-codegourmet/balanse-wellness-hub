@@ -5,7 +5,7 @@
  * FE mocks may adopt the same shapes. Event routes are not wired to screens.
  */
 
-import type { EventStatus, SessionStatus } from "./enums";
+import type { EventStatus, SessionStatus, VenueKind } from "./enums";
 
 /** One envelope for every paginated admin list (BE-050). */
 export type CursorPage<T> = {
@@ -118,8 +118,18 @@ export const FIELD_CONSTRAINTS = {
     description: { required: false, max: 400 },
     permissionKeys: { required: true, minItems: 1 },
   },
+  /** Branches and off-site partner venues. Sessions reference one; events inherit it. */
+  venue: {
+    name: { required: true, max: 120, unique: true },
+    address: { required: false, max: 240 },
+    kind: { required: true, enum: ["BRANCH", "OFFSITE"] },
+    notes: { required: false, max: 1000, staffOnly: true },
+    active: { required: false, type: "boolean" },
+  },
   session: {
     classId: { required: true },
+    /** Must be an active venue on create. Overlapping times are allowed, even at the same venue. */
+    venueId: { required: true, activeOnly: true },
     coachIds: { required: true, minItems: 1, unique: true, allowInactive: false },
     startsAt: { required: true },
     endsAt: { required: true, after: "startsAt" },
@@ -180,8 +190,6 @@ export const FIELD_CONSTRAINTS = {
     description: { required: false, max: 8000, format: "markdown" },
     posterImage: { required: false, nullable: true, max: 500 },
     galleryImages: { required: false, maxItems: 12, itemMax: 500 },
-    venueName: { required: false, max: 160 },
-    venueAddress: { required: false, max: 240 },
     beneficiary: { required: false, max: 200 },
     whatToBring: { required: false, max: 2000 },
     internalNotes: { required: false, max: 4000, staffOnly: true },
@@ -319,6 +327,15 @@ export type AdminEventSessionSnapshot = {
   customerPrice: string;
   status: SessionStatus;
   statusLabel: string;
+  /** The session's venue. Events do not store their own. */
+  venue: AdminEventVenue | null;
+};
+
+export type AdminEventVenue = {
+  id: string;
+  name: string;
+  address: string;
+  kind: VenueKind;
 };
 
 /** Admin event resource. Not a customer or public payload. */
@@ -330,8 +347,6 @@ export type AdminEvent = {
   description: string;
   posterImage: string | null;
   galleryImages: string[];
-  venueName: string;
-  venueAddress: string;
   beneficiary: string;
   whatToBring: string;
   internalNotes: string;

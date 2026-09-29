@@ -6,7 +6,17 @@ Contract inventory: `packages/db/contracts/routes.ts`. OpenAPI: `packages/db/con
 
 ## Recurring schedules (BE-057 / #288)
 
-`POST /api/admin/sessions/duplicate` copies non-cancelled sessions from an inclusive source range of at most 63 days to a new start date. `POST /api/admin/sessions/{id}/recurrence` stores a bounded weekly rule (one or more weekdays, at most one year) and eagerly creates ordinary session rows. Both endpoints are admin-only, default generated sessions to `DRAFT`, skip exact class/start-time matches, reject inactive class/coach references, capture current coach rates, and never copy bookings.
+`POST /api/admin/sessions/duplicate` copies non-cancelled sessions from an inclusive source range of at most 63 days to a new start date. `POST /api/admin/sessions/{id}/recurrence` stores a bounded weekly rule (one or more weekdays, at most one year) and eagerly creates ordinary session rows. Both endpoints are admin-only, default generated sessions to `DRAFT`, skip exact class/start-time matches, reject inactive class/coach/venue references, copy the source session's venue, capture current coach rates, and never copy bookings.
+
+## Venues
+
+| Method | Path | Permission (any of) |
+| --- | --- | --- |
+| `GET` | `/api/admin/venues` | `classes.read`, `classes.manage`, `schedule.read.all`, `schedule.read.own`, `events.read`, `events.manage` |
+| `POST` | `/api/admin/venues` | `classes.manage` |
+| `PATCH` | `/api/admin/venues/{id}` | `classes.manage` |
+
+`GET` returns `{ items: AdminVenue[] }` (active first, then name), filterable by `active=true|false` and `kind=BRANCH|OFFSITE`. `POST` requires `name` and `kind`; a case-insensitive duplicate name returns `409 conflict`. There is no delete; set `active: false`. Sessions: `POST /api/admin/sessions` requires an active `venueId`; `PATCH` may keep an inactive current venue but cannot switch to an inactive one (`422 inactive_reference`, unknown id `404 venue_not_found`). Overlapping session times are allowed. See [venues.md](./venues.md).
 
 ## Session bundles (BE-058 / #290)
 
@@ -36,13 +46,13 @@ Dispatch maps every route in `ADMIN_API_ACCESS` before the handler runs. Each ha
 
 Create always inserts `DRAFT`. A second event for the same session returns `409 event_session_taken`. A `CANCELLED` session returns `409 event_on_cancelled_session`. Publish returns `409 event_publish_requires_published_session` unless the session status is `PUBLISHED` (this blocks a `DRAFT` session). A repeated publish, cancel, or archive of the current status does not write again and does not add an audit row.
 
-`PATCH` changes event copy only. `startsAt`, `endsAt`, `capacity`, `customerPrice`, coach fields, and `sessionId` are `422 read_only`. Status changes go through the action routes. Content edits do not write `audit_events`.
+`PATCH` changes event copy only. `startsAt`, `endsAt`, `capacity`, `customerPrice`, coach fields, venue fields (`venueId`, `venue`, `venueName`, `venueAddress`), and `sessionId` are `422 read_only`; the same keys are rejected on create. Status changes go through the action routes. Content edits do not write `audit_events`.
 
 Create and status changes set transaction-local `app.actor_staff_id` and rely on `app_private.audit_session_event_status` for exactly one `audit_events` row (`event.create` or `event.status`). Handlers do not insert a second row.
 
 `POST /api/admin/sessions/{id}/cancel` sets a `DRAFT` or `PUBLISHED` event on that session to `CANCELLED` in the same transaction. Archived and already-cancelled events are left unchanged. Cancelling or archiving an event does not cancel the session or its bookings.
 
-Responses use `EventStatus` / `SessionStatus` plus `statusLabel`. The nested session snapshot has schedule, capacity, and price only — no coach compensation. See [session-events.md](./session-events.md).
+Responses use `EventStatus` / `SessionStatus` plus `statusLabel`. The nested session snapshot has schedule, capacity, price, and the session's venue (`venue: { id, name, address, kind }`) — no coach compensation and no venue notes. See [session-events.md](./session-events.md).
 
 ## Customer vs admin
 

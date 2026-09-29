@@ -1,6 +1,6 @@
 "use client";
 import { classPageHref, classPreviewHref, classSlug, type PublicCoach } from "@balanse/domain";
-import { Button, FormPageSkeleton, Input } from "@balanse/ui";
+import { Button, buttonVariants, cn, FormPageSkeleton, Input } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -127,13 +127,18 @@ function ClassFields({
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button type="button" variant="ghost" onClick={() => guard.requestLeave("/classes")}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => guard.requestLeave("/classes")}
+        >
           <ArrowLeft />
           All classes
         </Button>
         {values.slug ? (
           <a
-            className="inline-flex items-center gap-2 text-sm underline underline-offset-4"
+            className={cn(buttonVariants({ variant: "link", size: "sm" }))}
             href={
               site +
               classPreviewHref({ id: classId, ...values, heroImage: values.heroImage || null })
@@ -142,7 +147,7 @@ function ClassFields({
             rel="noopener noreferrer"
           >
             Preview standard layout
-            <ExternalLink className="size-4" />
+            <ExternalLink aria-hidden />
           </a>
         ) : (
           <span className="text-sm text-muted-foreground">

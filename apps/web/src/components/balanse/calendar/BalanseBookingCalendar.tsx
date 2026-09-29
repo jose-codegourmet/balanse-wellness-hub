@@ -16,6 +16,7 @@ import {
   sessionDisplayName,
 } from "@balanse/domain";
 import {
+  Button,
   CalendarSkeleton,
   detectView,
   FeedbackState,
@@ -33,7 +34,6 @@ import {
   Users,
 } from "lucide-react";
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "@/components/jabkit/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/jabkit/dialog";
 import { cn } from "@/lib/utils";
 import { CoachAvatar } from "./CoachAvatar";
@@ -298,21 +298,21 @@ export function BalanseBookingCalendar({
           </div>
         </div>
         <div className="booking-calendar-actions">
-          <Button variant="secondary" size="sm" onClick={() => setDate(today)}>
+          <Button variant="outline" size="sm" onClick={() => setDate(today)}>
             Today
           </Button>
           <div className="booking-paging">
             <Button
-              variant="ghost"
-              size="sm"
+              variant="outline"
+              size="icon-sm"
               aria-label={`Previous ${resolvedView}`}
               onClick={() => setDate(moveScheduleDate(date, resolvedView, -1))}
             >
               <ChevronLeft className="size-4" aria-hidden="true" />
             </Button>
             <Button
-              variant="ghost"
-              size="sm"
+              variant="outline"
+              size="icon-sm"
               aria-label={`Next ${resolvedView}`}
               onClick={() => setDate(moveScheduleDate(date, resolvedView, 1))}
             >
@@ -340,7 +340,7 @@ export function BalanseBookingCalendar({
         </label>
         {coachFilter !== "all" ? (
           <Button
-            variant="secondary"
+            variant="outline"
             size="sm"
             onClick={() => {
               setCoachFilter("all");
@@ -580,7 +580,8 @@ export function BalanseBookingCalendar({
               ) : (
                 <div className="booking-session-actions">
                   <Button
-                    className="w-full rounded-full"
+                    variant="accent"
+                    className="w-full"
                     disabled={
                       !selected.reservable && selected.availability !== "full_with_waitlist"
                     }

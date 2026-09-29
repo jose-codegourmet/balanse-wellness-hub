@@ -17,6 +17,7 @@ import type { CustomerBooking } from "./types";
 const session = (id: string, extras: Partial<AdminSession> = {}): AdminSession => ({
   id,
   classId: "class-yoga",
+  venueId: "venue-main-studio",
   className: "Yoga",
   coaches: [{ id: "coach-wolf", name: "Wolf", photoKey: "coach-photos/wolf" }],
   coachName: "Wolf",

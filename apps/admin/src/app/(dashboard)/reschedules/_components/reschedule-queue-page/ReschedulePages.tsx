@@ -26,6 +26,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { AdminQueueCard } from "@/components/balanse/queue/admin-queue-card/AdminQueueCard";
+import { AdminQueueCount } from "@/components/balanse/queue/admin-queue-count/AdminQueueCount";
 import { AdminQueueList } from "@/components/balanse/queue/admin-queue-list/AdminQueueList";
 import { adminNowIso } from "@/lib/clock";
 import { useApproveAdminReschedule, useRejectAdminReschedule } from "@/lib/query/mutations";
@@ -112,25 +113,25 @@ function SessionMoveSide({
   return (
     <div
       className={cn(
-        "min-w-0 rounded-lg border border-border p-3",
+        "min-w-0 rounded-xl border border-border/60 bg-muted/35 p-4",
         warning && "border-destructive/40 bg-destructive/5",
       )}
     >
-      <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</p>
+      <p className="text-[0.625rem] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+        {label}
+      </p>
       {session ? (
         <>
-          <p className="mt-2 text-pretty font-medium wrap-break-word">
+          <p className="mt-2 text-pretty font-display text-base leading-tight wrap-break-word">
             {sessionDisplayName(session)}
           </p>
-          <p className="text-pretty wrap-break-word text-muted-foreground">
-            {formatSessionDate(session.startsAt)}
-          </p>
-          <p className="text-pretty wrap-break-word">
+          <p className="mt-1 text-pretty wrap-break-word text-muted-foreground">
+            {formatSessionDate(session.startsAt)} ·{" "}
             {formatSessionTimeRange(session.startsAt, session.endsAt)}
           </p>
-          <p className="text-pretty wrap-break-word">{session.coachName}</p>
+          <p className="text-pretty wrap-break-word text-muted-foreground">{session.coachName}</p>
           {inventory ? (
-            <p className="mt-2 text-xs text-pretty wrap-break-word text-muted-foreground">
+            <p className="mt-3 border-t border-border/60 pt-2 text-xs text-pretty wrap-break-word text-muted-foreground tabular-nums">
               {inventory.confirmed} confirmed · {inventory.held} held · {session.capacity} capacity
               · {inventory.available} open
             </p>
@@ -225,8 +226,10 @@ function RescheduleRequestCard({
             <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-stretch">
               <SessionMoveSide label="From" session={row.session} />
               <div className="flex items-center justify-center py-0.5 sm:px-1 sm:py-0" aria-hidden>
-                <ArrowDown className="size-4 text-muted-foreground sm:hidden" />
-                <ArrowRight className="hidden size-4 text-muted-foreground sm:block" />
+                <span className="flex size-8 items-center justify-center rounded-full border border-border/80 bg-card text-muted-foreground shadow-xs">
+                  <ArrowDown className="size-4 sm:hidden" />
+                  <ArrowRight className="hidden size-4 sm:block" />
+                </span>
               </div>
               <SessionMoveSide
                 label="To"
@@ -343,10 +346,13 @@ export function RescheduleQueuePage({
   const bookings = bookingsQuery.data ?? [];
 
   return (
-    <AdminPageShell title="Reschedule Requests">
-      <p className="max-w-2xl text-sm text-muted-foreground">{RESCHEDULE_HISTORY_NOTE}</p>
+    <AdminPageShell
+      eyebrow="Operations queue"
+      title="Reschedule Requests"
+      description={RESCHEDULE_HISTORY_NOTE}
+      actions={<AdminQueueCount count={totalCount} label="open requests" />}
+    >
       <AdminQueueList
-        className="mt-6"
         label="Reschedule requests"
         items={items}
         totalCount={totalCount}

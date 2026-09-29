@@ -38,14 +38,6 @@ export const eventFormSchema = z
         limits.galleryImages.maxItems,
         `Add at most ${limits.galleryImages.maxItems} gallery images.`,
       ),
-    venueName: z
-      .string()
-      .trim()
-      .max(limits.venueName.max, `Use ${limits.venueName.max} characters or fewer.`),
-    venueAddress: z
-      .string()
-      .trim()
-      .max(limits.venueAddress.max, `Use ${limits.venueAddress.max} characters or fewer.`),
     beneficiary: z
       .string()
       .trim()

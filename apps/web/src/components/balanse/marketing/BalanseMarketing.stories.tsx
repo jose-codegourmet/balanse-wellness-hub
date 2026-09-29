@@ -20,7 +20,7 @@ export const LandingHero: StoryObj = {
       assetId="landing-a"
       eyebrow="Cebu City · Movement, wellness, community"
       titleLines={["Find your balance.", "Choose a class and", "reserve your spot."]}
-      primaryAction={{ label: "Browse this week", href: "/#schedule" }}
+      primaryAction={{ label: "Browse this week", href: "/book/calendar" }}
       secondaryAction={{ label: "Create an account", href: "/sign-up" }}
       features={[
         {
@@ -45,7 +45,7 @@ export const CompactHero: StoryObj = {
       assetId="coaches-c-capoeira"
       eyebrow="The roster"
       titleLines={["Meet the coaches."]}
-      primaryAction={{ label: "View the schedule", href: "/#schedule" }}
+      primaryAction={{ label: "View the schedule", href: "/book/calendar" }}
       secondaryAction={{ label: "About the studio", href: "/about" }}
       align="compact"
     />

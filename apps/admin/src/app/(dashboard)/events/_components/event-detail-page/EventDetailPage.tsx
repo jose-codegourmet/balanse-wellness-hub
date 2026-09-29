@@ -1,6 +1,11 @@
 "use client";
 
-import { EVENT_CONFLICT_MESSAGES, formatSessionRange, sessionStatusLabel } from "@balanse/domain";
+import {
+  EVENT_CONFLICT_MESSAGES,
+  formatSessionRange,
+  sessionStatusLabel,
+  venueKindLabel,
+} from "@balanse/domain";
 import { Badge, Button, DetailPageSkeleton, FeedbackState } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -180,9 +185,13 @@ export function EventDetailPage({ eventId, loading, error, preview }: EventDetai
             </p>
           </Section>
           <Section title="Venue">
-            <p className="text-sm">{event.venueName || "No venue name"}</p>
+            <p className="text-sm">
+              {event.session.venue
+                ? `${event.session.venue.name} · ${venueKindLabel(event.session.venue.kind)}`
+                : "No venue on the session"}
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              {event.venueAddress || "No venue address"}
+              {event.session.venue?.address || "Set on the linked session."}
             </p>
           </Section>
           <Section title="Beneficiary">

@@ -1,7 +1,7 @@
 "use client";
 
 import { type AdminSettings, FIELD_CONSTRAINTS } from "@balanse/domain";
-import { Button } from "@balanse/ui";
+import { Button, buttonVariants, cn } from "@balanse/ui";
 import {
   ArrowDown,
   ArrowRight,
@@ -194,7 +194,7 @@ function ContentOverview({ settings }: { settings: AdminSettings }) {
 
   return (
     <div className="grid gap-5">
-      <section className="relative overflow-hidden rounded-[1.75rem] bg-primary px-6 py-7 text-primary-foreground shadow-[0_28px_70px_-46px_color-mix(in_oklab,var(--primary)_90%,black)] md:px-8 md:py-9">
+      <section className="relative overflow-hidden rounded-3xl bg-primary px-6 py-7 text-primary-foreground shadow-[0_28px_70px_-46px_color-mix(in_oklab,var(--primary)_90%,black)] md:px-8 md:py-9">
         <div className="pointer-events-none absolute -right-16 -top-20 size-64 rounded-full border border-primary-foreground/10" />
         <div className="pointer-events-none absolute -right-5 -top-8 size-40 rounded-full bg-primary-foreground/[0.04]" />
         <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
@@ -215,10 +215,10 @@ function ContentOverview({ settings }: { settings: AdminSettings }) {
             href={marketingUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex w-fit items-center gap-2 rounded-xl border border-primary-foreground/20 bg-primary-foreground/10 px-4 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-primary-foreground/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground"
+            className={cn(buttonVariants({ variant: "secondary" }), "w-fit")}
           >
             View public site
-            <ExternalLink className="size-4" aria-hidden />
+            <ExternalLink aria-hidden />
           </a>
         </div>
       </section>
@@ -301,10 +301,10 @@ function EditorIntro({
           href={href}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-3.5 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:border-primary/30 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           View live page
-          <ExternalLink className="size-4" aria-hidden />
+          <ExternalLink aria-hidden />
         </a>
       </div>
     </header>

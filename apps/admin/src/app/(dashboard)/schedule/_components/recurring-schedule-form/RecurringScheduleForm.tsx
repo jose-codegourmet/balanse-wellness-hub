@@ -2,34 +2,33 @@
 
 import {
   type AdminSession,
-  datesForWeeklyRecurrence,
   formatPeso,
   formatSessionDate,
-  formatSessionTime,
-  isManilaYmd,
+  formatSessionTimeRange,
   sessionDisplayName,
-  WEEKDAYS,
   type Weekday,
 } from "@balanse/domain";
 import { Button, FeedbackState } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { CalendarClock, CircleCheck, Repeat2, ShieldCheck } from "lucide-react";
+import { MapPinIcon, RepeatIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useId, useMemo } from "react";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { adminTodayYmd } from "@/lib/clock";
 import { useCreateAdminRecurringSchedule } from "@/lib/query/mutations";
-import { adminSessionsQuery } from "@/lib/query/queries";
+import { adminSessionsQuery, adminVenuesQuery } from "@/lib/query/queries";
+import { cn } from "@/lib/utils";
 import {
   AdminForm,
   FormActions,
-  FormField,
-  FormSection,
   useAdminFormContext,
 } from "@/modules/admin/forms/admin-form/AdminForm";
-import { BooleanBinding, CheckboxGroupBinding, DateBinding } from "@/modules/admin/forms/bindings";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { occurrenceWillBeSkipped, planOccurrences } from "../../_lib/session-occurrences";
+import { OccurrencePreview } from "../occurrence-preview/OccurrencePreview";
+import { RepeatPicker } from "../repeat-picker/RepeatPicker";
 import { recurringScheduleFormDefaultValues } from "./RecurringScheduleForm.defaults";
 import type { RecurringScheduleFormProps } from "./RecurringScheduleForm.meta";
 import {
@@ -42,31 +41,31 @@ const FORM_ID = "recurring-schedule-form";
 export function RecurringScheduleForm({ sessionId }: RecurringScheduleFormProps) {
   const { principal } = useMockPrincipal();
   const sessions = useSuspenseQuery(adminSessionsQuery(principal)).data;
+  const venues = useSuspenseQuery(adminVenuesQuery(principal)).data;
   const source = sessions.find((session) => session.id === sessionId);
   const createRecurring = useCreateAdminRecurringSchedule();
   const router = useRouter();
 
   if (!source) {
     return (
-      <AdminPageShell
-        title="Recurring schedule"
-        breadcrumb={[{ label: "Schedule", href: "/schedule" }]}
-      >
+      <AdminPageShell title="Repeat weekly" breadcrumb={[{ label: "Schedule", href: "/schedule" }]}>
         <FeedbackState id="admin.no-sessions" />
       </AdminPageShell>
     );
   }
 
-  if (source.status === "CANCELLED") {
+  if (source.status === "CANCELLED" || source.recurrenceRuleId) {
+    const cancelled = source.status === "CANCELLED";
     return (
-      <AdminPageShell
-        title="Recurring schedule"
-        breadcrumb={[{ label: "Schedule", href: "/schedule" }]}
-      >
+      <AdminPageShell title="Repeat weekly" breadcrumb={[{ label: "Schedule", href: "/schedule" }]}>
         <div className="rounded-2xl border border-border bg-card p-6">
-          <h2 className="font-display text-2xl">This session cannot repeat</h2>
+          <h2 className="font-display text-2xl">
+            {cancelled ? "This session cannot repeat" : "This session already repeats"}
+          </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Cancelled sessions stay in history and cannot become templates.
+            {cancelled
+              ? "Cancelled sessions stay in history and cannot become templates."
+              : "It is already part of a weekly series. Pick another session to start a new series."}
           </p>
           <Button className="mt-5" nativeButton={false} render={<Link href="/schedule" />}>
             Back to schedule
@@ -76,17 +75,15 @@ export function RecurringScheduleForm({ sessionId }: RecurringScheduleFormProps)
     );
   }
 
+  const venue = venues.find((row) => row.id === source.venueId);
+
   return (
     <AdminPageShell
-      eyebrow="Schedule tools"
-      title="Make this session recurring"
-      description="Use one session as the template for a bounded weekly series."
-      breadcrumb={[{ label: "Schedule", href: "/schedule" }, { label: "Recurring schedule" }]}
-      actions={
-        <Button nativeButton={false} variant="outline" render={<Link href="/schedule" />}>
-          Back to schedule
-        </Button>
-      }
+      className="overflow-x-clip"
+      eyebrow="Schedule"
+      title="Repeat weekly"
+      description="Copy this session onto the same time on the days you choose. Each copy is its own session with its own bookings."
+      breadcrumb={[{ label: "Schedule", href: "/schedule" }, { label: "Repeat weekly" }]}
     >
       <AdminForm
         id={FORM_ID}
@@ -102,140 +99,185 @@ export function RecurringScheduleForm({ sessionId }: RecurringScheduleFormProps)
               publish: values.publish,
             });
             notify.success({
-              title: `${result.createdCount} recurring session${result.createdCount === 1 ? "" : "s"} created`,
+              title: `${result.createdCount} ${result.createdCount === 1 ? "session" : "sessions"} added`,
               description:
                 result.skippedCount > 0
-                  ? `${result.skippedCount} matching session${result.skippedCount === 1 ? " was" : "s were"} already on the schedule.`
-                  : "The new series is ready to review.",
+                  ? `${result.skippedCount} ${result.skippedCount === 1 ? "date was" : "dates were"} already on the schedule and skipped.`
+                  : "The weekly series is on the schedule.",
             });
             router.push("/schedule");
           } catch (error) {
             notify.error({
-              title: "Recurring schedule could not be created",
-              description: String(error),
+              title: "The series could not be created",
+              description: error instanceof Error ? error.message : String(error),
             });
             throw error;
           }
         }}
       >
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
-          <div className="grid gap-5">
-            <TemplateCard session={source} />
-            <FormSection
-              title="Recurrence pattern"
-              description="Weekly recurrence in Asia/Manila. Holiday exceptions are not applied automatically."
-              surface="card"
-            >
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField name="startsOn" label="Series starts">
-                  {(field) => <DateBinding {...field} today={adminTodayYmd()} />}
-                </FormField>
-                <FormField name="endsOn" label="Series ends">
-                  {(field) => <DateBinding {...field} today={adminTodayYmd()} />}
-                </FormField>
-              </div>
-              <FormField name="weekdays" label="Repeat on">
-                {(field) => (
-                  <CheckboxGroupBinding
-                    {...field}
-                    options={WEEKDAYS.map((day) => ({
-                      value: String(day.value),
-                      label: day.label,
-                    }))}
-                  />
-                )}
-              </FormField>
-              <FormField
-                name="publish"
-                label="Publish generated sessions"
-                description="Off creates drafts so every occurrence can be reviewed before booking opens."
-                orientation="horizontal"
-              >
-                {(field) => <BooleanBinding {...field} as="switch" />}
-              </FormField>
-            </FormSection>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
+          <div className="grid min-w-0 gap-4">
+            <TemplateCard session={source} venueName={venue?.name} />
+            <section className="grid gap-4 rounded-2xl border border-border bg-card p-4 md:p-5">
+              <header className="flex items-start gap-3">
+                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                  <RepeatIcon aria-hidden className="size-4" />
+                </span>
+                <span className="grid gap-0.5">
+                  <h2 className="font-display text-xl leading-tight">Pattern</h2>
+                  <span className="text-sm text-muted-foreground">
+                    Weekly, in Asia/Manila time. Holidays are not skipped automatically.
+                  </span>
+                </span>
+              </header>
+              <PatternFields anchorYmd={recurringScheduleFormDefaultValues(source).startsOn} />
+            </section>
+            <section className="grid gap-4 rounded-2xl border border-border bg-card p-4 md:p-5">
+              <h2 className="font-display text-xl leading-tight">New sessions start as</h2>
+              <PublishChoice />
+            </section>
           </div>
-          <RecurrencePreview />
+          <aside className="lg:sticky lg:top-4">
+            <SeriesPreview source={source} />
+          </aside>
         </div>
         <FormActions
-          submitLabel="Create recurring series"
+          submitLabel="Create series"
           cancelHref="/schedule"
           formId={FORM_ID}
+          sticky={false}
+          className="sticky bottom-0 z-10 -mx-4 border-t border-border bg-background/95 px-4 py-3 backdrop-blur md:mx-0 md:rounded-xl md:border"
         />
       </AdminForm>
     </AdminPageShell>
   );
 }
 
-function TemplateCard({ session }: { session: AdminSession }) {
+function TemplateCard({ session, venueName }: { session: AdminSession; venueName?: string }) {
   return (
-    <section className="rounded-2xl border border-border/70 bg-primary px-5 py-6 text-primary-foreground md:px-6">
-      <div className="flex items-start gap-4">
-        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-foreground/10">
-          <Repeat2 className="size-5" aria-hidden />
+    <section className="grid gap-2 rounded-2xl border border-border bg-card p-4 md:p-5">
+      <p className="text-[0.625rem] font-semibold tracking-[0.18em] text-primary uppercase">
+        Repeating
+      </p>
+      <h2 className="font-display text-2xl leading-tight">{sessionDisplayName(session)}</h2>
+      <p className="text-sm text-muted-foreground">
+        {formatSessionDate(session.startsAt)} ·{" "}
+        {formatSessionTimeRange(session.startsAt, session.endsAt)}
+      </p>
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+        <span className="flex items-center gap-1.5">
+          <UsersIcon aria-hidden className="size-4 text-muted-foreground" />
+          {session.coachName}
         </span>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary-foreground/60">
-            Session template
-          </p>
-          <h2 className="mt-1 font-display text-2xl">{sessionDisplayName(session)}</h2>
-          <p className="mt-2 text-sm text-primary-foreground/70">
-            {formatSessionDate(session.startsAt)} · {formatSessionTime(session.startsAt)}–
-            {formatSessionTime(session.endsAt)}
-          </p>
-          <p className="mt-1 text-sm text-primary-foreground/70">
-            {session.coachName} · {formatPeso(session.pricePhp)} · {session.capacity} spots
-          </p>
-        </div>
+        {venueName ? (
+          <span className="flex items-center gap-1.5">
+            <MapPinIcon aria-hidden className="size-4 text-muted-foreground" />
+            {venueName}
+          </span>
+        ) : null}
+        <span>
+          {formatPeso(session.pricePhp)} · {session.capacity} spots
+        </span>
       </div>
     </section>
   );
 }
 
-function RecurrencePreview() {
+function PatternFields({ anchorYmd }: { anchorYmd: string }) {
   const form = useAdminFormContext<RecurringScheduleFormValues>();
-  const startsOn = form.watch("startsOn");
+  const weekdays = form.watch("weekdays");
   const endsOn = form.watch("endsOn");
-  const weekdays = form.watch("weekdays").map(Number) as Weekday[];
-  const dates =
-    isManilaYmd(startsOn) && isManilaYmd(endsOn)
-      ? datesForWeeklyRecurrence({ startsOn, endsOn, weekdays })
-      : [];
+  const { errors, isSubmitted } = form.formState;
 
   return (
-    <aside className="overflow-hidden rounded-2xl border border-border/70 bg-card lg:sticky lg:top-20">
-      <div className="bg-primary px-5 py-6 text-primary-foreground">
-        <CalendarClock className="size-5" aria-hidden />
-        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-primary-foreground/60">
-          Series preview
+    <RepeatPicker
+      allowNone={false}
+      anchorYmd={anchorYmd}
+      today={adminTodayYmd()}
+      value={{ mode: "weekly", weekdays: weekdays.map(Number) as Weekday[], endsOn }}
+      errors={{ weekdays: errors.weekdays?.message, endsOn: errors.endsOn?.message }}
+      onChange={(next) => {
+        const options = { shouldDirty: true, shouldValidate: isSubmitted };
+        form.setValue("weekdays", next.weekdays.map(String), options);
+        form.setValue("endsOn", next.endsOn, options);
+      }}
+    />
+  );
+}
+
+function PublishChoice() {
+  const form = useAdminFormContext<RecurringScheduleFormValues>();
+  const publish = form.watch("publish");
+  const name = useId();
+  const choices = [
+    { value: false, title: "Drafts", body: "Review each date before customers can see it." },
+    { value: true, title: "Published", body: "Bookable right away on the public schedule." },
+  ];
+  return (
+    <fieldset className="grid gap-2 sm:grid-cols-2">
+      <legend className="sr-only">New sessions start as</legend>
+      {choices.map((choice) => {
+        const checked = publish === choice.value;
+        return (
+          <label
+            key={choice.title}
+            className={cn(
+              "relative grid cursor-pointer gap-0.5 rounded-xl border px-4 py-3 transition-colors has-focus-visible:ring-2 has-focus-visible:ring-ring",
+              checked
+                ? "border-primary bg-primary/5 ring-1 ring-primary"
+                : "border-border hover:border-primary/50",
+            )}
+          >
+            <input
+              type="radio"
+              name={name}
+              checked={checked}
+              onChange={() => form.setValue("publish", choice.value, { shouldDirty: true })}
+              className="sr-only"
+            />
+            <span className="text-sm font-medium">{choice.title}</span>
+            <span className="text-sm text-muted-foreground">{choice.body}</span>
+          </label>
+        );
+      })}
+    </fieldset>
+  );
+}
+
+function SeriesPreview({ source }: { source: AdminSession }) {
+  const form = useAdminFormContext<RecurringScheduleFormValues>();
+  const { principal } = useMockPrincipal();
+  const sessions = useSuspenseQuery(adminSessionsQuery(principal)).data;
+  const weekdays = form.watch("weekdays");
+  const endsOn = form.watch("endsOn");
+  const occurrences = useMemo(
+    () =>
+      planOccurrences(
+        {
+          startsAt: source.startsAt,
+          endsAt: source.endsAt,
+          repeat: { weekdays: weekdays.map(Number) as Weekday[], endsOn },
+        },
+        {
+          sessions,
+          classId: source.classId,
+          coachIds: source.coaches.map((coach) => coach.id),
+          ignoreSessionId: source.id,
+        },
+      ),
+    [endsOn, sessions, source, weekdays],
+  );
+  const adding = occurrences.filter((row) => !row.isFirst && !occurrenceWillBeSkipped(row)).length;
+
+  return (
+    <section className="grid gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <div className="grid gap-0.5">
+        <p className="font-display text-3xl tabular-nums">{adding}</p>
+        <p className="text-sm text-muted-foreground">
+          new {adding === 1 ? "session" : "sessions"} after the original
         </p>
-        <p className="mt-1 font-display text-3xl tabular-nums">{dates.length}</p>
-        <p className="text-sm text-primary-foreground/70">planned occurrences</p>
       </div>
-      <div className="grid gap-4 p-5 text-sm">
-        <div className="flex gap-3">
-          <CircleCheck className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-          <p className="text-muted-foreground">
-            The original session remains unchanged. Matching class/start-time occurrences are
-            skipped.
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-          <p className="text-muted-foreground">
-            Each new session gets its own capacity, price, coach assignments, and current coach-rate
-            snapshots. No bookings are copied.
-          </p>
-        </div>
-        {dates.length > 0 ? (
-          <ul className="grid grid-cols-2 gap-1 border-t border-border pt-4 text-xs tabular-nums text-muted-foreground">
-            {dates.slice(0, 8).map((date) => (
-              <li key={date}>{date}</li>
-            ))}
-            {dates.length > 8 ? <li>+ {dates.length - 8} more</li> : null}
-          </ul>
-        ) : null}
-      </div>
-    </aside>
+      <OccurrencePreview occurrences={occurrences} />
+    </section>
   );
 }

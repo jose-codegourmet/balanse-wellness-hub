@@ -1,5 +1,5 @@
 import { type PublicCtaBlockId, publicCtaBlock } from "@balanse/domain";
-import { MarketingImage, ScrollReveal } from "@balanse/ui";
+import { Button, MarketingImage, ScrollReveal } from "@balanse/ui";
 import {
   ArrowUpRight,
   GaugeIcon,
@@ -9,7 +9,6 @@ import {
   UsersIcon,
   WorkflowIcon,
 } from "lucide-react";
-import { Button } from "@/components/jabkit/button";
 import type { Cta28Feature, Cta28FeatureIcon } from "@/components/jabkit/cta28/Cta28.types";
 import { cn } from "@/lib/utils";
 import "./cta-section.css";
@@ -69,11 +68,14 @@ export function BalanseCtaSection({
           </div>
           {/* Exactly one primary action. Any secondary action on the block stays
             in the footer nav rather than competing here. */}
-          <Button asChild className="balanse-cta-action rounded-full px-7">
-            <a href={primary.href}>
-              {primary.label}
-              <ArrowUpRight className="ml-4 size-4" aria-hidden="true" />
-            </a>
+          <Button
+            size="lg"
+            className="balanse-cta-action"
+            nativeButton={false}
+            render={<a href={primary.href} />}
+          >
+            {primary.label}
+            <ArrowUpRight className="size-4" aria-hidden="true" />
           </Button>
         </div>
       </ScrollReveal>

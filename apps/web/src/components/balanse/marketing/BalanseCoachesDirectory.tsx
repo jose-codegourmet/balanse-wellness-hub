@@ -7,11 +7,10 @@ import {
   type PublicCoach,
   resolveCoachPhotoSources,
 } from "@balanse/domain";
-import { CoachPhoto, MarketingImage, ScrollReveal } from "@balanse/ui";
+import { Button, Chip, CoachPhoto, MarketingImage, ScrollReveal } from "@balanse/ui";
 import { ArrowUpRight, CircleArrowDown, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Button } from "@/components/jabkit/button";
 import { BalanseCtaSection } from "./BalanseCtaSection";
 import "./coaches-directory.css";
 
@@ -75,11 +74,14 @@ export function BalanseCoachesDirectory({
                 Good movement. <em>Great company.</em>
               </h1>
             </div>
-            <Button asChild size="sm" className="coaches-intro-cta">
-              <a href="#coaching-team">
-                <CircleArrowDown size={16} strokeWidth={1.5} aria-hidden="true" />
-                Meet your coaches
-              </a>
+            <Button
+              size="lg"
+              className="coaches-intro-cta"
+              nativeButton={false}
+              render={<a href="#coaching-team" />}
+            >
+              <CircleArrowDown size={16} strokeWidth={1.5} aria-hidden="true" />
+              Meet your coaches
             </Button>
           </div>
         </ScrollReveal>
@@ -139,14 +141,9 @@ export function BalanseCoachesDirectory({
             </span>
             <fieldset className="coaches-filters" aria-label="Specialty filters">
               {chips.map((chip) => (
-                <button
-                  type="button"
-                  key={chip}
-                  aria-pressed={specialty === chip}
-                  onClick={() => setSpecialty(chip)}
-                >
+                <Chip key={chip} selected={specialty === chip} onClick={() => setSpecialty(chip)}>
                   {chip === "All" ? "All coaches" : chip}
-                </button>
+                </Chip>
               ))}
             </fieldset>
           </div>
@@ -193,7 +190,7 @@ export function BalanseCoachesDirectory({
             <div className="coaches-empty">
               <h3>No coaches for this class yet.</h3>
               <p>Explore the full team to find your next practice.</p>
-              <Button variant="secondary" onClick={() => setSpecialty("All")}>
+              <Button variant="link" onClick={() => setSpecialty("All")}>
                 See all coaches
               </Button>
             </div>

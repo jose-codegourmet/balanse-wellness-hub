@@ -52,7 +52,8 @@ export function CustomerSignUp({
 
           <Button
             type="button"
-            className="auth-google-button"
+            variant="outline"
+            className="mt-8 w-full md:mt-9"
             onClick={() => {
               setPrincipal({ role: "customer", customerId: "cust-ana" });
               router.push(returnTo);

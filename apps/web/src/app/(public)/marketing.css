@@ -39,7 +39,7 @@
   .booking-hero-heading { padding: 1rem; }
   .booking-hero-note { padding: 1rem; }
   .balanse-mobile-booking-bar { position: fixed; right: 0; bottom: 0; left: 0; z-index: 40; display: flex; justify-content: center; padding: .75rem 1rem calc(.75rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); background: color-mix(in oklab, var(--balanse-cream) 88%, transparent); backdrop-filter: blur(14px); }
-  .balanse-mobile-booking-button { width: min(100%, 24rem); min-height: 3rem; justify-content: space-between; border-radius: .35rem; padding-inline: 1rem; }
+  .balanse-mobile-booking-button { width: min(100%, 24rem); }
   .balanse-mobile-booking-bar ~ main { padding-bottom: 4.5rem; }
 }
 

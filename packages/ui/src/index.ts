@@ -30,6 +30,7 @@ export * from "./components/card/Card";
 export * from "./components/carousel/Carousel";
 export * from "./components/chart/Chart";
 export * from "./components/checkbox/Checkbox";
+export * from "./components/chip/Chip";
 export * from "./components/collapsible/Collapsible";
 export * from "./components/combobox/Combobox";
 export * from "./components/command/Command";

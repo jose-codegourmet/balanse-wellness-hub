@@ -10,6 +10,7 @@ import { seedCanonicalRolesAndPermissions } from "./constants/staff-roles";
 const prisma = new PrismaClient();
 
 const SHARED_PROJECT_REF = "xydundrayuusqizssgby";
+const MAIN_STUDIO_VENUE_ID = "venue-main-studio";
 
 function assertSeedAllowed(): void {
   if (process.env.BALANSE_ALLOW_DB_SEED !== "1") {
@@ -258,6 +259,19 @@ async function main(): Promise<void> {
     });
   }
 
+  // Stable id shared with the venues migration. Every seeded session runs at the studio.
+  await prisma.venue.upsert({
+    where: { id: MAIN_STUDIO_VENUE_ID },
+    create: {
+      id: MAIN_STUDIO_VENUE_ID,
+      name: "Balansé Studio",
+      address: CONTACT_DETAILS.address,
+      kind: "BRANCH",
+      active: true,
+    },
+    update: { address: CONTACT_DETAILS.address, kind: "BRANCH" },
+  });
+
   for (let day = 0; day < 7; day += 1) {
     const ymd = addDays(WEEK_START, day);
     for (const slot of TIMETABLE[day] ?? []) {
@@ -269,6 +283,7 @@ async function main(): Promise<void> {
         create: {
           id,
           classId: slot.classId,
+          venueId: MAIN_STUDIO_VENUE_ID,
           startsAt,
           endsAt,
           capacity: 12,
@@ -282,6 +297,7 @@ async function main(): Promise<void> {
           isPlaceholder: true,
         },
         update: {
+          venueId: MAIN_STUDIO_VENUE_ID,
           startsAt,
           endsAt,
           customerPrice: PLACEHOLDER_PRICE,

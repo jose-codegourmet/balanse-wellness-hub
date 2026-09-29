@@ -40,8 +40,8 @@ export function CustomerForgotPasswordForm({
           <p className="auth-field-hint">We will only send a link if the address is on file.</p>
         )}
       </div>
-      <Button type="submit" className="auth-submit-button">
-        Send reset link <ArrowUpRight className="ml-auto size-4" aria-hidden="true" />
+      <Button type="submit" className="mt-1 w-full">
+        Send reset link <ArrowUpRight className="size-4" aria-hidden="true" />
       </Button>
     </form>
   );

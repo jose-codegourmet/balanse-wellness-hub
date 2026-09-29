@@ -126,7 +126,7 @@ export function RosterPage({ sessionId }: { sessionId: string }) {
           <div className="border-b border-border/70 bg-muted/25 p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3">
               <h2 className="font-display text-2xl">Waitlist</h2>
-              <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium tabular-nums">
+              <span className="rounded-sm bg-muted px-2.5 py-1 text-xs font-medium tabular-nums">
                 {roster.waitlisted.length}
               </span>
             </div>
@@ -208,7 +208,7 @@ function RosterGroup({
     <section className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm">
       <div className="flex items-center justify-between gap-3 border-b border-border/70 bg-muted/25 p-4 sm:p-5">
         <h2 className="font-display text-2xl">{title}</h2>
-        <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium tabular-nums">
+        <span className="rounded-sm bg-muted px-2.5 py-1 text-xs font-medium tabular-nums">
           {rows.length}
         </span>
       </div>

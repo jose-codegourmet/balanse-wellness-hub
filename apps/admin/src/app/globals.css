@@ -7,6 +7,9 @@
 
 /* Admin-only light rail. Shared tokens keep a navy sidebar for apps/web. */
 :root {
+  /* Editorial base radius. Components that read var(--radius) directly (Jabkit,
+     calendars) match the 6px buttons and fields. */
+  --radius: 6px;
   --sidebar: var(--balanse-warm-white);
   --sidebar-foreground: var(--balanse-navy);
   --sidebar-primary: var(--balanse-navy);
@@ -57,10 +60,17 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
+  /* Editorial radius scale (2026-09-29 button redesign). Controls (buttons,
+     fields, chips) are 6px; cards 8px; large surfaces 10px. Every rounded-*
+     utility in the admin follows this scale, so never hardcode larger radii. */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius-2xl: 8px;
+  --radius-3xl: 10px;
+  --radius-4xl: 12px;
 }
 
 /* Jabkit cssVars: semantic --primary/--background/--sidebar tokens.
@@ -91,4 +101,10 @@
   * { @apply border-border outline-ring/50; }
   body { @apply bg-background text-foreground; }
   html { @apply font-sans; }
+}
+
+/* Vendored Jabkit writes `rounded-[--radius]`, which Tailwind v4 ignores (v4 syntax is
+   `rounded-(--radius)`). Map it to the admin radius so Jabkit blocks match the app. */
+.rounded-\[--radius\] {
+  border-radius: var(--radius);
 }

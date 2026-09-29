@@ -1,6 +1,5 @@
-import { MarketingImage, ScrollReveal } from "@balanse/ui";
+import { Button, MarketingImage, ScrollReveal } from "@balanse/ui";
 import { ArrowUpRight } from "lucide-react";
-import { Button } from "@/components/jabkit/button";
 import type { Hero33Feature } from "@/components/jabkit/hero-33/Hero33.types";
 import { cn } from "@/lib/utils";
 
@@ -49,11 +48,9 @@ export function BalanseHero({
           ) : null}
           <div className="mt-7 flex flex-wrap items-center gap-5">
             {primaryAction ? (
-              <Button asChild className="rounded-full px-6">
-                <a href={primaryAction.href}>
-                  {primaryAction.label}
-                  <ArrowUpRight className="ml-3 size-4" aria-hidden="true" />
-                </a>
+              <Button size="lg" nativeButton={false} render={<a href={primaryAction.href} />}>
+                {primaryAction.label}
+                <ArrowUpRight className="size-4" aria-hidden="true" />
               </Button>
             ) : null}
             {secondaryAction ? (

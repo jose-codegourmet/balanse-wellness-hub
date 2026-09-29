@@ -10,13 +10,12 @@ import {
   sessionDisplayName,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Alert, AlertDescription, AlertTitle, FeedbackState } from "@balanse/ui";
+import { Alert, AlertDescription, AlertTitle, Button, FeedbackState } from "@balanse/ui";
 import { ArrowRight, Info, LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useState } from "react";
 import { BookingSummary } from "@/components/balanse/portal/BookingSummary";
 import "@/components/balanse/portal/portal-booking.css";
-import { Button } from "@/components/jabkit/button";
 import { notify } from "@/modules/notifications/notify";
 
 type SessionDay = { ymd: string; label: string; sessions: PublicSession[] };
@@ -213,7 +212,6 @@ export function RescheduleRequest({
                   </p>
                   <Button
                     type="button"
-                    className="portal-pill-button"
                     disabled={!targetId || submitting}
                     onClick={() => {
                       setStatus("submitting");

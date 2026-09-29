@@ -39,6 +39,15 @@ import {
 } from "../validation";
 import { cancelLiveSessionEvent } from "./admin-events";
 
+/** Venue fields attached to admin session payloads. Staff notes stay on the venue resource. */
+const SESSION_VENUE_SELECT = {
+  id: true,
+  name: true,
+  address: true,
+  kind: true,
+  active: true,
+} satisfies Prisma.VenueSelect;
+
 export async function getAdminClasses(deps: ApiDeps, req: Request): Promise<Response> {
   requireAdmin(await resolveActor(deps, req));
   const items = await deps.prisma.gymClass.findMany({ orderBy: { name: "asc" } });
@@ -259,6 +268,7 @@ export async function getAdminSessions(deps: ApiDeps, req: Request): Promise<Res
   const ownOnly = !actorHas(actor, "schedule.read.all");
   const where = {
     ...(params.get("classId") ? { classId: params.get("classId") as string } : {}),
+    ...(params.get("venueId") ? { venueId: params.get("venueId") as string } : {}),
     ...(params.get("status")
       ? { status: params.get("status") as "DRAFT" | "PUBLISHED" | "CANCELLED" }
       : {}),
@@ -274,6 +284,7 @@ export async function getAdminSessions(deps: ApiDeps, req: Request): Promise<Res
       orderBy: { startsAt: "asc" },
       include: {
         gymClass: true,
+        venue: { select: SESSION_VENUE_SELECT },
         coaches: {
           include: {
             coach: canReadRates(actor)
@@ -316,6 +327,7 @@ export async function postAdminSession(deps: ApiDeps, req: Request): Promise<Res
   const body = await readJson(req);
   assertAssignmentFields(body);
   const classId = requireString(body, "classId", 64);
+  const venueId = requireString(body, "venueId", 64);
   const startsAt = requireString(body, "startsAt", 40);
   const endsAt = requireString(body, "endsAt", 40);
   const capacity = intValue(body, "capacity", 1, 200, true) as number;
@@ -324,10 +336,12 @@ export async function postAdminSession(deps: ApiDeps, req: Request): Promise<Res
   assertSessionWindow(startsAt, endsAt);
   const created = await deps.prisma.$transaction(async (tx) => {
     await assertActiveClass(tx, classId);
+    await assertActiveVenue(tx, venueId);
     const coaches = await resolveSessionCoaches(tx, coachIds);
     return tx.gymSession.create({
       data: {
         classId,
+        venueId,
         startsAt: new Date(startsAt),
         endsAt: new Date(endsAt),
         capacity,
@@ -341,7 +355,10 @@ export async function postAdminSession(deps: ApiDeps, req: Request): Promise<Res
           })),
         },
       },
-      include: { coaches: { include: { coach: true } } },
+      include: {
+        coaches: { include: { coach: true } },
+        venue: { select: SESSION_VENUE_SELECT },
+      },
     });
   });
   await writeAudit(deps, {
@@ -349,7 +366,7 @@ export async function postAdminSession(deps: ApiDeps, req: Request): Promise<Res
     entityId: created.id,
     action: "session.create",
     actor,
-    metadata: { coachIds },
+    metadata: { coachIds, venueId },
   });
   return ok({ session: maybeStripRates(actor, created) });
 }
@@ -378,7 +395,7 @@ export async function postDuplicateAdminSessions(deps: ApiDeps, req: Request): P
         status: { not: "CANCELLED" },
       },
       orderBy: { startsAt: "asc" },
-      include: { gymClass: true, coaches: true },
+      include: { gymClass: true, venue: true, coaches: true },
     });
     if (templates.some((session) => !session.gymClass.active)) {
       throwFields(
@@ -386,6 +403,15 @@ export async function postDuplicateAdminSessions(deps: ApiDeps, req: Request): P
           "sourceStart",
           "inactive_reference",
           "The source range includes an inactive class.",
+        ),
+      );
+    }
+    if (templates.some((session) => !session.venue.active)) {
+      throwFields(
+        fieldError(
+          "sourceStart",
+          "inactive_reference",
+          "The source range includes a session at an inactive venue.",
         ),
       );
     }
@@ -446,7 +472,7 @@ export async function postAdminSessionRecurrence(
   const result = await deps.prisma.$transaction(async (tx) => {
     const source = await tx.gymSession.findUnique({
       where: { id: sourceSessionId },
-      include: { gymClass: true, coaches: true },
+      include: { gymClass: true, venue: true, coaches: true },
     });
     if (!source) throw new ApiError(404, "session_not_found", "Session not found.");
     if (source.status === "CANCELLED") {
@@ -462,6 +488,11 @@ export async function postAdminSessionRecurrence(
     if (!source.gymClass.active) {
       throwFields(
         fieldError("sourceSessionId", "inactive_reference", "The session class is inactive."),
+      );
+    }
+    if (!source.venue.active) {
+      throwFields(
+        fieldError("sourceSessionId", "inactive_reference", "The session venue is inactive."),
       );
     }
     const assigned = await resolveSessionCoaches(
@@ -525,6 +556,7 @@ export async function postAdminSessionRecurrence(
 function generatedSessionData(
   template: {
     classId: string;
+    venueId: string;
     capacity: number;
     customerPrice: Prisma.Decimal;
   },
@@ -535,6 +567,7 @@ function generatedSessionData(
 ) {
   return {
     classId: template.classId,
+    venueId: template.venueId,
     startsAt,
     endsAt,
     capacity: template.capacity,
@@ -584,6 +617,7 @@ export async function patchAdminSession(
   const startsAt = optionalString(body, "startsAt", 40);
   const endsAt = optionalString(body, "endsAt", 40);
   const classId = "classId" in body ? requireString(body, "classId", 64) : undefined;
+  const venueId = "venueId" in body ? requireString(body, "venueId", 64) : undefined;
   const capacity = intValue(body, "capacity", 1, 200, false);
   const customerPrice = moneyValue(body, "customerPrice", false);
   const updated = await deps.prisma.$transaction(async (tx) => {
@@ -596,6 +630,8 @@ export async function patchAdminSession(
       endsAt ?? session.endsAt.toISOString(),
     );
     if (classId && classId !== session.classId) await assertActiveClass(tx, classId);
+    // Keeping an inactive current venue is fine; switching to an inactive one is not.
+    if (venueId && venueId !== session.venueId) await assertActiveVenue(tx, venueId);
     if (coachIds) {
       const retained = new Set(session.coaches.map((row) => row.coachId));
       const coaches = await resolveSessionCoaches(tx, coachIds, retained);
@@ -620,6 +656,7 @@ export async function patchAdminSession(
       where: { id },
       data: {
         ...(classId ? { classId } : {}),
+        ...(venueId ? { venueId } : {}),
         ...(startsAt ? { startsAt: new Date(startsAt) } : {}),
         ...(endsAt ? { endsAt: new Date(endsAt) } : {}),
         ...(customerPrice != null ? { customerPrice } : {}),
@@ -627,7 +664,10 @@ export async function patchAdminSession(
           ? { status: asString(body.status) as "DRAFT" | "PUBLISHED" }
           : {}),
       },
-      include: { coaches: { include: { coach: true } } },
+      include: {
+        coaches: { include: { coach: true } },
+        venue: { select: SESSION_VENUE_SELECT },
+      },
     });
   });
   await writeAudit(deps, { entityType: "session", entityId: id, action: "session.update", actor });
@@ -687,6 +727,14 @@ async function assertActiveClass(tx: Prisma.TransactionClient, id: string) {
   if (!gymClass) throw new ApiError(404, "class_not_found", "Class not found.");
   if (!gymClass.active)
     throwFields(fieldError("classId", "inactive_reference", "Class must be active."));
+}
+
+/** New or changed session venues must exist and be active. No time-overlap check by design. */
+async function assertActiveVenue(tx: Prisma.TransactionClient, id: string) {
+  const venue = await tx.venue.findUnique({ where: { id }, select: { active: true } });
+  if (!venue) throw new ApiError(404, "venue_not_found", "Venue not found.");
+  if (!venue.active)
+    throwFields(fieldError("venueId", "inactive_reference", "Venue must be active."));
 }
 
 export async function postCancelSession(

@@ -1,14 +1,13 @@
 "use client";
 
 import { Button, CardListSkeleton, cn, FeedbackState } from "@balanse/ui";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { type FocusEvent, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import type { AdminQueueListProps } from "./AdminQueueList.meta";
 
 const DEFAULT_ESTIMATE = 168;
 const DEFAULT_THRESHOLD = 30;
-const SCROLL_STORAGE_PREFIX = "balanse:admin-queue-scroll:";
 
 function usePrefersReducedMotion(): boolean {
   const [reduced, setReduced] = useState(false);
@@ -39,7 +38,8 @@ export function AdminQueueList<T>({
   virtualizeThreshold = DEFAULT_THRESHOLD,
   className,
 }: AdminQueueListProps<T>) {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const lastFocusedKeyRef = useRef<string | null>(null);
   const prevCountRef = useRef(items.length);
@@ -47,11 +47,25 @@ export function AdminQueueList<T>({
   const reducedMotion = usePrefersReducedMotion();
   const setSize = totalCount ?? items.length;
   const virtualized = items.length >= virtualizeThreshold;
-  const storageKey = `${SCROLL_STORAGE_PREFIX}${label}`;
+  const [scrollMargin, setScrollMargin] = useState(0);
 
-  const virtualizer = useVirtualizer({
+  // Virtualize against the page scroll so long queues never nest a second scrollbar.
+  useLayoutEffect(() => {
+    if (!virtualized) return;
+    const list = listRef.current;
+    if (!list) return;
+    const measure = () => {
+      setScrollMargin(list.getBoundingClientRect().top + window.scrollY);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(document.body);
+    return () => observer.disconnect();
+  }, [virtualized]);
+
+  const virtualizer = useWindowVirtualizer({
     count: virtualized ? items.length : 0,
-    getScrollElement: () => scrollRef.current,
+    scrollMargin,
     estimateSize: () => estimateSize,
     measureElement:
       typeof window !== "undefined"
@@ -60,26 +74,6 @@ export function AdminQueueList<T>({
     overscan: reducedMotion ? 2 : 8,
     enabled: virtualized,
   });
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    try {
-      const saved = sessionStorage.getItem(storageKey);
-      if (saved) el.scrollTop = Number(saved);
-    } catch {
-      // sessionStorage may be unavailable
-    }
-    const onScroll = () => {
-      try {
-        sessionStorage.setItem(storageKey, String(el.scrollTop));
-      } catch {
-        // ignore quota / private mode
-      }
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
-  }, [storageKey]);
 
   useEffect(() => {
     if (items.length > prevCountRef.current) {
@@ -106,17 +100,16 @@ export function AdminQueueList<T>({
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
-    const root = virtualized ? scrollRef.current : null;
     if (!sentinel || !hasNextPage) return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) loadMore();
       },
-      { root, rootMargin: "160px", threshold: 0 },
+      { rootMargin: "160px", threshold: 0 },
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasNextPage, loadMore, virtualized, items.length]);
+  }, [hasNextPage, loadMore, items.length]);
 
   const recordFocus = (event: FocusEvent<HTMLElement>) => {
     const item = (event.target as HTMLElement).closest("[data-queue-item-key]");
@@ -193,13 +186,16 @@ export function AdminQueueList<T>({
       <section
         ref={scrollRef}
         aria-label={label}
-        // Windowed items leave the DOM; the scroller must stay keyboard-reachable.
-        // biome-ignore lint/a11y/noNoninteractiveTabindex: virtualized queue scroller
-        tabIndex={0}
+        // Focus fallback target when the focused card leaves the queue.
+        tabIndex={-1}
         onFocusCapture={recordFocus}
-        className="max-h-[70vh] overflow-auto outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
-        <ul className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
+        <ul
+          ref={listRef}
+          className="relative w-full"
+          style={{ height: virtualizer.getTotalSize() }}
+        >
           {virtualItems.map((virtualRow) => {
             const item = items[virtualRow.index];
             if (!item) return null;
@@ -213,7 +209,7 @@ export function AdminQueueList<T>({
                 aria-setsize={setSize}
                 aria-posinset={virtualRow.index + 1}
                 className="absolute top-0 left-0 w-full pb-4"
-                style={{ transform: `translateY(${virtualRow.start}px)` }}
+                style={{ transform: `translateY(${virtualRow.start - scrollMargin}px)` }}
               >
                 {renderItem(item, virtualRow.index)}
               </li>

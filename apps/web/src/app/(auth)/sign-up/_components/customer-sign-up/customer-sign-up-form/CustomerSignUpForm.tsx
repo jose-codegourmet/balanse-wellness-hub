@@ -88,8 +88,8 @@ export function CustomerSignUpForm({
         />
         {errors.confirmPassword ? <p className="auth-error">{errors.confirmPassword}</p> : null}
       </div>
-      <Button type="submit" className="auth-submit-button">
-        Create account <ArrowUpRight className="ml-auto size-4" aria-hidden="true" />
+      <Button type="submit" className="mt-1 w-full">
+        Create account <ArrowUpRight className="size-4" aria-hidden="true" />
       </Button>
     </form>
   );

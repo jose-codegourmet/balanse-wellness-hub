@@ -18,7 +18,7 @@ a.contact-card:hover { border-color: var(--accent); background: color-mix(in okl
 .contact-card-value { margin-top: .9rem; font-size: 1rem; font-weight: 500; line-height: 1.5; overflow-wrap: anywhere; }
 .contact-card-note { margin-top: .65rem; font-size: .8rem; line-height: 1.65; color: var(--muted-foreground); }
 .contact-card-action { margin-top: auto; padding-top: 1.25rem; }
-.contact-card-action [data-slot="button"] { width: 100%; min-height: 2.9rem; border-radius: 999px; gap: .75rem; }
+.contact-card-action [data-slot="button"] { width: 100%; }
 
 .contact-subheading { margin-top: 2.5rem; font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .18em; color: var(--balanse-gold-deep); }
 .contact-socials { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
@@ -42,7 +42,6 @@ a.contact-card:hover { border-color: var(--accent); background: color-mix(in okl
 .contact-form-error { font-size: .78rem; color: var(--destructive); }
 .contact-form-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
 .contact-form-actions > p { max-width: 24rem; font-size: .72rem; line-height: 1.6; color: var(--muted-foreground); }
-.contact-form-actions [data-slot="button"] { min-height: 2.9rem; border-radius: 999px; gap: .75rem; padding-inline: 1.5rem; }
 .contact-form-outcome[data-slot="alert"] { border-color: var(--border); border-left: 3px solid var(--balanse-gold-deep); background: var(--background); padding: .9rem 1rem; }
 .contact-form-outcome[data-outcome="failure"] { border-left-color: var(--destructive); }
 
@@ -56,7 +55,7 @@ a.contact-card:hover { border-color: var(--accent); background: color-mix(in okl
   .contact-grid > li:last-child { grid-column: auto; }
   .contact-split { grid-template-columns: minmax(0, 1fr); }
   .contact-form-actions { align-items: stretch; flex-direction: column-reverse; }
-  .contact-form-actions [data-slot="button"] { width: 100%; justify-content: space-between; }
+  .contact-form-actions [data-slot="button"] { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
   .contact-card, .contact-social { transition: none; }

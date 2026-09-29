@@ -1,5 +1,6 @@
 "use client";
 
+import { ButtonGroup, Button as UiButton } from "@balanse/ui";
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from "lucide-react";
 import * as React from "react";
 import { Button } from "@/components/jabkit/button";
@@ -130,7 +131,7 @@ export function FullscreenCalendar({
     >
       <header className="flex flex-col gap-4 border-b border-border px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-4">
-          <div className="hidden w-[4.5rem] flex-col overflow-hidden rounded-[--radius] border border-border md:flex">
+          <div className="hidden w-[4.5rem] flex-col overflow-hidden rounded-md border border-border md:flex">
             <p className="bg-muted px-1 py-1 text-center text-[10px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
               {monthFormatter(today)}
             </p>
@@ -151,6 +152,8 @@ export function FullscreenCalendar({
           </div>
         </div>
 
+        {/* PATCHED (2026-09-29 button redesign): toolbar uses the shared Button
+            and ButtonGroup so it matches the rest of the product. */}
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
@@ -163,32 +166,33 @@ export function FullscreenCalendar({
           >
             {todayLabel}
           </Button>
-          <div className="inline-flex overflow-hidden rounded-[--radius] border border-border">
-            <button
+          <ButtonGroup aria-label="Change month">
+            <UiButton
               type="button"
+              variant="outline"
+              size="icon-sm"
               aria-label="Previous month"
-              className="inline-flex size-9 items-center justify-center text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               onClick={() => goToMonth(addMonths(month, -1))}
             >
-              <ChevronLeftIcon className="size-4" />
-            </button>
-            <button
+              <ChevronLeftIcon />
+            </UiButton>
+            <UiButton
               type="button"
+              variant="outline"
+              size="icon-sm"
               aria-label="Next month"
-              className="inline-flex size-9 items-center justify-center border-l border-border text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               onClick={() => goToMonth(addMonths(month, 1))}
             >
-              <ChevronRightIcon className="size-4" />
-            </button>
-          </div>
+              <ChevronRightIcon />
+            </UiButton>
+          </ButtonGroup>
           <Button
             type="button"
             variant="primary"
             size="sm"
-            className="gap-1.5"
             onClick={() => onAddEvent?.(selectedDay)}
           >
-            <PlusIcon className="size-4" />
+            <PlusIcon />
             {addEventLabel}
           </Button>
         </div>
@@ -344,7 +348,7 @@ function EventChip({
   return (
     <div
       className={cn(
-        "w-full rounded-[calc(var(--radius)-4px)] border border-border bg-muted/70 px-1.5 py-1 text-left",
+        "w-full rounded-sm border border-border bg-muted/70 px-1.5 py-1 text-left",
         compact && "px-1.5 py-0.5",
       )}
     >

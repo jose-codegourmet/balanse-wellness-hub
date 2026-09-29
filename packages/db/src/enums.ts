@@ -21,5 +21,6 @@ export {
   SessionStatus,
   StaffRole,
   StaffStatus,
+  VenueKind,
   WaitlistStatus,
 } from "@prisma/client";

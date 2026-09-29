@@ -15,9 +15,9 @@ Sidebar: Events, in Operations, immediately after Schedule. The nested authoring
 
 ## Fields
 
-Title, summary, description, poster, gallery, venue name, venue address, beneficiary, what to bring, internal notes, optional registration open/close. Status `DRAFT` | `PUBLISHED` | `CANCELLED` | `ARCHIVED`.
+Title, summary, description, poster, gallery, beneficiary, what to bring, internal notes, optional registration open/close. Status `DRAFT` | `PUBLISHED` | `CANCELLED` | `ARCHIVED`.
 
-Session class, start, end, capacity, and customer price are read-only on the event. Fixture prices are non-authoritative placeholders (**OQ-PRICE**), including Pilates for a Cause at ₱1,000.
+Session class, venue, start, end, capacity, and customer price are read-only on the event. The venue shown is the session's venue (branch or off-site); change it on the session. Fixture prices are non-authoritative placeholders (**OQ-PRICE**), including Pilates for a Cause at ₱1,000.
 
 ## Rules
 

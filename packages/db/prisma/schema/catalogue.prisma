@@ -50,34 +50,59 @@ model GymClass {
   @@map("classes")
 }
 
+/// Where sessions run: a branch the business operates, or an off-site partner venue.
+/// Sessions at different venues may overlap in time. Events inherit their session's venue.
+/// Inactive venues stay on existing sessions but cannot be chosen for new ones.
+model Venue {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  address   String    @default("")
+  kind      VenueKind @default(BRANCH)
+  active    Boolean   @default(true)
+  /// Staff-only notes (access, parking, contact). Never public.
+  notes     String    @default("")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  sessions GymSession[]
+
+  @@index([active])
+  @@index([kind])
+  @@map("venues")
+}
+
 /// BE-006 — scheduled session with financial snapshot (never back-written from coach rate).
 model GymSession {
-  id            String        @id @default(cuid())
-  classId       String
-  startsAt      DateTime      @db.Timestamptz
-  endsAt        DateTime      @db.Timestamptz
-  capacity      Int
-  status        SessionStatus @default(DRAFT)
-  customerPrice Decimal       @db.Decimal(12, 2)
-  isPlaceholder Boolean       @default(false)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id               String        @id @default(cuid())
+  classId          String
+  /// Required. Overlapping sessions are allowed (across or within venues).
+  venueId          String
+  startsAt         DateTime      @db.Timestamptz
+  endsAt           DateTime      @db.Timestamptz
+  capacity         Int
+  status           SessionStatus @default(DRAFT)
+  customerPrice    Decimal       @db.Decimal(12, 2)
+  isPlaceholder    Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
   recurrenceRuleId String?
 
-  gymClass          GymClass            @relation(fields: [classId], references: [id])
-  coaches           SessionCoach[]
-  bookings          Booking[]
-  waitlistEntries   WaitlistEntry[]
-  bundleRedemptions BundleRedemption[]
-  rescheduleTargets RescheduleRequest[] @relation("RescheduleTargetSession")
-  rescheduleOrigins RescheduleRequest[] @relation("RescheduleFromSession")
-  recurrenceRule    SessionRecurrenceRule? @relation("RecurrenceOccurrences", fields: [recurrenceRuleId], references: [id], onDelete: SetNull)
+  gymClass            GymClass                @relation(fields: [classId], references: [id])
+  venue               Venue                   @relation(fields: [venueId], references: [id], onDelete: Restrict)
+  coaches             SessionCoach[]
+  bookings            Booking[]
+  waitlistEntries     WaitlistEntry[]
+  bundleRedemptions   BundleRedemption[]
+  rescheduleTargets   RescheduleRequest[]     @relation("RescheduleTargetSession")
+  rescheduleOrigins   RescheduleRequest[]     @relation("RescheduleFromSession")
+  recurrenceRule      SessionRecurrenceRule?  @relation("RecurrenceOccurrences", fields: [recurrenceRuleId], references: [id], onDelete: SetNull)
   recurrenceTemplates SessionRecurrenceRule[] @relation("RecurrenceTemplate")
   event               SessionEvent?
 
   @@index([startsAt])
   @@index([status, startsAt])
   @@index([classId])
+  @@index([venueId])
   @@index([recurrenceRuleId])
   @@map("sessions")
 }

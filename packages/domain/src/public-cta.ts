@@ -5,7 +5,7 @@
  * this file may reference coach rates or any other admin-only figure.
  */
 
-import { CONTACT_DETAILS, landingScheduleHref } from "./public-pages";
+import { CONTACT_DETAILS, publicBookingHref } from "./public-pages";
 
 export type PublicCtaTone = "primary" | "accent" | "quiet";
 
@@ -37,7 +37,7 @@ export type PublicCtaBlockId =
   | "faqs-final"
   | "coaches-close";
 
-export const SCHEDULE_HREF = landingScheduleHref();
+export const SCHEDULE_HREF = publicBookingHref("calendar");
 export const CLASSES_HREF = "/classes";
 
 /** The one action every public page repeats. Keep the wording identical everywhere. */

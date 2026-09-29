@@ -3,10 +3,9 @@
 import type { CustomerProfile } from "@balanse/domain";
 import { validateCustomerProfile } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Input, Label, PhPhoneInput } from "@balanse/ui";
+import { Button, Input, Label, PhPhoneInput } from "@balanse/ui";
 import { ArrowUpRight, LoaderCircle, Mail, Phone } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/jabkit/button";
 import { notify } from "@/modules/notifications/notify";
 
 export function BasicProfileForm({
@@ -118,7 +117,7 @@ export function BasicProfileForm({
       ) : null}
       <div className="profile-form-actions">
         <span>You can update these anytime.</span>
-        <Button type="submit" disabled={status === "saving"} className="profile-save-button">
+        <Button type="submit" disabled={status === "saving"}>
           {status === "saving" ? (
             <>
               <LoaderCircle size={16} className="animate-spin" aria-hidden="true" /> Saving…

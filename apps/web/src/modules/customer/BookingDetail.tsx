@@ -5,17 +5,16 @@ import {
   paymentStatusLabel,
   sessionDisplayName,
 } from "@balanse/domain";
-import { Alert, AlertDescription, AlertTitle, StatusBadge } from "@balanse/ui";
+import { Alert, AlertDescription, AlertTitle, Button } from "@balanse/ui";
 import { Hourglass, Info, Wallet } from "lucide-react";
 import Link from "next/link";
 import {
   BookingFacts,
   BookingReference,
   bookingMood,
-  bookingStatusKey,
 } from "@/components/balanse/portal/BookingSummary";
+import { BookingStatusBanner } from "@/components/balanse/portal/booking-status-banner/BookingStatusBanner";
 import "@/components/balanse/portal/portal-booking.css";
-import { Button } from "@/components/jabkit/button";
 
 type Advisory = {
   kind: "instruction" | "informational" | "held";
@@ -32,7 +31,11 @@ type Advisory = {
  */
 function advisoriesFor(booking: CustomerBooking): Advisory[] {
   const advisories: Advisory[] = [];
-  if (booking.paymentMethod === "PAY_AT_COUNTER" && booking.paymentStatus === "NONE") {
+  if (
+    booking.status === "HELD_AWAITING_PAYMENT" &&
+    booking.paymentMethod === "PAY_AT_COUNTER" &&
+    booking.paymentStatus === "NONE"
+  ) {
     advisories.push({
       kind: "instruction",
       icon: Wallet,
@@ -57,7 +60,7 @@ function advisoriesFor(booking: CustomerBooking): Advisory[] {
       kind: "informational",
       icon: Info,
       title: booking.packageName ?? "Package",
-      body: "This booking uses a package session, not a cash payment. The studio still confirms the spot.",
+      body: "This booking uses a package session rather than a cash payment.",
     });
   }
   if (booking.status === "CANCELLATION_REQUESTED" || booking.status === "RESCHEDULE_REQUESTED") {
@@ -87,17 +90,22 @@ export function BookingDetail({
     <div className="portal-page portal-booking-detail">
       <header className="portal-page-head">
         <p className="portal-eyebrow">My bookings</p>
-        <h1 className="font-display">Booking confirmation</h1>
+        <h1 className="font-display">
+          {booking.status === "CONFIRMED" || booking.status === "CHECKED_IN"
+            ? "Booking confirmation"
+            : "Booking details"}
+        </h1>
         {/* Spec guardrail: this stays directly under the title so it is read
             before the ticket, never demoted into fine print. */}
         <p className="portal-page-lead">
-          This is a booking confirmation for the front desk. It is not an official receipt.
+          Your current booking status and details for the front desk. This is not an official
+          receipt.
         </p>
       </header>
 
       <section data-section="booking-status" className="booking-ticket" data-mood={mood}>
+        <BookingStatusBanner booking={booking} />
         <div className="booking-ticket-stub">
-          <StatusBadge status={bookingStatusKey(booking)} />
           <BookingReference bookingId={booking.id} size="primary" />
           <p className="booking-ticket-stub-note">
             Show this reference at the front desk. Studio time is Asia/Manila.
@@ -162,19 +170,26 @@ export function BookingDetail({
 
       <section data-section="actions" className="booking-actions">
         {actions.reschedule ? (
-          <Button asChild variant="primary" className="portal-pill-button">
-            <Link href={`/portal/bookings/${booking.id}/reschedule`}>Request Reschedule</Link>
+          <Button
+            nativeButton={false}
+            render={<Link href={`/portal/bookings/${booking.id}/reschedule`} />}
+          >
+            Request Reschedule
           </Button>
         ) : null}
         {actions.cancel ? (
-          <Button asChild variant="secondary" className="portal-pill-button">
-            <Link href={`/portal/bookings/${booking.id}/cancel`}>Request Cancellation</Link>
+          <Button
+            variant="destructive"
+            nativeButton={false}
+            render={<Link href={`/portal/bookings/${booking.id}/cancel`} />}
+          >
+            Request Cancellation
           </Button>
         ) : null}
         {!actions.reschedule && !actions.cancel ? (
           <p className="booking-actions-note">
-            No customer requests are available for this booking. Nothing is wrong — this status is
-            already resolved, so the studio handles any further change.
+            No customer requests are available for this booking. The studio handles any further
+            changes or pending requests.
           </p>
         ) : null}
       </section>

@@ -249,7 +249,8 @@ export function BookingForm({
 
           <Button
             type="button"
-            className="w-full rounded-full sm:w-auto"
+            variant="accent"
+            className="w-full sm:w-auto"
             disabled={!allAccepted}
             onClick={() => {
               setStatus("submitting");

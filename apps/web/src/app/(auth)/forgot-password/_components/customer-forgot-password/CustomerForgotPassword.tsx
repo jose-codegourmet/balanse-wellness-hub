@@ -49,12 +49,8 @@ export function CustomerForgotPassword({ forcedView }: { forcedView?: ForgotPass
                 That mock reset link is no longer valid. Request another one and we will send it if
                 the address is on file.
               </p>
-              <Button
-                type="button"
-                className="auth-submit-button mt-7"
-                onClick={() => setView("initial")}
-              >
-                Request a new link <ArrowUpRight className="ml-auto size-4" aria-hidden="true" />
+              <Button type="button" className="mt-7 w-full" onClick={() => setView("initial")}>
+                Request a new link <ArrowUpRight className="size-4" aria-hidden="true" />
               </Button>
               <Link href="/login" className="auth-forgot-link">
                 Back to login <ArrowUpRight className="size-3" aria-hidden="true" />

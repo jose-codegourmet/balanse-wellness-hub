@@ -1,8 +1,7 @@
 import { CONTACT_DETAILS, PUBLIC_SOCIAL_LINKS } from "@balanse/domain";
-import { MarketingImage, ScrollReveal, SectionHeading } from "@balanse/ui";
+import { Button, MarketingImage, ScrollReveal, SectionHeading } from "@balanse/ui";
 import { CalendarClock, Mail, MapPin, Phone } from "lucide-react";
 import { BalanseHero } from "@/components/balanse/marketing/BalanseHero";
-import { Button } from "@/components/jabkit/button";
 import { ContactForm } from "./contact-form/ContactForm";
 import "./contact-page.css";
 
@@ -40,7 +39,7 @@ export function ContactPage() {
         eyebrow="Say hello"
         titleLines={["Contact Balansé."]}
         primaryAction={{ label: "Open address in Maps", href: CONTACT_DETAILS.mapHref }}
-        secondaryAction={{ label: "View the schedule", href: "/#schedule" }}
+        secondaryAction={{ label: "View the schedule", href: "/book/calendar" }}
         align="compact"
         features={[
           {
@@ -99,10 +98,14 @@ export function ContactPage() {
                       desk.
                     </span>
                     <span className="contact-card-action">
-                      <Button asChild variant="secondary">
-                        <a href={CONTACT_DETAILS.mapHref} rel="noreferrer" target="_blank">
-                          Open address in Maps
-                        </a>
+                      <Button
+                        variant="outline"
+                        nativeButton={false}
+                        render={
+                          <a href={CONTACT_DETAILS.mapHref} rel="noreferrer" target="_blank" />
+                        }
+                      >
+                        Open address in Maps
                       </Button>
                     </span>
                   </div>

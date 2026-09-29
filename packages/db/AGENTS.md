@@ -118,6 +118,10 @@ The leftover `StaffRole` enum is not dropped in this wave.
 
 `session_events` is a 1:0..1 wrapper on `GymSession` (`ON DELETE RESTRICT`). Price, capacity, and session status stay on the session. `EventStatus` is separate from `SessionStatus`. RLS is staff-only (`events.read` / `events.manage`); there is no anon read. Status changes write one `audit_events` row. The migration is staged and must not be applied to the shared project until histories are reconciled. See `docs/backend/session-events.md`.
 
+## Venues
+
+`venues` (`Venue`, enum `VenueKind` = `BRANCH` | `OFFSITE`) holds branches and off-site partner venues. `GymSession.venueId` is required (`ON DELETE RESTRICT`); events have no venue columns and show their session's venue. Overlapping session times are allowed, with no overlap constraint. Venues are deactivated, never deleted. The default branch has the stable id `venue-main-studio` (migration and seed). RLS is staff-only: read needs `classes.*`, `schedule.read.*`, or `events.*`; writes need `classes.manage`. The `20260928090000_venues_on_sessions` migration is staged and must not be applied to the shared project until histories are reconciled. See `docs/backend/venues.md`.
+
 ## Session bundles (BE-058)
 
 `bundles`, `bundle_class_applicability`, `bundle_acquisitions`, `bundle_acquisition_payments`, `customer_bundles`, and `bundle_redemptions` implement session packages. Remaining credits are derived from the redemption ledger. The Prisma migration is staged and must not be applied to the shared project until histories are reconciled. See `docs/backend/session-bundles.md`.

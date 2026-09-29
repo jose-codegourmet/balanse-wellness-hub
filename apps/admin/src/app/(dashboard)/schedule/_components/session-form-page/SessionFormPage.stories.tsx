@@ -19,24 +19,20 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const CreatePrefillsDate: Story = {
-  args: { sessionId: "new", date: "2026-09-21", surface: "overlay", step: 1 },
+  args: { sessionId: "new", date: "2026-09-21", surface: "overlay" },
   parameters: { viewport: { defaultViewport: "desktop" } },
 };
 
-export const CreateStep2: Story = {
-  args: { sessionId: "new", date: "2026-09-21", step: 2 },
-};
-
-export const CreateStep3Snapshot: Story = {
-  args: { sessionId: "new", date: "2026-09-21", step: 3 },
+export const CreatePage: Story = {
+  args: { sessionId: "new", date: "2026-09-21" },
 };
 
 export const EditPrefilled: Story = {
-  args: { sessionId: "session-wed-open", step: 1 },
+  args: { sessionId: "session-wed-open" },
 };
 
 export const CapacityValidation: Story = {
-  args: { sessionId: "session-wed-open", step: 2 },
+  args: { sessionId: "session-wed-open" },
 };
 
 export const Submitting: Story = {
@@ -64,7 +60,7 @@ export const OverlayDesktop: Story = {
  * non-admin principal — coach-rate snapshot fields must be absent from the DOM.
  */
 export const NonAdminNoRateSnapshot: Story = {
-  args: { sessionId: "session-wed-open", step: 2 },
+  args: { sessionId: "session-wed-open" },
   globals: { principal: "customer" },
 };
 
@@ -74,9 +70,5 @@ export const Dark: Story = {
 };
 
 export const MultipleCoaches: Story = {
-  args: { sessionId: "session-wed-cutoff", step: 2 },
-};
-
-export const MultipleCoachSnapshots: Story = {
-  args: { sessionId: "session-wed-cutoff", step: 3 },
+  args: { sessionId: "session-wed-cutoff" },
 };

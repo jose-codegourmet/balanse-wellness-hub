@@ -281,3 +281,43 @@ actions consume `ADMIN_NAV_ACCESS` / `ADMIN_ROUTE_ACCESS` /
 `ADMIN_ACTION_ACCESS` via `apps/admin/src/lib/authorization/admin-access.ts`
 and `useAdminAccess` — never copy permission lists into screens.
 | `modules/` | Current home for screen-level implementations and app infrastructure (auth, public, customer, admin pages; `layout/`, `providers/`, `session/`, `notifications/`). **Do not add new route-specific screens here** — colocate them under the matching `app/` route. Promote into `src/components/` only when a second unrelated route needs the piece. Cross-cutting kits that already serve many routes (admin `forms/`, session providers) stay here or in `src/components/` until a dedicated migration. |
+
+## Buttons
+
+One button system for both apps: the editorial `Button` in `@balanse/ui` (`packages/ui/src/components/button/Button.tsx`). Crisp 6px corners, uppercase letter-spaced labels (uppercased in CSS, so write labels in sentence case), navy / gold / cream.
+
+| Variant | Use for |
+| --- | --- |
+| `default` (alias `primary`) | The one main action on a screen or dialog |
+| `accent` | Gold. Booking and purchase moments (book a session, buy a package) |
+| `secondary` | Tonal cream. Supporting actions beside a primary |
+| `outline` | Cancel, back, edit, secondary navigation actions |
+| `ghost` | Toolbars, row actions, dismiss, icon buttons in dense UI |
+| `destructive` | Cancel a session, archive, delete (outline that fills red on hover) |
+| `link` | Inline text actions ("Reset to class default", "Show all coaches") |
+
+Sizes: `sm` 32px (dense admin rows and tables), `md` 40px (default), `lg` 48px (public hero and page CTAs); icon-only `icon-sm` / `icon` / `icon-lg` (`xs` / `icon-xs` only for very dense tables). `md` and `lg` grow to a 44px tap target on touch screens by themselves.
+
+Rules:
+
+- Use `Button` for every action. Links that look like buttons use `Button` with `render={<Link href="…" />}` and `nativeButton={false}`, or `className={buttonVariants({ … })}` on the `Link`.
+- Choices, toggles, filters, and time/day pickers use `Chip` (`packages/ui/src/components/chip/Chip.tsx`), not `Button`. For radio or checkbox semantics, style the wrapping `<label>` with `chipVariants({ selected })` and give the input `className="sr-only"`.
+- Do not restyle a button's shape, height, colour, padding, radius, or casing with `className` or page CSS. `className` is for layout only (`w-full`, `mt-*`, `self-start`, `hidden md:inline-flex`). If a new look is needed, add a variant to `Button`.
+- On navy surfaces (navy CTA bands, the admin sidebar) add `dark` to the surface wrapper so the theme tokens flip for that subtree: `accent` stays gold, and `outline`, `ghost` and `link` draw in warm white with a gold focus ring. There is no separate inverse variant.
+- Do not hand-roll `<button className="…">` for anything that looks like a button, chip, or text link. Selectable cards, calendar cells, and tabs are components of their own and may stay custom.
+- Labels are verb-first sentence case ("Book session", "Save changes"); CSS uppercases them.
+
+### Radius and fields
+
+The admin theme (`apps/admin/src/app/globals.css`) uses an editorial radius scale so every `rounded-*` utility matches the buttons: `rounded-sm` 4px, `rounded-md`/`rounded-lg` 6px (buttons, fields, chips), `rounded-xl`/`rounded-2xl` 8px (cards, panels), `rounded-3xl` 10px (large surfaces). Do not hardcode larger radii (`rounded-[1rem]`, `rounded-[2rem]`). `rounded-full` is only for avatars, switches, dots, and progress bars. Tailwind v4 CSS-variable radii are written `rounded-(--radius)`, never `rounded-[--radius]`.
+
+Fields share `packages/ui/src/lib/control-surface.ts`: 6px corners, a navy hairline like the outline button, and the same heights as `Button` (sm 32px, md 40px, lg 48px). Field labels are small letter-spaced caps like button labels. Badges are 4px tags, not pills.
+
+### Jabkit patches
+
+Recorded deviations from pristine Jabkit source:
+
+| File | Patch | Why |
+| --- | --- | --- |
+| `apps/{admin,web}/src/components/jabkit/button/Button.tsx` | Renders `@balanse/ui` `buttonVariants` (Jabkit `primary`→`default`, `secondary`→`outline`, `ghost`, `destructive`; sizes unchanged). API unchanged. | One button system across Jabkit blocks and app code (2026-09-29 button redesign). |
+| `apps/{admin,web}/src/components/jabkit/fullscreen-calendar/FullscreenCalendar.tsx` | Toolbar uses `@balanse/ui` `Button` / `ButtonGroup` for today, previous/next month, and add; invalid `rounded-[--radius]` classes replaced with theme radii. | The hand-rolled arrow group had square corners, a gold hover, and a different height from its neighbours. |

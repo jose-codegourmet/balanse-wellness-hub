@@ -19,8 +19,6 @@ const cancelledSession: AdminEvent = {
   description: "Preview only. The fixture catalogue keeps cancelled events on live sessions.",
   posterImage: null,
   galleryImages: [],
-  venueName: "Mandani Bay — Garden Area",
-  venueAddress: "Mandani Bay, Cebu",
   beneficiary: "",
   whatToBring: "Water.",
   internalNotes: "Story preview for a cancelled session.",
@@ -40,6 +38,12 @@ const cancelledSession: AdminEvent = {
     customerPrice: "1000.00",
     status: "CANCELLED",
     statusLabel: "Cancelled",
+    venue: {
+      id: "venue-mandani-bay",
+      name: "Mandani Bay — Garden Area",
+      address: "Mandani Bay, Mandaue City, Cebu",
+      kind: "OFFSITE",
+    },
   },
 };
 

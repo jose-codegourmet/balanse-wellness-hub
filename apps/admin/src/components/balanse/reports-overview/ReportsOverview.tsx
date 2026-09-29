@@ -1,6 +1,7 @@
 "use client";
 
 import { type AdminReports, formatPeso, formatRatioPercent, manilaYmd } from "@balanse/domain";
+import { Button } from "@balanse/ui";
 import {
   CalendarIcon,
   ChevronDownIcon,
@@ -13,7 +14,6 @@ import {
 } from "lucide-react";
 import { useId, useMemo, useState } from "react";
 import { Badge } from "@/components/jabkit/badge";
-import { Button } from "@/components/jabkit/button";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/jabkit/dropdown-menu/DropdownMenu";
 import { cn } from "@/components/jabkit/lib/cn";
+import type { ReportsOverviewProps } from "./ReportsOverview.meta";
 
 type Tone = "chart-1" | "chart-2" | "chart-3" | "chart-4" | "chart-5";
 
@@ -155,13 +156,7 @@ export function ReportsOverview({
   to,
   onRangeChange,
   hideTitle = false,
-}: {
-  reports: AdminReports;
-  from: string;
-  to: string;
-  onRangeChange: (next: { from: string; to: string }) => void;
-  hideTitle?: boolean;
-}) {
+}: ReportsOverviewProps) {
   const headingId = useId();
   const gradientId = useId();
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -220,12 +215,14 @@ export function ReportsOverview({
 
   const classMix = useMemo(() => {
     const total = reports.classPerformance.reduce((sum, row) => sum + row.revenuePhp, 0) || 1;
-    return reports.classPerformance.slice(0, 5).map((row, index) => ({
-      id: row.classId,
-      label: row.className,
-      value: Math.round((row.revenuePhp / total) * 100),
-      tone: TONES[index % TONES.length],
-    }));
+    return reports.classPerformance
+      .filter((row) => row.revenuePhp > 0)
+      .map((row, index) => ({
+        id: row.classId,
+        label: row.className,
+        value: (row.revenuePhp / total) * 100,
+        tone: TONES[index % TONES.length],
+      }));
   }, [reports.classPerformance]);
 
   const applyPreset = (id: string) => {
@@ -304,9 +301,9 @@ export function ReportsOverview({
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <Button variant="secondary" size="sm" className="min-w-40 justify-between gap-2">
+                <Button variant="outline" size="sm" className="min-w-40 justify-between">
                   {activePreset?.label ?? "Custom range"}
-                  <ChevronDownIcon className="size-4 opacity-70" />
+                  <ChevronDownIcon className="opacity-70" aria-hidden />
                 </Button>
               }
             />
@@ -321,8 +318,8 @@ export function ReportsOverview({
           <Dialog open={calendarOpen} onOpenChange={openCalendar}>
             <DialogTrigger
               render={
-                <Button variant="secondary" size="sm" className="gap-2">
-                  <CalendarIcon className="size-4" />
+                <Button variant="outline" size="sm">
+                  <CalendarIcon aria-hidden />
                   <span className="hidden sm:inline">{formatRangeLabel(from, to)}</span>
                   <span className="sm:hidden">Range</span>
                 </Button>
@@ -335,23 +332,25 @@ export function ReportsOverview({
               </DialogHeader>
               <div>
                 <div className="mb-3 flex items-center justify-between">
-                  <button
+                  <Button
                     type="button"
-                    className="grid size-8 place-items-center rounded-md hover:bg-muted"
+                    variant="ghost"
+                    size="icon-sm"
                     aria-label="Previous month"
                     onClick={() => setViewMonth(shiftMonth(viewMonth, -1))}
                   >
-                    <ChevronLeftIcon className="size-4" />
-                  </button>
+                    <ChevronLeftIcon />
+                  </Button>
                   <p className="text-sm font-medium">{formatMonthTitle(viewMonth)}</p>
-                  <button
+                  <Button
                     type="button"
-                    className="grid size-8 place-items-center rounded-md hover:bg-muted"
+                    variant="ghost"
+                    size="icon-sm"
                     aria-label="Next month"
                     onClick={() => setViewMonth(shiftMonth(viewMonth, 1))}
                   >
-                    <ChevronRightIcon className="size-4" />
-                  </button>
+                    <ChevronRightIcon />
+                  </Button>
                 </div>
                 <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-muted-foreground">
                   {WEEKDAYS.map((day) => (
@@ -385,7 +384,7 @@ export function ReportsOverview({
               <DialogFooter>
                 <Button
                   type="button"
-                  variant="secondary"
+                  variant="outline"
                   size="sm"
                   onClick={() => setCalendarOpen(false)}
                 >
@@ -411,13 +410,10 @@ export function ReportsOverview({
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-live="polite">
         {stats.map((stat) => (
-          <article key={stat.id} className="rounded-[--radius] border border-border bg-card p-4">
+          <article key={stat.id} className="rounded-(--radius) border border-border bg-card p-4">
             <div className="flex items-start justify-between gap-3">
               <span
-                className={cn(
-                  "grid size-9 place-items-center rounded-[calc(var(--radius)-0.35rem)]",
-                  TONE_ICON[stat.tone],
-                )}
+                className={cn("grid size-9 place-items-center rounded-sm", TONE_ICON[stat.tone])}
               >
                 <stat.Icon className="size-4" />
               </span>
@@ -432,7 +428,7 @@ export function ReportsOverview({
       </div>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-12">
-        <article className="flex min-h-80 flex-col rounded-[--radius] border border-border bg-card p-5 lg:col-span-8">
+        <article className="flex min-h-80 flex-col rounded-(--radius) border border-border bg-card p-5 lg:col-span-8">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="text-sm font-medium">Gross Sales</h2>
@@ -481,7 +477,7 @@ export function ReportsOverview({
           )}
         </article>
 
-        <article className="flex min-h-80 flex-col rounded-[--radius] border border-border bg-card p-5 lg:col-span-4">
+        <article className="flex min-h-80 flex-col rounded-(--radius) border border-border bg-card p-5 lg:col-span-4">
           <div>
             <h2 className="text-sm font-medium">Class mix</h2>
             <p className="mt-1 text-xs text-muted-foreground">Revenue share for this window</p>
@@ -527,8 +523,10 @@ export function ReportsOverview({
                 </svg>
                 <div className="absolute inset-0 grid place-items-center">
                   <div className="text-center">
-                    <p className="font-mono text-lg font-semibold tracking-tight">{mixTotal}</p>
-                    <p className="text-[10px] text-muted-foreground">share pts</p>
+                    <p className="font-mono text-lg font-semibold tracking-tight">
+                      {classMix.length}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">classes</p>
                   </div>
                 </div>
               </div>
@@ -544,7 +542,7 @@ export function ReportsOverview({
                       <span className="truncate">{channel.label}</span>
                     </span>
                     <span className="font-mono text-xs text-muted-foreground">
-                      {channel.value}%
+                      {Math.round(channel.value)}%
                     </span>
                   </li>
                 ))}

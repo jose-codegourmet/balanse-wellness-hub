@@ -1,6 +1,7 @@
 "use client";
 
 import type { PublicCtaAction, PublicCtaBlock, PublicCtaTone } from "@balanse/domain";
+import { type ButtonVariantProps, buttonVariants } from "../../components/button/Button";
 import { cn } from "../../lib/utils";
 import { MarketingImage } from "../assets/MarketingImage";
 import { DefaultNavLink, type NavLinkComponent } from "../navigation/nav-link";
@@ -10,48 +11,26 @@ export type CtaBandSurface = "navy" | "cream";
 
 const DefaultLink = DefaultNavLink;
 
-const BASE_ACTION =
-  "inline-flex h-11 items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2";
+const CTA_VARIANT: Record<
+  CtaBandSurface,
+  Record<PublicCtaTone, NonNullable<ButtonVariantProps["variant"]>>
+> = {
+  navy: { primary: "accent", accent: "outline", quiet: "link" },
+  cream: { primary: "default", accent: "outline", quiet: "link" },
+};
 
 /**
  * Button styling for a public CTA. Gold leads on navy, navy leads on cream, so
  * the primary action always carries the highest contrast on its own ground.
+ *
+ * On navy the class list carries `dark`, which flips the theme tokens for the
+ * element itself: `outline` and `link` then draw in warm white with a gold
+ * focus ring instead of navy-on-navy.
  */
 export function ctaActionClass(tone: PublicCtaTone, surface: CtaBandSurface): string {
-  if (surface === "navy") {
-    const ring = "focus-visible:ring-accent focus-visible:ring-offset-[var(--balanse-navy)]";
-    if (tone === "primary") {
-      return cn(BASE_ACTION, ring, "bg-accent text-accent-foreground hover:bg-accent/85");
-    }
-    if (tone === "accent") {
-      return cn(
-        BASE_ACTION,
-        ring,
-        "border border-accent/60 text-[var(--balanse-warm-white)] hover:bg-accent/15",
-      );
-    }
-    return cn(
-      BASE_ACTION,
-      ring,
-      "px-3 text-[var(--balanse-beige)] underline-offset-4 hover:text-accent hover:underline",
-    );
-  }
-
-  const ring = "focus-visible:ring-ring focus-visible:ring-offset-background";
-  if (tone === "primary") {
-    return cn(BASE_ACTION, ring, "bg-primary text-primary-foreground hover:bg-primary/85");
-  }
-  if (tone === "accent") {
-    return cn(
-      BASE_ACTION,
-      ring,
-      "border border-[var(--balanse-tan)] bg-card text-foreground hover:border-accent hover:bg-secondary/60",
-    );
-  }
   return cn(
-    BASE_ACTION,
-    ring,
-    "px-3 text-muted-foreground underline-offset-4 hover:text-foreground hover:underline",
+    buttonVariants({ variant: CTA_VARIANT[surface][tone], size: "lg" }),
+    surface === "navy" && "dark",
   );
 }
 

@@ -128,7 +128,7 @@ function EventListPageInner({
         id: event.id,
         title: event.title,
         sessionLabel: `${eventClassName(event, classesQuery.data)} · ${formatSessionRange(event.session.startsAt, event.session.endsAt)}`,
-        venue: event.venueName || "—",
+        venue: event.session.venue?.name ?? "—",
         price: eventPriceLabel(event),
         capacityLabel: `${eventBookedCount(event, bookingsQuery.data)} / ${event.session.capacity}`,
         status: displayedEventStatus(event),

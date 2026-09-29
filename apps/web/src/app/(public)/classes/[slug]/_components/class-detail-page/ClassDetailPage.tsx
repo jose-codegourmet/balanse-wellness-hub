@@ -1,6 +1,6 @@
 "use client";
 import { parseClassPreview, sessionDisplayName } from "@balanse/domain";
-import { CoachPhoto, renderMarkdownSubset } from "@balanse/ui";
+import { Button, CoachPhoto, renderMarkdownSubset } from "@balanse/ui";
 import { ArrowDown, ArrowLeft, ArrowUpRight, CalendarDays, Clock3, Ticket } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -91,9 +91,14 @@ export function ClassDetailPage({
             <p className="class-eyebrow">Move with Balansé</p>
             <h1>{gymClass.name}</h1>
             <p className="class-hero-description">{gymClass.shortDescription}</p>
-            <a href="#book-class" className="class-button">
+            <Button
+              variant="accent"
+              size="lg"
+              nativeButton={false}
+              render={<a href="#book-class" />}
+            >
               Find your session <ArrowDown size={18} />
-            </a>
+            </Button>
           </div>
         </div>
       </header>
@@ -170,7 +175,7 @@ export function ClassDetailPage({
               <p className="class-eyebrow">Your next good habit</p>
               <h2>See you in class.</h2>
             </div>
-            <Link href={`/?classId=${encodeURIComponent(gymClass.id)}#schedule`}>
+            <Link href={`/book/calendar?classId=${encodeURIComponent(gymClass.id)}`}>
               Full schedule <ArrowUpRight size={18} />
             </Link>
           </div>
@@ -198,9 +203,14 @@ export function ClassDetailPage({
           ) : (
             <div className="class-no-sessions">
               <p>No bookable sessions are published for this class yet.</p>
-              <Link href="/contact" className="class-button">
+              <Button
+                variant="outline"
+                size="lg"
+                nativeButton={false}
+                render={<Link href="/contact" />}
+              >
                 Ask about the next class <ArrowUpRight size={18} />
-              </Link>
+              </Button>
             </div>
           )}
         </div>

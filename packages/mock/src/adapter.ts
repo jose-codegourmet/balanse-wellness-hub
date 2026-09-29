@@ -12,6 +12,7 @@ import type {
   AdminSettings,
   AdminStaff,
   AdminStaffRole,
+  AdminVenue,
   BookingStatus,
   BundleAcquisition,
   BundleAuditEvent,
@@ -39,6 +40,7 @@ import type {
   ScheduleGenerationResult,
   SessionReportDrilldown,
   SessionStatus,
+  VenueKind,
 } from "@balanse/domain";
 
 export type AdminPaymentQueueQuery = {
@@ -159,10 +161,20 @@ export type MockDataAdapter = {
     defaultRatePhp: number;
     rateType: AdminCoach["rateType"];
   }) => Promise<AdminCoach>;
+  getAdminVenues: () => Promise<AdminVenue[]>;
+  upsertAdminVenue: (input: {
+    id?: string;
+    name: string;
+    address: string;
+    kind: VenueKind;
+    active: boolean;
+    notes: string;
+  }) => Promise<AdminVenue>;
   getAdminSessions: () => Promise<AdminSession[]>;
   upsertAdminSession: (input: {
     id?: string;
     classId: string;
+    venueId: string;
     name?: string | null;
     coachIds: string[];
     startsAt: string;
@@ -275,8 +287,6 @@ export type MockDataAdapter = {
     description?: string;
     posterImage?: string | null;
     galleryImages?: string[];
-    venueName?: string;
-    venueAddress?: string;
     beneficiary?: string;
     whatToBring?: string;
     internalNotes?: string;
@@ -291,8 +301,6 @@ export type MockDataAdapter = {
       description?: string;
       posterImage?: string | null;
       galleryImages?: string[];
-      venueName?: string;
-      venueAddress?: string;
       beneficiary?: string;
       whatToBring?: string;
       internalNotes?: string;

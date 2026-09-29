@@ -40,6 +40,7 @@ The leftover `staff_members.role` enum (`ADMIN`) is not consulted by these helpe
 | `policy_*` writes | public read | public read | — | — | `settings.policies.manage` |
 | `bundles` / applicability | published select | published select | — | — | `bundles.read` / `bundles.manage` |
 | `session_events` | — | — | select (`events.read`) | — | read + write (`events.read` / `events.manage`; `is_admin()`) |
+| `venues` | — | — | select (`schedule.read.all` / `events.read`) | select (`schedule.read.own`) | select + insert/update (`classes.manage`; `is_admin()`); no delete grant |
 | `bundle_acquisitions` / payments | — | own | — | — | manage / admin |
 | `customer_bundles` / `bundle_redemptions` | — | own read | — | — | manage / admin |
 | `coaches.staffMemberId` | — (not on `coaches_public`) | — | — | — | admin write (BE-055) |

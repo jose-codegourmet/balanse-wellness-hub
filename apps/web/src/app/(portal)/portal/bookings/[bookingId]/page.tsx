@@ -5,7 +5,7 @@ import { getServerMockPrincipal } from "@/modules/session/server-principal";
 
 export const metadata: Metadata = {
   title: "Booking detail",
-  description: "Booking confirmation for Balansé.",
+  description: "Your current Balansé booking status, class details, and payment information.",
 };
 
 export default async function Page({ params }: { params: Promise<{ bookingId: string }> }) {

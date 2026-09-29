@@ -3,7 +3,9 @@ export type RecurringScheduleFormProps = {
 };
 
 export const recurringScheduleFormMeta = {
-  purpose: "Turns an existing session into a weekly recurrence template over a bounded range.",
-  useWhen: "One session should repeat on one or more weekdays with the same operational details.",
+  purpose:
+    "Repeats an existing session weekly over a bounded range, with a calendar preview of every date, skipped duplicates, and coach or venue clashes.",
+  useWhen:
+    "An existing one-off session should become a weekly slot. New sessions can repeat straight from the session form instead.",
   avoidWhen: "An entire existing week or month should be copied; use DuplicateScheduleForm.",
 } as const;

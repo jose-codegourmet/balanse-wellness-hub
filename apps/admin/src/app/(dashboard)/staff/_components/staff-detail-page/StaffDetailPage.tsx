@@ -278,7 +278,7 @@ function StaffFormFields({
                 triggerLabel="Disable Access"
                 title="Disable staff access?"
                 description="This staff account will no longer reach the admin portal. A linked coach goes inactive; assigned sessions stay in history."
-                variant="outline"
+                variant="destructive"
                 onConfirm={onDisable}
               />
             )

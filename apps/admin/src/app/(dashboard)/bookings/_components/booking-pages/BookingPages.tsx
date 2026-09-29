@@ -7,7 +7,9 @@ import {
   type CustomerBooking,
   customerStatusLabel,
   filterAdminBookings,
+  formatSessionDate,
   formatSessionRange,
+  formatSessionTimeRange,
   paymentStatusLabel,
   refundStatusLabel,
   sessionDisplayName,
@@ -16,6 +18,7 @@ import { getMockAdapter } from "@balanse/mock";
 import { Button, Input, Label, NativeSelect, StatusBadge } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
+import { ArrowRightIcon, CalendarIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -66,20 +69,28 @@ export function BookingListPage() {
         id: "class",
         header: "Class",
         accessorFn: (row) => sessionDisplayName(row.session),
-        enableColumnFilter: true,
-        meta: { enableFaceting: true, facetLabel: "Class", mobile: { role: "subtitle" } },
+        meta: { mobile: { role: "subtitle" } },
       },
       {
         id: "time",
         header: "Time",
         accessorFn: (row) => formatSessionRange(row.session.startsAt, row.session.endsAt),
         meta: { mobile: { role: "meta" } },
+        cell: ({ row }) => (
+          <span className="grid gap-0.5 whitespace-nowrap">
+            <span>{formatSessionDate(row.original.session.startsAt)}</span>
+            <span className="text-xs text-muted-foreground">
+              {formatSessionTimeRange(row.original.session.startsAt, row.original.session.endsAt)}
+            </span>
+          </span>
+        ),
       },
       {
         id: "payment",
         header: "Payment",
         accessorFn: (row) => paymentStatusLabel(row.paymentStatus),
         meta: { mobile: { role: "meta" } },
+        cell: ({ getValue }) => <span className="whitespace-nowrap">{String(getValue())}</span>,
       },
       {
         id: "status",
@@ -95,9 +106,16 @@ export function BookingListPage() {
         enableSorting: false,
         meta: { mobile: { role: "hidden" } },
         cell: ({ row }) => (
-          <Link className="underline underline-offset-4" href={`/bookings/${row.original.id}`}>
+          <Button
+            nativeButton={false}
+            variant="ghost"
+            size="xs"
+            className="-mr-2"
+            render={<Link href={`/bookings/${row.original.id}`} />}
+          >
             Review
-          </Link>
+            <ArrowRightIcon aria-hidden />
+          </Button>
         ),
       },
     ],
@@ -133,46 +151,66 @@ export function BookingListPage() {
             setTab(id as AdminBookingTab);
           }}
         >
-          <div className="grid gap-3 rounded-2xl border border-border/80 bg-card p-4 shadow-sm md:grid-cols-2">
-            <div className="grid gap-1.5">
-              <Label htmlFor="booking-class">Class</Label>
-              <NativeSelect
-                id="booking-class"
-                value={classId}
-                onChange={(event) => {
-                  setClassId(event.target.value);
-                }}
-              >
-                <option value="all">All classes</option>
-                {classes.map((row) => (
-                  <option key={row.id} value={row.id}>
-                    {row.name}
-                  </option>
-                ))}
-              </NativeSelect>
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="booking-date">Date</Label>
-              <Input
-                id="booking-date"
-                type="date"
-                value={date}
-                onChange={(event) => {
-                  setDate(event.target.value);
-                }}
-              />
-            </div>
-          </div>
-          <div className="mt-6">
-            <AdminDataTable
-              tableId="bookings"
-              data={filtered}
-              columns={columns}
-              getRowId={(row) => row.id}
-              searchPlaceholder="Search customer"
-              emptyFilterLabel="No bookings match these filters."
-            />
-          </div>
+          <AdminDataTable
+            tableId="bookings"
+            data={filtered}
+            columns={columns}
+            getRowId={(row) => row.id}
+            searchPlaceholder="Search customer"
+            emptyFilterLabel="No bookings match these filters."
+            toolbar={
+              <>
+                <NativeSelect
+                  id="booking-class"
+                  aria-label="Class"
+                  size="sm"
+                  className="w-44"
+                  value={classId}
+                  onChange={(event) => {
+                    setClassId(event.target.value);
+                  }}
+                >
+                  <option value="all">All classes</option>
+                  {classes.map((row) => (
+                    <option key={row.id} value={row.id}>
+                      {row.name}
+                    </option>
+                  ))}
+                </NativeSelect>
+                <div className="relative">
+                  <CalendarIcon
+                    className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
+                    aria-hidden
+                  />
+                  <Input
+                    id="booking-date"
+                    aria-label="Date"
+                    type="date"
+                    size="sm"
+                    className="w-40 pl-8"
+                    value={date}
+                    onChange={(event) => {
+                      setDate(event.target.value);
+                    }}
+                  />
+                </div>
+                {classId !== "all" || date ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setClassId("all");
+                      setDate("");
+                    }}
+                  >
+                    <XIcon aria-hidden />
+                    Clear
+                  </Button>
+                ) : null}
+              </>
+            }
+          />
         </AdminPageTabs>
       }
     />
@@ -223,9 +261,15 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
           open
           className="fixed inset-8 z-50 mx-auto max-w-3xl rounded-xl border bg-background p-4"
         >
-          <button type="button" className="mb-2 underline" onClick={() => setProofOpen(false)}>
+          <Button
+            type="button"
+            variant="link"
+            size="sm"
+            className="mb-2"
+            onClick={() => setProofOpen(false)}
+          >
             Close
-          </button>
+          </Button>
           <img
             src={booking.proofPreviewUrl}
             alt="Payment proof"

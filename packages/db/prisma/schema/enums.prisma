@@ -70,6 +70,15 @@ enum EventStatus {
   @@map("event_status")
 }
 
+/// Where a session happens. BRANCH is a studio the business runs;
+/// OFFSITE is a partner or one-off place (resort, park).
+enum VenueKind {
+  BRANCH
+  OFFSITE
+
+  @@map("venue_kind")
+}
+
 /// Legacy persisted enum. Authorization truth is `StaffRoleDefinition.key`
 /// (epic #289 / #298). Do not add FRONT_DESK / COACH here.
 enum StaffRole {

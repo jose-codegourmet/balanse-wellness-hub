@@ -55,7 +55,7 @@ export function RolePermissionChecklist({
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
               <h3 className="text-sm font-semibold">
                 {PERMISSION_CATEGORY_LABELS[category]}
-                <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                <span className="ml-2 rounded-sm bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                   {selectedInGroup}/{items.length}
                 </span>
               </h3>

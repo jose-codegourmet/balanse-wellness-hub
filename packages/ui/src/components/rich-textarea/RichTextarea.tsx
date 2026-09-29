@@ -25,7 +25,7 @@ const MARK_TOOLS = ["bold", "italic", "link", "ul", "ol", "break"] as const;
 type MarkTool = (typeof MARK_TOOLS)[number];
 
 const PREVIEW_CLASS =
-  "rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground [&_strong]:font-semibold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-4 [&_p+p]:mt-3 [&_li]:my-0.5";
+  "rounded-[6px] border border-foreground/25 bg-background/70 px-3 py-2.5 text-sm text-foreground [&_strong]:font-semibold [&_em]:italic [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-4 [&_p+p]:mt-3 [&_li]:my-0.5";
 
 function getLineBounds(value: string, start: number, end: number) {
   const lineStart = value.lastIndexOf("\n", start - 1) + 1;

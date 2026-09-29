@@ -32,12 +32,17 @@ import {
   StatusBadge,
 } from "@balanse/ui";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { InfoIcon, TimerIcon, ZoomInIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { AdminPageTabs } from "@/components/balanse/page/admin-page-tabs/AdminPageTabs";
 import { useTabParam } from "@/components/balanse/page/useTabParam";
-import { AdminQueueCard } from "@/components/balanse/queue/admin-queue-card/AdminQueueCard";
+import {
+  AdminQueueCard,
+  AdminQueueFacts,
+} from "@/components/balanse/queue/admin-queue-card/AdminQueueCard";
+import { AdminQueueCount } from "@/components/balanse/queue/admin-queue-count/AdminQueueCount";
 import { AdminQueueList } from "@/components/balanse/queue/admin-queue-list/AdminQueueList";
 import { adminNowIso } from "@/lib/clock";
 import {
@@ -110,15 +115,19 @@ function PaymentProofDialog({
         render={
           <button
             type="button"
-            className="block w-full max-w-xs rounded-md text-left focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="group relative block w-full overflow-hidden rounded-xl border border-border/80 bg-muted/40 text-left focus-visible:ring-3 focus-visible:ring-ring/50"
           />
         }
       >
         <FixtureProofImage
           src={url}
           alt={alt}
-          className="max-h-48 w-full rounded-md border object-contain"
+          className="h-40 w-full object-contain transition-transform duration-200 group-hover:scale-[1.03] motion-reduce:transition-none"
         />
+        <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-foreground/70 py-1.5 text-xs font-medium text-background opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+          <ZoomInIcon className="size-3.5" aria-hidden />
+          View proof
+        </span>
       </DialogTrigger>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
@@ -137,22 +146,40 @@ function PaymentProofDialog({
   );
 }
 
+const COUNTER_STEPS = [
+  "Find the held booking in this list.",
+  "Receive cash at the counter.",
+  "Record payment on the card.",
+  "Confirm payment and booking.",
+  "Check the guest in when they arrive.",
+];
+
 function CounterHelpNote() {
   return (
-    <Collapsible defaultOpen className="rounded-xl border border-border p-4">
+    <Collapsible
+      defaultOpen
+      className="rounded-2xl border border-border/80 bg-card px-5 py-4 shadow-sm"
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm font-medium">Pay at Counter procedure</h2>
-        <CollapsibleTrigger render={<Button variant="outline" size="sm" />}>
-          Toggle help
+        <h2 className="flex items-center gap-2 text-sm font-medium">
+          <InfoIcon className="size-4 text-primary" aria-hidden />
+          Pay at Counter procedure
+        </h2>
+        <CollapsibleTrigger render={<Button variant="ghost" size="sm" className="group" />}>
+          <span className="group-data-[panel-open]:hidden">Show steps</span>
+          <span className="hidden group-data-[panel-open]:inline">Hide steps</span>
         </CollapsibleTrigger>
       </div>
-      <CollapsibleContent className="mt-3 text-sm text-muted-foreground">
-        <ol className="list-decimal space-y-1 pl-5">
-          <li>Find the held booking in this list.</li>
-          <li>Receive cash at the counter.</li>
-          <li>Record payment on the card.</li>
-          <li>Confirm payment and booking.</li>
-          <li>Check the guest in when they arrive.</li>
+      <CollapsibleContent>
+        <ol className="mt-4 grid gap-3 text-sm sm:grid-cols-5">
+          {COUNTER_STEPS.map((step, index) => (
+            <li key={step} className="flex items-start gap-2.5 sm:flex-col sm:gap-2">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground tabular-nums">
+                {index + 1}
+              </span>
+              <span className="text-muted-foreground">{step}</span>
+            </li>
+          ))}
         </ol>
       </CollapsibleContent>
     </Collapsible>
@@ -223,22 +250,38 @@ function PaymentQueueCard({
         status={row.status}
         emphasis
         body={
-          <div className="grid gap-3">
-            <p>
-              {formatSessionTime(row.session.startsAt)} · {formatPeso(row.session.pricePhp)}
+          <div className="grid gap-4">
+            <AdminQueueFacts
+              items={[
+                { label: "Class time", value: formatSessionTime(row.session.startsAt) },
+                { label: "Amount", value: formatPeso(row.session.pricePhp) },
+                {
+                  label: "Method",
+                  value: (
+                    <Badge appearance="soft" size="sm">
+                      {paymentMethodLabel(row.paymentMethod)}
+                    </Badge>
+                  ),
+                },
+                {
+                  label: "Payment",
+                  value: (
+                    <>
+                      <Badge appearance="soft" size="sm">
+                        {paymentStatusLabel(row.paymentStatus)}
+                      </Badge>
+                      {row.refundStatus === "REFUND_PENDING" || row.refundStatus === "REFUNDED" ? (
+                        <StatusBadge status={row.refundStatus} surface="admin" />
+                      ) : null}
+                    </>
+                  ),
+                },
+              ]}
+            />
+            <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <TimerIcon className="size-3.5 shrink-0" aria-hidden />
+              {hold}
             </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge appearance="soft" size="sm">
-                {paymentMethodLabel(row.paymentMethod)}
-              </Badge>
-              <Badge appearance="soft" size="sm">
-                {paymentStatusLabel(row.paymentStatus)}
-              </Badge>
-              {row.refundStatus === "REFUND_PENDING" || row.refundStatus === "REFUNDED" ? (
-                <StatusBadge status={row.refundStatus} surface="admin" />
-              ) : null}
-            </div>
-            <p className="text-muted-foreground">{hold}</p>
           </div>
         }
         media={
@@ -249,10 +292,10 @@ function PaymentQueueCard({
               defaultOpen={proofOpen}
             />
           ) : tab === "gcash" ? (
-            <p className="text-sm text-muted-foreground">No screenshot for this GCash item.</p>
-          ) : (
-            <p className="text-sm text-muted-foreground">No screenshot for cash payments.</p>
-          )
+            <p className="rounded-xl border border-dashed border-border px-3 py-6 text-center text-xs text-muted-foreground">
+              No screenshot for this GCash item.
+            </p>
+          ) : null
         }
         actions={
           <div className="flex w-full min-w-0 flex-col gap-3">
@@ -388,6 +431,31 @@ function PaymentQueueCard({
   );
 }
 
+/** Server totals for each tab so the tab strip can show queue sizes. */
+function usePaymentTabCounts(
+  canReadPayments: boolean,
+  canReadRefunds: boolean,
+): Partial<Record<AdminPaymentTab, number>> {
+  const { principal } = useMockPrincipal();
+  const gcash = useInfiniteQuery({
+    ...adminPaymentsQueueInfiniteQuery(principal, "gcash"),
+    enabled: canReadPayments,
+  });
+  const counter = useInfiniteQuery({
+    ...adminPaymentsQueueInfiniteQuery(principal, "counter"),
+    enabled: canReadPayments,
+  });
+  const refunds = useInfiniteQuery({
+    ...adminPaymentsQueueInfiniteQuery(principal, "refunds"),
+    enabled: canReadRefunds,
+  });
+  return {
+    gcash: gcash.data?.pages[0]?.totalCount,
+    counter: counter.data?.pages[0]?.totalCount,
+    refunds: refunds.data?.pages[0]?.totalCount,
+  };
+}
+
 export function PaymentReviewPage({
   empty,
   loading,
@@ -430,10 +498,6 @@ export function PaymentReviewPage({
   }, []);
 
   useEffect(() => {
-    setExiting(new Map());
-  }, [tab]);
-
-  useEffect(() => {
     if (exiting.size === 0) return;
     const reduced =
       typeof window !== "undefined" &&
@@ -450,20 +514,31 @@ export function PaymentReviewPage({
   }, [empty, error, exiting, loading, queried]);
 
   const totalCount = empty || error ? 0 : (query.data?.pages[0]?.totalCount ?? items.length);
+  const tabCounts = usePaymentTabCounts(canReadPayments, canReadRefunds);
+  const tabsWithCounts = (visibleTabs.length ? visibleTabs : PAYMENT_TABS).map((item) => {
+    const count = item.id === tab ? totalCount : tabCounts[item.id];
+    return count === undefined ? item : { ...item, label: `${item.label} · ${count}` };
+  });
 
   return (
     <AdminPageShell
+      eyebrow="Operations queue"
       title="Payments"
+      description="Verify GCash proofs, record counter payments, and track manual refunds."
+      actions={<AdminQueueCount count={totalCount} label="in this queue" />}
       tabs={
         <AdminPageTabs
-          tabs={visibleTabs.length ? visibleTabs : PAYMENT_TABS}
+          tabs={tabsWithCounts}
           value={tab}
-          onValueChange={(id) => setUrlTab(id as AdminPaymentTab)}
+          onValueChange={(id) => {
+            setExiting(new Map());
+            setUrlTab(id as AdminPaymentTab);
+          }}
         >
           {tab === "counter" ? <CounterHelpNote /> : null}
           <AdminQueueList
             key={tab}
-            className="mt-6"
+            className={tab === "counter" ? "mt-4" : undefined}
             label={QUEUE_LABEL[tab]}
             items={items}
             totalCount={totalCount}

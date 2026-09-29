@@ -64,8 +64,8 @@ export function CustomerLoginForm({
           {errors.form}
         </p>
       ) : null}
-      <Button type="submit" className="auth-submit-button">
-        Log in <ArrowUpRight className="ml-auto size-4" aria-hidden="true" />
+      <Button type="submit" className="mt-1 w-full">
+        Log in <ArrowUpRight className="size-4" aria-hidden="true" />
       </Button>
     </form>
   );

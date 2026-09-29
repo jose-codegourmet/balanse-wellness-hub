@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { Button } from "../components/button/Button";
 import { useFieldContext } from "../components/field/Field";
 import { controlSurfaceVariants } from "../lib/control-surface";
 import { cn } from "../lib/utils";
@@ -124,28 +125,26 @@ export function MockImageUpload({
         </div>
       )}
       <div className="flex flex-wrap gap-2">
-        <button
+        <Button
           type="button"
-          className="rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground disabled:opacity-50"
+          size="sm"
           disabled={status !== "preview" && status !== "failed"}
+          loading={status === "submitting"}
           onClick={() => void submit()}
         >
           {submitLabel}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          className="rounded-md border border-border px-3 py-2 text-sm"
+          variant="outline"
+          size="sm"
           onClick={() => document.getElementById(inputId)?.click()}
         >
           {chooseLabel}
-        </button>
-        <button
-          type="button"
-          className="rounded-md border border-border px-3 py-2 text-sm"
-          onClick={resetToFallback}
-        >
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={resetToFallback}>
           Remove
-        </button>
+        </Button>
       </div>
     </div>
   );

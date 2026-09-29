@@ -30,7 +30,10 @@ export type AdminNavId =
   | "customers"
   | "coaches"
   | "classes"
+  | "venues"
   | "bundles"
+  | "sales"
+  | "transactions"
   | "reports"
   | "staff"
   | "settings";
@@ -63,7 +66,7 @@ export type CustomerProfileSection = {
 
 /** Public set. Classes have their own catalogue; Schedule opens the booking calendar. */
 export const PUBLIC_NAV_ITEMS: readonly PublicNavItem[] = [
-  { id: "schedule", label: "Schedule", href: "/#schedule" },
+  { id: "schedule", label: "Schedule", href: "/book/calendar" },
   { id: "classes", label: "Classes", href: "/classes" },
   { id: "packages", label: "Packages", href: "/packages" },
   { id: "coaches", label: "Coaches", href: "/coaches" },
@@ -122,7 +125,10 @@ export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
   { id: "customers", label: "Customers", href: "/customers" },
   { id: "coaches", label: "Coaches", href: "/coaches" },
   { id: "classes", label: "Classes", href: "/classes" },
+  { id: "venues", label: "Venues", href: "/venues" },
   { id: "bundles", label: "Bundles", href: "/bundles" },
+  { id: "sales", label: "Sales", href: "/sales" },
+  { id: "transactions", label: "Transactions", href: "/transactions" },
   { id: "reports", label: "Reports", href: "/reports" },
   { id: "staff", label: "Staff", href: "/staff" },
   { id: "settings", label: "Settings", href: "/settings" },
@@ -137,7 +143,11 @@ export function publicAuthItem(role: "guest" | "customer" | "admin"): PublicNavI
 
 export function isPublicNavActive(item: PublicNavItem, pathname: string, hash = ""): boolean {
   if (item.id === "schedule") {
-    return pathname === "/" && hash !== "#classes";
+    return (
+      pathname === "/book/quick" ||
+      pathname === "/book/calendar" ||
+      (pathname === "/" && hash !== "#classes")
+    );
   }
   if (item.id === "classes") {
     return (

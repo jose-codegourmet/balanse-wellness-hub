@@ -14,6 +14,7 @@ import {
 } from "@balanse/domain";
 import { useEffect, useId, useState } from "react";
 import { BrandLockup } from "../../brand/BrandLockup";
+import { Button, buttonVariants } from "../../components/button/Button";
 import { cn } from "../../lib/utils";
 import { DefaultNavLink, type NavLinkComponent } from "./nav-link";
 
@@ -95,7 +96,12 @@ export function PublicNav({
     >
       <a
         href={`#${skipToId}`}
-        className="sr-only rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50"
+        className={cn(
+          buttonVariants({ size: "sm" }),
+          // `not-focus:` (not plain `sr-only`) so the visually-hidden rules win
+          // over the button's own position, size and padding until focused.
+          "not-focus:sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50",
+        )}
       >
         Skip to content
       </a>
@@ -129,10 +135,8 @@ export function PublicNav({
           <Link
             href={authItem.href}
             className={cn(
-              "hidden h-9 items-center rounded-full border px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:inline-flex",
-              authActive
-                ? "border-accent bg-secondary/70 text-foreground"
-                : "border-[var(--balanse-tan)] text-foreground hover:border-accent hover:bg-secondary/50",
+              buttonVariants({ variant: authActive ? "secondary" : "outline" }),
+              "hidden lg:inline-flex",
             )}
             aria-current={authActive ? "page" : undefined}
           >
@@ -142,23 +146,25 @@ export function PublicNav({
             href={ctaHref}
             onClick={() => setOpen(false)}
             className={cn(
-              "h-10 items-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              buttonVariants(),
               mobileCtaVisible ? "inline-flex" : "hidden",
               mobileCtaOnly ? "lg:hidden" : "lg:inline-flex",
             )}
           >
             {ctaLabel}
           </Link>
-          <button
+          <Button
             type="button"
-            className="inline-flex size-9 items-center justify-center rounded-full border border-[var(--balanse-tan)] text-foreground transition-colors hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
+            variant="outline"
+            size="icon"
+            className="lg:hidden"
             aria-expanded={open}
             aria-controls={navId}
             aria-label={open ? "Close menu" : "Open menu"}
             onClick={() => setOpen((value) => !value)}
           >
             <MenuGlyph open={open} />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -200,7 +206,10 @@ export function PublicNav({
               href={authItem.href}
               onClick={() => setOpen(false)}
               aria-current={authActive ? "page" : undefined}
-              className="inline-flex h-11 items-center justify-center rounded-full border border-[var(--balanse-tan)] px-4 text-sm font-medium text-foreground hover:border-accent hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className={buttonVariants({
+                variant: authActive ? "secondary" : "outline",
+                size: "lg",
+              })}
             >
               {authItem.label}
             </Link>
@@ -277,17 +286,20 @@ export function AdminNav({
 
   return (
     <aside className="w-full shrink-0 border-b border-sidebar-border bg-sidebar text-sidebar-foreground md:w-64 md:border-b-0 md:border-r">
-      <div className="flex items-center justify-between p-4">
+      {/* `dark` flips the tokens for this row so Button variants read on navy. */}
+      <div className="dark flex items-center justify-between p-4">
         <BrandLockup tone="inverse" />
-        <button
+        <Button
           type="button"
-          className="rounded-md border border-sidebar-border px-3 py-2 text-sm md:hidden"
+          variant="outline"
+          size="sm"
+          className="md:hidden"
           aria-expanded={open}
           aria-controls={navId}
           onClick={() => setOpen((value) => !value)}
         >
           Menu
-        </button>
+        </Button>
       </div>
       <nav
         id={navId}

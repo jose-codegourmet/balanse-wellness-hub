@@ -22,6 +22,7 @@ export const FEEDBACK_STATE_IDS = [
   "admin.roles-forbidden",
   "admin.roles-load-failed",
   "admin.no-classes",
+  "admin.no-venues",
   "admin.no-coaches",
   "admin.no-payment-qrs",
   "admin.no-bundles",
@@ -169,6 +170,13 @@ export const FEEDBACK_STATE_DEFAULTS: Record<FeedbackStateId, FeedbackStateCopy>
     kind: "empty",
     title: "No classes yet",
     description: "Add a class to start publishing sessions on the studio calendar.",
+  },
+  "admin.no-venues": {
+    id: "admin.no-venues",
+    kind: "empty",
+    title: "No venues yet",
+    description:
+      "Add your studio, a new branch, or an off-site partner venue so sessions know where they run.",
   },
   "admin.no-coaches": {
     id: "admin.no-coaches",

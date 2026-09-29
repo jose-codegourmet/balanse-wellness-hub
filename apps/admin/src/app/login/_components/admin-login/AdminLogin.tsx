@@ -95,7 +95,7 @@ export function AdminLogin({
                   >
                     <span className="flex items-center justify-between gap-3">
                       <span className="font-medium">{account.name}</span>
-                      <span className="rounded-full bg-muted px-2 py-0.5 text-[0.6875rem] font-semibold text-muted-foreground">
+                      <span className="rounded-sm bg-muted px-2 py-0.5 text-[0.6875rem] font-semibold text-muted-foreground">
                         {account.roleLabel}
                       </span>
                     </span>

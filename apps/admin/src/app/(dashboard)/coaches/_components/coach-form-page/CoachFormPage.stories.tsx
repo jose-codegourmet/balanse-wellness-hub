@@ -19,6 +19,9 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+export const MarisProfile: Story = { args: { coachId: "coach-maris", initialTab: "profile" } };
+export const MarisSessions: Story = { args: { coachId: "coach-maris", initialTab: "sessions" } };
+
 export const Create: Story = {
   args: { coachId: "new" },
 };

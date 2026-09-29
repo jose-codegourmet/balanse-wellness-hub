@@ -35,7 +35,6 @@ export function AdminDataTableRowActions<TData>({
             type="button"
             variant="ghost"
             size={touch ? "icon" : "icon-sm"}
-            className={touch ? "min-h-11 min-w-11" : undefined}
             aria-label={`${labels.rowActions} for ${rowName}`}
             onClick={(event) => event.stopPropagation()}
           />

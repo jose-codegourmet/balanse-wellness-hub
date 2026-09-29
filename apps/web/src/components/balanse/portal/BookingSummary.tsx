@@ -7,8 +7,8 @@ import {
   formatSessionTimeRange,
   sessionDisplayName,
 } from "@balanse/domain";
-import { StatusBadge } from "@balanse/ui";
 import type { ReactNode } from "react";
+import { BookingStatusBanner } from "./booking-status-banner/BookingStatusBanner";
 import "./portal-booking.css";
 
 /**
@@ -33,7 +33,7 @@ export type BookingMood = "urgent" | "pending" | "settled" | "closed";
 /**
  * Collapses the thirteen booking statuses into the four surface treatments the
  * portal uses. Only the treatment changes — the status vocabulary rendered to
- * the customer still comes from `StatusBadge` (FE-SHR-002).
+ * the customer still comes from the canonical domain status vocabulary (FE-SHR-002).
  */
 export function bookingMood(booking: CustomerBooking): BookingMood {
   switch (booking.status) {
@@ -125,6 +125,7 @@ export function BookingSummary({
       data-mood={bookingMood(booking)}
       data-booking-id={booking.id}
     >
+      <BookingStatusBanner booking={booking} compact />
       <header className="booking-summary-head">
         <div className="booking-summary-identity">
           {eyebrow ? <p className="portal-eyebrow">{eyebrow}</p> : null}
@@ -132,7 +133,6 @@ export function BookingSummary({
             {sessionDisplayName(session)}
           </Heading>
         </div>
-        <StatusBadge status={bookingStatusKey(booking)} />
       </header>
       <BookingFacts booking={booking} />
       {showReference ? <BookingReference bookingId={booking.id} /> : null}

@@ -48,7 +48,7 @@
 
 @media (max-width: 767px) {
   .portal-home-greeting { align-items: start; gap: 1.25rem; padding-bottom: 1.75rem; }
-  .portal-home-browse { width: 100%; justify-content: space-between; }
+  .portal-home-browse { width: 100%; }
   .portal-home-attention { padding: 1rem; }
   .portal-home-tabs [data-slot="tabs-list"] { overflow-x: auto; scrollbar-width: thin; }
   .portal-home-tabs [data-slot="tabs-trigger"] { flex: 0 0 auto; }

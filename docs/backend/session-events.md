@@ -1,6 +1,6 @@
 # Session events (#319)
 
-An event is a `1:0..1` operational wrapper on one existing `GymSession`. The session keeps `startsAt` / `endsAt`, `capacity`, `customerPrice`, `status`, and coach staffing (`SessionCoach`). The event stores presentation and logistics only.
+An event is a `1:0..1` operational wrapper on one existing `GymSession`. The session keeps `startsAt` / `endsAt`, `capacity`, `customerPrice`, `status`, venue (`venueId`), and coach staffing (`SessionCoach`). The event stores presentation and logistics only.
 
 HTTP contracts are #320, documented in [api-routes.md](./api-routes.md). Screens do not call them. Do not backfill existing sessions into events.
 
@@ -13,11 +13,12 @@ HTTP contracts are #320, documented in [api-routes.md](./api-routes.md). Screens
 | `sessionId` | Unique FK to `sessions.id`, `ON DELETE RESTRICT`. Deleting an event does not delete the session, bookings, or history. |
 | `title`, `summary`, `description` | Copy. Title is required and non-blank. |
 | `posterImage`, `galleryImages` | Object keys. Same signed-upload pattern as `GymClass.heroImage` (BE-052). Gallery length is at most 12. No new upload mechanism. |
-| `venueName`, `venueAddress` | Off-site venue. Not the studio address. |
 | `beneficiary`, `whatToBring`, `internalNotes` | Descriptive. `internalNotes` is staff-only because the whole table is staff-gated. |
 | `registrationOpensAt`, `registrationClosesAt` | Optional `timestamptz` window. When both are set, close is on or after open. This does not replace the canonical booking cutoff. |
 | `status` | `event_status`: `DRAFT`, `PUBLISHED`, `CANCELLED`, `ARCHIVED`. Default `DRAFT`. |
 | `isPlaceholder` | Seed flag, default false. |
+
+There is no venue column. An event shows its session's venue (`sessions.venueId` → `venues`); to hold an event off-site, set the session's venue to an `OFFSITE` venue. `venueName` / `venueAddress` were dropped by `20260928090000_venues_on_sessions`, which lifted any non-studio text into `OFFSITE` venues first. See [venues.md](./venues.md).
 
 There is no `slug`. Add one only if a public event surface is approved (#317 Q1).
 

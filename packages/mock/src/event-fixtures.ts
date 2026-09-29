@@ -1,4 +1,5 @@
 import type { EventStatus, SessionStatus } from "@balanse/domain";
+import { MAIN_STUDIO_VENUE_ID } from "./venue-fixtures";
 
 /**
  * OQ-PRICE: every `customerPrice` on these fixtures is a non-authoritative
@@ -21,6 +22,7 @@ export type EventFixtureSession = {
   customerPrice: string;
   priceNonAuthoritative: true;
   status: SessionStatus;
+  venueId: string;
 };
 
 export type StoredSessionEvent = {
@@ -31,8 +33,6 @@ export type StoredSessionEvent = {
   description: string;
   posterImage: string | null;
   galleryImages: string[];
-  venueName: string;
-  venueAddress: string;
   beneficiary: string;
   whatToBring: string;
   internalNotes: string;
@@ -56,6 +56,7 @@ export const eventFixtureSessions: readonly EventFixtureSession[] = [
     customerPrice: "1000.00",
     priceNonAuthoritative: true,
     status: "PUBLISHED",
+    venueId: "venue-mandani-bay",
   },
   {
     id: "session-event-self-defense",
@@ -66,6 +67,7 @@ export const eventFixtureSessions: readonly EventFixtureSession[] = [
     customerPrice: "750.00",
     priceNonAuthoritative: true,
     status: "DRAFT",
+    venueId: MAIN_STUDIO_VENUE_ID,
   },
   {
     id: "session-event-capoeira",
@@ -76,6 +78,7 @@ export const eventFixtureSessions: readonly EventFixtureSession[] = [
     customerPrice: "900.00",
     priceNonAuthoritative: true,
     status: "PUBLISHED",
+    venueId: MAIN_STUDIO_VENUE_ID,
   },
 ];
 
@@ -89,8 +92,6 @@ export const eventFixtures: StoredSessionEvent[] = [
       "Registration at 7:30 AM, pilates at 8:00 AM, Mandani Bay Garden Area. Capped at the session capacity. This is a placeholder shaped like the 26 Sep 2026 announcement.",
     posterImage: null,
     galleryImages: [],
-    venueName: "Mandani Bay — Garden Area",
-    venueAddress: "Mandani Bay, Cebu",
     beneficiary: "Everlasting Hope Cebu, Banawa",
     whatToBring: "Mat, water, and a towel. The studio floor is not the venue.",
     internalNotes: PRICE_NOTE,
@@ -109,8 +110,6 @@ export const eventFixtures: StoredSessionEvent[] = [
     description: "Placeholder for the upcoming self-defense workshop. Not yet announced.",
     posterImage: null,
     galleryImages: [],
-    venueName: "Balansé Wellness Hub",
-    venueAddress: "Unit 2A, Capitol Centrum Building, N Escario, Cebu City",
     beneficiary: "",
     whatToBring: "Comfortable clothes and water.",
     internalNotes: PRICE_NOTE,
@@ -130,8 +129,6 @@ export const eventFixtures: StoredSessionEvent[] = [
       "Placeholder for the capoeira workshop. Cancelling this event does not cancel the session or its bookings.",
     posterImage: null,
     galleryImages: [],
-    venueName: "Balansé Wellness Hub",
-    venueAddress: "Unit 2A, Capitol Centrum Building, N Escario, Cebu City",
     beneficiary: "",
     whatToBring: "Comfortable clothes.",
     internalNotes: `${PRICE_NOTE} Class attachment uses an existing class until #317 Q2 is answered.`,

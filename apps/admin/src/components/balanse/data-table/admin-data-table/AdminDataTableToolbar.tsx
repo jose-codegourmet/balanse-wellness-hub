@@ -5,6 +5,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -152,39 +153,41 @@ export function AdminDataTableToolbar<TData>({
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <Button type="button" variant="outline" size="sm" className="min-h-11">
-              <ArrowUpDownIcon className="size-3.5" aria-hidden />
+            <Button type="button" variant="outline">
+              <ArrowUpDownIcon aria-hidden />
               {labels.sort}
             </Button>
           }
         />
         <DropdownMenuContent className="min-w-52">
-          <DropdownMenuLabel>{labels.sort}</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuRadioGroup
-            value={sortState ? `${sortState.id}:${sortState.desc ? "desc" : "asc"}` : ""}
-            onValueChange={(value) => {
-              if (!value) {
-                table.resetSorting();
-                return;
-              }
-              const [id, direction] = value.split(":");
-              table.setSorting([{ id, desc: direction === "desc" }]);
-              table.setPageIndex(0);
-            }}
-          >
-            {sortable.map((column) => (
-              <div key={column.id}>
-                <DropdownMenuRadioItem value={`${column.id}:asc`}>
-                  {columnLabel(column)} · {labels.sortAscending}
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value={`${column.id}:desc`}>
-                  {columnLabel(column)} · {labels.sortDescending}
-                </DropdownMenuRadioItem>
-              </div>
-            ))}
-            <DropdownMenuRadioItem value="">{labels.sortNone}</DropdownMenuRadioItem>
-          </DropdownMenuRadioGroup>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>{labels.sort}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuRadioGroup
+              value={sortState ? `${sortState.id}:${sortState.desc ? "desc" : "asc"}` : ""}
+              onValueChange={(value) => {
+                if (!value) {
+                  table.resetSorting();
+                  return;
+                }
+                const [id, direction] = value.split(":");
+                table.setSorting([{ id, desc: direction === "desc" }]);
+                table.setPageIndex(0);
+              }}
+            >
+              {sortable.map((column) => (
+                <div key={column.id}>
+                  <DropdownMenuRadioItem value={`${column.id}:asc`}>
+                    {columnLabel(column)} · {labels.sortAscending}
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value={`${column.id}:desc`}>
+                    {columnLabel(column)} · {labels.sortDescending}
+                  </DropdownMenuRadioItem>
+                </div>
+              ))}
+              <DropdownMenuRadioItem value="">{labels.sortNone}</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
     ) : null;
@@ -212,27 +215,29 @@ export function AdminDataTableToolbar<TData>({
               }
             />
             <DropdownMenuContent className="min-w-44">
-              <DropdownMenuLabel>{label}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {values.map((value) => {
-                const checked = selected.includes(value);
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={value}
-                    checked={checked}
-                    onCheckedChange={(next) => {
-                      const isChecked = next === true;
-                      const upcoming = isChecked
-                        ? [...selected, value]
-                        : selected.filter((item) => item !== value);
-                      column.setFilterValue(upcoming.length ? upcoming : undefined);
-                      table.setPageIndex(0);
-                    }}
-                  >
-                    {value}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>{label}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {values.map((value) => {
+                  const checked = selected.includes(value);
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={value}
+                      checked={checked}
+                      onCheckedChange={(next) => {
+                        const isChecked = next === true;
+                        const upcoming = isChecked
+                          ? [...selected, value]
+                          : selected.filter((item) => item !== value);
+                        column.setFilterValue(upcoming.length ? upcoming : undefined);
+                        table.setPageIndex(0);
+                      }}
+                    >
+                      {value}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -243,8 +248,8 @@ export function AdminDataTableToolbar<TData>({
       <Sheet>
         <SheetTrigger
           render={
-            <Button type="button" variant="outline" size="sm" className="min-h-11">
-              <SlidersHorizontalIcon className="size-3.5" aria-hidden />
+            <Button type="button" variant="outline">
+              <SlidersHorizontalIcon aria-hidden />
               {labels.filters}
               {facetCount ? ` (${facetCount})` : ""}
             </Button>
@@ -294,17 +299,19 @@ export function AdminDataTableToolbar<TData>({
           }
         />
         <DropdownMenuContent className="min-w-44">
-          <DropdownMenuLabel>{labels.columns}</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {hideable.map((column) => (
-            <DropdownMenuCheckboxItem
-              key={column.id}
-              checked={column.getIsVisible()}
-              onCheckedChange={(next) => column.toggleVisibility(next === true)}
-            >
-              {columnLabel(column)}
-            </DropdownMenuCheckboxItem>
-          ))}
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>{labels.columns}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {hideable.map((column) => (
+              <DropdownMenuCheckboxItem
+                key={column.id}
+                checked={column.getIsVisible()}
+                onCheckedChange={(next) => column.toggleVisibility(next === true)}
+              >
+                {columnLabel(column)}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
     ) : null;

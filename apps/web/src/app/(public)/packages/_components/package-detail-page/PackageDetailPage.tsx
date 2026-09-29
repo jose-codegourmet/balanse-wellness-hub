@@ -107,7 +107,9 @@ export function PackageDetailPage({
               </p>
               {signedIn ? (
                 <Button
-                  className="mt-7 w-full rounded-full bg-[var(--balanse-gold)] text-[var(--balanse-navy)] hover:bg-[var(--balanse-beige)]"
+                  variant="accent"
+                  size="lg"
+                  className="mt-7 w-full"
                   disabled={status === "working"}
                   onClick={claim}
                 >
@@ -117,7 +119,9 @@ export function PackageDetailPage({
               ) : (
                 <Button
                   nativeButton={false}
-                  className="mt-7 w-full rounded-full bg-[var(--balanse-gold)] text-[var(--balanse-navy)] hover:bg-[var(--balanse-beige)]"
+                  variant="accent"
+                  size="lg"
+                  className="mt-7 w-full"
                   render={<Link href={`/login?returnTo=/packages/${bundle.slug}`} />}
                 >
                   {actionLabel}

@@ -1,7 +1,7 @@
 import { PORTAL_TOAST_IDS } from "@balanse/domain";
+import { Button } from "@balanse/ui";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { type ReactNode, useState } from "react";
-import { Button } from "@/components/jabkit/button";
 import { notify } from "@/modules/notifications/notify";
 import { BalanseToaster } from "./BalanseToaster";
 
@@ -45,7 +45,7 @@ export const Tones: Story = {
         Success
       </Button>
       <Button
-        variant="secondary"
+        variant="outline"
         onClick={() =>
           notify.info({
             title: "Reserved — Payment Needed",
@@ -56,7 +56,7 @@ export const Tones: Story = {
         Info
       </Button>
       <Button
-        variant="secondary"
+        variant="outline"
         onClick={() =>
           notify.warning({
             title: "Hold expires soon",
@@ -101,7 +101,7 @@ export const Loading: Story = {
           Start loading toast
         </Button>
         <Button
-          variant="secondary"
+          variant="outline"
           disabled={pendingId === null}
           onClick={() => {
             if (!pendingId) return;
@@ -131,7 +131,7 @@ export const Stacked: Story = {
         Stack three toasts
       </Button>
       <Button
-        variant="secondary"
+        variant="outline"
         onClick={() => {
           for (const id of PORTAL_TOAST_IDS) notify.portal(id);
         }}

@@ -8,11 +8,9 @@
 .booking-date-stamp span { display: block; background: var(--secondary); padding: .15rem; text-transform: uppercase; letter-spacing: .12em; font-size: .6rem; font-weight: 600; }
 .booking-date-stamp strong { display: block; padding: .15rem; font-size: 1.25rem; font-weight: 500; }
 .booking-calendar-actions { display: flex; align-items: center; gap: .5rem; }
-.booking-calendar-actions button { min-height: 2.5rem; border-radius: .25rem; }
-.booking-paging { display: flex; border: 1px solid var(--border); border-radius: .25rem; }
-.booking-paging button { width: 2.5rem; padding: 0; }
-.booking-paging button + button { border-left: 1px solid var(--border); }
-.booking-view-label { margin-left: .25rem; border: 1px solid var(--border); padding: .6rem .85rem; border-radius: .25rem; font-size: .75rem; text-transform: capitalize; }
+.booking-paging { display: flex; gap: .25rem; }
+/* Static view label, sized to sit level with the sm toolbar buttons. */
+.booking-view-label { display: inline-flex; align-items: center; height: 2rem; margin-left: .25rem; border: 1px solid var(--border); padding: 0 .75rem; border-radius: 6px; font-size: .75rem; text-transform: capitalize; }
 .booking-calendar-filters { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; padding: .75rem 1.5rem; border-top: 1px solid var(--border); background: var(--background); }
 .booking-class-filter { display: flex; align-items: center; gap: .65rem; font-size: .75rem; color: var(--muted-foreground); }
 .booking-class-filter select { max-width: 14rem; min-height: 2.25rem; padding: .35rem .6rem; border: 1px solid var(--border); border-radius: .25rem; background: var(--card); color: var(--foreground); }
@@ -120,7 +118,7 @@
 .booking-day-list .booking-event-time { font-size: .75rem; }
 .booking-day-list .booking-event-avatar[data-slot="avatar"] { width: 1.5rem; height: 1.5rem; }
 .booking-day-list .booking-event-slots { font-size: .75rem; }
-.balanse-booking-calendar button:focus-visible, .balanse-booking-calendar select:focus-visible, .booking-time-scroll:focus-visible, .booking-session-dialog .booking-event:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
+.balanse-booking-calendar button:not([data-slot="button"]):focus-visible, .balanse-booking-calendar select:focus-visible, .booking-time-scroll:focus-visible, .booking-session-dialog .booking-event:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
 @media (max-width: 767px) {
   .booking-calendar-toolbar { padding: 1rem; gap: .8rem; }
   .booking-period { width: 100%; }

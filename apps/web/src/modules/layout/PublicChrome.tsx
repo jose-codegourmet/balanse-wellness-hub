@@ -46,7 +46,7 @@ export function PublicHeader() {
       pathname={pathname}
       hash={hash}
       principalRole={principal.role}
-      bookingVisible={bookingVisible}
+      bookingVisible={bookingVisible || pathname === "/book/quick" || pathname === "/book/calendar"}
     />
   );
 }

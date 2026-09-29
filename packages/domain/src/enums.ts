@@ -42,6 +42,10 @@ export type SessionStatus = (typeof SESSION_STATUSES)[number];
 export const EVENT_STATUSES = ["DRAFT", "PUBLISHED", "CANCELLED", "ARCHIVED"] as const;
 export type EventStatus = (typeof EVENT_STATUSES)[number];
 
+/** Where a session happens. BRANCH is a studio the business runs; OFFSITE is a partner or one-off place (resort, park). */
+export const VENUE_KINDS = ["BRANCH", "OFFSITE"] as const;
+export type VenueKind = (typeof VENUE_KINDS)[number];
+
 /**
  * Legacy persisted enum (BE-001 / current Prisma `StaffRole`).
  * Authorization truth is `StaffRoleDefinition.key` + `PERMISSION_KEYS` in

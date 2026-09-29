@@ -18,6 +18,7 @@ import {
 } from "@balanse/domain";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "../../components/button/Button";
+import { Chip } from "../../components/chip/Chip";
 import { useBreakpoint } from "../../hooks/use-breakpoint/UseBreakpoint";
 import { cn } from "../../lib/utils";
 import { FeedbackState } from "../feedback/FeedbackState";
@@ -181,15 +182,9 @@ export function ScheduleCalendar({
   return (
     <section className="space-y-4" aria-label="Class schedule calendar">
       <div className="flex flex-wrap gap-2" role="toolbar" aria-label="Class filters">
-        <Button
-          type="button"
-          size="sm"
-          variant={classFilter === "all" ? "default" : "outline"}
-          aria-pressed={classFilter === "all"}
-          onClick={() => setClassFilter("all")}
-        >
+        <Chip size="sm" selected={classFilter === "all"} onClick={() => setClassFilter("all")}>
           All
-        </Button>
+        </Chip>
         {coachName ? (
           <Button
             type="button"
@@ -204,16 +199,14 @@ export function ScheduleCalendar({
           </Button>
         ) : null}
         {classes.map((item) => (
-          <Button
+          <Chip
             key={item.id}
-            type="button"
             size="sm"
-            variant={classFilter === item.id ? "default" : "outline"}
-            aria-pressed={classFilter === item.id}
+            selected={classFilter === item.id}
             onClick={() => setClassFilter(item.id)}
           >
             {item.name}
-          </Button>
+          </Chip>
         ))}
       </div>
 
@@ -397,6 +390,7 @@ export function ScheduleCalendar({
                 {selected.reservable ? (
                   <Button
                     type="button"
+                    variant="accent"
                     className="mt-4 w-full"
                     onClick={() => onReserve?.(selected)}
                   >
@@ -405,10 +399,11 @@ export function ScheduleCalendar({
                 ) : selected.availability === "full_with_waitlist" ? (
                   <Button
                     type="button"
+                    variant="accent"
                     className="mt-4 w-full"
                     onClick={() => onReserve?.(selected)}
                   >
-                    Join Waitlist
+                    Join waitlist
                   </Button>
                 ) : (
                   <Button type="button" className="mt-4 w-full" disabled>

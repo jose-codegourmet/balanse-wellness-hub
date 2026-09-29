@@ -1,0 +1,61 @@
+import type { SessionChoice } from "./EventSessionPicker.meta";
+
+const STUDIO = { name: "Balansé Studio", address: "N Escario, Cebu City", kind: "BRANCH" } as const;
+const RESORT = { name: "Mactan Beach Resort", address: "Lapu-Lapu City", kind: "OFFSITE" } as const;
+
+export const eventSessionPickerChoices: SessionChoice[] = [
+  {
+    id: "session-a",
+    className: "Calisthenics",
+    startsAt: "2026-09-14T00:00:00Z",
+    endsAt: "2026-09-14T01:30:00Z",
+    capacity: 12,
+    priceLabel: "₱550.00",
+    statusLabel: "Published",
+    status: "PUBLISHED",
+    blocked: null,
+    pricePlaceholder: false,
+    venue: STUDIO,
+  },
+  {
+    id: "session-b",
+    className: "Caliyoga",
+    startsAt: "2026-09-16T07:00:00Z",
+    endsAt: "2026-09-16T08:30:00Z",
+    capacity: 12,
+    priceLabel: "₱550.00",
+    statusLabel: "Draft",
+    status: "DRAFT",
+    blocked: null,
+    pricePlaceholder: false,
+    venue: STUDIO,
+  },
+  {
+    id: "session-c",
+    className: "Pilates",
+    startsAt: "2026-09-26T00:00:00Z",
+    endsAt: "2026-09-26T01:30:00Z",
+    capacity: 30,
+    priceLabel: "₱1,000.00",
+    statusLabel: "Published",
+    status: "PUBLISHED",
+    blocked: "taken",
+    eventId: "event-pilates",
+    eventTitle: "Pilates for a Cause",
+    pricePlaceholder: false,
+    venue: RESORT,
+  },
+  {
+    id: "session-d",
+    className: "Kickboxing",
+    startsAt: "2026-10-03T00:00:00Z",
+    endsAt: "2026-10-03T02:00:00Z",
+    capacity: 16,
+    priceLabel: "₱750.00",
+    statusLabel: "Cancelled",
+    status: "CANCELLED",
+    blocked: "cancelled",
+    pricePlaceholder: false,
+    venue: STUDIO,
+  },
+];

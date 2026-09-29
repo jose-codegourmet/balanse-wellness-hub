@@ -12,3 +12,17 @@ export type AdminQueueCardProps = {
   emphasis?: boolean;
   className?: string;
 };
+
+export type AdminQueueFact = {
+  label: string;
+  value: React.ReactNode;
+};
+
+/**
+ * `AdminQueueFacts` lays out a card body's key facts (time, amount, method,
+ * payment state) as a label / value grid. Two columns on phones, four from `sm`.
+ */
+export type AdminQueueFactsProps = {
+  items: AdminQueueFact[];
+  className?: string;
+};

@@ -1,11 +1,10 @@
 import type { PublicClass, PublicCoach, PublicSession } from "@balanse/domain";
 import { ABOUT_CLASS_FAMILIES, CONTACT_DETAILS } from "@balanse/domain";
-import { MarketingImage, ScrollReveal } from "@balanse/ui";
-import { ArrowDown, ArrowUpRight, MapPin } from "lucide-react";
+import { Button, MarketingImage, ScrollReveal } from "@balanse/ui";
+import { ArrowUpRight, MapPin } from "lucide-react";
 import Link from "next/link";
-import { BalanseBookingHero } from "@/components/balanse/marketing/BalanseBookingHero";
 import { BalanseCtaSection } from "@/components/balanse/marketing/BalanseCtaSection";
-import { Button } from "@/components/jabkit/button";
+import { BalanseBookingHero } from "@/components/balanse/marketing/booking-hero/BalanseBookingHero";
 import { CoachPreviewCard } from "./coach-preview-card/CoachPreviewCard";
 
 const STEPS = [
@@ -99,7 +98,7 @@ export function LandingPage({
                         href={
                           discipline
                             ? `/classes/${encodeURIComponent(discipline.slug)}`
-                            : "/#schedule"
+                            : "/book/calendar"
                         }
                         className="group flex min-h-12 items-center justify-between gap-2 border-b border-border/70 py-3 text-sm transition-colors hover:text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"
                       >
@@ -197,13 +196,13 @@ export function LandingPage({
                 The same simple booking, wherever you begin.
               </p>
               <Button
-                asChild
-                variant="secondary"
-                className="mt-6 rounded-full border-border bg-transparent px-5 hover:bg-secondary"
+                variant="outline"
+                size="lg"
+                className="mt-6"
+                nativeButton={false}
+                render={<Link href="/book/calendar" />}
               >
-                <a href="#schedule">
-                  See the schedule <ArrowDown className="ml-3 size-4" aria-hidden="true" />
-                </a>
+                See the schedule <ArrowUpRight className="size-4" aria-hidden="true" />
               </Button>
             </div>
           </ScrollReveal>

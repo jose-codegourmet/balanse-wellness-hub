@@ -3,7 +3,13 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
-import { adminClassesQuery, adminEventsQuery, adminSessionsQuery } from "@/lib/query/queries";
+import {
+  adminClassesQuery,
+  adminCoachesQuery,
+  adminEventsQuery,
+  adminSessionsQuery,
+  adminVenuesQuery,
+} from "@/lib/query/queries";
 import { EventFormPage } from "../../schedule/_components/event-form-page/EventFormPage";
 
 export const metadata: Metadata = {
@@ -14,7 +20,13 @@ export const metadata: Metadata = {
 export default async function NewEventRoute() {
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [adminSessionsQuery(principal), adminClassesQuery(principal), adminEventsQuery(principal)],
+    [
+      adminSessionsQuery(principal),
+      adminVenuesQuery(principal),
+      adminCoachesQuery(principal),
+      adminClassesQuery(principal),
+      adminEventsQuery(principal),
+    ],
     <AdminQuerySuspense>
       <EventFormPage />
     </AdminQuerySuspense>,

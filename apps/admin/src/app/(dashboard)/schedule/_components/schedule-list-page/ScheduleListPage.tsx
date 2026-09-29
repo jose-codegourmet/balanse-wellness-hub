@@ -1,13 +1,28 @@
 "use client";
 
-import { addCalendarDays, computeSessionInventory, manilaYmd } from "@balanse/domain";
-import { Button, DetailPageSkeleton, FeedbackState } from "@balanse/ui";
+import { BALANSE_BREAKPOINTS } from "@balanse/config";
+import {
+  addCalendarDays,
+  computeSessionInventory,
+  manilaYmd,
+  sessionDisplayName,
+} from "@balanse/domain";
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  useMinWidth,
+} from "@balanse/ui";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { Copy } from "lucide-react";
+import { CopyIcon, EllipsisIcon, PlusIcon, RepeatIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Suspense, useState } from "react";
-import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
+import { Suspense, useEffect, useState } from "react";
 import { useTabParam } from "@/components/balanse/page/useTabParam";
 import {
   AdminScheduleCalendar,
@@ -18,7 +33,9 @@ import {
   adminBookingsQuery,
   adminSessionRosterQuery,
   adminSessionsQuery,
+  adminVenuesQuery,
 } from "@/lib/query/queries";
+import { cn } from "@/lib/utils";
 import {
   AdminCan,
   useCanAdminAction,
@@ -27,6 +44,7 @@ import {
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { createSessionHref } from "../../_lib/schedule-href";
 import { SelectedSessionPanel } from "../selected-session-panel/SelectedSessionPanel";
+import type { SessionInventory } from "../selected-session-panel/SelectedSessionPanel.meta";
 
 const SCHEDULE_VIEWS = ["auto", "month", "week", "day"] as const;
 
@@ -36,6 +54,7 @@ export function ScheduleListPage({
   view: viewProp,
 }: {
   empty?: boolean;
+  /** Story-only. Opens this day in the sidebar on first render. */
   selectedDay?: string;
   view?: AdminScheduleCalendarView;
 }) {
@@ -88,140 +107,193 @@ function ScheduleListPageInner({
   const router = useRouter();
   const { principal } = useMockPrincipal();
   const canReadBookings = useCanAdminRoute("/bookings");
-  const canCreate = useCanAdminAction("schedule-create");
   const canOpenRoster = useCanAdminAction("roster-read");
   const sessionsQuery = useSuspenseQuery(adminSessionsQuery(principal));
-  const bookingsQuery = useQuery({
-    ...adminBookingsQuery(principal),
-    enabled: canReadBookings,
-  });
+  const bookingsQuery = useQuery({ ...adminBookingsQuery(principal), enabled: canReadBookings });
+  const venuesQuery = useQuery(adminVenuesQuery(principal));
   const sessions = empty ? [] : sessionsQuery.data;
+  const venues = venuesQuery.data ?? [];
+  const branchCount = venues.filter((row) => row.kind === "BRANCH" && row.active).length;
   const bookings = bookingsQuery.data ?? [];
   const todayYmd = adminTodayYmd();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedDay, setSelectedDay] = useState(() => selectedDayProp ?? todayYmd);
+  const wide = useMinWidth(BALANSE_BREAKPOINTS.desktop);
 
-  const daySessions = (sessions ?? []).filter(
-    (session) => manilaYmd(session.startsAt) === selectedDay,
-  );
+  const [anchorDay, setAnchorDay] = useState(() => selectedDayProp ?? todayYmd);
+  const [openDay, setOpenDay] = useState<string | null>(selectedDayProp ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const daySessions = openDay
+    ? sessions
+        .filter((session) => manilaYmd(session.startsAt) === openDay)
+        .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
+    : [];
   const selected =
     daySessions.find((session) => session.id === selectedId) ?? daySessions[0] ?? null;
+  const repeatable = Boolean(
+    selected && selected.status !== "CANCELLED" && !selected.recurrenceRuleId,
+  );
   const rosterQuery = useQuery({
     ...adminSessionRosterQuery(principal, selected?.id ?? ""),
     enabled: Boolean(selected && !canReadBookings && canOpenRoster),
   });
 
-  return (
-    <AdminPageShell
-      title="Schedule"
-      actions={
-        <>
-          <AdminCan action="schedule-recurrence">
-            <Button
-              nativeButton={false}
-              variant="outline"
-              render={
-                <Link
-                  href={`/schedule/duplicate?from=${selectedDay}&to=${addCalendarDays(selectedDay, 6)}`}
-                />
+  const inventory: SessionInventory | null = !selected
+    ? null
+    : rosterQuery.data
+      ? {
+          confirmed: rosterQuery.data.confirmedCount,
+          held: rosterQuery.data.heldCount,
+          available: rosterQuery.data.available,
+          waitlisted: rosterQuery.data.waitlistedCount,
+          checkedIn: rosterQuery.data.checkedIn,
+          noShow: rosterQuery.data.noShow,
+          lockedByCancellation: 0,
+        }
+      : canReadBookings && bookingsQuery.isPending && !bookingsQuery.data
+        ? null
+        : computeSessionInventory(
+            selected,
+            bookings.filter((booking) => booking.sessionId === selected.id),
+          );
+
+  function openDayPanel(ymd: string, sessionId: string | null = null) {
+    setOpenDay(ymd);
+    setAnchorDay(ymd);
+    setSelectedId(sessionId);
+  }
+
+  function closePanel() {
+    setOpenDay(null);
+    setSelectedId(null);
+  }
+
+  // Escape closes the inline sidebar (the Sheet handles its own Escape).
+  useEffect(() => {
+    if (!openDay || !wide) return;
+    function onKey(event: KeyboardEvent) {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      if (document.querySelector("[role=dialog]")) return;
+      setOpenDay(null);
+      setSelectedId(null);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openDay, wide]);
+
+  const panel = openDay ? (
+    <SelectedSessionPanel
+      ymd={openDay}
+      daySessions={daySessions}
+      selectedSessionId={selected?.id ?? null}
+      onSelectSession={setSelectedId}
+      onClose={closePanel}
+      inventory={inventory}
+      hideClose={!wide}
+    />
+  ) : null;
+
+  const actions = (
+    <>
+      <AdminCan action="schedule-recurrence">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button type="button" variant="outline" size="icon-sm" aria-label="Schedule tools" />
+            }
+          >
+            <EllipsisIcon />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64">
+            <DropdownMenuItem
+              onClick={() =>
+                router.push(
+                  `/schedule/duplicate?from=${anchorDay}&to=${addCalendarDays(anchorDay, 6)}`,
+                )
               }
             >
-              <Copy className="size-4" aria-hidden />
-              Duplicate range
-            </Button>
-          </AdminCan>
-          <AdminCan action="schedule-create">
-            <Button nativeButton={false} render={<Link href={createSessionHref(selectedDay)} />}>
-              Create Session
-            </Button>
-          </AdminCan>
-        </>
-      }
+              <CopyIcon aria-hidden />
+              Copy a date range
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={!repeatable}
+              onClick={() => {
+                if (repeatable && selected) router.push(`/schedule/${selected.id}/recurrence`);
+              }}
+            >
+              <RepeatIcon aria-hidden />
+              {selected && repeatable
+                ? `Repeat ${sessionDisplayName(selected)} weekly`
+                : "Repeat a session weekly"}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </AdminCan>
+      <AdminCan action="schedule-create">
+        <Button
+          nativeButton={false}
+          size="sm"
+          render={<Link href={createSessionHref(openDay ?? anchorDay)} />}
+        >
+          <PlusIcon aria-hidden />
+          New session
+        </Button>
+      </AdminCan>
+    </>
+  );
+
+  return (
+    <div
+      className={cn(
+        "-mx-4 -my-6 flex h-[calc(100dvh-4rem)] min-h-[36rem] overflow-hidden border-y border-border bg-card md:-mx-8 md:-my-8",
+      )}
+      data-slot="schedule-page"
     >
-      {sessions.length === 0 ? <FeedbackState id="admin.no-sessions" /> : null}
-      <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start xl:gap-6">
-        <div className="overflow-hidden rounded-xl border border-border">
-          <AdminScheduleCalendar
-            sessions={sessions ?? []}
-            todayYmd={todayYmd}
-            selectedDay={selectedDay}
-            selectedSessionId={selected?.id ?? null}
-            view={view}
-            onViewChange={(next) => onViewChange?.(next)}
-            onSelectDay={(ymd) => {
-              setSelectedDay(ymd);
-              const match = (sessions ?? []).find((session) => manilaYmd(session.startsAt) === ymd);
-              setSelectedId(match?.id ?? null);
-            }}
-            onSelectSession={setSelectedId}
-            onCreateSession={canCreate ? (ymd) => router.push(createSessionHref(ymd)) : undefined}
-          />
-        </div>
-        <div className="mt-8 xl:sticky xl:top-8 xl:mt-0">
-          {(bookingsQuery.isPending && !bookingsQuery.data && selected && canReadBookings) ||
-          (rosterQuery.isPending && !rosterQuery.data && selected && !canReadBookings) ? (
-            <DetailPageSkeleton label="Loading schedule" />
-          ) : selected ? (
-            <div className="grid gap-3">
-              <SelectedSessionPanel
-                session={selected}
-                daySessions={daySessions}
-                onSelectSession={setSelectedId}
-                inventory={
-                  rosterQuery.data
-                    ? {
-                        confirmed: rosterQuery.data.confirmedCount,
-                        held: rosterQuery.data.heldCount,
-                        available: rosterQuery.data.available,
-                        waitlisted: rosterQuery.data.waitlistedCount,
-                        checkedIn: rosterQuery.data.checkedIn,
-                        noShow: rosterQuery.data.noShow,
-                        lockedByCancellation: 0,
-                      }
-                    : computeSessionInventory(
-                        selected,
-                        bookings.filter((booking) => booking.sessionId === selected.id),
-                      )
-                }
-              />
-              {canCreate ? <CreateOnDateCard ymd={selectedDay} /> : null}
-            </div>
-          ) : (
-            <EmptyDayPanel ymd={selectedDay} canCreate={canCreate} />
+      <AdminScheduleCalendar
+        className="min-w-0 flex-1"
+        sessions={sessions}
+        todayYmd={todayYmd}
+        anchorDay={anchorDay}
+        selectedDay={openDay}
+        selectedSessionId={openDay ? (selected?.id ?? null) : null}
+        view={view}
+        onViewChange={(next) => onViewChange?.(next)}
+        onNavigate={setAnchorDay}
+        onOpenDay={(ymd) => openDayPanel(ymd)}
+        onOpenSession={(session) => openDayPanel(manilaYmd(session.startsAt), session.id)}
+        venueLabel={(session) => {
+          const venue = venues.find((row) => row.id === session.venueId);
+          if (!venue) return null;
+          return venue.kind === "OFFSITE" || branchCount > 1 ? venue.name : null;
+        }}
+        actions={actions}
+      />
+
+      {wide ? (
+        <aside
+          aria-label="Selected day"
+          className={cn(
+            "min-h-0 shrink-0 overflow-hidden border-l border-border transition-[width] duration-200 ease-out",
+            openDay ? "w-[25rem]" : "w-0 border-l-0",
           )}
-        </div>
-      </div>
-    </AdminPageShell>
-  );
-}
-
-function EmptyDayPanel({ ymd, canCreate }: { ymd: string; canCreate: boolean }) {
-  return (
-    <aside className="rounded-xl border border-dashed border-border bg-card p-4">
-      <h2 className="font-display text-2xl">No sessions</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        {canCreate
-          ? `Nothing is scheduled on ${ymd}. Create a session on this date.`
-          : `Nothing is scheduled on ${ymd}.`}
-      </p>
-      {canCreate ? (
-        <div className="mt-4">
-          <Button nativeButton={false} render={<Link href={createSessionHref(ymd)} />}>
-            Create session
-          </Button>
-        </div>
-      ) : null}
-    </aside>
-  );
-}
-
-function CreateOnDateCard({ ymd }: { ymd: string }) {
-  return (
-    <p className="text-sm text-muted-foreground">
-      <Link className="underline underline-offset-4" href={createSessionHref(ymd)}>
-        Create another session
-      </Link>{" "}
-      on {ymd}.
-    </p>
+        >
+          <div className="h-full w-[25rem]">{panel}</div>
+        </aside>
+      ) : (
+        <Sheet
+          open={Boolean(openDay)}
+          onOpenChange={(open) => {
+            if (!open) closePanel();
+          }}
+        >
+          <SheetContent
+            side="right"
+            className="gap-0 p-0 data-[side=right]:w-full data-[side=right]:sm:max-w-md"
+          >
+            <SheetTitle className="sr-only">Selected day</SheetTitle>
+            {panel}
+          </SheetContent>
+        </Sheet>
+      )}
+    </div>
   );
 }

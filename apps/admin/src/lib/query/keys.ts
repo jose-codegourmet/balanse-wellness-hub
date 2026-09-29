@@ -34,6 +34,7 @@ export const adminKeys = {
     all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "reschedules"] as const,
   },
   classes: { all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "classes"] as const },
+  venues: { all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "venues"] as const },
   bundles: {
     all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "bundles"] as const,
     acquisitions: (scope: AdminAuthScope) =>

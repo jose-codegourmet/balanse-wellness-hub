@@ -1,5 +1,10 @@
 import type { AdminPaymentTab, PermissionKey } from "@balanse/domain";
-import { canGrantPermissions, hasPermission, isSuperAdminRoleKey } from "@balanse/domain";
+import {
+  canGrantPermissions,
+  hasPermission,
+  isSuperAdminRoleKey,
+  VENUE_READ_PERMISSIONS,
+} from "@balanse/domain";
 import type { AdminPaymentQueueQuery, MockDataAdapter } from "./adapter";
 import {
   assertLastSuperAdminDisable,
@@ -119,6 +124,14 @@ export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter
         defaultRatePhp: existing?.defaultRatePhp ?? 0,
         rateType: existing?.rateType ?? input.rateType,
       });
+    },
+    getAdminVenues: () => {
+      requireAnyPermission(VENUE_READ_PERMISSIONS);
+      return inner.getAdminVenues();
+    },
+    upsertAdminVenue: (input) => {
+      requirePermission("classes.manage");
+      return inner.upsertAdminVenue(input);
     },
     getAdminSessions: async () => {
       const actor = requireAnyPermission(["schedule.read.all", "schedule.read.own"]);

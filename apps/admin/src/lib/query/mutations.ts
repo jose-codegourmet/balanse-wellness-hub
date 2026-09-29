@@ -167,6 +167,18 @@ export function useUpsertAdminClass() {
   });
 }
 
+export function useUpsertAdminVenue() {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: Parameters<ReturnType<typeof getMockAdapter>["upsertAdminVenue"]>[0]) =>
+      getMockAdapter().upsertAdminVenue(input),
+    // Event snapshots carry the session's venue name, so refresh them too.
+    onSuccess: () =>
+      invalidateForRole(queryClient, [adminKeys.venues.all(role), adminKeys.events.all(role)]),
+  });
+}
+
 export function useUpsertAdminCoach() {
   const role = useAdminAuthScope();
   const queryClient = useQueryClient();

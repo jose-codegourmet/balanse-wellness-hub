@@ -6,10 +6,9 @@ import {
   formatSessionTime,
   sessionDisplayName,
 } from "@balanse/domain";
-import { CalendarSkeleton, FeedbackState, type ScheduleCalendarProps } from "@balanse/ui";
+import { Button, CalendarSkeleton, FeedbackState, type ScheduleCalendarProps } from "@balanse/ui";
 import { ArrowLeft, ArrowRight, Check, Clock3 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/jabkit/button";
 
 export function BalanseQuickBooking({
   sessions,
@@ -101,11 +100,7 @@ export function BalanseQuickBooking({
               ? `${matching.length} upcoming ${matching.length === 1 ? "session" : "sessions"} to explore${initialCoachFilter !== "all" ? " with your selected coach" : ""}.`
               : "No bookable sessions for this selection yet. Try another class or explore the calendar."}
           </p>
-          <Button
-            className="quick-booking-primary"
-            disabled={!matching.length}
-            onClick={() => setStep(1)}
-          >
+          <Button className="w-full" disabled={!matching.length} onClick={() => setStep(1)}>
             Find a time <ArrowRight size={17} aria-hidden="true" />
           </Button>
         </>
@@ -152,7 +147,7 @@ export function BalanseQuickBooking({
             </p>
           ) : null}
           <div className="quick-booking-actions">
-            <Button variant="ghost" onClick={() => setStep(0)}>
+            <Button variant="outline" onClick={() => setStep(0)}>
               <ArrowLeft size={15} aria-hidden="true" /> Back
             </Button>
             <Button disabled={!selected} onClick={() => setStep(2)}>
@@ -189,10 +184,10 @@ export function BalanseQuickBooking({
               : "Continue to enter your details and reserve your space."}
           </p>
           <div className="quick-booking-actions">
-            <Button variant="ghost" onClick={() => setStep(1)}>
+            <Button variant="outline" onClick={() => setStep(1)}>
               <ArrowLeft size={15} aria-hidden="true" /> Back
             </Button>
-            <Button onClick={() => onReserve?.(selected)}>
+            <Button variant="accent" onClick={() => onReserve?.(selected)}>
               {selected.availability === "full_with_waitlist"
                 ? "Join waitlist"
                 : "Continue to booking"}

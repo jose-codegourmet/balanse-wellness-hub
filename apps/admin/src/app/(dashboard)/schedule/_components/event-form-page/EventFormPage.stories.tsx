@@ -40,6 +40,42 @@ export const ValidationErrors: Story = {
 
 export const SessionAlreadyHasEvent: Story = {};
 
+export const StoryStep: Story = {
+  args: {
+    previewStep: "story",
+    previewValues: {
+      sessionId: "session-wed-open",
+      title: "Pilates for a Cause",
+      summary: "One morning, one mat, one cause.",
+      beneficiary: "Cebu Animal Rescue",
+    },
+  },
+};
+
+export const LogisticsCustomWindow: Story = {
+  args: {
+    previewStep: "logistics",
+    previewValues: {
+      sessionId: "session-wed-open",
+      title: "Pilates for a Cause",
+      registrationOpensOn: "2026-09-21",
+      registrationOpensAtTime: "09:00",
+      registrationClosesOn: "2026-09-25",
+      registrationClosesAtTime: "18:00",
+    },
+  },
+};
+
+export const ReviewStep: Story = {
+  args: {
+    previewStep: "review",
+    previewValues: {
+      sessionId: "session-wed-open",
+      title: "Pilates for a Cause",
+    },
+  },
+};
+
 export const PublishBlockedOnDraftSession: Story = {
   args: { sessionId: "session-event-self-defense" },
 };

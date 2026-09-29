@@ -1,7 +1,7 @@
 "use client";
 
 import { CUSTOMER_NAV_ITEMS, customerInitials, isCustomerNavActive } from "@balanse/domain";
-import { BrandLockup } from "@balanse/ui";
+import { BrandLockup, Button } from "@balanse/ui";
 import {
   ArrowLeft,
   CalendarCheck2,
@@ -18,7 +18,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { BalansePortalLogout } from "@/components/balanse/portal/BalansePortalLogout";
-import { Button } from "@/components/jabkit/button";
 import {
   Dialog,
   DialogClose,
@@ -183,11 +182,7 @@ export function BalansePortalNavigation({ account }: { account?: PortalAccount }
           </Link>
           <DialogTrigger
             render={
-              <Button
-                variant="ghost"
-                className="border border-border"
-                aria-label="Open portal menu"
-              >
+              <Button variant="outline" aria-label="Open portal menu">
                 <Menu size={20} /> Menu
               </Button>
             }
@@ -201,7 +196,12 @@ export function BalansePortalNavigation({ account }: { account?: PortalAccount }
           <DialogTitle className="sr-only">Your wellness space</DialogTitle>
           <DialogClose
             render={
-              <Button variant="ghost" className="portal-menu-close" aria-label="Close portal menu">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="portal-menu-close"
+                aria-label="Close portal menu"
+              >
                 <X size={20} />
               </Button>
             }

@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
-import { adminBookingsQuery, adminSessionsQuery } from "@/lib/query/queries";
+import { adminBookingsQuery, adminSessionsQuery, adminVenuesQuery } from "@/lib/query/queries";
 import { ScheduleListPage } from "./_components/schedule-list-page/ScheduleListPage";
 
 export const metadata: Metadata = {
@@ -21,7 +21,7 @@ export default async function Page() {
   const actor = resolveMockStaffActor(principal);
   return prefetchAdmin(
     hasPermission(actor, "bookings.read")
-      ? [adminSessionsQuery(principal), adminBookingsQuery(principal)]
+      ? [adminSessionsQuery(principal), adminVenuesQuery(principal), adminBookingsQuery(principal)]
       : [adminSessionsQuery(principal)],
     <AdminQuerySuspense>
       <ScheduleListPage />

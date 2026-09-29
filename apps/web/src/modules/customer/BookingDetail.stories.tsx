@@ -18,6 +18,13 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Confirmed: Story = {};
+export const Cancelled: Story = { args: { booking: byStatus("CANCELLED") ?? confirmed } };
+export const CancellationRequested: Story = {
+  args: { booking: byStatus("CANCELLATION_REQUESTED") ?? confirmed },
+};
+export const PaymentUnderReview: Story = {
+  args: { booking: byStatus("PAYMENT_SUBMITTED") ?? confirmed },
+};
 
 /** Held: pay-at-counter instruction plus both request actions. */
 export const PaymentNeeded: Story = {

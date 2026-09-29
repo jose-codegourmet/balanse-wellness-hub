@@ -59,6 +59,14 @@ export const adminClassesQuery = (principal: MockPrincipal) => {
   });
 };
 
+export const adminVenuesQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.venues.all(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminVenues()),
+  });
+};
+
 export const adminCoachesQuery = (principal: MockPrincipal) => {
   const scope = adminAuthScope(principal);
   return queryOptions({

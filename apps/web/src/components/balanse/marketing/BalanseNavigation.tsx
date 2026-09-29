@@ -6,11 +6,10 @@ import {
   PUBLIC_NAV_ITEMS,
   publicAuthItem,
 } from "@balanse/domain";
-import { Avatar, AvatarFallback, BrandLockup, MarketingImage } from "@balanse/ui";
+import { Avatar, AvatarFallback, BrandLockup, Button, MarketingImage } from "@balanse/ui";
 import { ArrowUpRight, Menu, UserRound, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Button } from "@/components/jabkit/button";
 import {
   Dialog,
   DialogClose,
@@ -63,17 +62,17 @@ export function BalanseNavigation({
             <span className="sr-only"> home</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link
-              href={auth.href}
-              aria-current={authActive ? "page" : undefined}
-              aria-label={principalRole === "guest" ? "Login" : "Open profile"}
-              className={cn(
-                "inline-flex min-h-10 items-center justify-center rounded-full border text-xs font-semibold uppercase tracking-[0.12em] transition-colors focus-visible:outline-2 focus-visible:outline-ring",
-                principalRole === "guest" ? "px-3 sm:px-4" : "size-10 p-0",
-                authActive
-                  ? "border-accent bg-secondary/70 text-foreground"
-                  : "border-border text-foreground hover:bg-secondary/50",
-              )}
+            <Button
+              variant={principalRole === "guest" ? "outline" : "ghost"}
+              size={principalRole === "guest" ? "md" : "icon"}
+              nativeButton={false}
+              render={
+                <Link
+                  href={auth.href}
+                  aria-current={authActive ? "page" : undefined}
+                  aria-label={principalRole === "guest" ? "Login" : "Open profile"}
+                />
+              }
             >
               {principalRole === "guest" ? (
                 auth.label
@@ -84,17 +83,11 @@ export function BalanseNavigation({
                   </AvatarFallback>
                 </Avatar>
               )}
-            </Link>
+            </Button>
             <DialogTrigger
               render={
-                <Button
-                  variant="ghost"
-                  className="group gap-3 rounded-full border border-border px-4 hover:bg-secondary/50"
-                  aria-label="Open menu"
-                >
-                  <span className="hidden text-xs font-semibold uppercase tracking-[0.14em] sm:inline">
-                    Menu
-                  </span>
+                <Button variant="outline" aria-label="Open menu">
+                  <span className="hidden sm:inline">Menu</span>
                   <Menu className="size-5" strokeWidth={1.5} aria-hidden="true" />
                 </Button>
               }
@@ -104,10 +97,14 @@ export function BalanseNavigation({
       </header>
       {!bookingVisible ? (
         <div className="balanse-mobile-booking-bar" data-mobile-booking>
-          <Button asChild className="balanse-mobile-booking-button">
-            <Link href="/#schedule">
-              Book a class <ArrowUpRight className="size-4" aria-hidden="true" />
-            </Link>
+          <Button
+            variant="accent"
+            size="lg"
+            className="balanse-mobile-booking-button"
+            nativeButton={false}
+            render={<Link href="/book/quick" />}
+          >
+            Book a class <ArrowUpRight className="size-4" aria-hidden="true" />
           </Button>
         </div>
       ) : null}
@@ -132,14 +129,8 @@ export function BalanseNavigation({
             </Link>
             <DialogClose
               render={
-                <Button
-                  variant="ghost"
-                  className="gap-3 rounded-full border border-border px-4 hover:bg-secondary/50"
-                  aria-label="Close menu"
-                >
-                  <span className="hidden text-xs font-semibold uppercase tracking-[0.14em] sm:inline">
-                    Close
-                  </span>
+                <Button variant="outline" aria-label="Close menu">
+                  <span className="hidden sm:inline">Close</span>
                   <X className="size-5" strokeWidth={1.5} aria-hidden="true" />
                 </Button>
               }
@@ -177,11 +168,13 @@ export function BalanseNavigation({
               })}
             </ul>
             <div className="mt-6 flex flex-wrap items-center gap-5 border-t border-border pt-6">
-              <Button asChild className="rounded-full px-7">
-                <Link href={auth.href} onClick={close}>
-                  {auth.label}
-                  <ArrowUpRight className="ml-4 size-4" aria-hidden="true" />
-                </Link>
+              <Button
+                size="lg"
+                nativeButton={false}
+                render={<Link href={auth.href} onClick={close} />}
+              >
+                {auth.label}
+                <ArrowUpRight className="size-4" aria-hidden="true" />
               </Button>
               {principalRole === "guest" ? (
                 <Link href="/sign-up" onClick={close} className="marketing-text-link">

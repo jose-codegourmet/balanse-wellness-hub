@@ -72,7 +72,7 @@ export function PaymentQrPage({ empty, items: itemsProp }: PaymentQrPageProps) {
           >
             <div className="grid gap-0 md:grid-cols-[minmax(17rem,0.85fr)_minmax(0,1.15fr)]">
               <div className="grid place-items-center bg-muted/55 p-8 md:p-10">
-                <div className="w-full max-w-[15rem] rounded-[1.5rem] bg-background p-4 shadow-sm ring-1 ring-border">
+                <div className="w-full max-w-[15rem] rounded-2xl bg-background p-4 shadow-sm ring-1 ring-border">
                   <PaymentQrImage imageKey={active.imageKey} label={active.label} />
                   <p className="mt-3 text-center text-xs text-muted-foreground">
                     Customer payment QR
@@ -173,7 +173,7 @@ export function PaymentQrPage({ empty, items: itemsProp }: PaymentQrPageProps) {
                       title="Remove this saved QR?"
                       description="This removes the QR from the payment collection. The active customer QR cannot be removed."
                       confirmLabel="Remove QR"
-                      variant="outline"
+                      variant="destructive"
                       onConfirm={async () => {
                         try {
                           await archive.mutateAsync(row.id);

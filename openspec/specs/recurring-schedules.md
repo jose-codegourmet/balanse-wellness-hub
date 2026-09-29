@@ -9,8 +9,9 @@
 5. Generation is idempotent at the class/start-time boundary: an exact existing match is skipped and reported, never duplicated or overwritten.
 6. New occurrences default to draft. Admin may explicitly publish the generated batch. The booking cutoff remains derived from each generated start time by the canonical booking rules.
 7. Weekly rules are stored in `session_recurrence_rules` with `Asia/Manila` timezone and linked to generated sessions. The source session is marked as part of the rule.
-8. Holiday calendars, per-occurrence exceptions, series-wide editing/deletion, and coach self-service remain out of scope.
-9. UI reads and writes through `MockDataAdapter` during the mock phase. Backend schema and HTTP contracts are implemented independently without wiring the UI to `/api/*`.
+8. A new session can repeat weekly straight from the session form: the form creates the first session, then a weekly rule from it (days, end date, at most one year). An existing one-off session repeats from `/schedule/[sessionId]/recurrence`. Both show every planned date before saving, mark dates that will be skipped as duplicates, and warn (never block) when a chosen coach already teaches at that time. Sessions may share a time and a venue.
+9. Holiday calendars, per-occurrence exceptions, series-wide editing/deletion, and coach self-service remain out of scope.
+10. UI reads and writes through `MockDataAdapter` during the mock phase. Backend schema and HTTP contracts are implemented independently without wiring the UI to `/api/*`.
 
 ## Routes
 

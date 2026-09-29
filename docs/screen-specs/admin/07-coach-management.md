@@ -103,3 +103,7 @@ PROFILE PHOTO
 Coach photo, name, specialty, and public bio are public-facing.
 
 Coach rate and rate type are admin-only.
+
+## Editor layout
+
+The coach editor opens on Public profile, with URL-backed tabs for Profile photo, Internal financials (permission gated), and Upcoming sessions. A live name/photo/specialty/status preview remains beside the editor on desktop and below it on smaller screens. Internal rate previews appear only on the financials tab for authorised staff. All sections share the existing admin form and one save action. The session tab uses dated assignment cards and explicit loading, error, and empty states; session links are shown only with schedule access. Missing coach IDs show a not-found state rather than an empty editable form.

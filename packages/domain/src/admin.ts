@@ -7,7 +7,7 @@ import {
 } from "./contracts";
 import type { FieldErrors, LoginInput } from "./customer-portal";
 import { HOLD_DURATION_HOURS } from "./customer-portal";
-import type { CoachRateType, PaymentStatus, SessionStatus } from "./enums";
+import type { CoachRateType, PaymentStatus, SessionStatus, VenueKind } from "./enums";
 import { BOOKING_STATUSES } from "./enums";
 import { manilaYmd } from "./format";
 import { roleLabel } from "./roles";
@@ -185,6 +185,8 @@ export function safeAdminPath(
 }
 
 export type AdminSession = PublicSession & {
+  /** Where the session runs. Sessions may overlap in time, even at the same venue. */
+  venueId: string;
   bookable: boolean;
   coachRatePhp: number;
   coachAssignments: { coachId: string; coachRatePhp: number; coachRateType: CoachRateType }[];
@@ -193,6 +195,7 @@ export type AdminSession = PublicSession & {
 
 export function toPublicSession(session: AdminSession): PublicSession {
   const {
+    venueId: _venueId,
     bookable: _bookable,
     coachRatePhp: _rate,
     coachAssignments: _assignments,
@@ -202,6 +205,21 @@ export function toPublicSession(session: AdminSession): PublicSession {
 }
 
 export type AdminClass = PublicClass;
+
+/** A place sessions run: one of the business's branches, or an off-site partner venue. */
+export type AdminVenue = {
+  id: string;
+  name: string;
+  address: string;
+  kind: VenueKind;
+  /** Inactive venues stay on existing sessions but cannot be picked for new ones. */
+  active: boolean;
+  notes: string;
+};
+
+export function venueKindLabel(kind: VenueKind): string {
+  return kind === "BRANCH" ? "Branch" : "Off-site";
+}
 
 export type PolicyDocumentVersion = {
   id: string;

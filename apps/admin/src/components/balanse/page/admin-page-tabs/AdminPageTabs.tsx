@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, useIsMobile } from "@balanse/ui";
+import { chipVariants, cn, useIsMobile } from "@balanse/ui";
 import { type KeyboardEvent, useEffect, useRef } from "react";
 import type { AdminPageTabsProps } from "./AdminPageTabs.meta";
 
@@ -69,14 +69,13 @@ export function AdminPageTabs({
         className={
           chips
             ? cn(
-                "snap-start shrink-0 rounded-full border border-border bg-transparent px-3 py-1.5 text-sm",
-                selected && "bg-primary font-medium text-primary-foreground",
-                tab.error &&
-                  "border-destructive text-destructive data-[selected=true]:bg-destructive data-[selected=true]:text-destructive-foreground",
+                chipVariants({ selected }),
+                "snap-start",
+                tab.error && "border-destructive text-destructive",
                 selected && tab.error && "bg-destructive text-destructive-foreground",
               )
             : cn(
-                "relative inline-flex items-center gap-1.5 border-transparent px-1.5 py-0.5 text-sm font-medium text-foreground/60",
+                "relative inline-flex items-center gap-1.5 border-transparent px-1.5 py-0.5 text-sm font-medium text-foreground/70",
                 "after:absolute after:inset-x-0 after:bottom-[-5px] after:h-0.5 after:bg-foreground after:opacity-0",
                 selected && "font-semibold text-foreground after:opacity-100",
               )
@@ -98,7 +97,7 @@ export function AdminPageTabs({
             ref={listRef}
             role="tablist"
             aria-label={label}
-            className="flex w-full max-w-full flex-nowrap gap-2 overflow-x-auto scroll-px-1 snap-x snap-mandatory"
+            className="flex w-full max-w-full flex-nowrap gap-2 overflow-x-auto scroll-px-1 snap-x snap-mandatory [scrollbar-width:none]"
             onKeyDown={onListKeyDown}
           >
             {triggers}

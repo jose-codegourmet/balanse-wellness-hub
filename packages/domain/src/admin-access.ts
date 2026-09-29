@@ -11,6 +11,7 @@ import {
 import type { SettingsSection } from "./contracts";
 import { ADMIN_NAV_ITEMS, type AdminNavId } from "./navigation";
 import { OWN_TO_ALL_PERMISSION, type PermissionKey } from "./permissions";
+import { isSuperAdminRoleKey } from "./roles";
 
 export type AccessSurfaceKind = "nav" | "route" | "action" | "api";
 
@@ -32,6 +33,8 @@ export type AdminAccessRequirement = {
   pathPattern?: string;
   method?: "GET" | "POST" | "PATCH" | "DELETE";
   requiresOwnership?: boolean;
+  /** Role-exclusive surfaces cannot be granted through custom permissions. */
+  superAdminOnly?: boolean;
   whenQuery?: AdminAccessQueryMatch;
   /**
    * Sensitive fields/sections on this mixed payload. Handlers must omit each
@@ -82,6 +85,18 @@ export const SETTINGS_MANAGE_PERMISSIONS = [
 
 const CLASS_READ = ["classes.read", "classes.manage"] as const satisfies readonly PermissionKey[];
 const COACH_READ = ["coaches.read", "coaches.manage"] as const satisfies readonly PermissionKey[];
+/**
+ * Venues are studio catalogue, managed with classes. Anyone who reads the schedule or
+ * events can list them too, so session and event screens can show where things happen.
+ */
+export const VENUE_READ_PERMISSIONS = [
+  "classes.read",
+  "classes.manage",
+  "schedule.read.all",
+  "schedule.read.own",
+  "events.read",
+  "events.manage",
+] as const satisfies readonly PermissionKey[];
 const BUNDLE_READ = ["bundles.read", "bundles.manage"] as const satisfies readonly PermissionKey[];
 const EVENT_READ = ["events.read", "events.manage"] as const satisfies readonly PermissionKey[];
 const STAFF_READ = ["staff.read", "staff.manage"] as const satisfies readonly PermissionKey[];
@@ -153,7 +168,13 @@ export const ADMIN_NAV_ACCESS: readonly AdminAccessRequirement[] = [
   nav("customers", "/customers", "Customers", ["customers.read"]),
   nav("coaches", "/coaches", "Coaches", COACH_READ),
   nav("classes", "/classes", "Classes", CLASS_READ),
+  nav("venues", "/venues", "Venues", CLASS_READ),
   nav("bundles", "/bundles", "Bundles", BUNDLE_READ),
+  { ...nav("sales", "/sales", "Sales", ["reports.sales.read"]), superAdminOnly: true },
+  {
+    ...nav("transactions", "/transactions", "Transactions", ["payments.read"]),
+    superAdminOnly: true,
+  },
   nav("reports", "/reports", "Reports", REPORT_READ_PERMISSIONS),
   nav("staff", "/staff", "Staff", [...STAFF_READ, ...ROLE_READ]),
   nav("settings", "/settings", "Settings", SETTINGS_MANAGE_PERMISSIONS),
@@ -228,12 +249,21 @@ export const ADMIN_ROUTE_ACCESS: readonly AdminAccessRequirement[] = [
   route("classes-new", "/classes/new", "Create class", ["classes.manage"], { navId: "classes" }),
   route("classes", "/classes", "Classes", CLASS_READ, { navId: "classes" }),
   route("class-detail", "/classes/:classId", "Class detail", CLASS_READ, { navId: "classes" }),
+  route("venues", "/venues", "Venues", CLASS_READ, { navId: "venues" }),
   route("events", "/events", "Events", EVENT_READ, { navId: "events" }),
   route("events-new", "/events/new", "Create event", ["events.manage"], { navId: "events" }),
   route("event-detail", "/events/:eventId", "Event detail", EVENT_READ, { navId: "events" }),
   route("bundles-new", "/bundles/new", "Create bundle", ["bundles.manage"], { navId: "bundles" }),
   route("bundles", "/bundles", "Bundles", BUNDLE_READ, { navId: "bundles" }),
   route("bundle-detail", "/bundles/:bundleId", "Bundle detail", BUNDLE_READ, { navId: "bundles" }),
+  route("sales", "/sales", "Sales", ["reports.sales.read"], {
+    navId: "sales",
+    superAdminOnly: true,
+  }),
+  route("transactions", "/transactions", "Transactions", ["payments.read"], {
+    navId: "transactions",
+    superAdminOnly: true,
+  }),
   route("reports", "/reports", "Reports", REPORT_READ_PERMISSIONS, {
     navId: "reports",
     includeFieldsIf: REPORT_READ_PERMISSIONS,
@@ -316,6 +346,7 @@ export const ADMIN_ACTION_ACCESS: readonly AdminAccessRequirement[] = [
   action("cancellations-manage", "Complete or reject cancellation", ["cancellations.manage"]),
   action("reschedules-manage", "Approve or reject reschedule", ["reschedules.manage"]),
   action("classes-manage", "Create or edit class", ["classes.manage"]),
+  action("venues-manage", "Create or edit venue", ["classes.manage"]),
   action("coaches-manage", "Create or edit coach", ["coaches.manage"]),
   action("coach-rates-read", "View coach rates", ["coach_rates.read"]),
   action("coach-rates-manage", "Edit coach rates", ["coach_rates.manage"]),
@@ -391,6 +422,9 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
   api("GET", "/api/admin/classes", "List classes", CLASS_READ),
   api("POST", "/api/admin/classes", "Create class", ["classes.manage"]),
   api("PATCH", "/api/admin/classes/:id", "Update class", ["classes.manage"]),
+  api("GET", "/api/admin/venues", "List venues", VENUE_READ_PERMISSIONS),
+  api("POST", "/api/admin/venues", "Create venue", ["classes.manage"]),
+  api("PATCH", "/api/admin/venues/:id", "Update venue", ["classes.manage"]),
   api("GET", "/api/admin/coaches", "List coaches", COACH_READ, {
     includeFieldsIf: ["coach_rates.read"],
   }),
@@ -563,8 +597,13 @@ export function matchAdminApiAccess(
 
 export function actorSatisfiesAccess(
   actor: StaffAuthorizationActor | null | undefined,
-  requirement: Pick<AdminAccessRequirement, "anyOf">,
+  requirement: Pick<AdminAccessRequirement, "anyOf" | "superAdminOnly">,
 ): boolean {
+  if (
+    requirement.superAdminOnly &&
+    (!isInteractiveStaffActor(actor) || !actor || !isSuperAdminRoleKey(actor.roleKey))
+  )
+    return false;
   if (requirement.anyOf.length === 0) return true;
   return hasAnyPermission(actor, requirement.anyOf);
 }
@@ -579,6 +618,7 @@ export function actorSatisfiesRequirement(
   requirement: AdminAccessRequirement,
   context: { ownsResource?: boolean } = {},
 ): boolean {
+  if (!actorSatisfiesAccess(actor, requirement)) return false;
   if (requirement.anyOf.length === 0) return true;
   if (!requirement.requiresOwnership) return actorSatisfiesAccess(actor, requirement);
 
@@ -613,6 +653,8 @@ export const ADMIN_LANDING_PATHS = [
   "/coaches",
   "/classes",
   "/bundles",
+  "/sales",
+  "/transactions",
   "/reports",
   "/staff",
   "/staff/roles",

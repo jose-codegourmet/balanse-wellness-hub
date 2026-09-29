@@ -1,11 +1,14 @@
 import {
+  calendarDayDistance,
   canApproveReschedule,
   FIELD_CONSTRAINTS,
+  isManilaYmd,
   manilaYmd,
   type PublicSession,
   SESSION_RATE_SNAPSHOT_NOTE,
   SESSION_STATUSES,
   validateSessionCapacity,
+  WEEKDAYS,
 } from "@balanse/domain";
 import { z } from "zod";
 
@@ -36,9 +39,14 @@ export function checkCanApproveReschedule(target: PublicSession) {
   return canApproveReschedule(target);
 }
 
+const WEEKDAY_VALUES = WEEKDAYS.map((day) => String(day.value)) as [string, ...string[]];
+const MAX_SERIES_DAYS = 366;
+
 const sessionFields = {
   name: z.string().trim().max(120, "Use 120 characters or fewer."),
   classId: z.string().min(1, "Choose a class."),
+  /** Any venue, any time: sessions may overlap, even at the same venue. */
+  venueId: z.string().min(1, "Choose a venue."),
   coachIds: z
     .array(z.string().min(1))
     .min(1, "Choose at least one coach.")
@@ -54,6 +62,11 @@ const sessionFields = {
     .max(FIELD_CONSTRAINTS.session.capacity.max),
   bookable: z.boolean(),
   status: z.enum(SESSION_STATUSES),
+  /** Create only. "weekly" turns the new session into the first of a weekly series. */
+  repeat: z.enum(["none", "weekly"]),
+  /** `Weekday` values as strings (0 = Sunday). */
+  repeatWeekdays: z.array(z.enum(WEEKDAY_VALUES)),
+  repeatEndsOn: z.string(),
 };
 
 function refineSession(
@@ -61,6 +74,9 @@ function refineSession(
     startsAt: string;
     endsAt: string;
     capacity: number;
+    repeat: "none" | "weekly";
+    repeatWeekdays: string[];
+    repeatEndsOn: string;
   },
   ctx: z.RefinementCtx,
   consumed: number,
@@ -85,6 +101,7 @@ function refineSession(
       params: { validationCode: "duration_too_long" },
     });
   }
+  if (values.repeat === "weekly") refineRepeat(values, ctx);
   const capacity = validateSessionCapacity(values.capacity, consumed);
   if (!capacity.ok) {
     ctx.addIssue({
@@ -92,6 +109,38 @@ function refineSession(
       path: ["capacity"],
       message: capacity.error,
       params: { validationCode: "below_confirmed_count" },
+    });
+  }
+}
+
+function refineRepeat(
+  values: { startsAt: string; repeatWeekdays: string[]; repeatEndsOn: string },
+  ctx: z.RefinementCtx,
+) {
+  if (values.repeatWeekdays.length === 0) {
+    ctx.addIssue({ code: "custom", path: ["repeatWeekdays"], message: "Choose at least one day." });
+  }
+  if (!isManilaYmd(values.repeatEndsOn)) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["repeatEndsOn"],
+      message: "Choose when the series ends.",
+    });
+    return;
+  }
+  const firstYmd = manilaYmd(values.startsAt);
+  const days = calendarDayDistance(firstYmd, values.repeatEndsOn);
+  if (days < 0) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["repeatEndsOn"],
+      message: "The series must end on or after the first session.",
+    });
+  } else if (days > MAX_SERIES_DAYS) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["repeatEndsOn"],
+      message: "Create at most one year at a time.",
     });
   }
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@balanse/ui";
 import { LogOut } from "lucide-react";
 import { useState } from "react";
 import {
@@ -13,7 +14,6 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
 } from "@/components/jabkit/alert-dialog";
-import { Button } from "@/components/jabkit/button";
 import { cn } from "@/components/jabkit/lib/cn";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
@@ -54,15 +54,16 @@ export function BalansePortalLogout({
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <Button
+      {/* A sidebar nav row, styled like its sibling links in `portal.css`
+          rather than as a button. */}
+      <button
         type="button"
-        variant="ghost"
         className={cn("portal-logout-button", className)}
         onClick={() => setOpen(true)}
       >
         <LogOut size={17} strokeWidth={1.5} aria-hidden="true" />
         <span>Log out</span>
-      </Button>
+      </button>
       <AlertDialogContent size="sm" className="portal-logout-dialog">
         <AlertDialogHeader className="portal-logout-dialog-header">
           <AlertDialogMedia className="portal-logout-dialog-media">
@@ -78,9 +79,9 @@ export function BalansePortalLogout({
         <AlertDialogFooter className="portal-logout-dialog-footer">
           {/* Staying signed in is the safe choice, and being first in the DOM
               keeps it the initially focused control. */}
-          <AlertDialogCancel render={<Button variant="secondary">Stay signed in</Button>} />
+          <AlertDialogCancel render={<Button variant="outline">Stay signed in</Button>} />
           {/* Brand primary, not `destructive`: logging out is routine. */}
-          <AlertDialogAction render={<Button variant="primary">Log out</Button>} onClick={logOut} />
+          <AlertDialogAction render={<Button>Log out</Button>} onClick={logOut} />
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

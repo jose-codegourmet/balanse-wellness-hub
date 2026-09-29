@@ -2,9 +2,8 @@
 
 import type { CustomerProfile, PasswordChangeInput } from "@balanse/domain";
 import { PASSWORD_MIN_LENGTH, validateMockPasswordChange } from "@balanse/domain";
-import { Label, PasswordInput } from "@balanse/ui";
+import { Button, Label, PasswordInput } from "@balanse/ui";
 import { useState } from "react";
-import { Button } from "@/components/jabkit/button";
 
 const EMPTY: PasswordChangeInput = { currentPassword: "", newPassword: "", confirmPassword: "" };
 
@@ -118,7 +117,6 @@ export function PasswordSettingsForm({
         <Button
           type="submit"
           disabled={managedByGoogle}
-          className="profile-save-button"
           title={managedByGoogle ? "Managed by Google in this preview" : undefined}
         >
           Update password

@@ -94,20 +94,22 @@ function DataTable<TData, TValue>({
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                      <button
+                      <Button
                         type="button"
-                        className="flex items-center gap-1 cursor-pointer select-none"
+                        variant="ghost"
+                        size="xs"
+                        className="-ml-2.5"
                         onClick={header.column.getToggleSortingHandler()}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
                         {header.column.getIsSorted() === "asc" ? (
-                          <ChevronUpIcon className="size-4" />
+                          <ChevronUpIcon data-icon="inline-end" />
                         ) : header.column.getIsSorted() === "desc" ? (
-                          <ChevronDownIcon className="size-4" />
+                          <ChevronDownIcon data-icon="inline-end" />
                         ) : (
-                          <ChevronsUpDownIcon className="size-4 opacity-50" />
+                          <ChevronsUpDownIcon data-icon="inline-end" className="opacity-50" />
                         )}
-                      </button>
+                      </Button>
                     ) : (
                       flexRender(header.column.columnDef.header, header.getContext())
                     )}

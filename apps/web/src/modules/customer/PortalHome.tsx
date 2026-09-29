@@ -2,14 +2,13 @@
 
 import type { CustomerBooking, CustomerProfile } from "@balanse/domain";
 import { bookingsForTab, needsAttentionBookings, upcomingConfirmed } from "@balanse/domain";
-import { FeedbackState, Tabs, TabsContent, TabsList, TabsTrigger } from "@balanse/ui";
+import { Button, FeedbackState, Tabs, TabsContent, TabsList, TabsTrigger } from "@balanse/ui";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { BookingSummary } from "@/components/balanse/portal/BookingSummary";
 import "@/components/balanse/portal/portal-home.css";
-import { Button } from "@/components/jabkit/button";
 import { BookingCard } from "./BookingCard";
 
 const TABS = [
@@ -59,10 +58,12 @@ export function PortalHome({
         </div>
         {/* The schedule is the only way to reserve, so it is anchored to the
             greeting instead of trailing the page as a loose link. */}
-        <Button asChild className="portal-pill-button portal-home-browse">
-          <Link href="/portal/schedule">
-            Browse Schedule <ArrowUpRight size={17} aria-hidden="true" />
-          </Link>
+        <Button
+          className="portal-home-browse"
+          nativeButton={false}
+          render={<Link href="/portal/schedule" />}
+        >
+          Browse Schedule <ArrowUpRight size={17} aria-hidden="true" />
         </Button>
       </header>
 

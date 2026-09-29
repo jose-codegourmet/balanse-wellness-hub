@@ -337,7 +337,7 @@ function AdminDataTableInner<TData>({
         {loading ? null : (
           <div
             className={cn(
-              "mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-card/70 p-3 shadow-xs",
+              "mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-card/70 p-3 shadow-xs",
               !title && "mt-0",
             )}
           >
@@ -449,9 +449,9 @@ function AdminDataTableInner<TData>({
                     stickyHeader && "max-h-[min(32rem,70vh)] overflow-y-auto",
                   )}
                 >
-                  <table className="w-full min-w-[36rem] border-separate border-spacing-0 text-left text-sm">
+                  <table className="w-full min-w-[36rem] border-separate border-spacing-0 text-left text-sm tabular-nums">
                     {title ? <caption className="sr-only">{title}</caption> : null}
-                    <thead className="bg-muted/35">
+                    <thead>
                       {table.getHeaderGroups().map((headerGroup) => (
                         <tr key={headerGroup.id}>
                           {headerGroup.headers.map((header) => (
@@ -469,7 +469,7 @@ function AdminDataTableInner<TData>({
                         <tr>
                           <td
                             colSpan={tableColumns.length}
-                            className="px-4 py-8 text-center text-sm text-muted-foreground"
+                            className="px-5 py-12 text-center text-sm text-muted-foreground"
                           >
                             {emptyNode}
                           </td>
@@ -677,13 +677,14 @@ function DataRow<TData>({
     .getVisibleCells()
     .some((cell) => Boolean(cell.column.columnDef.meta?.primaryLink?.(cell.row.original)));
   const interactive = Boolean(onRowClick) && !hasPrimaryLink;
+  const leadCellId = row.getVisibleCells().find((cell) => cell.column.id !== "_select")?.id;
 
   return (
     <tr
       data-state={selected ? "selected" : undefined}
       data-density={density}
       className={cn(
-        "border-b border-border/60 transition-colors duration-200 ease-out last:border-b-0 hover:bg-primary/[0.035] motion-reduce:transition-none data-[state=selected]:bg-muted",
+        "group/row transition-colors duration-150 ease-out hover:bg-muted/45 motion-reduce:transition-none data-[state=selected]:bg-primary/[0.06]",
         interactive ? "cursor-pointer" : null,
       )}
       tabIndex={interactive ? 0 : undefined}
@@ -707,14 +708,16 @@ function DataRow<TData>({
           <td
             key={cell.id}
             className={cn(
-              "px-2 align-middle first:pl-4 last:pr-4",
-              density === "compact" ? "py-1" : "py-2",
+              // Borders live on cells: `border-separate` tables ignore row borders.
+              "border-b border-border/60 px-4 align-middle leading-snug first:pl-5 last:pr-5 group-last/row:border-b-0",
+              density === "compact" ? "py-2" : "py-3.5",
+              cell.id === leadCellId ? "font-medium text-foreground" : "text-foreground/80",
             )}
           >
             {href ? (
               <Link
                 href={href}
-                className="underline underline-offset-4"
+                className="font-medium text-foreground underline decoration-foreground/25 underline-offset-4 transition-colors hover:decoration-foreground"
                 onClick={(event) => event.stopPropagation()}
               >
                 {content}

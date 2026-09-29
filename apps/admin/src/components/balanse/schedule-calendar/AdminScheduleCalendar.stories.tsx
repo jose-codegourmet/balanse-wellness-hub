@@ -15,19 +15,30 @@ function StatefulCalendar({
   selectedDay?: string;
   sessions?: typeof adminSessions;
 }) {
-  const [selectedDay, setSelectedDay] = useState(initialDay ?? "2026-09-16");
+  const [anchorDay, setAnchorDay] = useState(initialDay ?? "2026-09-16");
+  const [openDay, setOpenDay] = useState<string | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   return (
-    <AdminScheduleCalendar
-      sessions={sessions ?? adminSessions}
-      todayYmd="2026-09-16"
-      selectedDay={selectedDay}
-      selectedSessionId={selectedSessionId}
-      view={view}
-      onSelectDay={setSelectedDay}
-      onSelectSession={setSelectedSessionId}
-      onCreateSession={() => undefined}
-    />
+    <div className="flex h-[48rem]">
+      <AdminScheduleCalendar
+        className="flex-1"
+        sessions={sessions ?? adminSessions}
+        todayYmd="2026-09-16"
+        anchorDay={anchorDay}
+        selectedDay={openDay}
+        selectedSessionId={selectedSessionId}
+        view={view}
+        onNavigate={setAnchorDay}
+        onOpenDay={(ymd) => {
+          setOpenDay(ymd);
+          setSelectedSessionId(null);
+        }}
+        onOpenSession={(session) => {
+          setOpenDay(session.startsAt.slice(0, 10));
+          setSelectedSessionId(session.id);
+        }}
+      />
+    </div>
   );
 }
 
@@ -38,9 +49,9 @@ const meta: Meta<typeof AdminScheduleCalendar> = {
   args: {
     ...adminScheduleCalendarDefaultValues,
     sessions: adminSessions,
-    onSelectDay: () => undefined,
-    onSelectSession: () => undefined,
-    onCreateSession: () => undefined,
+    onNavigate: () => undefined,
+    onOpenDay: () => undefined,
+    onOpenSession: () => undefined,
   },
 };
 

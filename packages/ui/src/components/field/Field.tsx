@@ -178,7 +178,7 @@ function FieldLabel({ className, htmlFor, ...props }: React.ComponentProps<typeo
       data-slot="field-label"
       htmlFor={htmlFor ?? field?.id}
       className={cn(
-        "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:border-primary/30 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border *:data-[slot=field]:p-2.5 dark:has-data-checked:border-primary/20 dark:has-data-checked:bg-primary/10",
+        "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 not-has-[>[data-slot=field]]:text-[0.6875rem] not-has-[>[data-slot=field]]:font-semibold not-has-[>[data-slot=field]]:tracking-[0.12em] not-has-[>[data-slot=field]]:uppercase has-data-checked:border-primary/30 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border *:data-[slot=field]:p-2.5 dark:has-data-checked:border-primary/20 dark:has-data-checked:bg-primary/10",
         "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
         className,
       )}

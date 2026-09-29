@@ -105,8 +105,10 @@ export function ScheduleCalendarSection({
       initialClassFilter={initialClassFilter}
       initialCoachFilter={initialCoachFilter}
       onClearFilter={() => {
-        if (pathname === "/") {
-          router.replace(audience === "customer" ? "/portal/schedule" : "/#schedule");
+        if (pathname === "/book/quick" || pathname === "/book/calendar") {
+          router.replace(pathname, { scroll: false });
+        } else if (pathname === "/") {
+          router.replace("/", { scroll: false });
         }
       }}
       onReserve={(session) => {

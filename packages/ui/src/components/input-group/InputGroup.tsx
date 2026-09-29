@@ -23,7 +23,7 @@ function InputGroup({ className, ...props }: InputGroupProps) {
       data-slot="input-group"
       role="group"
       className={cn(
-        "group/input-group relative flex h-8 items-center in-data-[slot=combobox-content]:focus-within:border-inherit in-data-[slot=combobox-content]:focus-within:ring-0",
+        "group/input-group relative flex h-10 items-center in-data-[slot=combobox-content]:focus-within:border-inherit in-data-[slot=combobox-content]:focus-within:ring-0",
         controlSurfaceGroup,
         "has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5",
         className,
@@ -70,19 +70,31 @@ function InputGroupAddon({ className, align = "inline-start", ...props }: InputG
   );
 }
 
-const inputGroupButtonVariants = cva("flex items-center gap-2 text-sm shadow-none", {
+/**
+ * Dimensions for buttons that sit inside the input frame. Typography, radius
+ * and colour come from `Button`; the matching `Button` size is passed through
+ * so touch screens never grow an in-field button past the field height.
+ */
+const inputGroupButtonVariants = cva("shadow-none", {
   variants: {
     size: {
-      xs: "h-6 gap-1 rounded-[calc(var(--radius)-3px)] px-1.5 [&>svg:not([class*='size-'])]:size-3.5",
+      xs: "h-6 gap-1 px-1.5",
       sm: "",
-      "icon-xs": "size-6 rounded-[calc(var(--radius)-3px)] p-0 has-[>svg]:p-0",
-      "icon-sm": "size-8 p-0 has-[>svg]:p-0",
+      "icon-xs": "size-6 p-0",
+      "icon-sm": "",
     },
   },
   defaultVariants: {
     size: "xs",
   },
 });
+
+const INPUT_GROUP_BUTTON_SIZE = {
+  xs: "xs",
+  sm: "sm",
+  "icon-xs": "icon-xs",
+  "icon-sm": "icon-sm",
+} as const;
 
 function InputGroupButton({
   className,
@@ -96,6 +108,7 @@ function InputGroupButton({
       type={type}
       data-size={size}
       variant={variant}
+      size={INPUT_GROUP_BUTTON_SIZE[size ?? "xs"]}
       className={cn(inputGroupButtonVariants({ size }), className)}
       {...props}
     />

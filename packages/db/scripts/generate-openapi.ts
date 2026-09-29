@@ -16,6 +16,7 @@ import {
   SESSION_STATUSES,
   STAFF_ROLES,
   VALIDATION_ERROR_CODES,
+  VENUE_KINDS,
 } from "@balanse/domain";
 import { API_CONTRACT_ROUTES } from "../contracts/routes";
 
@@ -92,6 +93,7 @@ for (const route of API_CONTRACT_ROUTES) {
                     ? {
                         required: [
                           "classId",
+                          "venueId",
                           "coachIds",
                           "startsAt",
                           "endsAt",
@@ -102,6 +104,12 @@ for (const route of API_CONTRACT_ROUTES) {
                     : {}),
                   properties: {
                     classId: { type: "string" },
+                    venueId: {
+                      type: "string",
+                      maxLength: 64,
+                      description:
+                        "Where the session runs. Must be an active venue when set or changed; an inactive current venue may be kept. Overlapping session times are allowed.",
+                    },
                     coachIds: {
                       type: "array",
                       minItems: 1,
@@ -115,6 +123,39 @@ for (const route of API_CONTRACT_ROUTES) {
                     capacity: { type: "integer", minimum: 1, maximum: 200 },
                     customerPrice: { type: "string", pattern: "^[0-9]+$" },
                     status: { type: "string", enum: ["DRAFT", "PUBLISHED"] },
+                  },
+                  additionalProperties: false,
+                },
+              },
+            },
+          },
+        }
+      : {}),
+    ...((route.path === "/api/admin/venues" && route.method === "post") ||
+    (route.path === "/api/admin/venues/{id}" && route.method === "patch")
+      ? {
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  ...(route.method === "post" ? { required: ["name", "kind"] } : {}),
+                  properties: {
+                    name: {
+                      type: "string",
+                      minLength: 1,
+                      maxLength: 120,
+                      description: "Trimmed. Unique (case-insensitive); duplicates return 409.",
+                    },
+                    address: { type: "string", maxLength: 240 },
+                    kind: { $ref: "#/components/schemas/VenueKind" },
+                    notes: { type: "string", maxLength: 1000, description: "Staff-only." },
+                    active: {
+                      type: "boolean",
+                      description:
+                        "Inactive venues stay on existing sessions but cannot be chosen for new ones.",
+                    },
                   },
                   additionalProperties: false,
                 },
@@ -178,6 +219,7 @@ const spec = {
       RefundStatus: { type: "string", enum: [...REFUND_STATUSES] },
       SessionStatus: { type: "string", enum: [...SESSION_STATUSES] },
       EventStatus: { type: "string", enum: [...EVENT_STATUSES] },
+      VenueKind: { type: "string", enum: [...VENUE_KINDS] },
       CoachRateType: { type: "string", enum: [...COACH_RATE_TYPES] },
       StaffRole: { type: "string", enum: [...STAFF_ROLES] },
       BundleStatus: { type: "string", enum: [...BUNDLE_STATUSES] },

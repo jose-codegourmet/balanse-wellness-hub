@@ -4,7 +4,7 @@ import { type AdminCustomer, formatRelativeTime, formatSessionDate } from "@bala
 import { Badge, Button, FeedbackState } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { CalendarClock, Clock, type LucideIcon, UserMinus, Users } from "lucide-react";
+import { CalendarClock, Clock, CopyIcon, type LucideIcon, UserMinus, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useMemo } from "react";
@@ -37,19 +37,21 @@ export type CustomerListPageProps = {
 
 function CopyableText({ value }: { value: string }) {
   return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="xs"
-      className="h-auto max-w-full justify-start px-1.5 py-0.5 font-normal"
-      title={`Copy ${value}`}
-      aria-label={`Copy ${value}`}
-      onClick={() => {
-        void navigator.clipboard.writeText(value);
-      }}
-    >
+    <span className="flex max-w-full min-w-0 items-center gap-1">
       <span className="truncate">{value}</span>
-    </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-xs"
+        title={`Copy ${value}`}
+        aria-label={`Copy ${value}`}
+        onClick={() => {
+          void navigator.clipboard.writeText(value);
+        }}
+      >
+        <CopyIcon aria-hidden />
+      </Button>
+    </span>
   );
 }
 

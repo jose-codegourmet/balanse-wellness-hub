@@ -34,7 +34,7 @@ export function AdminDataTablePagination<TData>({
   const pageSizeId = `${tableId}-page-size`;
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border bg-muted/20 px-4 py-2.5">
+    <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border bg-muted/30 px-5 py-3">
       <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
         {filteredCount} {filteredCount === 1 ? labels.result : labels.results}
       </p>
@@ -69,7 +69,6 @@ export function AdminDataTablePagination<TData>({
                   type="button"
                   variant="outline"
                   size={thumbFriendly ? "icon" : "icon-sm"}
-                  className={thumbFriendly ? "min-h-11 min-w-11" : undefined}
                   disabled={!table.getCanPreviousPage()}
                   onClick={() => table.previousPage()}
                   aria-label={labels.previous}
@@ -90,7 +89,6 @@ export function AdminDataTablePagination<TData>({
                   type="button"
                   variant="outline"
                   size={thumbFriendly ? "icon" : "icon-sm"}
-                  className={thumbFriendly ? "min-h-11 min-w-11" : undefined}
                   disabled={!table.getCanNextPage()}
                   onClick={() => table.nextPage()}
                   aria-label={labels.next}

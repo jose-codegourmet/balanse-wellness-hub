@@ -1,3 +1,4 @@
+/** Shared responsive page tabs; inactive desktop labels retain readable contrast on the warm background. */
 import type * as React from "react";
 
 export type AdminPageTab = {

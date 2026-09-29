@@ -2,7 +2,7 @@
 
 ## Requirements
 
-1. Public nav is Schedule, Classes, Coaches, About, FAQs, Contact, Login/Profile in that order. Schedule and Classes hash to the landing calendar.
+1. Public nav is Schedule, Classes, Coaches, About, FAQs, Contact, Login/Profile in that order. Schedule opens `/book/calendar`; Classes opens `/classes`. Both `/book/quick` and `/book/calendar` highlight Schedule.
 2. Customer nav is Home/My Bookings, Schedule, Profile, Achievements (TBD).
 3. Admin nav is the 12-item list with Reports between Classes and Staff, and is not rendered in `apps/web`.
 4. Customer-facing status copy matches `docs/screen-specs/shared/02-status-language.md` exactly; raw enums never reach the DOM.

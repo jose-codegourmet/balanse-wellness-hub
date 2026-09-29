@@ -41,13 +41,7 @@ export function ConfirmAction({
 
   return (
     <AlertDialog open={open} onOpenChange={closeAndReset}>
-      <Button
-        type="button"
-        variant={variant}
-        disabled={disabled}
-        className="min-h-11"
-        onClick={() => setOpen(true)}
-      >
+      <Button type="button" variant={variant} disabled={disabled} onClick={() => setOpen(true)}>
         {triggerLabel}
       </Button>
       <AlertDialogContent>
@@ -70,6 +64,7 @@ export function ConfirmAction({
         <AlertDialogFooter>
           <AlertDialogCancel>Back</AlertDialogCancel>
           <AlertDialogAction
+            variant={variant === "destructive" ? "destructive" : "default"}
             disabled={!canConfirm}
             onClick={() => {
               if (!canConfirm) return;

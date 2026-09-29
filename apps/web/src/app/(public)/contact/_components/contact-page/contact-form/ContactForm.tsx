@@ -1,10 +1,9 @@
 "use client";
 
 import { validateContactForm } from "@balanse/domain";
-import { Alert, AlertDescription, AlertTitle, Input, Label, Textarea } from "@balanse/ui";
+import { Alert, AlertDescription, AlertTitle, Button, Input, Label, Textarea } from "@balanse/ui";
 import { CircleCheck, LoaderCircle, TriangleAlert } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/jabkit/button";
 import { notify } from "@/modules/notifications/notify";
 
 /**

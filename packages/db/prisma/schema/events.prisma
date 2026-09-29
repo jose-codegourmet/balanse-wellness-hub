@@ -1,5 +1,5 @@
 /// #319 — 1:0..1 operational wrapper on one GymSession.
-/// Price, capacity, schedule, and coach staffing stay on the session.
+/// Price, capacity, schedule, venue, and coach staffing stay on the session.
 /// No slug until a public event surface is approved (#317 Q1).
 model SessionEvent {
   id                   String      @id @default(cuid())
@@ -10,8 +10,6 @@ model SessionEvent {
   /// Signed-upload object key. Same pattern as GymClass.heroImage (BE-052).
   posterImage          String?
   galleryImages        String[]    @default([])
-  venueName            String      @default("")
-  venueAddress         String      @default("")
   beneficiary          String      @default("")
   whatToBring          String      @default("")
   internalNotes        String      @default("")

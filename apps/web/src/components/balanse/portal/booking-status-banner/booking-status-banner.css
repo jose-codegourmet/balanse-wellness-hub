@@ -1,0 +1,56 @@
+/* Branded ticket treatments: champagne for confirmed, inked brown for closed,
+   and warm paper for pending. Large type and distinct seals carry the state. */
+.booking-status-banner {
+  --booking-state-fill: var(--balanse-beige);
+  --booking-state-ink: var(--balanse-charcoal);
+  --booking-state-line: var(--balanse-tan);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: clamp(1.5rem, 3vw, 2.4rem);
+  border-bottom: 1px solid var(--booking-state-line);
+  background: radial-gradient(ellipse at top right, color-mix(in oklab, var(--balanse-gold) 22%, transparent), transparent 65%), linear-gradient(115deg, var(--balanse-beige), var(--balanse-cream));
+  color: var(--booking-state-ink);
+}
+.booking-status-banner::after { content: ""; position: absolute; z-index: -1; pointer-events: none; width: 15rem; height: 15rem; right: -5rem; top: -8rem; border: 1px solid var(--booking-state-line); border-radius: 50%; box-shadow: 0 0 0 1.5rem color-mix(in oklab, var(--booking-state-line) 10%, transparent), 0 0 0 3rem color-mix(in oklab, var(--booking-state-line) 6%, transparent); }
+.booking-status-banner[data-tone="cancelled"] {
+  --booking-state-fill: var(--balanse-muted-brown);
+  --booking-state-ink: var(--balanse-warm-white);
+  --booking-state-line: color-mix(in oklab, var(--balanse-tan) 50%, var(--balanse-muted-brown));
+  background: repeating-linear-gradient(135deg, transparent, transparent 8px, color-mix(in oklab, var(--balanse-tan) 6%, transparent) 8px, color-mix(in oklab, var(--balanse-tan) 6%, transparent) 9px), linear-gradient(110deg, var(--balanse-muted-brown), color-mix(in oklab, var(--balanse-muted-brown) 75%, var(--balanse-charcoal)));
+}
+.booking-status-banner[data-tone="pending"], .booking-status-banner[data-tone="waiting"] { --booking-state-fill: var(--balanse-cream); background: linear-gradient(115deg, var(--balanse-cream), var(--balanse-warm-white)); border-bottom-style: dashed; }
+.booking-status-banner[data-tone="history"] { --booking-state-fill: var(--balanse-cream); --booking-state-ink: var(--balanse-muted-brown); background: var(--balanse-cream); }
+.booking-status-symbol { display: grid; place-items: center; flex-shrink: 0; width: 4.75rem; height: 4.75rem; border: 1px solid var(--booking-state-line); outline: 1px solid var(--booking-state-line); outline-offset: -6px; border-radius: 50%; background: color-mix(in oklab, var(--balanse-warm-white) 22%, transparent); color: var(--booking-state-ink); }
+.booking-status-symbol svg { width: 2rem; height: 2rem; }
+.booking-status-banner[data-tone="cancelled"] .booking-status-symbol { border-radius: .45rem; background: transparent; }
+.booking-status-banner[data-tone="pending"] .booking-status-symbol, .booking-status-banner[data-tone="waiting"] .booking-status-symbol { outline: none; border-style: dashed; color: var(--balanse-muted-brown); }
+.booking-status-copy { min-width: 0; }
+.booking-status-eyebrow { margin-bottom: .55rem; font-size: .6rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; }
+.booking-status-label { font-family: var(--font-display); font-size: clamp(1.85rem, 3.2vw, 2.8rem); font-weight: 500; letter-spacing: -.035em; line-height: 1.12; text-wrap: balance; overflow-wrap: anywhere; }
+.booking-status-message { max-width: 43rem; margin-top: .7rem; font-size: .8rem; line-height: 1.7; }
+.booking-status-refund { display: inline-block; margin-top: .9rem; padding-top: .55rem; border-top: 1px solid var(--booking-state-line); font-size: .7rem; font-weight: 500; letter-spacing: .03em; }
+.booking-status-banner[data-compact] { padding: 1.1rem 1.25rem; gap: 1rem; align-items: start; }
+.booking-status-banner[data-compact] .booking-status-symbol { width: 2.75rem; height: 2.75rem; outline-offset: -4px; }
+.booking-status-banner[data-compact] .booking-status-symbol svg { width: 1.25rem; height: 1.25rem; }
+.booking-status-banner[data-compact] .booking-status-label { font-size: clamp(1.3rem, 2vw, 1.6rem); font-weight: 500; letter-spacing: -.025em; }
+.booking-status-banner[data-compact] .booking-status-message { font-size: .72rem; margin-top: .35rem; }
+.booking-ticket > .booking-status-banner { grid-column: 1 / -1; }
+.booking-card > .booking-status-banner { margin: -1.15rem -1.25rem 1.25rem; border-radius: .65rem .65rem 0 0; }
+.booking-summary > .booking-status-banner { margin: -1.35rem -1.4rem 1.3rem; border-radius: .65rem .65rem 0 0; }
+.booking-summary[data-tone="ticket"] > .booking-status-banner { margin: 0 0 1.3rem; }
+.booking-card:has(> .booking-status-banner), .booking-summary:has(> .booking-status-banner) { border-left-width: 1px; }
+@media (max-width: 479px) {
+  .booking-status-banner { gap: 1rem; align-items: start; }
+  .booking-status-symbol { width: 3.25rem; height: 3.25rem; outline-offset: -4px; }
+  .booking-status-symbol svg { width: 1.5rem; height: 1.5rem; }
+  .booking-status-label { font-size: 1.85rem; }
+}
+@media print {
+  .booking-status-banner[data-tone] { background: transparent; color: var(--balanse-charcoal); --booking-state-ink: var(--balanse-charcoal); --booking-state-line: var(--balanse-muted-brown); border: 2px solid currentColor; }
+  .booking-status-banner::after { display: none; }
+  .booking-status-label { font-size: 2rem; }
+}

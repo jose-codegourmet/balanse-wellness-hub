@@ -68,12 +68,13 @@ export function FileUploader({
         {!disabled && (
           <Button
             type="button"
-            variant="destructive"
-            size="icon"
-            className="absolute -right-2 -top-2 size-6 rounded-full"
+            variant="secondary"
+            size="icon-xs"
+            aria-label="Remove image"
+            className="absolute -right-2 -top-2"
             onClick={() => onChange(null)}
           >
-            <XIcon className="size-3" />
+            <XIcon />
           </Button>
         )}
       </div>

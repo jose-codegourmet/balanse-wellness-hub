@@ -15,7 +15,11 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
-import { AdminQueueCard } from "@/components/balanse/queue/admin-queue-card/AdminQueueCard";
+import {
+  AdminQueueCard,
+  AdminQueueFacts,
+} from "@/components/balanse/queue/admin-queue-card/AdminQueueCard";
+import { AdminQueueCount } from "@/components/balanse/queue/admin-queue-count/AdminQueueCount";
 import { AdminQueueList } from "@/components/balanse/queue/admin-queue-list/AdminQueueList";
 import { adminNowIso } from "@/lib/clock";
 import {
@@ -100,22 +104,39 @@ function CancellationRequestCard({
         status={row.status}
         emphasis
         body={
-          <div className="grid gap-3">
-            {reason ? (
-              <blockquote className="text-pretty wrap-break-word border-l-2 border-border pl-3 text-sm leading-relaxed italic">
-                “{reason}”
-              </blockquote>
-            ) : (
-              <p className="text-sm text-muted-foreground">No reason given.</p>
-            )}
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge appearance="soft" size="sm">
-                {paymentStatusLabel(row.paymentStatus)}
-              </Badge>
-              {row.refundStatus === "REFUND_PENDING" || row.refundStatus === "REFUNDED" ? (
-                <StatusBadge status={row.refundStatus} surface="admin" />
-              ) : null}
-            </div>
+          <div className="grid gap-4">
+            <figure className="rounded-xl bg-muted/50 px-4 py-3">
+              <figcaption className="text-xs font-medium text-muted-foreground">
+                Customer’s reason
+              </figcaption>
+              {reason ? (
+                <blockquote className="mt-1 text-pretty wrap-break-word text-sm leading-relaxed italic">
+                  “{reason}”
+                </blockquote>
+              ) : (
+                <p className="mt-1 text-sm text-muted-foreground">No reason given.</p>
+              )}
+            </figure>
+            <AdminQueueFacts
+              items={[
+                {
+                  label: "Payment",
+                  value: (
+                    <Badge appearance="soft" size="sm">
+                      {paymentStatusLabel(row.paymentStatus)}
+                    </Badge>
+                  ),
+                },
+                ...(row.refundStatus === "REFUND_PENDING" || row.refundStatus === "REFUNDED"
+                  ? [
+                      {
+                        label: "Refund",
+                        value: <StatusBadge status={row.refundStatus} surface="admin" />,
+                      },
+                    ]
+                  : []),
+              ]}
+            />
           </div>
         }
         actions={
@@ -154,8 +175,11 @@ function CancellationRequestCard({
               </div>
             </AdminCan>
             <AdminCan action="refunds-manage">
-              <div className="flex w-full min-w-0 flex-col gap-2 border-t border-border pt-3">
-                <p className="text-xs text-muted-foreground">{MANUAL_REFUND_NOTE}</p>
+              <div className="flex w-full min-w-0 flex-col gap-2 border-t border-border/60 pt-3">
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground">Refund status.</span>{" "}
+                  {MANUAL_REFUND_NOTE}
+                </p>
                 <div className="flex flex-wrap gap-2">
                   <ConfirmAction
                     triggerLabel="Mark Refund Pending"
@@ -239,10 +263,13 @@ export function CancellationQueuePage({
   const totalCount = empty || error ? 0 : (query.data?.pages[0]?.totalCount ?? items.length);
 
   return (
-    <AdminPageShell title="Cancellation Requests">
-      <p className="max-w-2xl text-sm text-muted-foreground">{SLOT_LOCKED_UNTIL_CANCEL_NOTE}</p>
+    <AdminPageShell
+      eyebrow="Operations queue"
+      title="Cancellation Requests"
+      description={SLOT_LOCKED_UNTIL_CANCEL_NOTE}
+      actions={<AdminQueueCount count={totalCount} label="open requests" />}
+    >
       <AdminQueueList
-        className="mt-6"
         label="Cancellation requests"
         items={items}
         totalCount={totalCount}

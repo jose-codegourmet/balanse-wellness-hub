@@ -4,6 +4,7 @@ import { toSessionIso } from "./session-form.schema";
 
 export const sessionFormDefaultValues: SessionFormValues = {
   classId: "",
+  venueId: "",
   name: "",
   coachIds: [],
   startsAt: "",
@@ -12,6 +13,9 @@ export const sessionFormDefaultValues: SessionFormValues = {
   capacity: 1,
   bookable: true,
   status: "DRAFT",
+  repeat: "none",
+  repeatWeekdays: [],
+  repeatEndsOn: "",
 };
 
 const DEFAULT_START = SESSION_SLOTS_MANILA[0];
@@ -22,6 +26,7 @@ export function sessionFormValuesFromSession(
 ): SessionFormValues {
   return {
     classId: session.classId,
+    venueId: session.venueId,
     name: session.name ?? "",
     coachIds: session.coaches.map((coach) => coach.id),
     startsAt: session.startsAt,
@@ -30,6 +35,9 @@ export function sessionFormValuesFromSession(
     capacity: session.capacity,
     bookable: session.bookable,
     status: session.status,
+    repeat: "none",
+    repeatWeekdays: [],
+    repeatEndsOn: "",
   };
 }
 

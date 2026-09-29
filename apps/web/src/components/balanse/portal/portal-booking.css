@@ -49,6 +49,7 @@
 .booking-ticket[data-mood="closed"] .booking-ticket-stub { background: color-mix(in oklab, var(--secondary) 25%, var(--card)); }
 .booking-ticket-stub-note { margin-top: auto; padding-top: 1.25rem; font-size: .7rem; line-height: 1.6; color: var(--muted-foreground); }
 .booking-ticket-body { min-width: 0; padding: clamp(1.35rem, 2.5vw, 1.85rem); }
+.booking-ticket-stub .booking-reference strong { font-size: 1.05rem; letter-spacing: .04em; line-height: 1.6; }
 .booking-ticket-body .booking-facts { margin-top: 1.1rem; }
 .booking-identity { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem 1.5rem; }
 .booking-identity dt { font-size: .6rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted-foreground); }

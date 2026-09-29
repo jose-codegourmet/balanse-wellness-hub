@@ -22,7 +22,7 @@ export function FaqsPage({ initialQuery = "" }: { initialQuery?: string }) {
         assetId="faqs-a"
         eyebrow="Before you book"
         titleLines={["Questions, answered."]}
-        primaryAction={{ label: "View the schedule", href: "/#schedule" }}
+        primaryAction={{ label: "View the schedule", href: "/book/calendar" }}
         secondaryAction={{ label: "Contact the studio", href: "/contact" }}
         align="compact"
       />

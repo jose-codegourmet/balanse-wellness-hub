@@ -6,9 +6,9 @@ import {
   customerAuthMethodLabel,
   customerProfileSection,
 } from "@balanse/domain";
+import { Button } from "@balanse/ui";
 import { ArrowUpRight, Check, Globe, KeyRound, Mail } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/jabkit/button";
 
 /**
  * Sign-in method as a connected-account row rather than a sentence. Every
@@ -42,7 +42,8 @@ export function AccountSettingsSection({ profile }: { profile: CustomerProfile }
         </span>
         <Button
           type="button"
-          variant="secondary"
+          variant="outline"
+          size="sm"
           className="profile-connected-action"
           aria-disabled="true"
           aria-describedby="account-manage-note"
