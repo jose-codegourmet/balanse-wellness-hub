@@ -7,6 +7,7 @@ import {
   type CustomerBooking,
   customerStatusLabel,
   filterAdminBookings,
+  formatPeso,
   formatSessionDate,
   formatSessionRange,
   formatSessionTimeRange,
@@ -18,7 +19,7 @@ import { getMockAdapter } from "@balanse/mock";
 import { Button, Input, Label, NativeSelect, StatusBadge } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowRightIcon, CalendarIcon, XIcon } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon, CalendarIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -235,6 +236,16 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
     await bookingQuery.refetch();
   }
 
+  if (booking.status === "CANCELLED") {
+    return (
+      <CancelledBookingDetail
+        booking={booking}
+        customerName={name}
+        onRefundComplete={() => getMockAdapter().markRefunded(booking.id).then(refresh)}
+      />
+    );
+  }
+
   return (
     <AdminPageShell
       className="max-w-2xl"
@@ -355,6 +366,152 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
           />
         </AdminCan>
       </div>
+    </AdminPageShell>
+  );
+}
+
+function CancelledBookingDetail({
+  booking,
+  customerName,
+  onRefundComplete,
+}: {
+  booking: CustomerBooking;
+  customerName: string;
+  onRefundComplete: () => Promise<void>;
+}) {
+  const hasRefund = booking.refundStatus !== "NOT_APPLICABLE";
+
+  return (
+    <AdminPageShell
+      className="max-w-4xl"
+      eyebrow="Closed booking"
+      title="Booking cancelled"
+      description="This reservation is closed and cannot be checked in, rescheduled, or reopened here."
+      breadcrumb={[{ label: "Bookings", href: "/bookings" }, { label: customerName }]}
+      actions={
+        <Button nativeButton={false} variant="outline" render={<Link href="/bookings" />}>
+          <ArrowLeftIcon aria-hidden />
+          Back to bookings
+        </Button>
+      }
+    >
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(16rem,.85fr)]">
+        <article className="rounded-xl border border-destructive/35 border-l-4 border-l-destructive bg-destructive/5 p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold tracking-[0.14em] text-destructive uppercase">
+                Cancellation confirmed
+              </p>
+              <h2 className="mt-2 font-display text-2xl tracking-tight sm:text-3xl">
+                {customerName}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                {sessionDisplayName(booking.session)} ·{" "}
+                {formatSessionRange(booking.session.startsAt, booking.session.endsAt)}
+              </p>
+            </div>
+            <StatusBadge status={booking.status} surface="admin" />
+          </div>
+
+          <dl className="mt-6 grid gap-4 border-t border-destructive/20 pt-5 sm:grid-cols-2">
+            <div>
+              <dt className="text-xs font-medium text-muted-foreground">Booking reference</dt>
+              <dd className="mt-1 font-mono text-sm">{booking.id}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium text-muted-foreground">Payment status</dt>
+              <dd className="mt-1 text-sm font-medium">
+                {paymentStatusLabel(booking.paymentStatus)}
+              </dd>
+            </div>
+            <div className="sm:col-span-2">
+              <dt className="text-xs font-medium text-muted-foreground">Cancellation note</dt>
+              <dd className="mt-1 text-sm leading-6">
+                {booking.cancellationReason ?? "No cancellation note was recorded."}
+              </dd>
+            </div>
+          </dl>
+        </article>
+
+        <aside
+          className="rounded-xl border border-border bg-muted/25 p-5"
+          aria-labelledby="cancelled-next-steps"
+        >
+          <p className="text-xs font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+            What happens next
+          </p>
+          <h2 id="cancelled-next-steps" className="mt-2 font-display text-xl tracking-tight">
+            The booking is complete
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            The customer no longer has a place in this session. Review the refund record below when
+            one applies.
+          </p>
+        </aside>
+      </div>
+
+      <section className="mt-4 grid gap-4 lg:grid-cols-2" aria-label="Cancelled booking follow-up">
+        <AdminCan action="refunds-read">
+          <article className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+              Refund record
+            </p>
+            {hasRefund ? (
+              <>
+                <h2 className="mt-2 font-display text-2xl tracking-tight">
+                  {refundStatusLabel(booking.refundStatus)}
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {formatPeso(booking.session.pricePhp)} from the original booking payment.
+                </p>
+                {booking.refundStatus === "REFUND_PENDING" ? (
+                  <AdminCan action="refunds-manage">
+                    <div className="mt-5">
+                      <ConfirmAction
+                        triggerLabel="Mark refund complete"
+                        title="Mark this refund complete?"
+                        description="This records the refund status only; money moves outside the app."
+                        onConfirm={onRefundComplete}
+                      />
+                    </div>
+                  </AdminCan>
+                ) : null}
+              </>
+            ) : (
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                No refund is recorded for this booking.
+              </p>
+            )}
+            <AdminCan href="/payments">
+              <Link
+                href="/payments?tab=refunds"
+                className="mt-5 inline-flex text-sm font-medium underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Open refund queue
+              </Link>
+            </AdminCan>
+          </article>
+        </AdminCan>
+
+        <article className="rounded-xl border border-border bg-card p-5">
+          <p className="text-xs font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+            Next action
+          </p>
+          <h2 className="mt-2 font-display text-2xl tracking-tight">No booking action remains</h2>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Return to the booking list to review another reservation or use the refund queue when a
+            payment follow-up is needed.
+          </p>
+          <Button
+            className="mt-5"
+            nativeButton={false}
+            variant="outline"
+            render={<Link href="/bookings" />}
+          >
+            View bookings
+          </Button>
+        </article>
+      </section>
     </AdminPageShell>
   );
 }

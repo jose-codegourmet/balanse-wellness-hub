@@ -1,9 +1,13 @@
 "use client";
 
-import { validateContactForm } from "@balanse/domain";
+import { type PolicyDocumentVersion, validateContactForm } from "@balanse/domain";
 import { Alert, AlertDescription, AlertTitle, Button, Input, Label, Textarea } from "@balanse/ui";
 import { CircleCheck, LoaderCircle, TriangleAlert } from "lucide-react";
 import { useState } from "react";
+import {
+  PolicyAcceptance,
+  usePolicyAcceptance,
+} from "@/components/balanse/policy-acceptance/PolicyAcceptance";
 import { notify } from "@/modules/notifications/notify";
 
 /**
@@ -13,8 +17,11 @@ import { notify } from "@/modules/notifications/notify";
  */
 export function ContactForm({
   forcedOutcome,
+  policies = [],
 }: {
   forcedOutcome?: "success" | "failure" | "submitting";
+  /** Current versions of the policies admin attached to the contact form. */
+  policies?: PolicyDocumentVersion[];
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -24,6 +31,7 @@ export function ContactForm({
     forcedOutcome ?? "idle",
   );
   const submitting = status === "submitting";
+  const policyAcceptance = usePolicyAcceptance(policies);
 
   return (
     <form
@@ -33,10 +41,12 @@ export function ContactForm({
       onSubmit={(event) => {
         event.preventDefault();
         const result = validateContactForm({ name, email, message });
+        const accepted = policyAcceptance.check();
         if (!result.ok) {
           setErrors(result.errors);
           return;
         }
+        if (!accepted) return;
         setErrors({});
         setStatus("submitting");
         window.setTimeout(() => {
@@ -121,6 +131,8 @@ export function ContactForm({
           ) : null}
         </div>
       </fieldset>
+
+      <PolicyAcceptance {...policyAcceptance.props} title="Before you send" />
 
       <div className="contact-form-actions">
         <p>Questions only. Reservations happen on the schedule.</p>

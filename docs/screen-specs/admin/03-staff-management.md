@@ -60,8 +60,9 @@ Only explicit permissions grant:
 - financial dashboard (`dashboard.financial.read`)
 - capacity/utilization reporting (`reports.capacity.read`)
 
-Front Desk and Coach defaults do not include those keys. Super Admin has
-all-access semantics.
+Front Desk has the explicitly granted financial, refund, coach-rate,
+coach-cost, session-report, role-read, and content-management keys; Coach
+does not. Super Admin has all-access semantics.
 
 ## Coach capability (BE-055 / FE-ADM-038)
 

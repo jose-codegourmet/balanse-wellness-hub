@@ -15,6 +15,7 @@ import {
   Ticket,
   TrendingUp,
   UserRound,
+  UserRoundCheck,
   Users,
   UserX,
 } from "lucide-react";
@@ -22,6 +23,7 @@ import {
 export const NAV_ICONS: Record<AdminNavItem["id"], typeof LayoutDashboard> = {
   dashboard: LayoutDashboard,
   schedule: CalendarDays,
+  students: UserRoundCheck,
   events: CalendarRange,
   bookings: Ticket,
   payments: CreditCard,
@@ -46,6 +48,7 @@ export const NAV_GROUPS: { label: string; ids: AdminNavItem["id"][] }[] = [
     ids: [
       "dashboard",
       "schedule",
+      "students",
       "events",
       "bookings",
       "payments",

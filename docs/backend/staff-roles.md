@@ -34,7 +34,8 @@ Stable ids (idempotent):
 Permission rows use the registry key as `permission_definitions.id`.
 `bundles.read` / `bundles.manage` are included.
 `events.read` / `events.manage` (#319) are included. Front Desk is granted
-`events.read` only; the built-in matrix trigger is paused for that seed row.
+`events.read` only; subsequent canonical matrix expansions use a forward
+migration that briefly pauses the built-in matrix trigger for the seed rows.
 
 Existing `staff_members` rows (including the system actor) keep their ids,
 `userId`, coach link, status, and audit FKs. Interactive `ADMIN` rows backfill

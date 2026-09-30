@@ -4,7 +4,7 @@
 ROLES                               [Create role]
 Name | Type              | State  | Assigned | Permissions | Action
 Super Admin | Built-in · protected | Active | 1 | 40 | View · Clone
-Front Desk  | Built-in · protected | Active | 2 | 17 | View · Clone
+Front Desk  | Built-in · protected | Active | 2 | 26 | View · Clone
 Coach       | Built-in · protected | Active | 1 | 4  | View · Clone
 Community Host | Custom           | Active | 1 | 4  | Edit · Clone
 

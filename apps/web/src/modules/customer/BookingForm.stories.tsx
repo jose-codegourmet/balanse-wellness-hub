@@ -1,4 +1,5 @@
-import { customers, publicSessions } from "@balanse/mock";
+import { currentPoliciesForForm } from "@balanse/domain";
+import { adminSettings, customers, publicSessions } from "@balanse/mock";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { BookingForm } from "./BookingForm";
 
@@ -9,6 +10,11 @@ const meta = {
     session:
       publicSessions.find((session) => session.id === "session-wed-open") ?? publicSessions[2],
     profile: customers[0],
+    policies: currentPoliciesForForm(
+      adminSettings.policyDocuments,
+      adminSettings.policyFormRequirements,
+      "booking",
+    ),
   },
 } satisfies Meta<typeof BookingForm>;
 
@@ -23,4 +29,6 @@ export const Waitlist: Story = {
     intent: "waitlist",
   },
 };
+/** No policies attached to the booking form in admin settings. */
+export const WithoutPolicies: Story = { args: { policies: [] } };
 export const Submitting: Story = { args: { forcedStatus: "submitting" } };

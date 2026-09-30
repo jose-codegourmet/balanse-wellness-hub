@@ -12,6 +12,7 @@ import {
 import { getMockAdapter } from "@balanse/mock";
 import { Alert, AlertDescription, AlertTitle, Button, FeedbackState } from "@balanse/ui";
 import { ArrowRight, Info, LoaderCircle } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useState } from "react";
 import { BookingSummary } from "@/components/balanse/portal/BookingSummary";
@@ -47,6 +48,22 @@ function remainingLabel(session: PublicSession): string {
  */
 function isSelectable(session: PublicSession): boolean {
   return session.reservable;
+}
+
+/** Keep an unavailable session visible, but state exactly why it cannot be requested. */
+function unavailableReason(session: PublicSession): string {
+  switch (session.availability) {
+    case "full_with_waitlist":
+      return "Full — cannot request";
+    case "past_cutoff":
+      return "Booking cutoff has passed — cannot request";
+    case "past":
+      return "This session has ended — cannot request";
+    case "cancelled":
+      return "Cancelled — cannot request";
+    default:
+      return "Unavailable — cannot request";
+  }
 }
 
 export function RescheduleRequest({
@@ -85,11 +102,11 @@ export function RescheduleRequest({
   return (
     <div className="portal-page portal-reschedule">
       <header className="portal-page-head">
-        <p className="portal-eyebrow">My bookings</p>
-        <h1 className="font-display">Request reschedule</h1>
+        <p className="portal-eyebrow">Booking confirmation</p>
+        <h1 className="font-display">Request a reschedule</h1>
         <p className="portal-page-lead">
-          Pick a preferred new session. The studio reviews and resolves the request, and your
-          current slot stays held until then.
+          Choose the session you prefer, then review it before submitting. The studio resolves the
+          request, and your current slot stays held until then.
         </p>
       </header>
 
@@ -115,8 +132,9 @@ export function RescheduleRequest({
 
           <fieldset className="reschedule-picker" disabled={submitting}>
             <legend className="reschedule-legend">
-              <span className="portal-eyebrow">Choose one</span>
-              <strong className="font-display">Select preferred new session</strong>
+              <span className="portal-eyebrow">Step 1 — Choose one</span>
+              <strong className="font-display">Choose an available session</strong>
+              <small>Sessions marked unavailable cannot be requested.</small>
             </legend>
 
             {isEmpty ? (
@@ -155,6 +173,11 @@ export function RescheduleRequest({
                                   <span className="reschedule-option-title">
                                     {sessionDisplayName(session)}
                                   </span>
+                                  {!selectable ? (
+                                    <span className="reschedule-option-unavailable">
+                                      {unavailableReason(session)}
+                                    </span>
+                                  ) : null}
                                   <span className="reschedule-option-meta">
                                     {formatSessionTimeRange(session.startsAt, session.endsAt)} ·{" "}
                                     {session.coachName} · {formatPeso(session.pricePhp)}
@@ -162,7 +185,6 @@ export function RescheduleRequest({
                                   <span className="reschedule-option-capacity" id={noteId}>
                                     {sessionAvailabilityLabel(session.availability)} ·{" "}
                                     {remainingLabel(session)}
-                                    {selectable ? "" : " · cannot be requested"}
                                   </span>
                                 </span>
                               </label>
@@ -201,41 +223,55 @@ export function RescheduleRequest({
                       </span>
                     </>
                   ) : (
-                    "Choose a session above and it appears here before you submit."
+                    <span className="reschedule-review-empty">
+                      <span>Step 2 — Review your request</span>
+                      Choose an available session above. Your preferred new session appears here
+                      before you submit.
+                    </span>
                   )}
-                </div>
-
-                <div className="reschedule-actions">
-                  <p>
-                    Submitting records a preference. Nothing on your current booking changes until
-                    the studio resolves it.
-                  </p>
-                  <Button
-                    type="button"
-                    disabled={!targetId || submitting}
-                    onClick={() => {
-                      setStatus("submitting");
-                      void getMockAdapter()
-                        .createRescheduleRequest(booking.id, targetId)
-                        .then(() => {
-                          notify.portal("reschedule.submitted");
-                          router.push(`/portal/bookings/${booking.id}`);
-                        });
-                    }}
-                  >
-                    {submitting ? (
-                      <>
-                        <LoaderCircle size={16} className="animate-spin" aria-hidden="true" />{" "}
-                        Submitting…
-                      </>
-                    ) : (
-                      "Submit Reschedule Request"
-                    )}
-                  </Button>
                 </div>
               </>
             )}
           </fieldset>
+
+          <div className="reschedule-actions">
+            <p>
+              Submitting records a preference. Nothing on your current booking changes until the
+              studio resolves it.
+            </p>
+            <div className="reschedule-action-buttons">
+              <Button
+                variant="secondary"
+                nativeButton={false}
+                render={<Link href={`/portal/bookings/${booking.id}`} />}
+                disabled={submitting}
+              >
+                Back to booking
+              </Button>
+              <Button
+                type="button"
+                disabled={isEmpty || !targetId || submitting}
+                onClick={() => {
+                  setStatus("submitting");
+                  void getMockAdapter()
+                    .createRescheduleRequest(booking.id, targetId)
+                    .then(() => {
+                      notify.portal("reschedule.submitted");
+                      router.push(`/portal/bookings/${booking.id}`);
+                    });
+                }}
+              >
+                {submitting ? (
+                  <>
+                    <LoaderCircle size={16} className="animate-spin" aria-hidden="true" />{" "}
+                    Submitting…
+                  </>
+                ) : (
+                  "Submit reschedule request"
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

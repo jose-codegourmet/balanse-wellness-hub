@@ -2,6 +2,7 @@
 
 import { Button, Input, Label, PasswordInput, PhPhoneInput } from "@balanse/ui";
 import { ArrowUpRight } from "lucide-react";
+import type { ReactNode } from "react";
 
 type SignUpField = "fullName" | "email" | "contactNumber" | "password" | "confirmPassword";
 type SignUpValues = Record<SignUpField, string>;
@@ -12,11 +13,14 @@ export function CustomerSignUpForm({
   errors,
   onChange,
   onSubmit,
+  beforeSubmit,
 }: {
   values: SignUpValues;
   errors: SignUpErrors;
   onChange: (field: SignUpField, value: string) => void;
   onSubmit: () => void;
+  /** Rendered above the submit button, e.g. admin-attached policy acceptance. */
+  beforeSubmit?: ReactNode;
 }) {
   return (
     <form
@@ -88,6 +92,7 @@ export function CustomerSignUpForm({
         />
         {errors.confirmPassword ? <p className="auth-error">{errors.confirmPassword}</p> : null}
       </div>
+      {beforeSubmit}
       <Button type="submit" className="mt-1 w-full">
         Create account <ArrowUpRight className="size-4" aria-hidden="true" />
       </Button>

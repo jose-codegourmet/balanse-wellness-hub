@@ -1,6 +1,7 @@
-import { dehydrate, HydrationBoundary, type QueryClient } from "@tanstack/react-query";
+import { dehydrate, type QueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { makeQueryClient } from "./client";
+import { MockHydrationBoundary } from "./mock-hydration-boundary";
 
 type Prefetchable = Parameters<QueryClient["prefetchQuery"]>[0];
 type PrefetchInfinite = Parameters<QueryClient["prefetchInfiniteQuery"]>[0];
@@ -26,5 +27,5 @@ export async function prefetchAdmin(options: readonly object[], children: ReactN
         : client.prefetchQuery(option as Prefetchable),
     ),
   );
-  return <HydrationBoundary state={dehydrate(client)}>{children}</HydrationBoundary>;
+  return <MockHydrationBoundary state={dehydrate(client)}>{children}</MockHydrationBoundary>;
 }

@@ -50,6 +50,7 @@ export const NonAdminPrincipal: Story = {
   args: { initial: seeded },
 };
 
-export const CoachScope: Story = {
+/** Coach role gets a teaching-only dashboard: own sessions and roster access, no studio queues or finance. */
+export const CoachWorkspace: Story = {
   parameters: { staffId: "staff-ephraim" },
 };

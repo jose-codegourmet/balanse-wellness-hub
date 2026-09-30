@@ -302,6 +302,49 @@ export function isPublishedBundle(bundle: Pick<BundleDefinition, "status">): boo
   return bundle.status === "PUBLISHED";
 }
 
+/**
+ * Credit totals for one package across every customer who owns it.
+ * `used` is consumed credits. Entitlements still awaiting payment review are
+ * not counted as granted.
+ */
+export type BundleCreditMetrics = {
+  granted: number;
+  held: number;
+  used: number;
+  restored: number;
+  /** Customers holding a granted copy of the package. */
+  owners: number;
+};
+
+export const EMPTY_BUNDLE_CREDIT_METRICS: BundleCreditMetrics = {
+  granted: 0,
+  held: 0,
+  used: 0,
+  restored: 0,
+  owners: 0,
+};
+
+/** Totals materialized entitlements (with derived held/consumed/restored counts). */
+export function summarizeBundleCredits(
+  entitlements: readonly Pick<
+    CustomerEntitlement,
+    "status" | "grantedCredits" | "heldCredits" | "consumedCredits" | "restoredCredits"
+  >[],
+): BundleCreditMetrics {
+  return entitlements
+    .filter((row) => row.status !== "PENDING")
+    .reduce<BundleCreditMetrics>(
+      (total, row) => ({
+        granted: total.granted + row.grantedCredits,
+        held: total.held + row.heldCredits,
+        used: total.used + row.consumedCredits,
+        restored: total.restored + row.restoredCredits,
+        owners: total.owners + 1,
+      }),
+      EMPTY_BUNDLE_CREDIT_METRICS,
+    );
+}
+
 export function countRedemptions(redemptions: readonly Pick<BundleRedemption, "status">[]): {
   held: number;
   consumed: number;

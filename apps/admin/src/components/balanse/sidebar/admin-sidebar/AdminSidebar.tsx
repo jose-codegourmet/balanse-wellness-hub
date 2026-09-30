@@ -23,7 +23,8 @@ export function AdminSidebar({
   snapshot: snapshotProp,
   mobileOpen,
   onMobileOpenChange,
-  onSettings,
+  onProfile,
+  onStudioSettings,
   onLogout,
   className,
   ...props
@@ -49,7 +50,8 @@ export function AdminSidebar({
         key={pathname}
         onLogout={onLogout}
         onOpenChange={onMobileOpenChange}
-        onSettings={onSettings}
+        onProfile={onProfile}
+        onStudioSettings={onStudioSettings}
         open={mobileOpen}
         pathname={pathname}
         items={navItems}
@@ -86,7 +88,12 @@ export function AdminSidebar({
           pathname={pathname}
           snapshot={snapshot}
         />
-        <AdminSidebarFooter collapsed={collapsed} onLogout={onLogout} onSettings={onSettings} />
+        <AdminSidebarFooter
+          collapsed={collapsed}
+          onLogout={onLogout}
+          onProfile={onProfile}
+          onStudioSettings={onStudioSettings}
+        />
       </aside>
     </TooltipProvider>
   );

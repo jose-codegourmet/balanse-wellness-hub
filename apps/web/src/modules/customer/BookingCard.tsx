@@ -1,6 +1,7 @@
 import type { CustomerBooking } from "@balanse/domain";
 import {
   bookingReference,
+  bookingStatusLabel,
   formatHoldDeadline,
   formatPeso,
   formatSessionDate,
@@ -14,9 +15,33 @@ import { BookingStatusBanner } from "@/components/balanse/portal/booking-status-
 import "@/components/balanse/portal/portal-home.css";
 
 /** Booking list ticket with a prominent status band and hold deadline. */
-export function BookingCard({ booking }: { booking: CustomerBooking }) {
+export function BookingCard({
+  booking,
+  density = "default",
+}: {
+  booking: CustomerBooking;
+  density?: "default" | "preview";
+}) {
   const showHold = booking.status === "HELD_AWAITING_PAYMENT" && booking.holdExpiresAt;
   const { session } = booking;
+
+  if (density === "preview") {
+    return (
+      <article className="booking-card booking-card-preview" data-mood={bookingMood(booking)}>
+        <Link href={`/portal/bookings/${booking.id}`} className="booking-card-preview-link">
+          <div className="booking-card-preview-copy">
+            <p className="booking-card-preview-status">{bookingStatusLabel(booking.status)}</p>
+            <h3 className="font-display">{sessionDisplayName(session)}</h3>
+            <p>
+              {formatSessionDate(session.startsAt)} ·{" "}
+              {formatSessionTimeRange(session.startsAt, session.endsAt)}
+            </p>
+          </div>
+          <ArrowUpRight size={16} aria-hidden="true" />
+        </Link>
+      </article>
+    );
+  }
 
   return (
     <article className="booking-card" data-mood={bookingMood(booking)}>

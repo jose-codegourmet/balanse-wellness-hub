@@ -37,6 +37,7 @@ import { useCanAdminAction, useCanAdminRoute } from "@/modules/authorization/use
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { createSessionHref, editSessionHref, rosterHref } from "../../_lib/schedule-href";
+import { ClassChangeSessionActions } from "../class-change-session-actions/ClassChangeSessionActions";
 import type { SelectedSessionPanelProps, SessionInventory } from "./SelectedSessionPanel.meta";
 
 function dayLabel(ymd: string, options: Intl.DateTimeFormatOptions): string {
@@ -365,6 +366,8 @@ function SessionDetail({
           </div>
         </div>
       ) : null}
+
+      <ClassChangeSessionActions session={session} canCancelDirectly={canCancelSession} />
 
       <div className="grid gap-2">
         {canOpenRoster ? (

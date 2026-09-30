@@ -22,7 +22,8 @@ export function AdminSidebarMobile({
   snapshot = null,
   open: openProp,
   onOpenChange,
-  onSettings,
+  onProfile,
+  onStudioSettings,
   onLogout,
   className,
   ...props
@@ -64,7 +65,11 @@ export function AdminSidebarMobile({
                 <BrandLockup showTagline={false} />
               </SheetHeader>
               <AdminSidebarNav items={items} pathname={pathname} snapshot={snapshot} />
-              <AdminSidebarFooter onLogout={onLogout} onSettings={onSettings} />
+              <AdminSidebarFooter
+                onLogout={onLogout}
+                onProfile={onProfile}
+                onStudioSettings={onStudioSettings}
+              />
             </SheetContent>
           </Sheet>
         </div>

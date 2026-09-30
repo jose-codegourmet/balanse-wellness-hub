@@ -1,10 +1,18 @@
 # Customer Portal — Reschedule Request
 
 ```text
-CURRENT BOOKING
+REQUEST A RESCHEDULE
+Current booking summary
+
 SELECT PREFERRED NEW SESSION
 Available session list/calendar
-[Submit Reschedule Request]
+Unavailable sessions remain visible with a direct reason (for example: “Full — cannot request”).
+
+REVIEW YOUR REQUEST
+Current session → preferred new session
+[Back to booking] [Submit reschedule request]
 ```
 
-Open business rules: same-class restriction, price differences, cutoff, max reschedules, full target session behavior.
+Submitting records a preference; it does not change the current booking until the studio resolves
+the request. Open business rules: same-class restriction, price differences, cutoff, max
+reschedules, full target session behavior.

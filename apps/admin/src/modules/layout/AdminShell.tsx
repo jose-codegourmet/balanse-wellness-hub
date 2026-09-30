@@ -16,7 +16,8 @@ export function AdminShell({
   const pathname = usePathname();
   const router = useRouter();
   const { setPrincipal } = useMockPrincipal();
-  const canOpenSettings = useCanAdminRoute("/settings");
+  const canOpenProfile = useCanAdminRoute("/my-profile");
+  const canOpenStudioSettings = useCanAdminRoute("/settings");
 
   return (
     <div className="flex min-h-dvh flex-col md:flex-row">
@@ -27,7 +28,8 @@ export function AdminShell({
           router.push("/login");
           router.refresh();
         }}
-        onSettings={canOpenSettings ? () => router.push("/settings") : undefined}
+        onProfile={canOpenProfile ? () => router.push("/my-profile") : undefined}
+        onStudioSettings={canOpenStudioSettings ? () => router.push("/settings") : undefined}
         pathname={pathname}
       />
       <div className="min-w-0 flex-1 bg-background">

@@ -46,11 +46,12 @@ queryClient.invalidateQueries({ queryKey: adminKeys.bookings.all(scope) });
 | `checkIn`, `markNoShow` | `bookings.all`, `roster` (prefix), `dashboard`, `reports.all` |
 | `upsertAdminClass` | `classes.all` |
 | `upsertAdminBundle`, `setAdminBundleStatus`, grant/revoke/review | `bundles.all`, `customers.all` |
+| Booking confirm/reject, cancellation, reschedule, check-in / no-show | also `bundles.metrics` (credits move) |
 | `upsertAdminCoach` | `coaches.all` |
 | `upsertAdminSession`, `cancelAdminSession` | `sessions.all`, `dashboard`, `reports.all`, `bookings.all`, `roster` (prefix) |
 | `upsertAdminStaff`, `disableAdminStaff` | `staff.all`, `staff.roles.all`, `coaches.all` |
 | `upsertAdminStaffRole`, `archiveAdminStaffRole` | `staff.all`, `staff.roles.all`, `coaches.all` |
-| `updateAdminSettings`, `promotePolicyVersion` | `settings.all` |
+| `updateAdminSettings`, `promotePolicyVersion`, `upsertPolicyDocument`, `deletePolicyDocument`, `deletePolicy`, `setPolicyFormRequirements` | `settings.all` |
 
 `approveAdminReschedule` decrements `remainingSlots` on the target session, which is why it invalidates `sessions.all`.
 
@@ -77,7 +78,7 @@ Admin UI permission checks live in `apps/admin/src/lib/authorization/admin-acces
 
 `getMockAdapter()` is a module singleton. The server’s instance and the browser’s instance are **different objects**. Server prefetch always dehydrates pristine fixtures; client mutations only mutate the browser copy.
 
-React Query `hydrate` will not clobber a client entry whose `dataUpdatedAt` is newer. That only helps after a write goes through `mutations.ts` (which invalidates `dashboard`). `/payments` still calls the adapter directly, so a payment action will not update the dashboard snapshot until that screen adopts the mutation hooks.
+`prefetchAdmin` renders `MockHydrationBoundary`, which only hydrates queries the browser cache has no data for. A soft navigation re-runs the route prefetch with a newer `dataUpdatedAt`, so a plain `HydrationBoundary` would overwrite client mutations with pristine fixtures; once a key is cached, the browser adapter is authoritative. `/payments` still calls the adapter directly, so a payment action will not update the dashboard snapshot until that screen adopts the mutation hooks.
 
 Runtime knobs (`latencyMs`, `failNext`, `emptyAdminQueues`, …) live in the **browser** module. After changing a knob the harness clears the cache so mounted client queries refetch against that module. It does **not** `router.refresh()` on runtime changes — a server prefetch would dehydrate pristine fixtures and hide the knob. A later full navigation can still hydrate pristine data if the server module never saw the knob.
 

@@ -1,0 +1,85 @@
+import type { ClassChangeRequest } from "@balanse/domain";
+
+/**
+ * Seed coach class change requests (#337). Ephraim (coach role) asks; Rex
+ * (Super Admin) reviewed the resolved ones. `session-fri-cancelled` is
+ * cancelled because its request was approved.
+ */
+export const classChangeRequestFixtures: ClassChangeRequest[] = [
+  {
+    id: "ccr-sat-reschedule",
+    sessionId: "session-sat-groundworks",
+    session: {
+      className: "Groundworks",
+      startsAt: "2026-09-19T08:00:00.000Z",
+      endsAt: "2026-09-19T09:30:00.000Z",
+      coachName: "Ephraim Bacaltos",
+    },
+    kind: "RESCHEDULE",
+    status: "PENDING",
+    reason:
+      "Family event on Saturday afternoon. I checked with the regulars and Sunday morning works for them.",
+    requestedByStaffId: "staff-ephraim",
+    requestedByCoachId: "coach-ephraim",
+    requestedByName: "Ephraim Bacaltos",
+    proposedStartsAt: "2026-09-20T01:00:00.000Z",
+    proposedEndsAt: "2026-09-20T02:30:00.000Z",
+    substituteCoachId: null,
+    substituteCoachName: null,
+    createdAt: "2026-09-15T09:30:00.000Z",
+    reviewedAt: null,
+    reviewedByStaffId: null,
+    reviewedByName: null,
+    decisionNote: null,
+  },
+  {
+    id: "ccr-fri-cancel",
+    sessionId: "session-fri-cancelled",
+    session: {
+      className: "Groundworks",
+      startsAt: "2026-09-18T03:00:00.000Z",
+      endsAt: "2026-09-18T04:30:00.000Z",
+      coachName: "Ephraim Bacaltos",
+    },
+    kind: "CANCEL",
+    status: "APPROVED",
+    reason: "The main mat room is closed for floor repairs that morning and no other room fits.",
+    requestedByStaffId: "staff-ephraim",
+    requestedByCoachId: "coach-ephraim",
+    requestedByName: "Ephraim Bacaltos",
+    proposedStartsAt: null,
+    proposedEndsAt: null,
+    substituteCoachId: null,
+    substituteCoachName: null,
+    createdAt: "2026-09-12T02:00:00.000Z",
+    reviewedAt: "2026-09-12T05:15:00.000Z",
+    reviewedByStaffId: "staff-rex",
+    reviewedByName: "Rex Francis Regis",
+    decisionNote: "Approved — venue maintenance. Front desk will contact booked customers.",
+  },
+  {
+    id: "ccr-wed-substitute",
+    sessionId: "session-wed-cutoff",
+    session: {
+      className: "Calisthenics",
+      startsAt: "2026-09-16T03:00:00.000Z",
+      endsAt: "2026-09-16T04:30:00.000Z",
+      coachName: "Rex Francis Regis, Ephraim Bacaltos",
+    },
+    kind: "SUBSTITUTE",
+    status: "DENIED",
+    reason: "Doctor's appointment moved to Wednesday morning. Alec said he can cover.",
+    requestedByStaffId: "staff-ephraim",
+    requestedByCoachId: "coach-ephraim",
+    requestedByName: "Ephraim Bacaltos",
+    proposedStartsAt: null,
+    proposedEndsAt: null,
+    substituteCoachId: "coach-alec",
+    substituteCoachName: "Alec James Co",
+    createdAt: "2026-09-13T07:00:00.000Z",
+    reviewedAt: "2026-09-13T08:20:00.000Z",
+    reviewedByStaffId: "staff-rex",
+    reviewedByName: "Rex Francis Regis",
+    decisionNote: "Rex is already co-teaching this one and can run it alone. Take the morning off.",
+  },
+];

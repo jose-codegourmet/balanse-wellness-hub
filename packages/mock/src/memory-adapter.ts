@@ -9,6 +9,7 @@ import type {
   AdminVenue,
   CursorPage,
   CustomerBooking,
+  PaymentAccountSummary,
   PaymentMethod,
   PaymentQrCode,
   PolicyAcceptance,
@@ -23,13 +24,17 @@ import {
   bookingListTab,
   buildAdminCustomerRow,
   buildAdminDashboard,
+  buildCoachStudents,
+  CUSTOMER_POLICY_FORMS,
   calendarDayDistance,
   canApproveReschedule,
   coachRoleRequiresLinkedCoach,
+  coachStudentById,
   computeAdminReports,
   computeHoldExpiresAt,
   computeSessionDrilldown,
   computeSessionInventory,
+  currentPoliciesForForm,
   customRoleIdentityConflicts,
   customRoleKeyFromName,
   datesForWeeklyRecurrence,
@@ -45,6 +50,7 @@ import {
   shiftSessionIsoToDate,
   sliceCursorPage,
   toPublicSession,
+  validatePaymentAccount,
   validateSessionCapacity,
   violatesLastSuperAdminInvariant,
 } from "@balanse/domain";
@@ -53,6 +59,7 @@ import { applyAdminAuthorization } from "./apply-admin-authorization";
 import type { BundleState } from "./bundle-engine";
 import {
   approveAcquisition,
+  bundleCreditMetrics,
   claimFreeBundle,
   consumeCredit,
   grantCustomerBundle,
@@ -77,6 +84,17 @@ import {
   bundleRedemptions,
   customerEntitlements,
 } from "./bundle-fixtures";
+import {
+  type ClassChangeContext,
+  type ClassChangeState,
+  createClassChangeRequest,
+  findPendingRequest,
+  resolveClassChangeRequest,
+  sortClassChangeRequests,
+  substituteCoachOptions,
+  withdrawClassChangeRequest,
+} from "./class-change-engine";
+import { classChangeRequestFixtures } from "./class-change-fixtures";
 import { deriveGrossSalesSeries } from "./dashboard-series";
 import {
   archiveAdminEvent,
@@ -170,10 +188,41 @@ function currentBody(docs: PolicyDocumentVersion[], name: string): string {
   return docs.find((doc) => doc.documentName === name && doc.current)?.body ?? "";
 }
 
+/** Makes `target` the only current version within its own policy. */
+function markCurrentPolicy(settings: AdminSettings, target: PolicyDocumentVersion): void {
+  for (const doc of settings.policyDocuments) {
+    if (doc.documentName === target.documentName) doc.current = doc.id === target.id;
+  }
+}
+
+/** Renames every version of a policy and keeps customer-form attachments. */
+function renamePolicy(settings: AdminSettings, from: string, to: string): void {
+  for (const doc of settings.policyDocuments) {
+    if (doc.documentName === from) doc.documentName = to;
+  }
+  for (const form of CUSTOMER_POLICY_FORMS) {
+    settings.policyFormRequirements[form] = settings.policyFormRequirements[form].map((name) =>
+      name === from ? to : name,
+    );
+  }
+}
+
 function livePaymentQrs(settings: AdminSettings): PaymentQrCode[] {
   return (settings.paymentQrs ?? []).filter((row) => row.archivedAt === null);
 }
 
+function toAccountSummary(row: PaymentQrCode): PaymentAccountSummary {
+  return {
+    id: row.id,
+    type: row.type,
+    label: row.label,
+    accountName: row.accountName,
+    accountNumber: row.accountNumber,
+    imageKey: row.imageKey,
+  };
+}
+
+/** Legacy single-GCash fields follow the first account shown to customers. */
 function syncDerivedQr(settings: AdminSettings): void {
   const rows = settings.paymentQrs ?? [];
   if (rows.length === 0 && settings.qrImageKey) {
@@ -181,7 +230,10 @@ function syncDerivedQr(settings: AdminSettings): void {
     settings.paymentQrs = [
       {
         id: "pqr-legacy",
+        type: "GCASH",
         label: "GCash — main",
+        accountName: settings.gcashName,
+        accountNumber: settings.gcashNumber,
         imageKey: settings.qrImageKey,
         isActive: true,
         createdAt: now,
@@ -190,8 +242,13 @@ function syncDerivedQr(settings: AdminSettings): void {
       },
     ];
   }
-  const active = livePaymentQrs(settings).find((row) => row.isActive) ?? null;
-  settings.qrImageKey = active?.imageKey ?? null;
+  const shown = livePaymentQrs(settings).filter((row) => row.isActive);
+  const primary = shown[0] ?? null;
+  if (primary) {
+    settings.gcashName = primary.accountName;
+    settings.gcashNumber = primary.accountNumber;
+  }
+  settings.qrImageKey = shown.find((row) => row.imageKey)?.imageKey ?? null;
 }
 
 function toAdminStaffRole(
@@ -272,6 +329,13 @@ export function createMemoryAdapter(): MockDataAdapter {
   let staffRows = seedStaff.map((s) => clone(s));
   let settings = clone(seedSettings);
   const venues: AdminVenue[] = clone(venueFixtures);
+  const classChangeState: ClassChangeState = { requests: clone(classChangeRequestFixtures) };
+  const classChangeContext = (): ClassChangeContext => ({
+    sessions,
+    coaches,
+    staff: staffRows,
+    nowIso: MOCK_NOW_ISO,
+  });
   const eventState: EventEngineState = {
     events: clone(eventFixtures),
     venues,
@@ -402,6 +466,43 @@ export function createMemoryAdapter(): MockDataAdapter {
 
   const asPublic = (session: AdminSession): PublicSession => toPublicSession(session);
 
+  function cancelSessionInPlace(session: AdminSession): void {
+    session.status = "CANCELLED";
+    session.availability = "cancelled";
+    session.reservable = false;
+    session.bookable = false;
+    cancelLiveEventsForSession(eventState, session.id, new Date().toISOString());
+  }
+
+  /** Bookings carry a session snapshot; keep it in step after a time or coach change. */
+  function refreshBookingSnapshots(session: AdminSession): void {
+    for (const booking of bookings) {
+      if (booking.sessionId === session.id) booking.session = asPublic(session);
+    }
+  }
+
+  function substituteCoach(session: AdminSession, fromCoachId: string, toCoachId: string): void {
+    const coach = coaches.find((row) => row.id === toCoachId);
+    if (!coach || !coach.active) throw new Error("The substitute coach is no longer active.");
+    if (!session.coaches.some((row) => row.id === fromCoachId))
+      throw new Error("The requesting coach is no longer on this class.");
+    if (session.coaches.some((row) => row.id === toCoachId))
+      throw new Error("That coach already teaches this class.");
+    session.coaches = session.coaches.map((row) =>
+      row.id === fromCoachId ? { id: coach.id, name: coach.name, photoKey: coach.photoKey } : row,
+    );
+    session.coachAssignments = session.coachAssignments.map((row) =>
+      row.coachId === fromCoachId
+        ? { coachId: coach.id, coachRatePhp: coach.defaultRatePhp, coachRateType: coach.rateType }
+        : row,
+    );
+    session.coachName = session.coaches.map((row) => row.name).join(", ");
+    session.coachRatePhp = session.coachAssignments.reduce(
+      (sum, row) => sum + sessionCoachCost(row, session),
+      0,
+    );
+  }
+
   function createGeneratedSession(
     template: AdminSession,
     startsAt: string,
@@ -513,6 +614,17 @@ export function createMemoryAdapter(): MockDataAdapter {
       }),
     getMePolicyAcceptances: (customerId) =>
       applyMockEffects(() => clone(acceptances[customerId] ?? [])),
+    getCustomerFormPolicies: (form) =>
+      applyMockEffects(() =>
+        clone(
+          currentPoliciesForForm(settings.policyDocuments, settings.policyFormRequirements, form),
+        ),
+      ),
+    acceptPolicies: (customerId, next) =>
+      applyMockEffects(() => {
+        if (next.length === 0) return;
+        acceptances[customerId] = [...(acceptances[customerId] ?? []), ...clone(next)];
+      }),
     createCustomer: (input) =>
       applyMockEffects(() => {
         const profile = {
@@ -665,6 +777,9 @@ export function createMemoryAdapter(): MockDataAdapter {
           gcashName: settings.gcashName,
           gcashNumber: settings.gcashNumber,
           qrImageKey: settings.qrImageKey,
+          accounts: livePaymentQrs(settings)
+            .filter((row) => row.isActive)
+            .map(toAccountSummary),
         });
       }),
     createCancellationRequest: (bookingId, reason) =>
@@ -704,6 +819,21 @@ export function createMemoryAdapter(): MockDataAdapter {
           }
           return true;
         });
+      }),
+    getCoachStudents: (coachId) =>
+      applyMockEffects(() => {
+        if (!coachId) return [];
+        return buildCoachStudents(profiles, bookings, coachId, MOCK_NOW_ISO).map(
+          ({ upcoming: _upcoming, attendance: _attendance, ...student }) => student,
+        );
+      }),
+    getCoachStudent: (customerId, coachId) =>
+      applyMockEffects(() => {
+        if (!coachId) return null;
+        return coachStudentById(
+          buildCoachStudents(profiles, bookings, coachId, MOCK_NOW_ISO),
+          customerId,
+        );
       }),
     confirmAdminBooking: (id) =>
       applyMockEffects(() => {
@@ -1007,12 +1137,79 @@ export function createMemoryAdapter(): MockDataAdapter {
       applyMockEffects(() => {
         const session = sessions.find((s) => s.id === id);
         if (!session) throw new Error("Session not found");
-        session.status = "CANCELLED";
-        session.availability = "cancelled";
-        session.reservable = false;
-        session.bookable = false;
-        cancelLiveEventsForSession(eventState, session.id, new Date().toISOString());
+        cancelSessionInPlace(session);
         return clone(session);
+      }),
+    getClassChangeRequests: (query) =>
+      applyMockEffects(() =>
+        clone(
+          sortClassChangeRequests(
+            classChangeState.requests.filter(
+              (row) =>
+                (!query?.sessionId || row.sessionId === query.sessionId) &&
+                (!query?.requestedByStaffId || row.requestedByStaffId === query.requestedByStaffId),
+            ),
+          ),
+        ),
+      ),
+    getSubstituteCoachOptions: (sessionId) =>
+      applyMockEffects(() => substituteCoachOptions(classChangeContext(), sessionId)),
+    createClassChangeRequest: (input, requester) =>
+      applyMockEffects(() => {
+        if (!requester) throw new Error("Only a signed-in coach can request a class change.");
+        return clone(
+          createClassChangeRequest(classChangeState, classChangeContext(), input, requester),
+        );
+      }),
+    withdrawClassChangeRequest: (id, staffId) =>
+      applyMockEffects(() =>
+        clone(withdrawClassChangeRequest(classChangeState, id, staffId ?? "", MOCK_NOW_ISO)),
+      ),
+    approveClassChangeRequest: (id, note, reviewerStaffId) =>
+      applyMockEffects(() => {
+        const request = findPendingRequest(classChangeState, id);
+        const session = sessions.find((row) => row.id === request.sessionId);
+        if (!session) throw new Error("Session not found");
+        if (session.status === "CANCELLED") throw new Error("This class is already cancelled.");
+        if (request.kind === "CANCEL") {
+          cancelSessionInPlace(session);
+        } else if (request.kind === "RESCHEDULE") {
+          if (!request.proposedStartsAt || !request.proposedEndsAt)
+            throw new Error("This request has no proposed time.");
+          session.startsAt = request.proposedStartsAt;
+          session.endsAt = request.proposedEndsAt;
+          session.coachRatePhp = session.coachAssignments.reduce(
+            (sum, row) => sum + sessionCoachCost(row, session),
+            0,
+          );
+          refreshBookingSnapshots(session);
+        } else {
+          substituteCoach(session, request.requestedByCoachId, request.substituteCoachId ?? "");
+          refreshBookingSnapshots(session);
+        }
+        return clone(
+          resolveClassChangeRequest(
+            request,
+            classChangeContext(),
+            "APPROVED",
+            reviewerStaffId ?? "",
+            note ?? null,
+          ),
+        );
+      }),
+    denyClassChangeRequest: (id, note, reviewerStaffId) =>
+      applyMockEffects(() => {
+        if (!note.trim()) throw new Error("Tell the coach why the request was denied.");
+        const request = findPendingRequest(classChangeState, id);
+        return clone(
+          resolveClassChangeRequest(
+            request,
+            classChangeContext(),
+            "DENIED",
+            reviewerStaffId ?? "",
+            note,
+          ),
+        );
       }),
     getAdminCancellationRequests: ((query?: AdminRequestQueueQuery) =>
       applyMockEffects(() => {
@@ -1097,7 +1294,14 @@ export function createMemoryAdapter(): MockDataAdapter {
         const session = sessions.find((s) => s.id === sessionId);
         if (!session) throw new Error("Session not found");
         const rows = bookings.filter((b) => b.sessionId === sessionId);
-        const confirmed = rows.filter((b) => b.status === "CONFIRMED" || b.status === "CHECKED_IN");
+        // Attendance-tracked guests stay listed after check-in or no-show.
+        const confirmed = rows.filter(
+          (b) =>
+            b.status === "CONFIRMED" ||
+            b.status === "CHECKED_IN" ||
+            b.status === "COMPLETED" ||
+            b.status === "NO_SHOW",
+        );
         const held = rows.filter(
           (b) =>
             b.status === "HELD_AWAITING_PAYMENT" ||
@@ -1399,25 +1603,31 @@ export function createMemoryAdapter(): MockDataAdapter {
     upsertPaymentQr: (input) =>
       applyMockEffects(() => {
         syncDerivedQr(settings);
+        const fields = {
+          type: input.type,
+          label: input.label.trim(),
+          accountName: input.accountName.trim(),
+          accountNumber: input.accountNumber.trim(),
+          imageKey: input.imageKey || null,
+        };
+        const errors = validatePaymentAccount(fields);
+        const firstError = Object.values(errors)[0];
+        if (firstError) throw new Error(firstError);
         const rows = settings.paymentQrs ?? [];
         if (input.id) {
           const current = rows.find((row) => row.id === input.id);
           if (!current || current.archivedAt) throw new Error("payment_qr_not_found");
-          current.label = input.label;
-          current.imageKey = input.imageKey;
-          current.updatedAt = MOCK_NOW_ISO;
+          Object.assign(current, fields, { isActive: input.isActive, updatedAt: MOCK_NOW_ISO });
           syncDerivedQr(settings);
           return clone(current);
         }
-        const live = livePaymentQrs(settings);
-        if (live.length >= FIELD_CONSTRAINTS.settings.paymentQr.maxItems) {
+        if (livePaymentQrs(settings).length >= FIELD_CONSTRAINTS.settings.paymentQr.maxItems) {
           throw new Error("qr_limit");
         }
         const created: PaymentQrCode = {
           id: `pqr-${globalThis.crypto?.randomUUID?.() ?? String(rows.length + 1)}`,
-          label: input.label,
-          imageKey: input.imageKey,
-          isActive: live.length === 0,
+          ...fields,
+          isActive: input.isActive,
           createdAt: MOCK_NOW_ISO,
           updatedAt: MOCK_NOW_ISO,
           archivedAt: null,
@@ -1426,15 +1636,12 @@ export function createMemoryAdapter(): MockDataAdapter {
         syncDerivedQr(settings);
         return clone(created);
       }),
-    activatePaymentQr: (id) =>
+    setPaymentQrActive: (id, active) =>
       applyMockEffects(() => {
-        const rows = settings.paymentQrs ?? [];
-        const current = rows.find((row) => row.id === id);
+        const current = (settings.paymentQrs ?? []).find((row) => row.id === id);
         if (!current || current.archivedAt) throw new Error("payment_qr_not_found");
-        for (const row of rows) {
-          row.isActive = row.id === id;
-          if (row.id === id) row.updatedAt = MOCK_NOW_ISO;
-        }
+        current.isActive = active;
+        current.updatedAt = MOCK_NOW_ISO;
         syncDerivedQr(settings);
         return clone(current);
       }),
@@ -1442,7 +1649,6 @@ export function createMemoryAdapter(): MockDataAdapter {
       applyMockEffects(() => {
         const current = (settings.paymentQrs ?? []).find((row) => row.id === id);
         if (!current || current.archivedAt) throw new Error("payment_qr_not_found");
-        if (current.isActive) throw new Error("cannot_remove_active");
         current.archivedAt = MOCK_NOW_ISO;
         current.isActive = false;
         current.updatedAt = MOCK_NOW_ISO;
@@ -1455,14 +1661,16 @@ export function createMemoryAdapter(): MockDataAdapter {
           ? settings.policyDocuments.find((doc) => doc.id === input.id)
           : undefined;
         if (existing) {
-          existing.documentName = input.documentName.trim();
+          const previousName = existing.documentName;
+          const nextName = input.documentName.trim();
+          if (nextName !== previousName) {
+            if (settings.policyDocuments.some((doc) => doc.documentName === nextName))
+              throw new Error("policy_name_taken");
+            renamePolicy(settings, previousName, nextName);
+          }
           existing.version = input.version.trim();
           existing.body = input.body;
-          if (input.current)
-            settings.policyDocuments = settings.policyDocuments.map((doc) => ({
-              ...doc,
-              current: doc.id === existing.id,
-            }));
+          if (input.current) markCurrentPolicy(settings, existing);
           return clone(existing);
         }
         const created = {
@@ -1474,6 +1682,7 @@ export function createMemoryAdapter(): MockDataAdapter {
           body: input.body,
         };
         settings.policyDocuments.push(created);
+        if (created.current) markCurrentPolicy(settings, created);
         return clone(created);
       }),
     deletePolicyDocument: (id) =>
@@ -1484,6 +1693,30 @@ export function createMemoryAdapter(): MockDataAdapter {
         settings.policyDocuments = settings.policyDocuments.filter((doc) => doc.id !== id);
         return clone(settings);
       }),
+    deletePolicy: (documentName) =>
+      applyMockEffects(() => {
+        if (!settings.policyDocuments.some((doc) => doc.documentName === documentName))
+          throw new Error("policy_not_found");
+        settings.policyDocuments = settings.policyDocuments.filter(
+          (doc) => doc.documentName !== documentName,
+        );
+        for (const form of CUSTOMER_POLICY_FORMS) {
+          settings.policyFormRequirements[form] = settings.policyFormRequirements[form].filter(
+            (name) => name !== documentName,
+          );
+        }
+        return clone(settings);
+      }),
+    setPolicyFormRequirements: (requirements) =>
+      applyMockEffects(() => {
+        const known = new Set(settings.policyDocuments.map((doc) => doc.documentName));
+        for (const form of CUSTOMER_POLICY_FORMS) {
+          settings.policyFormRequirements[form] = [...new Set(requirements[form] ?? [])].filter(
+            (name) => known.has(name),
+          );
+        }
+        return clone(settings);
+      }),
     promotePolicyVersion: (documentName, version) =>
       applyMockEffects(() => {
         const body = currentBody(settings.policyDocuments, documentName);
@@ -1491,7 +1724,7 @@ export function createMemoryAdapter(): MockDataAdapter {
           return doc.documentName === documentName ? { ...doc, current: false } : doc;
         });
         settings.policyDocuments.push({
-          id: `policy-${documentName.toLowerCase()}-${version}`,
+          id: `policy-${documentName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${version}`,
           documentName,
           version,
           promotedAt: MOCK_NOW_ISO,
@@ -1547,6 +1780,7 @@ export function createMemoryAdapter(): MockDataAdapter {
         clone(archiveAdminEvent(eventState, sessions, id, new Date().toISOString())),
       ),
     getAdminBundles: () => applyMockEffects(() => clone(bundleState.bundles)),
+    getAdminBundleMetrics: () => applyMockEffects(() => bundleCreditMetrics(bundleState)),
     getAdminBundle: (id) =>
       applyMockEffects(() => clone(bundleState.bundles.find((row) => row.id === id) ?? null)),
     upsertAdminBundle: (input) => applyMockEffects(() => clone(upsertBundle(bundleState, input))),

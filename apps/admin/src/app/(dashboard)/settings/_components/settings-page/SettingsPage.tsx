@@ -12,7 +12,15 @@ import {
   AlertDialogTitle,
 } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { BookOpenText, Building2, CircleHelp, FileText, Mail, Plus } from "lucide-react";
+import {
+  BookOpenText,
+  Building2,
+  CircleHelp,
+  ClipboardCheck,
+  FileText,
+  Mail,
+  Plus,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type ComponentType, useCallback, useEffect, useState } from "react";
@@ -22,9 +30,8 @@ import { useTabParam } from "@/components/balanse/page/useTabParam";
 import { adminSettingsQuery } from "@/lib/query/queries";
 import { useCanSettingsSection } from "@/modules/authorization/useAdminAccess";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import { SETTINGS_TAB_LABELS, SETTINGS_TABS } from "../../_lib/settings-tabs";
+import { SETTINGS_TAB_LABELS, SETTINGS_TABS, type SettingsTab } from "../../_lib/settings-tabs";
 import { BusinessProfileSection } from "../business-profile-section/BusinessProfileSection";
-import { PaymentInfoSection } from "../payment-info-section/PaymentInfoSection";
 import { PoliciesSection } from "../policies-section/PoliciesSection";
 import { PublicContentSection } from "../public-content-section/PublicContentSection";
 
@@ -37,6 +44,7 @@ const CONTENT_PAGES = [
 const POLICY_PAGES = [
   { id: "library", label: "Policy library", icon: Building2 },
   { id: "new", label: "New policy", icon: Plus },
+  { id: "forms", label: "Customer forms", icon: ClipboardCheck },
 ] as const;
 
 export type ContentPage = (typeof CONTENT_PAGES)[number]["id"];
@@ -44,7 +52,7 @@ export type PolicyPage = (typeof POLICY_PAGES)[number]["id"];
 
 export type SettingsPageProps = {
   /** Storybook / URL fallback. Live routes still prefer `?tab=`. */
-  initialTab?: SettingsSection;
+  initialTab?: SettingsTab;
   /** Storybook: start a section with empty required fields. */
   emptySection?: boolean;
   /** Storybook: replace the FAQ list without mutating other fixtures. */
@@ -114,12 +122,10 @@ export function SettingsPage({
 }: SettingsPageProps) {
   const { principal } = useMockPrincipal();
   const canBusiness = useCanSettingsSection("business");
-  const canPayment = useCanSettingsSection("payment");
   const canContent = useCanSettingsSection("content");
   const canPolicies = useCanSettingsSection("policies");
   const visibleTabs = SETTINGS_TABS.filter((item) => {
     if (item.id === "business") return canBusiness;
-    if (item.id === "payment") return canPayment;
     if (item.id === "content") return canContent;
     return canPolicies;
   });
@@ -150,7 +156,7 @@ export function SettingsPage({
     content: 0,
     policies: 0,
   });
-  const [pendingTab, setPendingTab] = useState<SettingsSection | null>(null);
+  const [pendingTab, setPendingTab] = useState<SettingsTab | null>(null);
 
   const contentTitle =
     contentPage === "overview"
@@ -162,7 +168,7 @@ export function SettingsPage({
       ? contentPage === "overview"
         ? "Manage the stories and practical details customers see before they book."
         : "Edit this public page, review its live destination, and publish when the copy is ready."
-      : "Each section saves on its own. Payment, public copy, and policies stay independent.";
+      : "Each section saves on its own. Public copy and policies stay independent.";
 
   const markDirty = useCallback((id: SettingsSection, next: boolean) => {
     setDirty((current) => (current[id] === next ? current : { ...current, [id]: next }));
@@ -177,13 +183,13 @@ export function SettingsPage({
     return SETTINGS_SECTIONS.filter((id) => dirty[id] && id !== except);
   }
 
-  function destinationForTab(next: SettingsSection) {
+  function destinationForTab(next: SettingsTab) {
     if (next === "content") return "/settings/content";
     if (next === "policies") return "/settings/policies";
     return next === "business" ? "/settings" : `/settings?tab=${next}`;
   }
 
-  function requestTab(next: SettingsSection) {
+  function requestTab(next: SettingsTab) {
     if (next === tab) return;
     if (dirtySections(next).length > 0) {
       setPendingTab(next);
@@ -208,9 +214,8 @@ export function SettingsPage({
 
   useEffect(() => {
     const raw = window.location.hash.replace(/^#settings-/, "");
-    if (SETTINGS_SECTIONS.includes(raw as SettingsSection)) {
-      setTab(raw as SettingsSection);
-    }
+    const match = SETTINGS_TABS.find((item) => item.id === raw);
+    if (match) setTab(match.id);
   }, [setTab]);
 
   return (
@@ -222,7 +227,7 @@ export function SettingsPage({
         <AdminPageTabs
           tabs={visibleTabs.length ? visibleTabs : SETTINGS_TABS}
           value={tab}
-          onValueChange={(next) => requestTab(next as SettingsSection)}
+          onValueChange={(next) => requestTab(next as SettingsTab)}
           mobileBehavior="tabs"
           label="Settings sections"
         />
@@ -236,15 +241,6 @@ export function SettingsPage({
             empty={emptySection && tab === "business"}
             onDirtyChange={(next) => markDirty("business", next)}
             onSaved={() => bump("business")}
-          />
-        </section>
-        <section id="settings-payment" className={tab === "payment" ? "min-w-0" : "hidden"}>
-          <PaymentInfoSection
-            key={`payment-${epoch.payment}`}
-            settings={settings}
-            empty={emptySection && tab === "payment"}
-            onDirtyChange={(next) => markDirty("payment", next)}
-            onSaved={() => bump("payment")}
           />
         </section>
         <section id="settings-content" className={tab === "content" ? "min-w-0" : "hidden"}>

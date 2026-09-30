@@ -2,6 +2,7 @@
 
 import {
   ADMIN_NAV_ITEMS,
+  CLASS_CHANGE_REVIEW_PERMISSIONS,
   DASHBOARD_READ_PERMISSIONS,
   hasAnyPermission,
   isAdminNavActive,
@@ -24,11 +25,12 @@ import {
   CircleAlert,
   CreditCard,
   Ticket,
+  UserRoundCog,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/components/jabkit/lib/cn";
 import { canAccessAdminHref } from "@/lib/authorization/admin-access";
-import { adminDashboardQuery } from "@/lib/query/queries";
+import { adminClassChangeRequestsQuery, adminDashboardQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { NAV_GROUPS, NAV_ICONS } from "../sidebar/sidebar-nav";
 import type { AdminNotificationHeaderProps } from "./AdminNotificationHeader.meta";
@@ -43,6 +45,14 @@ export function AdminNotificationHeader({
     ...adminDashboardQuery(principal),
     enabled: canReadDashboard,
   });
+  const canReviewClassChanges = hasAnyPermission(actor, CLASS_CHANGE_REVIEW_PERMISSIONS);
+  const classChangesQuery = useQuery({
+    ...adminClassChangeRequestsQuery(principal),
+    enabled: canReviewClassChanges,
+  });
+  const pendingClassChanges = canReviewClassChanges
+    ? (classChangesQuery.data ?? []).filter((row) => row.status === "PENDING").length
+    : 0;
   const items = data
     ? [
         {
@@ -76,6 +86,14 @@ export function AdminNotificationHeader({
           count: data.attention.reschedules,
           href: "/reschedules",
           icon: CalendarClock,
+        },
+        {
+          id: "class-changes",
+          label: "Class changes",
+          detail: `${pendingClassChanges} coach request${pendingClassChanges === 1 ? "" : "s"} awaiting approval`,
+          count: pendingClassChanges,
+          href: "/schedule/requests",
+          icon: UserRoundCog,
         },
       ].filter((item) => item.count > 0 && canAccessAdminHref(actor, item.href))
     : [];

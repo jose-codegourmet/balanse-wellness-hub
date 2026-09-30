@@ -1,7 +1,10 @@
 import type { AdminPaymentTab, PermissionKey } from "@balanse/domain";
 import {
+  CLASS_CHANGE_APPROVAL_PERMISSION,
+  CLASS_CHANGE_REVIEW_PERMISSIONS,
   canGrantPermissions,
   hasPermission,
+  isCoachAuthorizationRole,
   isSuperAdminRoleKey,
   VENUE_READ_PERMISSIONS,
 } from "@balanse/domain";
@@ -48,6 +51,21 @@ function filterRefundRows<T extends { refundStatus?: string }>(
   );
 }
 
+/** Reviewing needs the permission that would make the change directly, and never your own. */
+async function requireClassChangeReviewer(inner: MockDataAdapter, id: string) {
+  const actor = requireStaffActor();
+  const request = (await inner.getClassChangeRequests()).find((row) => row.id === id);
+  if (!request) throw new Error("Request not found");
+  requirePermission(CLASS_CHANGE_APPROVAL_PERMISSION[request.kind]);
+  if (request.requestedByStaffId === actor.staffId) {
+    throw new MockAuthorizationError(
+      "forbidden",
+      "You cannot review your own class change request.",
+    );
+  }
+  return actor;
+}
+
 export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter {
   const authorized: MockDataAdapter = {
     ...inner,
@@ -55,6 +73,26 @@ export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter
     getAdminBookings: (filters) => {
       requirePermission("bookings.read");
       return inner.getAdminBookings(filters);
+    },
+    getCoachStudents: () => {
+      const actor = requireStaffActor();
+      if (!isCoachAuthorizationRole(actor.roleKey) || !actor.coachId) {
+        throw new MockAuthorizationError(
+          "forbidden",
+          "Only the assigned Coach role can view students.",
+        );
+      }
+      return inner.getCoachStudents(actor.coachId);
+    },
+    getCoachStudent: (customerId) => {
+      const actor = requireStaffActor();
+      if (!isCoachAuthorizationRole(actor.roleKey) || !actor.coachId) {
+        throw new MockAuthorizationError(
+          "forbidden",
+          "Only the assigned Coach role can view students.",
+        );
+      }
+      return inner.getCoachStudent(customerId, actor.coachId);
     },
     confirmAdminBooking: (id) => {
       requirePermission("bookings.confirm");
@@ -157,6 +195,49 @@ export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter
     cancelAdminSession: (id) => {
       requirePermission("schedule.cancel");
       return inner.cancelAdminSession(id);
+    },
+    getClassChangeRequests: (query) => {
+      const actor = requireStaffActor();
+      if (CLASS_CHANGE_REVIEW_PERMISSIONS.some((key) => hasPermission(actor, key)))
+        return inner.getClassChangeRequests(query);
+      if (!actor.coachId || !hasPermission(actor, "schedule.read.own")) {
+        throw new MockAuthorizationError("forbidden", "Missing permission: schedule.read.own.");
+      }
+      return inner.getClassChangeRequests({ ...query, requestedByStaffId: actor.staffId });
+    },
+    getSubstituteCoachOptions: async (sessionId) => {
+      await requireSessionScope(inner, sessionId, "schedule.read.own", "schedule.read.all");
+      return inner.getSubstituteCoachOptions(sessionId);
+    },
+    createClassChangeRequest: async (input) => {
+      const actor = await requireSessionScope(
+        inner,
+        input.sessionId,
+        "schedule.read.own",
+        "schedule.read.all",
+      );
+      if (!actor.coachId) {
+        throw new MockAuthorizationError(
+          "forbidden",
+          "Only staff linked to a coach profile can request a class change.",
+        );
+      }
+      return inner.createClassChangeRequest(input, {
+        staffId: actor.staffId,
+        coachId: actor.coachId,
+      });
+    },
+    withdrawClassChangeRequest: (id) => {
+      const actor = requireStaffActor();
+      return inner.withdrawClassChangeRequest(id, actor.staffId);
+    },
+    approveClassChangeRequest: async (id, note) => {
+      const actor = await requireClassChangeReviewer(inner, id);
+      return inner.approveClassChangeRequest(id, note, actor.staffId);
+    },
+    denyClassChangeRequest: async (id, note) => {
+      const actor = await requireClassChangeReviewer(inner, id);
+      return inner.denyClassChangeRequest(id, note, actor.staffId);
     },
     getAdminCancellationRequests: ((query) => {
       requirePermission("cancellations.read");
@@ -319,6 +400,14 @@ export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter
       requirePermission("settings.policies.manage");
       return inner.deletePolicyDocument(id);
     },
+    deletePolicy: (documentName) => {
+      requirePermission("settings.policies.manage");
+      return inner.deletePolicy(documentName);
+    },
+    setPolicyFormRequirements: (requirements) => {
+      requirePermission("settings.policies.manage");
+      return inner.setPolicyFormRequirements(requirements);
+    },
     updateAdminSettings: (patch) => {
       requireAnyPermission(["settings.content.manage", "settings.policies.manage"]);
       return inner.updateAdminSettings(patch);
@@ -331,9 +420,9 @@ export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter
       requirePermission("settings.payment_qr.manage");
       return inner.upsertPaymentQr(input);
     },
-    activatePaymentQr: (id) => {
+    setPaymentQrActive: (id, active) => {
       requirePermission("settings.payment_qr.manage");
-      return inner.activatePaymentQr(id);
+      return inner.setPaymentQrActive(id, active);
     },
     archivePaymentQr: (id) => {
       requirePermission("settings.payment_qr.manage");
@@ -386,6 +475,10 @@ export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter
     getAdminBundles: () => {
       requireAnyPermission(["bundles.read", "bundles.manage"]);
       return inner.getAdminBundles();
+    },
+    getAdminBundleMetrics: () => {
+      requireAnyPermission(["bundles.read", "bundles.manage"]);
+      return inner.getAdminBundleMetrics();
     },
     getAdminBundle: (id) => {
       requireAnyPermission(["bundles.read", "bundles.manage"]);

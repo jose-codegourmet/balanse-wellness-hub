@@ -7,13 +7,30 @@
 .portal-home-greeting h1 { font-size: clamp(2.1rem, 3.4vw, 3.1rem); letter-spacing: -.045em; line-height: 1.1; margin-top: .75rem; overflow-wrap: anywhere; }
 .portal-home-orient { max-width: 38rem; margin-top: 1rem; font-size: .85rem; line-height: 1.7; color: var(--muted-foreground); }
 .portal-home-browse { flex-shrink: 0; }
+.portal-home-overview { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(18rem, .8fr); align-items: start; gap: clamp(1.5rem, 3vw, 2.5rem); margin-top: clamp(2rem, 4vw, 3rem); }
+.portal-home-overview .portal-section { margin-top: 0; }
+.portal-home-attention-section { padding: clamp(1.15rem, 2.25vw, 1.5rem); border: 1px solid var(--border); border-radius: 1rem; background: color-mix(in oklab, var(--secondary) 32%, var(--card)); }
+.portal-home-attention-section[data-empty="false"] { background: color-mix(in oklab, var(--balanse-gold) 10%, var(--card)); }
+.portal-home-attention-section .portal-section-title { padding-bottom: .85rem; }
 .portal-home-next { margin-top: 1.5rem; }
 .portal-home-clear { margin-top: 1.25rem; }
 
 /* Attention is a distinct region only when it has something in it; an empty
    one stays a quiet line rather than an urgent-looking empty card. */
-.portal-home-attention { display: grid; gap: .75rem; margin-top: 1.5rem; padding: 1.25rem; border-radius: .85rem; background: color-mix(in oklab, var(--balanse-gold) 12%, var(--card)); }
+.portal-home-attention { display: grid; gap: .75rem; margin-top: 1.25rem; }
 .portal-home-attention .booking-card { background: var(--card); }
+.booking-card-preview { padding: 0; border-left-width: 3px; border-radius: .55rem; overflow: hidden; }
+.booking-card-preview-link { display: flex; align-items: start; justify-content: space-between; gap: .75rem; padding: .8rem .85rem; color: inherit; text-decoration: none; }
+.booking-card-preview-link:hover { background: color-mix(in oklab, var(--secondary) 45%, transparent); }
+.booking-card-preview-link:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
+.booking-card-preview-copy { min-width: 0; }
+.booking-card-preview-status { color: var(--booking-accent); font-size: .62rem; font-weight: 700; letter-spacing: .07em; line-height: 1.3; text-transform: uppercase; }
+.booking-card-preview h3 { margin-top: .2rem; font-size: .98rem; font-weight: 500; letter-spacing: -.015em; line-height: 1.25; overflow-wrap: anywhere; }
+.booking-card-preview h3 + p { margin-top: .25rem; color: var(--muted-foreground); font-size: .7rem; line-height: 1.45; }
+.booking-card-preview-link > svg { flex: 0 0 auto; margin-top: .15rem; color: var(--muted-foreground); }
+.portal-home-attention-link { display: inline-flex; align-items: center; justify-self: start; gap: .4rem; margin-top: .25rem; color: var(--foreground); font-size: .74rem; font-weight: 600; text-underline-offset: .22em; }
+.portal-home-attention-link:hover { color: var(--muted-foreground); }
+.portal-home-attention-link:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
 
 .portal-home-tabs { margin-top: 1.5rem; gap: 0; }
 .portal-home-tabs [data-slot="tabs-list"] { height: auto; gap: .35rem; padding: 0; border-bottom: 1px solid var(--border); border-radius: 0; }
@@ -49,7 +66,8 @@
 @media (max-width: 767px) {
   .portal-home-greeting { align-items: start; gap: 1.25rem; padding-bottom: 1.75rem; }
   .portal-home-browse { width: 100%; }
-  .portal-home-attention { padding: 1rem; }
+  .portal-home-overview { grid-template-columns: minmax(0, 1fr); gap: 2rem; }
+  .portal-home-attention-section { padding: 1rem; }
   .portal-home-tabs [data-slot="tabs-list"] { overflow-x: auto; scrollbar-width: thin; }
   .portal-home-tabs [data-slot="tabs-trigger"] { flex: 0 0 auto; }
 }

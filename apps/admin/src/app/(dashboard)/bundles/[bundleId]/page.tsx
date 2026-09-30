@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
-import { adminBundlesQuery, adminClassesQuery } from "@/lib/query/queries";
+import { adminBundleMetricsQuery, adminBundlesQuery, adminClassesQuery } from "@/lib/query/queries";
 import { BundleFormPage } from "../_components/bundle-form-page/BundleFormPage";
 
 export const metadata: Metadata = {
@@ -15,7 +15,11 @@ export default async function Page({ params }: { params: Promise<{ bundleId: str
   const { bundleId } = await params;
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [adminBundlesQuery(principal), adminClassesQuery(principal)],
+    [
+      adminBundlesQuery(principal),
+      adminClassesQuery(principal),
+      adminBundleMetricsQuery(principal),
+    ],
     <AdminQuerySuspense>
       <BundleFormPage bundleId={bundleId} />
     </AdminQuerySuspense>,

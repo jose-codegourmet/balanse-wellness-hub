@@ -50,8 +50,8 @@ Negative guarantees:
 - Customer A cannot read B's booking/payment/profile (`profileId` / join checks).
 - Anon cannot read bookings, payments, coach rates, or reports.
 - Customer cannot persist `CONFIRMED`, `CHECKED_IN`, or refund rows.
-- Coach rate columns are not granted through `coaches_public` or to Front Desk / Coach on `coaches` / `session_coaches`.
-- Front Desk and Coach **cannot** read staff, roles, settings, refunds, or reports through the Data API.
+- Coach rate columns are not granted through `coaches_public` or to Coach. Front Desk can read them only through its explicit `coach_rates.read` permission.
+- Front Desk has its explicit role-read, content-settings, refund, and coach-cost/session-report permissions through the Data API; it cannot read staff or alter roles. Coach has none of those capabilities.
 - Linking `Coach.staffMemberId` grants **no** extra access by itself. Own-scope requires the Coach **authorization role** (or another role with `*.own` keys) **and** a `session_coaches` assignment.
 - Archived / labeled receive QRs are not granted through `payment_qr_codes_public` (BE-056).
 - Customer A cannot read or spend customer B’s package entitlement (BE-058).

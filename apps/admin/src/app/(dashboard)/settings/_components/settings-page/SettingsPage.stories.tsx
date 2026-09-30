@@ -2,14 +2,14 @@ import { flattenFaqs } from "@balanse/domain";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import {
   businessProfileFormDefaultValues,
-  paymentInfoFormDefaultValues,
+  policyFormRequirementsFormDefaultValues,
   policyPromoteFormDefaultValues,
   publicContentFormDefaultValues,
   settingsFormDefaultValues,
 } from "@/modules/admin/forms/settings/settings-form.defaults";
 import {
   businessProfileFormSchema,
-  paymentInfoFormSchema,
+  policyFormRequirementsFormSchema,
   policyPromoteFormSchema,
   publicContentFormSchema,
   settingsFormSchema,
@@ -27,12 +27,12 @@ const meta = {
     settingsFormDefaultValues,
     businessProfileFormSchema,
     businessProfileFormDefaultValues,
-    paymentInfoFormSchema,
-    paymentInfoFormDefaultValues,
     publicContentFormSchema,
     publicContentFormDefaultValues,
     policyPromoteFormSchema,
     policyPromoteFormDefaultValues,
+    policyFormRequirementsFormSchema,
+    policyFormRequirementsFormDefaultValues,
   },
 } satisfies Meta<typeof SettingsPage>;
 
@@ -43,16 +43,17 @@ export const BusinessProfile: Story = {
   args: { initialTab: "business" },
 };
 
-export const PaymentInfo: Story = {
-  args: { initialTab: "payment" },
-};
-
 export const PublicContent: Story = {
   args: { initialTab: "content" },
 };
 
 export const Policies: Story = {
   args: { initialTab: "policies" },
+};
+
+/** Attach existing policies to customer-facing forms. */
+export const PolicyCustomerForms: Story = {
+  args: { initialTab: "policies", policyPage: "forms" },
 };
 
 /** Empty required fields — submit in the canvas to see FieldError + summary. */

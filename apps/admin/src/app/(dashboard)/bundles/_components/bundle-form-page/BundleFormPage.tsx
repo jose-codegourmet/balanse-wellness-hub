@@ -1,12 +1,12 @@
 "use client";
 
-import { BUNDLE_STATUSES, bundleStatusLabel } from "@balanse/domain";
+import { BUNDLE_STATUSES, bundleStatusLabel, EMPTY_BUNDLE_CREDIT_METRICS } from "@balanse/domain";
 import { FormPageSkeleton } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { useUpsertAdminBundle } from "@/lib/query/mutations";
-import { adminBundlesQuery, adminClassesQuery } from "@/lib/query/queries";
+import { adminBundleMetricsQuery, adminBundlesQuery, adminClassesQuery } from "@/lib/query/queries";
 import {
   AdminForm,
   FormActions,
@@ -30,6 +30,7 @@ import {
 } from "@/modules/admin/forms/bundle/bundle-form.schema";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { BundleCreditMetrics } from "../bundle-credit-metrics/BundleCreditMetrics";
 
 export function BundleFormPage({ bundleId }: { bundleId: string }) {
   const isNew = bundleId === "new";
@@ -37,6 +38,7 @@ export function BundleFormPage({ bundleId }: { bundleId: string }) {
   const { principal } = useMockPrincipal();
   const bundlesQuery = useSuspenseQuery(adminBundlesQuery(principal));
   const classesQuery = useSuspenseQuery(adminClassesQuery(principal));
+  const metricsQuery = useSuspenseQuery(adminBundleMetricsQuery(principal));
   const upsert = useUpsertAdminBundle();
   const existing = bundlesQuery.data.find((row) => row.id === bundleId);
 
@@ -64,6 +66,11 @@ export function BundleFormPage({ bundleId }: { bundleId: string }) {
         { label: isNew ? "New" : (existing?.name ?? "Package") },
       ]}
     >
+      {existing ? (
+        <BundleCreditMetrics
+          metrics={metricsQuery.data[existing.id] ?? EMPTY_BUNDLE_CREDIT_METRICS}
+        />
+      ) : null}
       {upsert.isPending ? (
         <FormPageSkeleton label="Saving package" sections={3} fields={6} />
       ) : null}

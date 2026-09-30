@@ -4,6 +4,7 @@ import { CUSTOMER_NAV_ITEMS, customerInitials, isCustomerNavActive } from "@bala
 import { BrandLockup, Button } from "@balanse/ui";
 import {
   ArrowLeft,
+  BookOpenCheck,
   CalendarCheck2,
   CalendarDays,
   ChevronUp,
@@ -35,6 +36,7 @@ import "@/components/balanse/portal/portal.css";
 
 const icons = {
   home: CalendarCheck2,
+  bookings: BookOpenCheck,
   schedule: CalendarDays,
   packages: Package,
   profile: UserRound,

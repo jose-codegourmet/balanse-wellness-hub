@@ -10,6 +10,7 @@ import { HOLD_DURATION_HOURS } from "./customer-portal";
 import type { CoachRateType, PaymentStatus, SessionStatus, VenueKind } from "./enums";
 import { BOOKING_STATUSES } from "./enums";
 import { manilaYmd } from "./format";
+import type { PolicyFormRequirements } from "./policy-forms";
 import { roleLabel } from "./roles";
 import type {
   AdminCoach,
@@ -235,6 +236,8 @@ export type AdminSettings = PublicContent &
     businessName: string;
     openingHours: string;
     policyDocuments: PolicyDocumentVersion[];
+    /** Which policies each customer-facing form asks the customer to accept. */
+    policyFormRequirements: PolicyFormRequirements;
     /** BE-056 collection. `qrImageKey` stays the derived active key. */
     paymentQrs?: PaymentQrCode[];
   };

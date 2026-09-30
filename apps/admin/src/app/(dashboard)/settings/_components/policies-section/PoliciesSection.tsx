@@ -3,15 +3,18 @@
 import {
   type AdminSettings,
   auditConfirmationCopy,
+  CUSTOMER_POLICY_FORM_META,
+  formsForPolicy,
   isPolicyVersion,
   type PolicyDocumentVersion,
 } from "@balanse/domain";
 import { Badge, Button } from "@balanse/ui";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import { adminNowIso } from "@/lib/clock";
 import {
+  useDeletePolicy,
   useDeletePolicyDocument,
   usePromotePolicyVersion,
   useUpsertPolicyDocument,
@@ -30,6 +33,9 @@ import {
   policyPromoteFormSchema,
 } from "@/modules/admin/forms/settings/settings-form.schema";
 import { notify } from "@/modules/notifications/notify";
+import { PolicyFormsSection } from "../policy-forms-section/PolicyFormsSection";
+
+const POLICIES_HREF = "/settings/policies";
 
 function nextPolicyVersion(current: string): string {
   const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(current.trim());
@@ -68,6 +74,7 @@ function Promote({
   const suggested = nextPolicyVersion(currentVersion);
   return (
     <AdminForm
+      className="w-full sm:w-96"
       schema={policyPromoteFormSchema}
       defaultValues={{ version: suggested }}
       onSubmit={async (values) => {
@@ -81,10 +88,12 @@ function Promote({
         }
       }}
     >
-      <div className="grid gap-3 md:grid-cols-[minmax(0,12rem)_auto] md:items-end">
-        <FormField name="version" label="New version">
-          {(field) => <TextBinding {...field} placeholder="yyyy-mm" />}
-        </FormField>
+      <div className="flex flex-wrap items-end gap-2">
+        <div className="w-40 shrink-0">
+          <FormField name="version" label="New version">
+            {(field) => <TextBinding {...field} placeholder="yyyy-mm" />}
+          </FormField>
+        </div>
         <PromoteButton documentName={documentName} />
       </div>
     </AdminForm>
@@ -118,6 +127,7 @@ function PolicyEditor({
   onSaved: () => void;
 }) {
   const upsert = useUpsertPolicyDocument();
+  const deletePolicy = useDeletePolicyDocument();
   return (
     <AdminForm
       schema={policyDocumentFormSchema}
@@ -139,9 +149,13 @@ function PolicyEditor({
       }}
     >
       <FormSection
-        title={document ? "Edit policy" : "New policy"}
+        title={document ? `Edit ${document.documentName} · ${document.version}` : "New policy"}
         surface="card"
-        description="Use rich text for the policy customers will read."
+        description={
+          document?.current
+            ? "This is the current version. Saving changes the text customers accept going forward."
+            : "Use rich text for the policy customers will read."
+        }
       >
         <div className="grid gap-4 md:grid-cols-2">
           <FormField name="documentName" label="Policy name">
@@ -164,10 +178,36 @@ function PolicyEditor({
             />
           )}
         </FormField>
-        <FormActions submitLabel={document ? "Save policy" : "Create policy"} />
+        <FormActions
+          submitLabel={document ? "Save policy" : "Create policy"}
+          cancelHref={POLICIES_HREF}
+          destructive={
+            document && !document.current ? (
+              <ConfirmAction
+                triggerLabel="Delete version"
+                title={`Delete ${document.documentName} ${document.version}?`}
+                description="This cannot be undone in the mock catalogue."
+                confirmLabel="Delete"
+                variant="destructive"
+                onConfirm={async () => {
+                  await deletePolicy.mutateAsync(document.id);
+                  onSaved();
+                }}
+              />
+            ) : undefined
+          }
+        />
       </FormSection>
     </AdminForm>
   );
+}
+function attachedLabel(settings: AdminSettings, documentName: string): string {
+  const forms = formsForPolicy(settings.policyFormRequirements, documentName);
+  if (forms.length === 0) return "Not on any customer form.";
+  return `Shown on ${forms.map((form) => CUSTOMER_POLICY_FORM_META[form].label).join(", ")}.`;
+}
+function policyHref(id: string): string {
+  return `${POLICIES_HREF}/${encodeURIComponent(id)}`;
 }
 export function PoliciesSection({
   settings,
@@ -179,33 +219,36 @@ export function PoliciesSection({
   invalidVersion?: boolean;
   onDirtyChange?: (dirty: boolean) => void;
   onSaved?: () => void;
-  view?: "library" | "new";
+  view?: "library" | "new" | "forms";
   policyId?: string;
 }) {
   const router = useRouter();
-  const [editing, setEditing] = useState<PolicyDocumentVersion | undefined>(() =>
-    settings.policyDocuments.find((doc) => doc.id === policyId),
-  );
-  const [creating, setCreating] = useState(view === "new");
-  useEffect(() => {
-    setEditing(settings.policyDocuments.find((doc) => doc.id === policyId));
-  }, [policyId, settings.policyDocuments]);
-  const deletePolicy = useDeletePolicyDocument();
+  const deletePolicy = useDeletePolicy();
   const save = () => {
-    setEditing(undefined);
-    setCreating(false);
     onSaved?.();
-    router.push("/settings/policies");
+    router.push(POLICIES_HREF);
   };
+  if (view === "new") return <PolicyEditor onSaved={save} />;
+  if (view === "forms") return <PolicyFormsSection settings={settings} onSaved={onSaved} />;
+  const decodedId = policyId ? decodeURIComponent(policyId) : undefined;
+  const editing = decodedId
+    ? settings.policyDocuments.find((doc) => doc.id === decodedId)
+    : undefined;
+  if (editing) return <PolicyEditor key={editing.id} document={editing} onSaved={save} />;
   const currentDocs = groups(settings.policyDocuments);
   return (
     <div className="grid gap-6">
+      {decodedId ? (
+        <p role="alert" className="rounded-xl border border-border bg-muted p-4 text-sm">
+          That policy version no longer exists. Pick another version below.
+        </p>
+      ) : null}
       <FormSection
         title="Policies & waivers"
         description="Create, edit, publish, and retain historical policy versions. Customers accept the current version going forward."
       >
         <div className="flex justify-end">
-          <Button type="button" onClick={() => setCreating(true)}>
+          <Button type="button" onClick={() => router.push(`${POLICIES_HREF}/new`)}>
             New policy
           </Button>
         </div>
@@ -220,6 +263,15 @@ export function PoliciesSection({
                     <p className="text-sm text-muted-foreground">
                       Current version {current?.version ?? "—"}
                     </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {attachedLabel(settings, group.name)}{" "}
+                      <Link
+                        href={`${POLICIES_HREF}/forms`}
+                        className="font-medium text-foreground underline underline-offset-4"
+                      >
+                        Manage forms
+                      </Link>
+                    </p>
                   </div>
                   <Badge
                     variant={current?.current ? "success" : "neutral"}
@@ -232,34 +284,43 @@ export function PoliciesSection({
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {group.versions.map((doc) => (
-                    <span key={doc.id} className="rounded-md bg-muted px-2 py-1 text-sm">
+                    <Link
+                      key={doc.id}
+                      href={policyHref(doc.id)}
+                      aria-label={`Edit ${group.name} ${doc.version}`}
+                      className="rounded-md bg-muted px-2 py-1 text-sm transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
                       {doc.version}
                       {doc.current ? " · Current" : " · Historical"}
-                    </span>
+                    </Link>
                   ))}
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => router.push(`/settings/policies/${current.id}`)}
-                  >
-                    Edit current
-                  </Button>
-                  {!current?.current ? (
+                <div className="flex flex-wrap items-end justify-between gap-4 border-t border-border pt-4">
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => router.push(policyHref(current.id))}
+                    >
+                      {current.current ? "Edit current" : "Edit latest"}
+                    </Button>
                     <ConfirmAction
-                      triggerLabel="Delete"
-                      title="Delete this policy version?"
-                      description="This cannot be undone in the mock catalogue."
-                      confirmLabel="Delete"
+                      triggerLabel="Delete policy"
+                      title={`Delete ${group.name}?`}
+                      description={`Removes all ${group.versions.length} version${group.versions.length === 1 ? "" : "s"} and detaches it from every customer form. Past customer acceptances stay in their history. This cannot be undone in the mock catalogue.`}
+                      confirmLabel="Delete policy"
                       variant="destructive"
                       onConfirm={async () => {
-                        if (!current) return;
-                        await deletePolicy.mutateAsync(current.id);
-                        onSaved?.();
+                        try {
+                          await deletePolicy.mutateAsync(group.name);
+                          notify.admin("policy.deleted");
+                          onSaved?.();
+                        } catch {
+                          notify.admin("policy.delete-failed");
+                        }
                       }}
                     />
-                  ) : null}
+                  </div>
                   {current ? (
                     <Promote
                       documentName={group.name}
@@ -273,8 +334,6 @@ export function PoliciesSection({
           })}
         </ul>
       </FormSection>
-      {creating ? <PolicyEditor onSaved={save} /> : null}
-      {editing ? <PolicyEditor document={editing} onSaved={save} /> : null}
     </div>
   );
 }

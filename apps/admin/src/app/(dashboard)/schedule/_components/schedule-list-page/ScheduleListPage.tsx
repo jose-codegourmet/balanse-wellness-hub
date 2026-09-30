@@ -4,6 +4,7 @@ import { BALANSE_BREAKPOINTS } from "@balanse/config";
 import {
   addCalendarDays,
   computeSessionInventory,
+  isCoachAuthorizationRole,
   manilaYmd,
   sessionDisplayName,
 } from "@balanse/domain";
@@ -16,6 +17,8 @@ import {
   Sheet,
   SheetContent,
   SheetTitle,
+  ToggleGroup,
+  ToggleGroupItem,
   useMinWidth,
 } from "@balanse/ui";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
@@ -40,6 +43,7 @@ import {
   AdminCan,
   useCanAdminAction,
   useCanAdminRoute,
+  useHasPermission,
 } from "@/modules/authorization/useAdminAccess";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { createSessionHref } from "../../_lib/schedule-href";
@@ -47,6 +51,8 @@ import { SelectedSessionPanel } from "../selected-session-panel/SelectedSessionP
 import type { SessionInventory } from "../selected-session-panel/SelectedSessionPanel.meta";
 
 const SCHEDULE_VIEWS = ["auto", "month", "week", "day"] as const;
+const SCHEDULE_SCOPES = ["all", "mine"] as const;
+type ScheduleScope = (typeof SCHEDULE_SCOPES)[number];
 
 export function ScheduleListPage({
   empty,
@@ -58,6 +64,10 @@ export function ScheduleListPage({
   selectedDay?: string;
   view?: AdminScheduleCalendarView;
 }) {
+  const { actor } = useMockPrincipal();
+  const canReadAllSchedule = useHasPermission("schedule.read.all");
+  const hasOwnClasses = Boolean(actor?.coachId);
+  const isCoachRole = isCoachAuthorizationRole(actor?.roleKey ?? "");
   return (
     <Suspense
       fallback={
@@ -65,6 +75,8 @@ export function ScheduleListPage({
           empty={empty}
           selectedDay={selectedDayProp}
           view={viewProp ?? "auto"}
+          scope={isCoachRole ? "mine" : "all"}
+          showOwnClassesFilter={hasOwnClasses && !canReadAllSchedule}
         />
       }
     >
@@ -83,12 +95,24 @@ function ScheduleViewBridge({
   view?: AdminScheduleCalendarView;
 }) {
   const [urlView, setUrlView] = useTabParam("view", SCHEDULE_VIEWS, "auto");
+  const { actor } = useMockPrincipal();
+  const canReadAllSchedule = useHasPermission("schedule.read.all");
+  const hasOwnClasses = Boolean(actor?.coachId);
+  const isCoachRole = isCoachAuthorizationRole(actor?.roleKey ?? "");
+  const defaultScope: ScheduleScope = isCoachRole ? "mine" : "all";
+  const [urlScope, setUrlScope] = useTabParam("scope", SCHEDULE_SCOPES, defaultScope);
+  // A Coach never receives all-session data from the adapter, so preserve the
+  // truthful active state even if a stale URL asks for `scope=all`.
+  const scope: ScheduleScope = hasOwnClasses ? (canReadAllSchedule ? urlScope : "mine") : "all";
   return (
     <ScheduleListPageInner
       empty={empty}
       selectedDay={selectedDay}
       view={viewProp ?? urlView}
       onViewChange={viewProp ? undefined : setUrlView}
+      scope={scope}
+      onScopeChange={hasOwnClasses && canReadAllSchedule ? setUrlScope : undefined}
+      showOwnClassesFilter={hasOwnClasses}
     />
   );
 }
@@ -98,20 +122,34 @@ function ScheduleListPageInner({
   selectedDay: selectedDayProp,
   view,
   onViewChange,
+  scope = "all",
+  onScopeChange,
+  showOwnClassesFilter = false,
 }: {
   empty?: boolean;
   selectedDay?: string;
   view: AdminScheduleCalendarView;
   onViewChange?: (next: AdminScheduleCalendarView) => void;
+  scope?: ScheduleScope;
+  onScopeChange?: (next: ScheduleScope) => void;
+  showOwnClassesFilter?: boolean;
 }) {
   const router = useRouter();
-  const { principal } = useMockPrincipal();
+  const { principal, actor } = useMockPrincipal();
   const canReadBookings = useCanAdminRoute("/bookings");
   const canOpenRoster = useCanAdminAction("roster-read");
   const sessionsQuery = useSuspenseQuery(adminSessionsQuery(principal));
   const bookingsQuery = useQuery({ ...adminBookingsQuery(principal), enabled: canReadBookings });
   const venuesQuery = useQuery(adminVenuesQuery(principal));
   const sessions = empty ? [] : sessionsQuery.data;
+  const scopedSessions =
+    scope === "mine" && actor?.coachId
+      ? sessions.filter(
+          (session) =>
+            session.coaches.some((coach) => coach.id === actor.coachId) ||
+            session.coachAssignments.some((assignment) => assignment.coachId === actor.coachId),
+        )
+      : sessions;
   const venues = venuesQuery.data ?? [];
   const branchCount = venues.filter((row) => row.kind === "BRANCH" && row.active).length;
   const bookings = bookingsQuery.data ?? [];
@@ -123,7 +161,7 @@ function ScheduleListPageInner({
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const daySessions = openDay
-    ? sessions
+    ? scopedSessions
         .filter((session) => manilaYmd(session.startsAt) === openDay)
         .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
     : [];
@@ -194,6 +232,21 @@ function ScheduleListPageInner({
 
   const actions = (
     <>
+      {showOwnClassesFilter ? (
+        <ToggleGroup
+          variant="outline"
+          size="sm"
+          value={[scope]}
+          onValueChange={(next) => {
+            const picked = Array.isArray(next) ? next[0] : next;
+            if (picked === "all" || picked === "mine") onScopeChange?.(picked);
+          }}
+          aria-label="Schedule filter"
+        >
+          {onScopeChange ? <ToggleGroupItem value="all">All classes</ToggleGroupItem> : null}
+          <ToggleGroupItem value="mine">Your classes</ToggleGroupItem>
+        </ToggleGroup>
+      ) : null}
       <AdminCan action="schedule-recurrence">
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -250,7 +303,7 @@ function ScheduleListPageInner({
     >
       <AdminScheduleCalendar
         className="min-w-0 flex-1"
-        sessions={sessions}
+        sessions={scopedSessions}
         todayYmd={todayYmd}
         anchorDay={anchorDay}
         selectedDay={openDay}

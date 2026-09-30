@@ -107,7 +107,7 @@ Community Host (custom), guest, customer.
 | Disabled staff | Next request denied (`disabled_staff` / 403) |
 | Archived role assign | `archived_role` |
 | Coach other session id | ownership 403; roster not in own query |
-| Front Desk rates / reports | omitted / 403 |
+| Front Desk ungranted rates / reports | omitted / 403; explicitly granted rate read, coach-cost, and session reports succeed |
 | Privilege escalation | `privilege_escalation` |
 | Last Super Admin | 403 + rejected audit |
 | Privileged → limited switch | cache drop + redirect |
@@ -140,7 +140,7 @@ Community Host (custom), guest, customer.
 
 ### Sensitive data
 
-- [x] Rates unavailable to Front Desk/Coach (API shape, mock strip, RLS column grants).
+- [x] Rates unavailable to Coach; Front Desk rate read requires its explicit permission (API shape, mock strip, RLS column grants).
 - [x] Sales/refunds/costs/financial dashboard need explicit permission.
 - [x] Safe projections omit compensation.
 - [x] Role switch cannot leak Super Admin cache.

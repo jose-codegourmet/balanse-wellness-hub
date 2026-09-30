@@ -8,10 +8,11 @@ import {
   isInteractiveStaffActor,
   type StaffAuthorizationActor,
 } from "./authorization";
+import { CLASS_CHANGE_REVIEW_PERMISSIONS } from "./class-change-requests";
 import type { SettingsSection } from "./contracts";
-import { ADMIN_NAV_ITEMS, type AdminNavId } from "./navigation";
+import { ADMIN_NAV_ITEMS, type AdminNavId, type AdminNavItem, COACH_NAV_ITEMS } from "./navigation";
 import { OWN_TO_ALL_PERMISSION, type PermissionKey } from "./permissions";
-import { isSuperAdminRoleKey } from "./roles";
+import { isCoachAuthorizationRole, isSuperAdminRoleKey } from "./roles";
 
 export type AccessSurfaceKind = "nav" | "route" | "action" | "api";
 
@@ -33,8 +34,12 @@ export type AdminAccessRequirement = {
   pathPattern?: string;
   method?: "GET" | "POST" | "PATCH" | "DELETE";
   requiresOwnership?: boolean;
+  /** Requires an active interactive staff actor even when no permission key is needed. */
+  staffOnly?: boolean;
   /** Role-exclusive surfaces cannot be granted through custom permissions. */
   superAdminOnly?: boolean;
+  /** Coach-workspace surfaces are restricted to the built-in Coach role. */
+  coachOnly?: boolean;
   whenQuery?: AdminAccessQueryMatch;
   /**
    * Sensitive fields/sections on this mixed payload. Handlers must omit each
@@ -159,6 +164,7 @@ function api(
 export const ADMIN_NAV_ACCESS: readonly AdminAccessRequirement[] = [
   nav("dashboard", "/dashboard", "Dashboard", DASHBOARD_READ_PERMISSIONS),
   nav("schedule", "/schedule", "Schedule", SCHEDULE_READ_PERMISSIONS),
+  { ...nav("students", "/students", "My Students", ["roster.read.own"]), coachOnly: true },
   nav("events", "/events", "Events", EVENT_READ),
   nav("bookings", "/bookings", "Bookings", ["bookings.read"]),
   nav("payments", "/payments", "Payments", ["payments.read", "refunds.read"]),
@@ -187,6 +193,10 @@ export const ADMIN_ROUTE_ACCESS: readonly AdminAccessRequirement[] = [
     includeFieldsIf: ["dashboard.financial.read"],
   }),
   route("schedule", "/schedule", "Schedule", SCHEDULE_READ_PERMISSIONS, { navId: "schedule" }),
+  route("students", "/students", "My Students", ["roster.read.own"], { coachOnly: true }),
+  route("student-detail", "/students/:customerId", "Student detail", ["roster.read.own"], {
+    coachOnly: true,
+  }),
   route("schedule-new", "/schedule/new", "Create session", ["schedule.create"], {
     navId: "schedule",
   }),
@@ -204,6 +214,20 @@ export const ADMIN_ROUTE_ACCESS: readonly AdminAccessRequirement[] = [
     "/schedule/:sessionId/recurrence",
     "Session recurrence",
     ["schedule.recurrence.manage"],
+    { navId: "schedule" },
+  ),
+  route(
+    "schedule-change-requests",
+    "/schedule/requests",
+    "Class change requests",
+    CLASS_CHANGE_REVIEW_PERMISSIONS,
+    { navId: "schedule" },
+  ),
+  route(
+    "schedule-change-request",
+    "/schedule/:sessionId/change",
+    "Request a class change",
+    ["schedule.read.own"],
     { navId: "schedule" },
   ),
   route("schedule-event", "/schedule/:sessionId/event", "Session event", ["events.manage"], {
@@ -276,6 +300,8 @@ export const ADMIN_ROUTE_ACCESS: readonly AdminAccessRequirement[] = [
   route("staff-roles", "/staff/roles", "Roles", ROLE_READ, { navId: "staff" }),
   route("staff", "/staff", "Staff", STAFF_READ, { navId: "staff" }),
   route("staff-detail", "/staff/:staffId", "Staff detail", STAFF_READ, { navId: "staff" }),
+  /** Every active staff member can manage their own account preferences. */
+  route("my-profile", "/my-profile", "My profile", [], { staffOnly: true }),
   route(
     "settings-content-faqs",
     "/settings/content/faqs",
@@ -314,6 +340,15 @@ export const ADMIN_ROUTE_ACCESS: readonly AdminAccessRequirement[] = [
     },
   ),
   route(
+    "settings-policies-forms",
+    "/settings/policies/forms",
+    "Customer form policies",
+    ["settings.policies.manage"],
+    {
+      navId: "settings",
+    },
+  ),
+  route(
     "settings-policy-detail",
     "/settings/policies/:policyId",
     "Policy detail",
@@ -329,6 +364,7 @@ export const ADMIN_ROUTE_ACCESS: readonly AdminAccessRequirement[] = [
 ];
 
 export const ADMIN_ACTION_ACCESS: readonly AdminAccessRequirement[] = [
+  action("class-change-review", "Review class change requests", CLASS_CHANGE_REVIEW_PERMISSIONS),
   action("dashboard-financial", "Financial dashboard cards", ["dashboard.financial.read"]),
   action("dashboard-operations", "Operational dashboard cards", ["dashboard.operations.read"]),
   action("schedule-cancel", "Cancel session", ["schedule.cancel"]),
@@ -597,8 +633,14 @@ export function matchAdminApiAccess(
 
 export function actorSatisfiesAccess(
   actor: StaffAuthorizationActor | null | undefined,
-  requirement: Pick<AdminAccessRequirement, "anyOf" | "superAdminOnly">,
+  requirement: Pick<AdminAccessRequirement, "anyOf" | "coachOnly" | "staffOnly" | "superAdminOnly">,
 ): boolean {
+  if (requirement.staffOnly && !isInteractiveStaffActor(actor)) return false;
+  if (
+    requirement.coachOnly &&
+    (!isInteractiveStaffActor(actor) || !actor || !isCoachAuthorizationRole(actor.roleKey))
+  )
+    return false;
   if (
     requirement.superAdminOnly &&
     (!isInteractiveStaffActor(actor) || !actor || !isSuperAdminRoleKey(actor.roleKey))
@@ -632,8 +674,8 @@ export function actorSatisfiesRequirement(
 
 export function permittedAdminNavItems(
   actor: StaffAuthorizationActor | null | undefined,
-): (typeof ADMIN_NAV_ITEMS)[number][] {
-  return ADMIN_NAV_ITEMS.filter((item) => {
+): AdminNavItem[] {
+  return [...ADMIN_NAV_ITEMS, ...COACH_NAV_ITEMS].filter((item) => {
     const requirement = ADMIN_NAV_ACCESS.find((entry) => entry.navId === item.id);
     return requirement ? actorSatisfiesRequirement(actor, requirement) : false;
   });
@@ -643,6 +685,7 @@ export function permittedAdminNavItems(
 export const ADMIN_LANDING_PATHS = [
   "/dashboard",
   "/schedule",
+  "/students",
   "/events",
   "/bookings",
   "/payments",

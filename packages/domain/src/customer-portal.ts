@@ -18,23 +18,6 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const PROFILE_FIELDS_NOTE =
   "OQ-3: only full name, email, and contact number. Do not add sensitive fields.";
 
-/**
- * OQ-4: waiver/policy body copy is placeholder until legal text exists.
- * OQ-5: re-acceptance cadence is undecided; do not invent it.
- */
-export const REQUIRED_POLICY_DOCUMENTS = [
-  {
-    documentName: "Waiver",
-    version: "2026-01",
-    placeholderNotice: "Placeholder text only — not legal waiver language (OQ-4).",
-  },
-  {
-    documentName: "Gym Policy",
-    version: "2026-01",
-    placeholderNotice: "Placeholder text only — not studio policy language (OQ-4).",
-  },
-] as const;
-
 /** Known mock emails for FE-CUS-001. Passwords are not real credentials. */
 export const MOCK_CUSTOMER_CREDENTIALS = [
   { email: "ana@example.com", password: "welcome", customerId: "cust-ana" },

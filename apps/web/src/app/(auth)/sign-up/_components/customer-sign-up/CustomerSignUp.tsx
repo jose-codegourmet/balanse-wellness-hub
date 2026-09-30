@@ -1,24 +1,43 @@
 "use client";
 
-import { PROFILE_FIELDS_NOTE, safeAppPath, validateCustomerSignUp } from "@balanse/domain";
-import { getMockAdapter } from "@balanse/mock";
+import {
+  type PolicyDocumentVersion,
+  PROFILE_FIELDS_NOTE,
+  safeAppPath,
+  toPolicyAcceptances,
+  validateCustomerSignUp,
+} from "@balanse/domain";
+import { getMockAdapter, MOCK_NOW_ISO } from "@balanse/mock";
 import { BrandLockup, Button, LocalizedSkeleton, MarketingImage } from "@balanse/ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  PolicyAcceptance,
+  usePolicyAcceptance,
+} from "@/components/balanse/policy-acceptance/PolicyAcceptance";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { CustomerSignUpForm } from "./customer-sign-up-form/CustomerSignUpForm";
 
 export function CustomerSignUp({
   forcedStatus,
   returnTo: returnToProp,
+  policies = [],
 }: {
   forcedStatus?: "submitting";
   returnTo?: string;
+  /** Current versions of the policies admin attached to sign up. */
+  policies?: PolicyDocumentVersion[];
 }) {
   const router = useRouter();
   const { setPrincipal } = useMockPrincipal();
   const returnTo = safeAppPath(returnToProp);
+  const policyAcceptance = usePolicyAcceptance(policies);
+  function policiesAccepted() {
+    if (policyAcceptance.check()) return true;
+    document.getElementById("signup-policies")?.scrollIntoView({ block: "center" });
+    return false;
+  }
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [contactNumber, setContactNumber] = useState("");
@@ -55,6 +74,7 @@ export function CustomerSignUp({
             variant="outline"
             className="mt-8 w-full md:mt-9"
             onClick={() => {
+              if (!policiesAccepted()) return;
               setPrincipal({ role: "customer", customerId: "cust-ana" });
               router.push(returnTo);
               router.refresh();
@@ -79,6 +99,13 @@ export function CustomerSignUp({
               if (field === "password") setPassword(value);
               if (field === "confirmPassword") setConfirmPassword(value);
             }}
+            beforeSubmit={
+              <PolicyAcceptance
+                {...policyAcceptance.props}
+                id="signup-policies"
+                title="Before you join"
+              />
+            }
             onSubmit={() => {
               const result = validateCustomerSignUp({
                 fullName,
@@ -87,15 +114,21 @@ export function CustomerSignUp({
                 password,
                 confirmPassword,
               });
+              const accepted = policiesAccepted();
               if (!result.ok) {
                 setErrors(result.errors);
                 return;
               }
+              if (!accepted) return;
               setErrors({});
               setStatus("submitting");
               void getMockAdapter()
                 .createCustomer({ fullName, email, contactNumber })
-                .then((profile) => {
+                .then(async (profile) => {
+                  await getMockAdapter().acceptPolicies(
+                    profile.id,
+                    toPolicyAcceptances(policies, MOCK_NOW_ISO, "sign_up"),
+                  );
                   setPrincipal({ role: "customer", customerId: profile.id });
                   router.push(returnTo === "/portal" ? "/portal" : returnTo);
                   router.refresh();

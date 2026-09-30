@@ -36,7 +36,8 @@ const ROLE_LABELS: Record<string, string> = {
 
 export function AdminSidebarFooter({
   collapsed = false,
-  onSettings,
+  onProfile,
+  onStudioSettings,
   onLogout,
   className,
   ...props
@@ -78,11 +79,18 @@ export function AdminSidebarFooter({
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
-          {onSettings ? (
+          {onProfile || onStudioSettings ? (
             <>
               <DropdownMenuGroup>
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => onSettings()}>Settings</DropdownMenuItem>
+                {onProfile ? (
+                  <DropdownMenuItem onClick={() => onProfile()}>My profile</DropdownMenuItem>
+                ) : null}
+                {onStudioSettings ? (
+                  <DropdownMenuItem onClick={() => onStudioSettings()}>
+                    Studio settings
+                  </DropdownMenuItem>
+                ) : null}
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
             </>

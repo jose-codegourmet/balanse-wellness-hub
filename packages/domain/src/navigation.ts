@@ -13,7 +13,13 @@ export type PublicNavId =
   | "contact"
   | "auth";
 
-export type CustomerNavId = "home" | "schedule" | "packages" | "profile" | "achievements";
+export type CustomerNavId =
+  | "home"
+  | "bookings"
+  | "schedule"
+  | "packages"
+  | "profile"
+  | "achievements";
 
 /** Submenu under the Profile destination (FE-CUS-017). */
 export type CustomerProfileSectionId = "basic" | "account" | "password" | "policies";
@@ -21,6 +27,7 @@ export type CustomerProfileSectionId = "basic" | "account" | "password" | "polic
 export type AdminNavId =
   | "dashboard"
   | "schedule"
+  | "students"
   | "events"
   | "bookings"
   | "payments"
@@ -76,9 +83,10 @@ export const PUBLIC_NAV_ITEMS: readonly PublicNavItem[] = [
   { id: "auth", label: "Login/Profile", href: "/login" },
 ] as const;
 
-/** Customer set. Home and My Bookings are one destination. */
+/** Customer portal destinations. Booking detail and request flows belong to My bookings. */
 export const CUSTOMER_NAV_ITEMS: readonly CustomerNavItem[] = [
-  { id: "home", label: "Home/My Bookings", href: "/portal" },
+  { id: "home", label: "Home", href: "/portal" },
+  { id: "bookings", label: "My bookings", href: "/portal/bookings" },
   { id: "schedule", label: "Schedule", href: "/portal/schedule" },
   { id: "packages", label: "Packages", href: "/portal/packages" },
   { id: "profile", label: "Profile", href: "/portal/profile" },
@@ -134,6 +142,11 @@ export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
   { id: "settings", label: "Settings", href: "/settings" },
 ] as const;
 
+/** Contextual teaching navigation, shown only to the built-in Coach role. */
+export const COACH_NAV_ITEMS: readonly AdminNavItem[] = [
+  { id: "students", label: "My Students", href: "/students" },
+] as const;
+
 export function publicAuthItem(role: "guest" | "customer" | "admin"): PublicNavItem {
   if (role === "guest") {
     return { id: "auth", label: "Login", href: "/login" };
@@ -167,11 +180,10 @@ export function isPublicNavActive(item: PublicNavItem, pathname: string, hash = 
 
 export function isCustomerNavActive(item: CustomerNavItem, pathname: string): boolean {
   if (item.id === "home") {
-    return (
-      pathname === "/portal" ||
-      pathname.startsWith("/portal/bookings") ||
-      pathname.startsWith("/portal/book/")
-    );
+    return pathname === "/portal";
+  }
+  if (item.id === "bookings") {
+    return pathname.startsWith("/portal/bookings") || pathname.startsWith("/portal/book/");
   }
   if (item.id === "packages") {
     return pathname === "/portal/packages" || pathname.startsWith("/portal/packages/");

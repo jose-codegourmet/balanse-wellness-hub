@@ -39,9 +39,15 @@ export const adminKeys = {
     all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "bundles"] as const,
     acquisitions: (scope: AdminAuthScope) =>
       [...adminKeys.bundles.all(scope), "acquisitions"] as const,
+    metrics: (scope: AdminAuthScope) => [...adminKeys.bundles.all(scope), "metrics"] as const,
   },
   coaches: { all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "coaches"] as const },
   sessions: { all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "sessions"] as const },
+  classChanges: {
+    all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "class-changes"] as const,
+    substitutes: (scope: AdminAuthScope, sessionId: string) =>
+      [...adminKeys.classChanges.all(scope), "substitutes", sessionId] as const,
+  },
   events: {
     all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "events"] as const,
     list: (scope: AdminAuthScope) => [...adminKeys.events.all(scope), "list"] as const,
@@ -68,6 +74,12 @@ export const adminKeys = {
       [...adminKeys.customers.all(scope), "list", filters ?? null] as const,
     detail: (scope: AdminAuthScope, id: string) =>
       [...adminKeys.customers.all(scope), "detail", id] as const,
+  },
+
+  coachStudents: {
+    all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "coach-students"] as const,
+    detail: (scope: AdminAuthScope, customerId: string) =>
+      [...adminKeys.coachStudents.all(scope), customerId] as const,
   },
 
   rosterAll: (scope: AdminAuthScope) => [...adminKeys.all(scope), "roster"] as const,

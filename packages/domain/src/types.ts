@@ -7,6 +7,7 @@ import type {
   SessionStatus,
   StaffRole,
 } from "./enums";
+import type { CustomerPolicyForm } from "./policy-forms";
 
 export type PublicClass = {
   id: string;
@@ -89,6 +90,8 @@ export type PolicyAcceptance = {
   documentName: string;
   version: string;
   acceptedAt: string;
+  /** Customer form the acceptance was captured on, when known. */
+  form?: CustomerPolicyForm;
 };
 
 export type CustomerBooking = {
@@ -124,19 +127,37 @@ export type CustomerBooking = {
   } | null;
 };
 
-export type PaymentInstructions = {
-  gcashName: string;
-  gcashNumber: string;
-  /** Derived from the active `PaymentQrCode.imageKey` (BE-056). Read-only on writes. */
-  qrImageKey: string | null;
-  notes: string;
+export const PAYMENT_ACCOUNT_TYPES = ["GCASH", "MAYA", "QRPH"] as const;
+export type PaymentAccountType = (typeof PAYMENT_ACCOUNT_TYPES)[number];
+
+/** What a customer sees for one payment account at checkout. */
+export type PaymentAccountSummary = {
+  id: string;
+  type: PaymentAccountType;
+  label: string;
+  accountName: string;
+  /** GCash / Maya mobile number, or the account number behind a QR Ph code. */
+  accountNumber: string;
+  imageKey: string | null;
 };
 
-/** Admin receive-QR row (BE-056 / FE-ADM-040). */
-export type PaymentQrCode = {
-  id: string;
-  label: string;
-  imageKey: string;
+export type PaymentInstructions = {
+  /** Derived from the first account shown to customers. Kept for legacy readers. */
+  gcashName: string;
+  gcashNumber: string;
+  /** Derived from the first shown account with a QR (BE-056). Read-only on writes. */
+  qrImageKey: string | null;
+  notes: string;
+  /** Every payment account currently shown to customers, in admin order. */
+  accounts: PaymentAccountSummary[];
+};
+
+/**
+ * Admin payment account (BE-056 / FE-ADM-040): a receive QR and/or account
+ * details for GCash, Maya, or QR Ph. Several can be shown to customers at once.
+ */
+export type PaymentQrCode = PaymentAccountSummary & {
+  /** Shown to customers at checkout. */
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

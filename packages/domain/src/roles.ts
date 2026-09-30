@@ -36,6 +36,7 @@ export type AdminStaffRole = StaffRoleDefinition & {
 
 export const FRONT_DESK_PERMISSION_KEYS = [
   "dashboard.operations.read",
+  "dashboard.financial.read",
   "schedule.read.all",
   "roster.read.all",
   "attendance.manage.all",
@@ -45,6 +46,8 @@ export const FRONT_DESK_PERMISSION_KEYS = [
   "payments.read",
   "payments.review",
   "payments.record_cash",
+  "refunds.read",
+  "refunds.manage",
   "cancellations.read",
   "cancellations.manage",
   "reschedules.read",
@@ -52,7 +55,12 @@ export const FRONT_DESK_PERMISSION_KEYS = [
   "customers.read",
   "classes.read",
   "coaches.read",
+  "coach_rates.read",
   "events.read",
+  "reports.coach_costs.read",
+  "reports.session.read",
+  "roles.read",
+  "settings.content.manage",
 ] as const satisfies readonly PermissionKey[];
 
 export const COACH_PERMISSION_KEYS = [
@@ -79,7 +87,7 @@ export const BUILT_IN_ROLE_DEFINITIONS: readonly StaffRoleDefinition[] = [
     key: FRONT_DESK_ROLE_KEY,
     name: "Front Desk",
     description:
-      "Day-to-day booking and attendance operations without privileged settings, staff administration, coach compensation, refunds, or business reports.",
+      "Day-to-day booking, attendance, refund, financial reporting, coach-rate, role-audit, and content operations without staff or role administration.",
     builtIn: true,
     builtInKey: FRONT_DESK_ROLE_KEY,
     status: "active",

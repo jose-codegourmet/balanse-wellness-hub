@@ -9,6 +9,7 @@ export type AdminSidebarProps = React.ComponentProps<"aside"> & {
   snapshot?: AdminDashboardSnapshot | null;
   mobileOpen?: boolean;
   onMobileOpenChange?: (open: boolean) => void;
-  onSettings?: () => void;
+  onProfile?: () => void;
+  onStudioSettings?: () => void;
   onLogout?: () => void;
 };

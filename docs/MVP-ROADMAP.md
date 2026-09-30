@@ -157,7 +157,7 @@ These are lifted from `docs/business-requirements/21-canonical-rules.md` (highes
 
 ### 2.5 Financial and inventory
 
-- Coach compensation is **internal** data and must never appear on public coach pages, the public calendar, customer booking screens, or customer confirmations [R67, R68, `03-roles-and-permissions.md` §Coach-rate privacy]. Inside admin, rates, costs, sales, refund totals, and financial reports require explicit sensitive permissions from `@balanse/domain` (`PERMISSION_KEYS`). Super Admin has all-access; Front Desk and Coach defaults do not include those keys (epic #289 / #294).
+- Coach compensation is **internal** data and must never appear on public coach pages, the public calendar, customer booking screens, or customer confirmations [R67, R68, `03-roles-and-permissions.md` §Coach-rate privacy]. Inside admin, rates, costs, sales, refund totals, and financial reports require explicit sensitive permissions from `@balanse/domain` (`PERMISSION_KEYS`). Super Admin has all-access; Front Desk has its explicitly granted sensitive permissions, while Coach has none (epic #289 / #294).
 - A coach may have `defaultRate` + `rateType` (`per_session` / `per_hour`) [R69].
 - Scheduled sessions must **snapshot** customer price, coach rate, and rate type; changing a coach's current rate must not rewrite historical session costs [R70, R71, `22-inventory-and-sales-reporting.md` §2].
 - Class capacity is the primary sellable inventory [R72].
@@ -2717,4 +2717,3 @@ Every file under `docs/screen-specs/` and the FE ticket(s) that cover it.
 | ASSET-022 | Contact page imagery (Assets A–B) | P2 |
 | ASSET-023 | FAQ header accent (Asset A) | P2 |
 | ASSET-030 | Upload approved assets into Supabase Storage | P4 |
-

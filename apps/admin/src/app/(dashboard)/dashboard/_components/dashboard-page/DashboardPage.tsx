@@ -5,6 +5,7 @@ import {
   formatPeso,
   formatRatioPercent,
   formatSessionTime,
+  isCoachAuthorizationRole,
 } from "@balanse/domain";
 import { Badge, BentoSkeleton, Button, FeedbackState } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
@@ -38,6 +39,7 @@ export function DashboardPage({
   const canViewFinancials = useCanAdminAction("dashboard-financial");
   const canViewOperations = useCanAdminAction("dashboard-operations");
   const canViewCoachCost = canViewFinancials;
+  const isCoachWorkspace = isCoachAuthorizationRole(actor?.roleKey ?? "");
   const query = useQuery({
     ...adminDashboardQuery(principal),
     ...(initial ? { initialData: initial } : {}),
@@ -82,9 +84,9 @@ export function DashboardPage({
 
   if (forcedLoading) {
     return (
-      <AdminPageShell title="Dashboard">
+      <AdminPageShell title={isCoachWorkspace ? "My teaching day" : "Dashboard"}>
         <BentoSkeleton
-          label="Loading dashboard"
+          label={isCoachWorkspace ? "Loading coach dashboard" : "Loading dashboard"}
           tiles={dashboardSkeletonTilesForRole(canViewCoachCost)}
         />
       </AdminPageShell>
@@ -95,11 +97,15 @@ export function DashboardPage({
 
   if (query.isError || !data) {
     return (
-      <AdminPageShell title="Dashboard">
+      <AdminPageShell title={isCoachWorkspace ? "My teaching day" : "Dashboard"}>
         <FeedbackState
           id="calendar.load-failed"
-          title="Dashboard could not load"
-          description="The operations snapshot did not load. Retry the request."
+          title={isCoachWorkspace ? "Coach dashboard could not load" : "Dashboard could not load"}
+          description={
+            isCoachWorkspace
+              ? "Your assigned sessions did not load. Retry the request."
+              : "The operations snapshot did not load. Retry the request."
+          }
           actionLabel="Retry"
           onAction={() => {
             void query.refetch();
@@ -108,6 +114,8 @@ export function DashboardPage({
       </AdminPageShell>
     );
   }
+
+  if (isCoachWorkspace) return <CoachDashboard data={data} />;
 
   const stats = [
     {
@@ -248,6 +256,107 @@ export function DashboardPage({
         {canViewFinancials && data.series?.gross_sales ? (
           <SalesSeriesChart series={data.series.gross_sales} />
         ) : null}
+      </DashboardBento>
+    </AdminPageShell>
+  );
+}
+
+function CoachDashboard({ data }: { data: AdminDashboardSnapshot }) {
+  const columns = useMemo<ColumnDef<ScheduleRow, unknown>[]>(
+    () => [
+      {
+        accessorFn: (row) => formatSessionTime(row.startsAt),
+        id: "time",
+        header: "Time",
+        meta: { mobile: { role: "title" } },
+        cell: ({ row }) => formatSessionTime(row.original.startsAt),
+      },
+      { accessorKey: "className", header: "Class", meta: { mobile: { role: "subtitle" } } },
+      { accessorKey: "capacity", header: "Capacity", meta: { mobile: { role: "meta" } } },
+      {
+        id: "roster",
+        header: "Attendance",
+        meta: { mobile: { role: "status" } },
+        cell: ({ row }) => (
+          <Link
+            href={`/sessions/${row.original.id}/roster`}
+            className="text-sm font-medium underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Open roster
+          </Link>
+        ),
+      },
+    ],
+    [],
+  );
+
+  return (
+    <AdminPageShell
+      eyebrow="Coach workspace"
+      title="My teaching day"
+      description="Your assigned sessions and the rosters you need for attendance."
+      actions={
+        <Button nativeButton={false} variant="outline" render={<Link href="/schedule" />}>
+          View my schedule
+        </Button>
+      }
+    >
+      <DashboardBento>
+        <DashboardTile span="metric" href="/schedule">
+          <p className="text-sm text-muted-foreground">Assigned today</p>
+          <p className="mt-2 font-display text-2xl tabular-nums">{data.todaysClasses}</p>
+          <p className="mt-4 text-xs leading-5 text-muted-foreground">Sessions assigned to you.</p>
+        </DashboardTile>
+        <DashboardTile span="metric">
+          <p className="text-sm text-muted-foreground">Today&apos;s occupancy</p>
+          <p className="mt-2 font-display text-2xl tabular-nums">
+            {formatRatioPercent(data.todaysOccupancy)}
+          </p>
+          <p className="mt-4 text-xs leading-5 text-muted-foreground">
+            Across your assigned sessions.
+          </p>
+        </DashboardTile>
+
+        <DashboardTile span="schedule" className="p-4 md:p-5">
+          {data.todaysSchedule.length === 0 ? (
+            <>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <h2 className="font-display text-2xl">My sessions today</h2>
+                <Button
+                  nativeButton={false}
+                  variant="outline"
+                  size="sm"
+                  render={<Link href="/schedule" />}
+                >
+                  View my schedule
+                </Button>
+              </div>
+              <FeedbackState id="admin.no-sessions" className="mt-3" />
+            </>
+          ) : (
+            <AdminDataTable
+              tableId="coach-dashboard-sessions"
+              title="My sessions today"
+              description="Only sessions assigned to you. Open a roster to take attendance."
+              data={data.todaysSchedule}
+              columns={columns}
+              getRowId={(row) => row.id}
+              searchable={false}
+              persistUrl={false}
+              toolbar={
+                <Button
+                  nativeButton={false}
+                  variant="outline"
+                  size="sm"
+                  render={<Link href="/schedule" />}
+                >
+                  View my schedule
+                </Button>
+              }
+              emptyFilterLabel="No sessions assigned to you today."
+            />
+          )}
+        </DashboardTile>
       </DashboardBento>
     </AdminPageShell>
   );

@@ -1,6 +1,7 @@
 import type {
   BundleAcquisition,
   BundleAuditEvent,
+  BundleCreditMetrics,
   BundleDefinition,
   BundleRedemption,
   BundleStatus,
@@ -15,6 +16,7 @@ import {
   deriveEntitlementStatus,
   entitlementEligibleForSession,
   snapshotBundle,
+  summarizeBundleCredits,
 } from "@balanse/domain";
 import { MOCK_NOW_ISO } from "./fixtures";
 
@@ -94,6 +96,20 @@ export function materializeEntitlement(
     restoredCredits: counts.restored,
     status,
   };
+}
+
+/** Per-package credit totals, keyed by bundle id. Every bundle has an entry. */
+export function bundleCreditMetrics(state: BundleState): Record<string, BundleCreditMetrics> {
+  return Object.fromEntries(
+    state.bundles.map((bundle) => [
+      bundle.id,
+      summarizeBundleCredits(
+        state.entitlements
+          .filter((row) => row.bundleId === bundle.id)
+          .map((row) => materializeEntitlement(state, row)),
+      ),
+    ]),
+  );
 }
 
 export function listPublishedBundles(state: BundleState): PublicBundle[] {

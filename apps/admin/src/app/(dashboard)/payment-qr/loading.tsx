@@ -3,8 +3,8 @@ import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/Admin
 
 export default function Loading() {
   return (
-    <AdminPageShell title="Payment QR">
-      <CardListSkeleton label="Loading payment QRs" items={2} />
+    <AdminPageShell title="Payment accounts">
+      <CardListSkeleton label="Loading payment accounts" items={2} />
     </AdminPageShell>
   );
 }

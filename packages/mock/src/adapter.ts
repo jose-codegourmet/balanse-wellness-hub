@@ -16,21 +16,29 @@ import type {
   BookingStatus,
   BundleAcquisition,
   BundleAuditEvent,
+  BundleCreditMetrics,
   BundleDefinition,
   BundleRedemption,
   BundleStatus,
+  ClassChangeRequest,
+  CoachStudent,
+  CoachStudentDetail,
+  CreateClassChangeRequestInput,
   CursorPage,
   CustomerBooking,
   CustomerEntitlement,
+  CustomerPolicyForm,
   CustomerProfile,
   DuplicateScheduleInput,
   EventStatus,
+  PaymentAccountType,
   PaymentInstructions,
   PaymentMethod,
   PaymentQrCode,
   PermissionKey,
   PolicyAcceptance,
   PolicyDocumentVersion,
+  PolicyFormRequirements,
   PublicBundle,
   PublicClass,
   PublicCoach,
@@ -40,6 +48,7 @@ import type {
   ScheduleGenerationResult,
   SessionReportDrilldown,
   SessionStatus,
+  SubstituteCoachOption,
   VenueKind,
 } from "@balanse/domain";
 
@@ -73,6 +82,9 @@ export type MockDataAdapter = {
     patch: Partial<Pick<CustomerProfile, "fullName" | "email" | "contactNumber">>,
   ) => Promise<CustomerProfile>;
   getMePolicyAcceptances: (customerId: string) => Promise<PolicyAcceptance[]>;
+  /** Current versions of the policies admin attached to a customer form. */
+  getCustomerFormPolicies: (form: CustomerPolicyForm) => Promise<PolicyDocumentVersion[]>;
+  acceptPolicies: (customerId: string, acceptances: PolicyAcceptance[]) => Promise<void>;
   createCustomer: (input: {
     fullName: string;
     email: string;
@@ -125,6 +137,9 @@ export type MockDataAdapter = {
     classId?: string;
     date?: string;
   }) => Promise<CustomerBooking[]>;
+  /** Coach-scoped student cohorts. The authorization wrapper always supplies the linked coach id. */
+  getCoachStudents: (coachId?: string) => Promise<CoachStudent[]>;
+  getCoachStudent: (customerId: string, coachId?: string) => Promise<CoachStudentDetail | null>;
   confirmAdminBooking: (id: string) => Promise<CustomerBooking>;
   rejectAdminBooking: (id: string, reason: string) => Promise<CustomerBooking>;
   getAdminPayments: {
@@ -189,6 +204,30 @@ export type MockDataAdapter = {
     input: RecurringScheduleInput,
   ) => Promise<ScheduleGenerationResult>;
   cancelAdminSession: (id: string) => Promise<AdminSession>;
+  /**
+   * Coach class change requests (#337). Approvers see every request; a coach
+   * sees only their own. The auth wrapper supplies requester / reviewer ids.
+   */
+  getClassChangeRequests: (query?: {
+    sessionId?: string;
+    requestedByStaffId?: string;
+  }) => Promise<ClassChangeRequest[]>;
+  getSubstituteCoachOptions: (sessionId: string) => Promise<SubstituteCoachOption[]>;
+  createClassChangeRequest: (
+    input: CreateClassChangeRequestInput,
+    requester?: { staffId: string; coachId: string },
+  ) => Promise<ClassChangeRequest>;
+  withdrawClassChangeRequest: (id: string, staffId?: string) => Promise<ClassChangeRequest>;
+  approveClassChangeRequest: (
+    id: string,
+    note?: string | null,
+    reviewerStaffId?: string,
+  ) => Promise<ClassChangeRequest>;
+  denyClassChangeRequest: (
+    id: string,
+    note: string,
+    reviewerStaffId?: string,
+  ) => Promise<ClassChangeRequest>;
   getAdminCancellationRequests: {
     (): Promise<CustomerBooking[]>;
     (query: AdminRequestQueueQuery): Promise<CursorPage<CustomerBooking>>;
@@ -257,17 +296,27 @@ export type MockDataAdapter = {
     current?: boolean;
   }) => Promise<PolicyDocumentVersion>;
   deletePolicyDocument: (id: string) => Promise<AdminSettings>;
+  /** Deletes every version of a policy and detaches it from customer forms. */
+  deletePolicy: (documentName: string) => Promise<AdminSettings>;
+  setPolicyFormRequirements: (requirements: PolicyFormRequirements) => Promise<AdminSettings>;
   updateAdminSettings: (patch: Partial<AdminSettings>) => Promise<AdminSettings>;
   listPaymentQrs: (includeArchived?: boolean) => Promise<{
     items: PaymentQrCode[];
     activeId: string | null;
   }>;
+  /** Create or edit a payment account (GCash, Maya, or QR Ph). */
   upsertPaymentQr: (input: {
     id?: string;
+    type: PaymentAccountType;
     label: string;
-    imageKey: string;
+    accountName: string;
+    accountNumber: string;
+    imageKey: string | null;
+    isActive: boolean;
   }) => Promise<PaymentQrCode>;
-  activatePaymentQr: (id: string) => Promise<PaymentQrCode>;
+  /** Show or hide an account at customer checkout. Several can be shown at once. */
+  setPaymentQrActive: (id: string, active: boolean) => Promise<PaymentQrCode>;
+  /** Removes the account from the list; history keeps the archived row. */
   archivePaymentQr: (id: string) => Promise<PaymentQrCode>;
   promotePolicyVersion: (documentName: string, version: string) => Promise<AdminSettings>;
   getAdminDashboard: () => Promise<AdminDashboardSnapshot>;
@@ -313,6 +362,8 @@ export type MockDataAdapter = {
   archiveAdminEvent: (id: string) => Promise<AdminEvent>;
   getAdminBundles: () => Promise<BundleDefinition[]>;
   getAdminBundle: (id: string) => Promise<BundleDefinition | null>;
+  /** Granted / held / used / restored credits per package, keyed by bundle id. */
+  getAdminBundleMetrics: () => Promise<Record<string, BundleCreditMetrics>>;
   upsertAdminBundle: (input: {
     id?: string;
     name: string;

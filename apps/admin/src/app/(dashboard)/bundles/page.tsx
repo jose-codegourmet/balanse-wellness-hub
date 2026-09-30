@@ -3,7 +3,11 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
 import { prefetchAdmin } from "@/lib/query/prefetch";
-import { adminBundleAcquisitionsQuery, adminBundlesQuery } from "@/lib/query/queries";
+import {
+  adminBundleAcquisitionsQuery,
+  adminBundleMetricsQuery,
+  adminBundlesQuery,
+} from "@/lib/query/queries";
 import { BundleListPage } from "./_components/bundle-list-page/BundleListPage";
 
 export const metadata: Metadata = {
@@ -14,7 +18,11 @@ export const metadata: Metadata = {
 export default async function Page() {
   const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
   return prefetchAdmin(
-    [adminBundlesQuery(principal), adminBundleAcquisitionsQuery(principal)],
+    [
+      adminBundlesQuery(principal),
+      adminBundleAcquisitionsQuery(principal),
+      adminBundleMetricsQuery(principal),
+    ],
     <AdminQuerySuspense>
       <BundleListPage />
     </AdminQuerySuspense>,

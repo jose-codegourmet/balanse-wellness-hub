@@ -16,11 +16,13 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   if (!bundle) notFound();
   const principal = await getServerMockPrincipal();
   const signedIn = principal.role === "customer";
+  const policies = signedIn ? await adapter.getCustomerFormPolicies("package_request") : [];
   return (
     <PackageDetailPage
       bundle={bundle}
       signedIn={signedIn}
       customerId={signedIn ? principal.customerId : undefined}
+      policies={policies}
     />
   );
 }

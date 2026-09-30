@@ -1,14 +1,18 @@
 "use client";
 
-import type { PublicBundle } from "@balanse/domain";
-import { formatPeso } from "@balanse/domain";
-import { getMockAdapter } from "@balanse/mock";
+import type { PolicyDocumentVersion, PublicBundle } from "@balanse/domain";
+import { formatPeso, toPolicyAcceptances } from "@balanse/domain";
+import { getMockAdapter, MOCK_NOW_ISO } from "@balanse/mock";
 import { Button } from "@balanse/ui";
 import { ArrowLeft, ArrowUpRight, CalendarDays, Check, Clock3, Ticket } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ComponentType, ReactNode } from "react";
 import { useState } from "react";
+import {
+  PolicyAcceptance,
+  usePolicyAcceptance,
+} from "@/components/balanse/policy-acceptance/PolicyAcceptance";
 import { notify } from "@/modules/notifications/notify";
 
 function detailTerm({
@@ -37,13 +41,17 @@ export function PackageDetailPage({
   bundle,
   customerId,
   signedIn,
+  policies = [],
 }: {
   bundle: PublicBundle;
   customerId?: string;
   signedIn: boolean;
+  /** Current versions of the policies admin attached to package requests. */
+  policies?: PolicyDocumentVersion[];
 }) {
   const router = useRouter();
   const [status, setStatus] = useState<"idle" | "working">("idle");
+  const policyAcceptance = usePolicyAcceptance(policies);
   const free = bundle.pricePhp === 0;
   const actionLabel = signedIn
     ? free
@@ -52,13 +60,17 @@ export function PackageDetailPage({
     : `Sign in to ${free ? "claim" : "request"}`;
 
   const claim = () => {
-    if (!customerId) return;
+    if (!customerId || !policyAcceptance.check()) return;
     setStatus("working");
     const adapter = getMockAdapter();
-    const request = free
-      ? adapter.claimFreeBundle({ customerId, bundleId: bundle.id })
-      : adapter.requestPaidBundle({ customerId, bundleId: bundle.id });
-    void request
+    void adapter
+      .acceptPolicies(customerId, toPolicyAcceptances(policies, MOCK_NOW_ISO, "package_request"))
+      .then(
+        (): Promise<unknown> =>
+          free
+            ? adapter.claimFreeBundle({ customerId, bundleId: bundle.id })
+            : adapter.requestPaidBundle({ customerId, bundleId: bundle.id }),
+      )
       .then(() => {
         notify.portal(free ? "package.claimed" : "package.requested");
         router.push("/portal/packages");
@@ -105,6 +117,14 @@ export function PackageDetailPage({
               <p className="mt-1 text-sm text-primary-foreground/72">
                 {free ? "Complimentary" : formatPeso(bundle.pricePhp)}
               </p>
+              {signedIn ? (
+                <PolicyAcceptance
+                  {...policyAcceptance.props}
+                  tone="inverse"
+                  title="Before you continue"
+                  className="mt-6"
+                />
+              ) : null}
               {signedIn ? (
                 <Button
                   variant="accent"

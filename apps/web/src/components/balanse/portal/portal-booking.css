@@ -68,6 +68,19 @@
 .booking-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
 .booking-actions-note { max-width: 44rem; font-size: .78rem; line-height: 1.7; color: var(--muted-foreground); }
 
+/* --- Cancellation request (FE-CUS-015) ------------------------------- */
+.cancellation-layout { display: grid; grid-template-columns: 22rem minmax(0, 1fr); align-items: start; gap: 1.5rem; margin-top: 2rem; }
+.cancellation-booking { position: sticky; top: 1.5rem; display: grid; gap: 1rem; min-width: 0; }
+.cancellation-review { display: grid; gap: 1.5rem; min-width: 0; padding: clamp(1.35rem, 2.5vw, 2rem); border: 1px solid var(--border); border-radius: 1rem; background: var(--card); box-shadow: 0 1.5rem 3rem -2.5rem color-mix(in oklab, var(--balanse-navy) 60%, transparent); }
+.cancellation-review-head { max-width: 34rem; }
+.cancellation-review-head h2 { margin-top: .45rem; font-size: clamp(1.65rem, 3vw, 2.15rem); font-weight: 400; letter-spacing: -.035em; line-height: 1.1; text-wrap: balance; }
+.cancellation-consequences { display: grid; gap: .8rem; margin: 0; padding: 0; list-style: none; }
+.cancellation-consequences li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .8rem; align-items: start; padding: .9rem 1rem; border-left: 3px solid var(--balanse-gold); background: color-mix(in oklab, var(--secondary) 26%, var(--card)); }
+.cancellation-consequences li > svg { width: 1.1rem; height: 1.1rem; margin-top: .1rem; color: var(--balanse-muted-brown); stroke-width: 1.5; }
+.cancellation-consequences li > span { display: grid; gap: .2rem; font-size: .78rem; line-height: 1.65; color: var(--muted-foreground); }
+.cancellation-consequences strong { color: var(--foreground); font-size: .82rem; font-weight: 600; }
+.cancellation-form-actions { display: flex; flex-wrap: wrap-reverse; gap: .75rem; align-items: center; justify-content: space-between; }
+
 /* --- Reschedule (FE-CUS-016) ------------------------------------------ */
 .reschedule-layout { display: grid; grid-template-columns: 22rem minmax(0, 1fr); align-items: start; gap: 1.5rem; margin-top: 2rem; }
 .reschedule-current { position: sticky; top: 1.5rem; display: grid; gap: 1rem; min-width: 0; }
@@ -77,6 +90,7 @@
 .reschedule-legend { padding: 0; }
 .reschedule-legend > span { display: block; }
 .reschedule-legend strong { display: block; margin-top: .45rem; font-family: var(--font-display); font-size: 1.45rem; font-weight: 400; letter-spacing: -.03em; }
+.reschedule-legend small { display: block; max-width: 34rem; margin-top: .5rem; font-size: .75rem; line-height: 1.55; color: var(--muted-foreground); }
 .reschedule-days { display: grid; gap: 1.5rem; }
 .reschedule-day-label { display: flex; align-items: center; gap: .75rem; font-size: .7rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-foreground); }
 .reschedule-day-label::after { content: ""; flex: 1; border-top: 1px solid var(--border); }
@@ -90,8 +104,9 @@
 .reschedule-option:hover { background: color-mix(in oklab, var(--secondary) 28%, var(--card)); }
 .reschedule-option:has(input:checked) { border-color: var(--foreground); background: color-mix(in oklab, var(--secondary) 45%, var(--card)); }
 .reschedule-option:has(input:focus-visible) { outline: 2px solid var(--ring); outline-offset: 3px; }
-.reschedule-option[data-selectable="false"] { cursor: not-allowed; background: color-mix(in oklab, var(--secondary) 18%, var(--card)); }
+.reschedule-option[data-selectable="false"] { --event-accent: var(--muted-foreground); cursor: not-allowed; border-color: color-mix(in oklab, var(--muted-foreground) 38%, var(--border)); border-left-width: 5px; background: color-mix(in oklab, var(--secondary) 78%, var(--card)); filter: grayscale(.82); opacity: .7; }
 .reschedule-option[data-selectable="false"] .reschedule-option-title { color: var(--muted-foreground); }
+.reschedule-option-unavailable { display: inline-flex; justify-self: start; margin-top: .1rem; padding: .22rem .45rem; border: 1px solid color-mix(in oklab, var(--muted-foreground) 60%, var(--border)); border-radius: .25rem; background: color-mix(in oklab, var(--muted) 72%, var(--card)); color: var(--foreground); font-size: .62rem; font-weight: 700; letter-spacing: .08em; line-height: 1.3; text-transform: uppercase; }
 .reschedule-option input { margin-top: .2rem; width: 1.05rem; height: 1.05rem; accent-color: var(--foreground); }
 .reschedule-option-body { display: grid; gap: .3rem; min-width: 0; }
 .reschedule-option-title { font-size: .9375rem; font-weight: 500; overflow-wrap: anywhere; }
@@ -99,6 +114,8 @@
 .reschedule-option-capacity { display: inline-flex; align-items: center; justify-self: start; gap: .4rem; padding: .18rem .55rem; border: 1px solid color-mix(in oklab, var(--event-accent) 55%, var(--border)); border-radius: 999px; font-size: .6rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); }
 .reschedule-review { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 1rem; padding: 1.1rem 1.25rem; border: 1px solid var(--border); border-radius: .75rem; background: color-mix(in oklab, var(--secondary) 30%, var(--card)); }
 .reschedule-review[data-empty="true"] { display: block; color: var(--muted-foreground); font-size: .78rem; }
+.reschedule-review-empty { display: grid; gap: .35rem; line-height: 1.65; }
+.reschedule-review-empty > span { font-size: .6rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted-foreground); }
 .reschedule-review-leg { min-width: 0; }
 .reschedule-review-leg > span { display: block; font-size: .6rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted-foreground); }
 .reschedule-review-leg strong { display: block; margin-top: .3rem; font-size: .875rem; font-weight: 500; overflow-wrap: anywhere; }
@@ -106,10 +123,13 @@
 .reschedule-review-arrow { color: var(--muted-foreground); }
 .reschedule-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
 .reschedule-actions > p { max-width: 30rem; font-size: .72rem; line-height: 1.65; color: var(--muted-foreground); }
+.reschedule-action-buttons { display: flex; flex-wrap: wrap-reverse; gap: .75rem; align-items: center; }
 
 @media (max-width: 1100px) {
   .reschedule-layout { grid-template-columns: minmax(0, 1fr); }
   .reschedule-current { position: static; }
+  .cancellation-layout { grid-template-columns: minmax(0, 1fr); }
+  .cancellation-booking { position: static; }
 }
 @media (max-width: 767px) {
   .booking-ticket { grid-template-columns: minmax(0, 1fr); }

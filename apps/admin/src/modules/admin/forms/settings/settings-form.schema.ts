@@ -4,6 +4,7 @@ import {
   isPhMobile,
   isPolicyVersion,
   PH_MOBILE_ERROR,
+  type PolicyFormRequirements,
 } from "@balanse/domain";
 import { z } from "zod";
 
@@ -101,8 +102,22 @@ export const policyPromoteFormSchema = z.object({
   version: policyVersionSchema,
 });
 
+const attachedPolicies = z.array(z.string().min(1));
+
+/** Which policies each customer-facing form asks customers to accept. */
+export const policyFormRequirementsFormSchema = z.object({
+  sign_up: attachedPolicies,
+  booking: attachedPolicies,
+  package_request: attachedPolicies,
+  payment_proof: attachedPolicies,
+  reschedule: attachedPolicies,
+  cancellation: attachedPolicies,
+  contact: attachedPolicies,
+}) satisfies z.ZodType<PolicyFormRequirements>;
+
 export type BusinessProfileFormValues = z.infer<typeof businessProfileFormSchema>;
 export type PaymentInfoFormValues = z.infer<typeof paymentInfoFormSchema>;
 export type PublicContentFormValues = z.infer<typeof publicContentFormSchema>;
 export type PolicyPromoteFormValues = z.infer<typeof policyPromoteFormSchema>;
 export type PolicyDocumentFormValues = z.infer<typeof policyDocumentFormSchema>;
+export type PolicyFormRequirementsFormValues = z.infer<typeof policyFormRequirementsFormSchema>;

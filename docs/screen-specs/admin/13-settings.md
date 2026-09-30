@@ -5,10 +5,6 @@ SETTINGS
 BUSINESS PROFILE
 Name | contact | address
 
-PAYMENT INFO
-GCash name / number
-Link to /payment-qr for receive QR collection
-
 PUBLIC CONTENT
 About | Contact | FAQs
 
@@ -26,8 +22,14 @@ If financial permissions are added later, they should remain restricted to autho
 
 ## Payment receive QRs (BE-056 / FE-ADM-040)
 
-Settings keep `gcashName` / `gcashNumber` only. The receive-QR collection lives on `/payment-qr` (see `15-payment-qr.md`). Customers see only the active QR plus those GCash fields — never labels or the archived set.
+GCash name / number are still stored on settings (`gcashName` / `gcashNumber`, the `payment` settings section and its permission), but Settings has no Payment tab. They are edited on `/payment-qr` next to the receive-QR collection (see `15-payment-qr.md`). Old `/settings?tab=payment` links redirect to `/payment-qr`. Customers see only the active QR plus those GCash fields — never labels or the archived set.
 
 The legacy single `qrImageKey` is a **read-only derived** field pointing at the active row so existing payment-instruction screens keep working. Contract: `docs/backend/payment-qr-collection.md`.
 
 Unrelated: the marketing/contact `walk-in-qr` asset (manifest id `contact-b`) is not a payment destination.
+
+## Policies & waivers (mock)
+
+- `/settings/policies` — policy library. Create, edit any version, promote a new version, delete a historical version, or delete a whole policy (all versions; detaches it from customer forms; past customer acceptances stay).
+- `/settings/policies/new`, `/settings/policies/[policyId]` — policy editor.
+- `/settings/policies/forms` — **Customer forms**. Attach existing policies to each customer-facing form and drag them into display order. Form fields themselves are fixed and not editable. Forms: sign up, class booking, package request, GCash payment proof, reschedule request, cancellation request, contact. Customers accept the current version of each attached policy before submitting (`AdminSettings.policyFormRequirements`, `getCustomerFormPolicies(form)`).

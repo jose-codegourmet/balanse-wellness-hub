@@ -7,6 +7,7 @@ import type {
   CustomerBooking,
   CustomerProfile,
   PaymentInstructions,
+  PaymentQrCode,
   PolicyAcceptance,
   PublicClass,
   PublicCoach,
@@ -368,6 +369,19 @@ export const publicSessions: PublicSession[] = [
     status: "PUBLISHED",
   }),
   session({
+    id: "session-sat-groundworks",
+    classId: "class-groundworks",
+    coachIds: ["coach-ephraim"],
+    startsAt: "2026-09-19T08:00:00.000Z",
+    endsAt: "2026-09-19T09:30:00.000Z",
+    pricePhp: 550,
+    capacity: 12,
+    remainingSlots: 12,
+    reservable: true,
+    availability: "open",
+    status: "PUBLISHED",
+  }),
+  session({
     id: "session-thu-early",
     classId: "class-yoga",
     coachIds: ["coach-wolf"],
@@ -579,6 +593,39 @@ function buildGeneratedQueueBookings(): CustomerBooking[] {
   return rows;
 }
 
+/**
+ * Door check-in example for `/sessions/session-wed-cutoff/roster`: a class past
+ * its booking cutoff with guests arriving. 2 checked in, 3 still to check in,
+ * 1 paying at the counter — 6 of 12 places, matching `remainingSlots`.
+ */
+function buildRosterBookings(): CustomerBooking[] {
+  const rows: [string, BookingStatus, number, Partial<CustomerBooking>][] = [
+    ["01", "CHECKED_IN", 0, { paymentMethod: "GCASH", paymentStatus: "VERIFIED" }],
+    ["02", "CHECKED_IN", 11, { paymentMethod: "PAY_AT_COUNTER", paymentStatus: "VERIFIED" }],
+    ["03", "CONFIRMED", 22, { paymentMethod: "GCASH", paymentStatus: "VERIFIED" }],
+    ["04", "CONFIRMED", 33, { paymentMethod: "GCASH", paymentStatus: "VERIFIED" }],
+    ["05", "CONFIRMED", 44, { paymentMethod: "PAY_AT_COUNTER", paymentStatus: "VERIFIED" }],
+    [
+      "06",
+      "HELD_AWAITING_PAYMENT",
+      5,
+      {
+        paymentMethod: "PAY_AT_COUNTER",
+        paymentStatus: "NONE",
+        holdExpiresAt: "2026-09-16T03:00:00.000Z",
+      },
+    ],
+  ];
+  return rows.map(([key, status, nameIndex, extras]) =>
+    booking(`booking-roster-${key}`, status, "session-wed-cutoff", {
+      customerId: `cust-q-roster-${pad2(nameIndex)}`,
+      createdAt: `2026-09-12T0${key.at(-1)}:00:00.000Z`,
+      holdExpiresAt: null,
+      ...extras,
+    }),
+  );
+}
+
 export const bookings: CustomerBooking[] = BOOKING_STATUSES.map((status, index) => {
   const extras: Partial<CustomerBooking> = {};
   if (status === "HELD_AWAITING_PAYMENT") {
@@ -650,6 +697,7 @@ export const bookings: CustomerBooking[] = BOOKING_STATUSES.map((status, index) 
     paymentMethod: "PAY_AT_COUNTER",
     paymentStatus: "NONE",
   }),
+  ...buildRosterBookings(),
   ...buildGeneratedQueueBookings(),
 ]);
 
@@ -675,8 +723,49 @@ export const paymentInstructions: PaymentInstructions = {
   gcashName: "Balansé Wellness Hub (placeholder)",
   gcashNumber: "0968 220 9198",
   qrImageKey: null,
-  notes: "Placeholder GCash details for mocked screens. Not a live payment destination.",
+  notes: "Placeholder payment details for mocked screens. Not a live payment destination.",
+  accounts: [],
 };
+
+/** Seed payment accounts: GCash and Maya shown to customers, a QR Ph kept hidden. */
+export const paymentAccountFixtures: PaymentQrCode[] = [
+  {
+    id: "pqr-gcash-main",
+    type: "GCASH",
+    label: "Studio GCash",
+    accountName: "Balansé Wellness Hub (placeholder)",
+    accountNumber: "0968 220 9198",
+    imageKey: "qr-gcash-main",
+    isActive: true,
+    createdAt: "2026-08-01T02:00:00.000Z",
+    updatedAt: "2026-08-01T02:00:00.000Z",
+    archivedAt: null,
+  },
+  {
+    id: "pqr-maya-main",
+    type: "MAYA",
+    label: "Studio Maya",
+    accountName: "Balansé Wellness Hub (placeholder)",
+    accountNumber: "0917 555 0142",
+    imageKey: null,
+    isActive: true,
+    createdAt: "2026-08-10T02:00:00.000Z",
+    updatedAt: "2026-08-10T02:00:00.000Z",
+    archivedAt: null,
+  },
+  {
+    id: "pqr-qrph-bank",
+    type: "QRPH",
+    label: "Bank QR Ph",
+    accountName: "Balansé Wellness Hub Inc. (placeholder)",
+    accountNumber: "0012 3456 7890",
+    imageKey: "qr-qrph-bank",
+    isActive: false,
+    createdAt: "2026-09-01T02:00:00.000Z",
+    updatedAt: "2026-09-01T02:00:00.000Z",
+    archivedAt: null,
+  },
+];
 
 export const publicContent: PublicContent = {
   about:
@@ -710,7 +799,7 @@ export const adminClasses: AdminClass[] = [
 export const adminSettings: AdminSettings = {
   ...publicContent,
   ...paymentInstructions,
-  paymentQrs: [],
+  paymentQrs: paymentAccountFixtures,
   businessName: "Balansé Wellness Hub",
   openingHours: "",
   policyDocuments: [
@@ -731,6 +820,15 @@ export const adminSettings: AdminSettings = {
       body: "Please follow studio etiquette, safety guidance, and instructor direction during every class.",
     },
   ],
+  policyFormRequirements: {
+    sign_up: [],
+    booking: ["Waiver", "Gym Policy"],
+    package_request: [],
+    payment_proof: [],
+    reschedule: [],
+    cancellation: [],
+    contact: [],
+  },
 };
 
 export { mockStaffMembers as staff } from "./staff-fixtures";

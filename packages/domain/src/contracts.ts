@@ -149,8 +149,13 @@ export const FIELD_CONSTRAINTS = {
     gcashNumber: { required: true, format: "ph_mobile" },
     qrImageKey: { required: false, nullable: true, readOnly: true, derived: true },
     paymentQr: {
+      type: { required: true, oneOf: ["GCASH", "MAYA", "QRPH"] },
       label: { required: true, max: 80 },
-      imageKey: { required: true },
+      accountName: { required: true, max: 80 },
+      /** PH mobile for GCash / Maya; optional digits for QR Ph. */
+      accountNumber: { required: false, max: 34 },
+      /** Required for QR Ph; optional for GCash / Maya. */
+      imageKey: { required: false },
       maxItems: 12,
     },
     about: { required: true, max: 4000, format: "markdown" },

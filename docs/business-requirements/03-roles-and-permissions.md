@@ -108,28 +108,33 @@ role; they are not a special case in code.
 Allowed:
 
 - `dashboard.operations.read`
+- `dashboard.financial.read`
 - `schedule.read.all`
 - `roster.read.all`
 - `attendance.manage.all`
 - `bookings.read` / `bookings.confirm` / `bookings.reject`
 - `payments.read` / `payments.review` / `payments.record_cash`
+- `refunds.read` / `refunds.manage`
 - `cancellations.read` / `cancellations.manage`
 - `reschedules.read` / `reschedules.manage`
 - `customers.read`
 - `classes.read`
-- `coaches.read` (no rates)
+- `coaches.read`
+- `coach_rates.read`
 - `events.read` (#319; view session events, including internal notes)
+- `reports.coach_costs.read` / `reports.session.read`
+- `roles.read`
+- `settings.content.manage` (pictures, updates, and news)
 
 Not allowed by default:
 
 - `events.manage` (publish, cancel, archive, or edit an event)
 - schedule create / update / cancel / recurrence
-- coach rates
-- refunds
-- financial dashboard or reports
+- coach-rate changes
+- reports other than coach-cost and session reports
 - class / coach / bundle mutation
-- staff / role administration
-- settings / content / policies / payment QR
+- staff administration or role changes
+- policy or payment-QR settings
 
 Do not silently widen this matrix. Use a custom role for different access.
 
@@ -180,7 +185,9 @@ receives `events.read` only. Coach receives neither. `events.manage` stays
 on Super Admin until #317 Q7 says otherwise.
 
 Sensitive keys (rates, refunds, financial dashboard/reports, staff/roles,
-settings) are flagged on the registry.
+settings) are flagged on the registry. Front Desk receives the explicitly
+listed sensitive keys above; their sensitivity does not imply Super Admin-only
+access.
 
 ---
 

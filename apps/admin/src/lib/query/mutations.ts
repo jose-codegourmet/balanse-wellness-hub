@@ -1,6 +1,10 @@
 "use client";
 
-import type { AdminSettings } from "@balanse/domain";
+import type {
+  AdminSettings,
+  CreateClassChangeRequestInput,
+  PolicyFormRequirements,
+} from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { type QueryKey, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
@@ -23,6 +27,7 @@ function bookingPaymentDashboard(role: AdminAuthScope): QueryKey[] {
     adminKeys.payments.all(role),
     adminKeys.dashboard(role),
     adminKeys.queues.all(role),
+    adminKeys.bundles.metrics(role),
   ];
 }
 
@@ -78,6 +83,7 @@ function cancellationKeys(role: AdminAuthScope): QueryKey[] {
     adminKeys.bookings.all(role),
     adminKeys.dashboard(role),
     adminKeys.queues.all(role),
+    adminKeys.bundles.metrics(role),
   ];
 }
 
@@ -107,6 +113,7 @@ function rescheduleKeys(role: AdminAuthScope): QueryKey[] {
     adminKeys.sessions.all(role),
     adminKeys.dashboard(role),
     adminKeys.queues.all(role),
+    adminKeys.bundles.metrics(role),
   ];
 }
 
@@ -136,7 +143,59 @@ function attendanceKeys(role: AdminAuthScope): QueryKey[] {
     adminKeys.dashboard(role),
     adminKeys.reports.all(role),
     adminKeys.queues.all(role),
+    adminKeys.bundles.metrics(role),
   ];
+}
+
+function classChangeKeys(role: AdminAuthScope): QueryKey[] {
+  return [
+    adminKeys.classChanges.all(role),
+    adminKeys.sessions.all(role),
+    adminKeys.bookings.all(role),
+    adminKeys.rosterAll(role),
+    adminKeys.dashboard(role),
+    adminKeys.reports.all(role),
+    adminKeys.events.all(role),
+  ];
+}
+
+export function useCreateClassChangeRequest() {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateClassChangeRequestInput) =>
+      getMockAdapter().createClassChangeRequest(input),
+    onSuccess: () => invalidateForRole(queryClient, [adminKeys.classChanges.all(role)]),
+  });
+}
+
+export function useWithdrawClassChangeRequest() {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => getMockAdapter().withdrawClassChangeRequest(id),
+    onSuccess: () => invalidateForRole(queryClient, [adminKeys.classChanges.all(role)]),
+  });
+}
+
+export function useApproveClassChangeRequest() {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { id: string; note?: string | null }) =>
+      getMockAdapter().approveClassChangeRequest(input.id, input.note),
+    onSuccess: () => invalidateForRole(queryClient, classChangeKeys(role)),
+  });
+}
+
+export function useDenyClassChangeRequest() {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { id: string; note: string }) =>
+      getMockAdapter().denyClassChangeRequest(input.id, input.note),
+    onSuccess: () => invalidateForRole(queryClient, [adminKeys.classChanges.all(role)]),
+  });
 }
 
 export function useCheckIn() {
@@ -298,11 +357,12 @@ export function useUpsertPaymentQr() {
   });
 }
 
-export function useActivatePaymentQr() {
+export function useSetPaymentQrActive() {
   const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => getMockAdapter().activatePaymentQr(id),
+    mutationFn: (input: { id: string; active: boolean }) =>
+      getMockAdapter().setPaymentQrActive(input.id, input.active),
     onSuccess: () => invalidateForRole(queryClient, paymentQrKeys(role)),
   });
 }
@@ -331,6 +391,25 @@ export function useDeletePolicyDocument() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => getMockAdapter().deletePolicyDocument(id),
+    onSuccess: () => invalidateForRole(queryClient, [adminKeys.settings.all(role)]),
+  });
+}
+
+export function useDeletePolicy() {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (documentName: string) => getMockAdapter().deletePolicy(documentName),
+    onSuccess: () => invalidateForRole(queryClient, [adminKeys.settings.all(role)]),
+  });
+}
+
+export function useSetPolicyFormRequirements() {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (requirements: PolicyFormRequirements) =>
+      getMockAdapter().setPolicyFormRequirements(requirements),
     onSuccess: () => invalidateForRole(queryClient, [adminKeys.settings.all(role)]),
   });
 }

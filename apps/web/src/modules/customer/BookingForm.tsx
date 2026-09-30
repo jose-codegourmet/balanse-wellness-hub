@@ -1,14 +1,19 @@
 "use client";
 
-import type { CustomerEntitlement, CustomerProfile, PublicSession } from "@balanse/domain";
+import type {
+  CustomerEntitlement,
+  CustomerProfile,
+  PolicyDocumentVersion,
+  PublicSession,
+} from "@balanse/domain";
 import {
   bookingCreatedToastId,
   formatPeso,
   formatSessionDate,
   formatSessionRange,
   formatSessionsRemaining,
-  REQUIRED_POLICY_DOCUMENTS,
   sessionDisplayName,
+  toPolicyAcceptances,
 } from "@balanse/domain";
 import { getMockAdapter, MOCK_NOW_ISO } from "@balanse/mock";
 import { Button, LocalizedSkeleton } from "@balanse/ui";
@@ -16,31 +21,35 @@ import { CalendarDays, Check, Clock3, ShieldCheck, Ticket, UserRound } from "luc
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  PolicyAcceptance,
+  usePolicyAcceptance,
+} from "@/components/balanse/policy-acceptance/PolicyAcceptance";
 import { notify } from "@/modules/notifications/notify";
 
 export function BookingForm({
   session,
   profile,
   entitlements = [],
+  policies = [],
   intent = "reserve",
   forcedStatus,
 }: {
   session: PublicSession;
   profile: CustomerProfile;
   entitlements?: CustomerEntitlement[];
+  /** Current versions of the policies admin attached to the booking form. */
+  policies?: PolicyDocumentVersion[];
   intent?: "reserve" | "waitlist";
   forcedStatus?: "submitting";
 }) {
   const router = useRouter();
-  const [accepted, setAccepted] = useState<Record<string, boolean>>({});
+  const policyAcceptance = usePolicyAcceptance(policies);
   const [entitlementId, setEntitlementId] = useState<string>(
     entitlements.length === 1 ? (entitlements[0]?.id ?? "") : "",
   );
   const [status, setStatus] = useState<"idle" | "submitting">(
     forcedStatus === "submitting" ? "submitting" : "idle",
-  );
-  const allAccepted = REQUIRED_POLICY_DOCUMENTS.every(
-    (doc) => accepted[`${doc.documentName}:${doc.version}`],
   );
   const waitlist = intent === "waitlist" || !session.reservable;
 
@@ -210,49 +219,29 @@ export function BookingForm({
             </section>
           ) : null}
 
-          <section aria-labelledby="booking-policies-heading">
-            <p className="text-sm font-semibold text-muted-foreground">Before you reserve</p>
-            <h2
-              id="booking-policies-heading"
-              className="font-display mt-2 text-3xl tracking-[-0.04em]"
-            >
-              Waivers and policies
-            </h2>
-            <ul className="mt-6 grid gap-3">
-              {REQUIRED_POLICY_DOCUMENTS.map((doc) => {
-                const key = `${doc.documentName}:${doc.version}`;
-                return (
-                  <li key={key} className="rounded-[1.15rem] border border-border bg-card p-5">
-                    <label className="flex items-start gap-3 text-sm">
-                      <input
-                        type="checkbox"
-                        className="mt-1 size-4"
-                        checked={Boolean(accepted[key])}
-                        onChange={(event) =>
-                          setAccepted((current) => ({ ...current, [key]: event.target.checked }))
-                        }
-                      />
-                      <span>
-                        <span className="font-medium">
-                          {doc.documentName} v{doc.version}
-                        </span>
-                        <span className="mt-1 block text-muted-foreground">
-                          {doc.placeholderNotice}
-                        </span>
-                      </span>
-                    </label>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
+          {policies.length > 0 ? (
+            <section aria-labelledby="booking-policies-heading">
+              <p className="text-sm font-semibold text-muted-foreground">Before you reserve</p>
+              <h2
+                id="booking-policies-heading"
+                className="font-display mt-2 text-3xl tracking-[-0.04em]"
+              >
+                Waivers and policies
+              </h2>
+              <PolicyAcceptance
+                {...policyAcceptance.props}
+                title="Accept to reserve"
+                className="mt-6"
+              />
+            </section>
+          ) : null}
 
           <Button
             type="button"
             variant="accent"
             className="w-full sm:w-auto"
-            disabled={!allAccepted}
             onClick={() => {
+              if (!policyAcceptance.check()) return;
               setStatus("submitting");
               void getMockAdapter()
                 .createBooking({
@@ -260,11 +249,7 @@ export function BookingForm({
                   sessionId: session.id,
                   entitlementId: waitlist ? null : entitlementId || null,
                   intendedEntitlementId: waitlist ? entitlementId || null : null,
-                  policyAcceptances: REQUIRED_POLICY_DOCUMENTS.map((doc) => ({
-                    documentName: doc.documentName,
-                    version: doc.version,
-                    acceptedAt: MOCK_NOW_ISO,
-                  })),
+                  policyAcceptances: toPolicyAcceptances(policies, MOCK_NOW_ISO, "booking"),
                 })
                 .then((booking) => {
                   notify.portal(bookingCreatedToastId(booking.status));

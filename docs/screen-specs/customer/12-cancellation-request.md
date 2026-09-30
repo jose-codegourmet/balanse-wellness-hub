@@ -1,11 +1,18 @@
 # Customer Portal — Cancellation Request
 
 ```text
-REQUEST CANCELLATION
-Booking summary
+REQUEST A CANCELLATION
+Current booking summary
+
+WHAT HAPPENS NEXT
+- The studio reviews the request; it does not cancel the booking immediately.
+- The slot stays held until the studio completes the cancellation.
+- Any applicable refund is handled separately and manually.
+
 Reason (optional unless later required)
-Notice: request is reviewed manually; applicable refund is manual.
-[Submit Request]
+[Back to booking] [Submit cancellation request]
 ```
 
-Request does not immediately free the slot.
+The page uses the same booking-summary treatment as the confirmed booking view.
+The customer can return to their booking without submitting. Request submission is mock-only;
+it records the request and returns to booking detail. A request does not immediately free the slot.

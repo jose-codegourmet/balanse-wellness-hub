@@ -168,11 +168,53 @@ export const adminCustomersQuery = (
   });
 };
 
+/** Coach-only student cohorts; scope is enforced by the mock adapter, never a client coach id. */
+export const coachStudentsQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.coachStudents.all(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getCoachStudents()),
+  });
+};
+
+export const coachStudentDetailQuery = (principal: MockPrincipal, customerId: string) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.coachStudents.detail(scope, customerId),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getCoachStudent(customerId)),
+  });
+};
+
 export const adminBundlesQuery = (principal: MockPrincipal) => {
   const scope = adminAuthScope(principal);
   return queryOptions({
     queryKey: adminKeys.bundles.all(scope),
     queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminBundles()),
+  });
+};
+
+export const adminClassChangeRequestsQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.classChanges.all(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getClassChangeRequests()),
+  });
+};
+
+export const adminSubstituteCoachOptionsQuery = (principal: MockPrincipal, sessionId: string) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.classChanges.substitutes(scope, sessionId),
+    queryFn: () =>
+      withPrincipal(principal, () => getMockAdapter().getSubstituteCoachOptions(sessionId)),
+  });
+};
+
+export const adminBundleMetricsQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.bundles.metrics(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getAdminBundleMetrics()),
   });
 };
 

@@ -2,8 +2,10 @@
 
 import {
   type BundleAcquisition,
+  type BundleCreditMetrics,
   type BundleDefinition,
   bundleStatusLabel,
+  EMPTY_BUNDLE_CREDIT_METRICS,
   formatPeso,
 } from "@balanse/domain";
 import { Badge, Button, FeedbackState, TablePageSkeleton } from "@balanse/ui";
@@ -18,7 +20,11 @@ import {
   useRejectBundleAcquisition,
   useSetAdminBundleStatus,
 } from "@/lib/query/mutations";
-import { adminBundleAcquisitionsQuery, adminBundlesQuery } from "@/lib/query/queries";
+import {
+  adminBundleAcquisitionsQuery,
+  adminBundleMetricsQuery,
+  adminBundlesQuery,
+} from "@/lib/query/queries";
 import { AdminCan, useCanAdminAction } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
@@ -28,6 +34,14 @@ export type BundleListPageProps = {
   loading?: boolean;
   error?: boolean;
 };
+
+/** Session credits across every customer who owns the package. */
+const CREDIT_COLUMNS: { key: keyof BundleCreditMetrics; header: string }[] = [
+  { key: "used", header: "Used" },
+  { key: "held", header: "Held" },
+  { key: "restored", header: "Restored" },
+  { key: "granted", header: "Granted" },
+];
 
 function statusVariant(status: BundleDefinition["status"]) {
   if (status === "PUBLISHED") return "success" as const;
@@ -40,6 +54,8 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
   const canManageBundles = useCanAdminAction("bundles-manage");
   const bundlesQuery = useSuspenseQuery(adminBundlesQuery(principal));
   const acquisitionsQuery = useSuspenseQuery(adminBundleAcquisitionsQuery(principal));
+  const metricsQuery = useSuspenseQuery(adminBundleMetricsQuery(principal));
+  const metrics = metricsQuery.data;
   const setStatus = useSetAdminBundleStatus();
   const approve = useApproveBundleAcquisition();
   const reject = useRejectBundleAcquisition();
@@ -68,6 +84,14 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
         accessorFn: (row) => formatPeso(row.pricePhp),
         meta: { mobile: { role: "meta" } },
       },
+      ...CREDIT_COLUMNS.map(
+        ({ key, header }): ColumnDef<BundleDefinition, unknown> => ({
+          id: `credits-${key}`,
+          header,
+          accessorFn: (row) => (metrics[row.id] ?? EMPTY_BUNDLE_CREDIT_METRICS)[key],
+          cell: ({ getValue }) => <span className="tabular-nums">{getValue<number>()}</span>,
+        }),
+      ),
       {
         id: "status",
         header: "Status",
@@ -81,7 +105,7 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
         ),
       },
     ],
-    [],
+    [metrics],
   );
 
   return (

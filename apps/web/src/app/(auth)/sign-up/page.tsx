@@ -1,3 +1,4 @@
+import { getMockAdapter } from "@balanse/mock";
 import type { Metadata } from "next";
 import { CustomerSignUp } from "./_components/customer-sign-up/CustomerSignUp";
 
@@ -12,5 +13,6 @@ export default async function Page({
   searchParams: Promise<{ returnTo?: string }>;
 }) {
   const { returnTo } = await searchParams;
-  return <CustomerSignUp returnTo={returnTo} />;
+  const policies = await getMockAdapter().getCustomerFormPolicies("sign_up");
+  return <CustomerSignUp returnTo={returnTo} policies={policies} />;
 }

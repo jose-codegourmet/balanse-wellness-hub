@@ -42,7 +42,14 @@ export const DayView: Story = {
   parameters: { viewport: { defaultViewport: "mobile" } },
 };
 
-export const CoachAssignedOnly: Story = {
+/** The Coach role starts in the clearly active, own-classes scope. */
+export const CoachDefaultsToYourClasses: Story = {
   args: { selectedDay: "2026-09-16" },
   parameters: { staffId: "staff-ephraim" },
+};
+
+/** A linked admin can switch between the all-classes and own-classes scopes. */
+export const LinkedAdminCanFilterYourClasses: Story = {
+  args: { selectedDay: "2026-09-16" },
+  parameters: { staffId: "staff-rex" },
 };

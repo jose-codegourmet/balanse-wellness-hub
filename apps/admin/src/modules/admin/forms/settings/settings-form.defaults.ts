@@ -1,6 +1,8 @@
+import { emptyPolicyFormRequirements } from "@balanse/domain";
 import type {
   BusinessProfileFormValues,
   PaymentInfoFormValues,
+  PolicyFormRequirementsFormValues,
   PolicyPromoteFormValues,
   PublicContentFormValues,
   SettingsFormValues,
@@ -37,3 +39,6 @@ export const publicContentFormDefaultValues: PublicContentFormValues = {
 export const policyPromoteFormDefaultValues: PolicyPromoteFormValues = {
   version: "",
 };
+
+export const policyFormRequirementsFormDefaultValues: PolicyFormRequirementsFormValues =
+  emptyPolicyFormRequirements();

@@ -21,3 +21,11 @@ Do not count:
 - unpaid held reservations.
 
 Refunded bookings remain in history and should contribute to refund totals rather than being deleted.
+
+## Cancelled booking detail
+
+A cancelled booking is a closed record, not an active booking detail. Lead with
+the cancellation state, customer, session, payment state, and any stored
+cancellation note. When the viewer has refund access, show the refund state and
+amount; a pending refund may be marked complete through the existing mock
+recording action. Do not show check-in, reschedule, confirm, or reject actions.

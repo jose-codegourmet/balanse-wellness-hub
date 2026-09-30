@@ -341,7 +341,7 @@ export const PERMISSION_REGISTRY: readonly PermissionDefinition[] = [
     "settings.content.manage",
     "administration",
     "Manage content settings",
-    "Edit business, about, contact, and FAQ content.",
+    "Edit business, about, contact, FAQ, pictures, updates, and news content.",
     true,
   ),
   permission(

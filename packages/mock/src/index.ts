@@ -2,6 +2,7 @@ export * from "./adapter";
 export * from "./apply-admin-authorization";
 export * from "./authorize";
 export * from "./bundle-fixtures";
+export * from "./class-change-fixtures";
 export * from "./dashboard-series";
 export * from "./event-engine";
 export * from "./event-fixtures";

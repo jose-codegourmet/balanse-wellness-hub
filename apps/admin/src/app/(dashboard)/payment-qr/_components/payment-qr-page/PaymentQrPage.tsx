@@ -1,246 +1,246 @@
 "use client";
 
-import { FIELD_CONSTRAINTS } from "@balanse/domain";
-import { Badge, Button, Card, CardContent, FeedbackState, Input, Label } from "@balanse/ui";
+import {
+  FIELD_CONSTRAINTS,
+  PAYMENT_ACCOUNT_TYPE_META,
+  type PaymentAccountType,
+  type PaymentQrCode,
+} from "@balanse/domain";
+import { Alert, AlertDescription, AlertTitle, Badge, Button, Switch } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Check, Copy, ImagePlus, QrCode, Settings2 } from "lucide-react";
-import Link from "next/link";
+import { Check, Copy, EyeOff, Pencil, Plus, QrCode, TriangleAlert, Wallet } from "lucide-react";
 import { useState } from "react";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
-import { ImageUpload } from "@/components/balanse/image-upload/ImageUpload";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
-import {
-  useActivatePaymentQr,
-  useArchivePaymentQr,
-  useUpsertPaymentQr,
-} from "@/lib/query/mutations";
-import { adminPaymentQrsQuery, adminSettingsQuery } from "@/lib/query/queries";
+import { useArchivePaymentQr, useSetPaymentQrActive } from "@/lib/query/mutations";
+import { adminPaymentQrsQuery } from "@/lib/query/queries";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { PaymentAccountFormDialog } from "../payment-account-form-dialog/PaymentAccountFormDialog";
 
 export type PaymentQrPageProps = {
   empty?: boolean;
-  items?: import("@balanse/domain").PaymentQrCode[];
+  /** Storybook: render these accounts instead of the adapter list. */
+  items?: PaymentQrCode[];
 };
 
+const TYPE_BADGE: Record<PaymentAccountType, string> = {
+  GCASH: "bg-primary/10 text-primary",
+  MAYA: "bg-[var(--balanse-gold)]/20 text-foreground",
+  QRPH: "bg-muted text-foreground",
+};
+
+/**
+ * Payment accounts customers pay into: GCash, Maya, or QR Ph. Each has an
+ * optional QR (required for QR Ph), holder name, and number. Any number can be
+ * shown at checkout at once.
+ */
 export function PaymentQrPage({ empty, items: itemsProp }: PaymentQrPageProps) {
   const { principal } = useMockPrincipal();
-  const settingsQuery = useSuspenseQuery(adminSettingsQuery(principal));
   const listQuery = useSuspenseQuery(adminPaymentQrsQuery(principal));
   const items = empty ? [] : (itemsProp ?? listQuery.data.items);
-  const settings = settingsQuery.data;
-  const active = items.find((row) => row.isActive) ?? null;
-  const alternatives = items.filter((row) => !row.isActive);
+  const shown = items.filter((row) => row.isActive);
+  const hidden = items.filter((row) => !row.isActive);
+  const atLimit = items.length >= FIELD_CONSTRAINTS.settings.paymentQr.maxItems;
+  const [dialog, setDialog] = useState<{ account: PaymentQrCode | null } | null>(null);
 
-  const upsert = useUpsertPaymentQr();
-  const activate = useActivatePaymentQr();
-  const archive = useArchivePaymentQr();
-  const [label, setLabel] = useState("GCash — main");
-  const [imageKey, setImageKey] = useState<string | null>(null);
-  const [adding, setAdding] = useState(!active);
-
-  async function addQr() {
-    if (!imageKey || !label.trim()) return;
-    try {
-      await upsert.mutateAsync({ label: label.trim(), imageKey });
-      notify.admin("settings.saved");
-      setImageKey(null);
-      setAdding(false);
-    } catch {
-      notify.admin("settings.save-failed");
-    }
-  }
+  const addButton = (
+    <Button type="button" disabled={atLimit} onClick={() => setDialog({ account: null })}>
+      <Plus />
+      Add account
+    </Button>
+  );
 
   return (
     <AdminPageShell
-      title="Payment QR"
-      description="Choose the one QR customers see at checkout, then keep replacements ready here."
-      actions={
-        active ? (
-          <Button type="button" onClick={() => setAdding((value) => !value)}>
-            <ImagePlus />
-            {adding ? "Close upload" : "Add a QR"}
-          </Button>
+      eyebrow="Payment QR"
+      title="Payment accounts"
+      description="The GCash, Maya, and QR Ph accounts customers pay into. Upload each QR, keep the holder name and number right, and choose which ones customers see at checkout."
+      actions={items.length > 0 ? addButton : undefined}
+      stats={
+        items.length > 0 ? (
+          <dl className="grid grid-cols-2 gap-3 sm:max-w-sm">
+            <div>
+              <dt className="text-xs font-medium text-muted-foreground">Shown at checkout</dt>
+              <dd className="mt-1 text-2xl font-semibold tabular-nums">{shown.length}</dd>
+            </div>
+            <div className="border-l border-border pl-3 sm:pl-5">
+              <dt className="text-xs font-medium text-muted-foreground">Hidden</dt>
+              <dd className="mt-1 text-2xl font-semibold tabular-nums">{hidden.length}</dd>
+            </div>
+          </dl>
         ) : undefined
       }
     >
       <div className="mx-auto grid max-w-5xl gap-6">
-        {active ? (
-          <section
-            aria-labelledby="active-qr-title"
-            className="overflow-hidden rounded-2xl border border-border bg-card"
-          >
-            <div className="grid gap-0 md:grid-cols-[minmax(17rem,0.85fr)_minmax(0,1.15fr)]">
-              <div className="grid place-items-center bg-muted/55 p-8 md:p-10">
-                <div className="w-full max-w-[15rem] rounded-2xl bg-background p-4 shadow-sm ring-1 ring-border">
-                  <PaymentQrImage imageKey={active.imageKey} label={active.label} />
-                  <p className="mt-3 text-center text-xs text-muted-foreground">
-                    Customer payment QR
-                  </p>
-                </div>
-              </div>
-              <div className="grid content-center gap-6 p-6 md:p-10">
-                <div className="flex flex-wrap items-center gap-3">
-                  <Badge variant="success" appearance="solid" size="sm" dot>
-                    Live at checkout
-                  </Badge>
-                  <span className="text-sm text-muted-foreground">{active.label}</span>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">The customer sees</p>
-                  <h2 id="active-qr-title" className="mt-1 font-display text-3xl text-balance">
-                    {settings.gcashName}
-                  </h2>
-                  <p className="mt-2 text-lg tabular-nums">{settings.gcashNumber}</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => void navigator.clipboard?.writeText(settings.gcashNumber)}
-                  >
-                    <Copy />
-                    Copy number
-                  </Button>
-                  <Button
-                    nativeButton={false}
-                    variant="ghost"
-                    render={<Link href="/settings?tab=payment" />}
-                  >
-                    <Settings2 />
-                    Edit payment details
-                  </Button>
-                </div>
-                <p className="max-w-md text-sm leading-6 text-muted-foreground">
-                  Changing the active QR updates the image customers see. The GCash name and number
-                  are managed separately in Payment info.
-                </p>
-              </div>
+        {items.length === 0 ? (
+          <section className="grid place-items-center gap-4 rounded-2xl border border-dashed border-border bg-card px-6 py-14 text-center">
+            <span className="grid size-12 place-items-center rounded-full bg-muted">
+              <Wallet className="size-5" aria-hidden />
+            </span>
+            <div className="grid max-w-md gap-1">
+              <h2 className="font-display text-2xl">Add your first payment account</h2>
+              <p className="text-sm text-muted-foreground">
+                Add the studio&apos;s GCash, Maya, or QR Ph account so customers know where to send
+                payment.
+              </p>
             </div>
+            {addButton}
           </section>
         ) : (
-          <FeedbackState
-            id="admin.no-payment-qrs"
-            className="rounded-2xl border border-dashed border-border bg-muted/30 py-10"
-            actionLabel="Add the first QR"
-            onAction={() => {
-              setAdding(true);
-              document.getElementById("payment-qr-label")?.focus();
-            }}
-          />
-        )}
-
-        {alternatives.length > 0 ? (
-          <section aria-labelledby="saved-qr-title" className="grid gap-3">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Standby codes</p>
-                <h2 id="saved-qr-title" className="font-display text-2xl">
-                  Saved alternatives
-                </h2>
-              </div>
-              <p className="text-sm text-muted-foreground">Only one QR is live at a time.</p>
-            </div>
-            <ul className="grid gap-2">
-              {alternatives.map((row) => (
-                <li
-                  key={row.id}
-                  className="flex flex-wrap items-center gap-4 rounded-xl border border-border bg-card p-3"
-                >
-                  <div className="w-14 shrink-0">
-                    <PaymentQrImage imageKey={row.imageKey} label={row.label} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium">{row.label}</p>
-                    <p className="text-sm text-muted-foreground">Not shown to customers</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() =>
-                        void activate.mutateAsync(row.id).then(
-                          () => notify.admin("settings.saved"),
-                          () => notify.admin("settings.save-failed"),
-                        )
-                      }
-                    >
-                      <Check />
-                      Make live
-                    </Button>
-                    <ConfirmAction
-                      triggerLabel="Remove"
-                      title="Remove this saved QR?"
-                      description="This removes the QR from the payment collection. The active customer QR cannot be removed."
-                      confirmLabel="Remove QR"
-                      variant="destructive"
-                      onConfirm={async () => {
-                        try {
-                          await archive.mutateAsync(row.id);
-                          notify.admin("settings.saved");
-                        } catch {
-                          notify.admin("settings.save-failed");
-                        }
-                      }}
-                    />
-                  </div>
+          <>
+            {shown.length === 0 ? (
+              <Alert variant="destructive">
+                <TriangleAlert aria-hidden />
+                <AlertTitle>Customers can&apos;t see any payment account</AlertTitle>
+                <AlertDescription>
+                  Show at least one account so customers know where to pay at checkout.
+                </AlertDescription>
+              </Alert>
+            ) : null}
+            <ul className="grid gap-4 md:grid-cols-2">
+              {[...shown, ...hidden].map((account) => (
+                <li key={account.id}>
+                  <AccountCard account={account} onEdit={() => setDialog({ account })} />
                 </li>
               ))}
             </ul>
-          </section>
-        ) : active ? (
-          <p className="text-sm text-muted-foreground">
-            No standby QR codes. Add one before you need to replace the live code.
-          </p>
-        ) : null}
-
-        {adding ? (
-          <Card className="overflow-hidden border-primary/25">
-            <CardContent className="grid gap-6 p-5 md:grid-cols-[minmax(0,1fr)_minmax(16rem,0.85fr)] md:p-7">
-              <div className="grid content-start gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Add to collection</p>
-                  <h2 className="font-display text-2xl">Upload a payment QR</h2>
-                  <p className="mt-1 max-w-md text-sm leading-6 text-muted-foreground">
-                    It stays on standby until you make it live. Upload a clean, square image
-                    customers can scan.
-                  </p>
-                </div>
-                <div className="grid max-w-md gap-1.5">
-                  <Label htmlFor="payment-qr-label">Internal label</Label>
-                  <Input
-                    id="payment-qr-label"
-                    value={label}
-                    maxLength={FIELD_CONSTRAINTS.settings.paymentQr.label.max}
-                    onChange={(event) => setLabel(event.target.value)}
-                    placeholder="e.g. GCash — replacement"
-                  />
-                </div>
-                <Button
-                  type="button"
-                  className="w-fit"
-                  disabled={!imageKey || !label.trim() || upsert.isPending}
-                  loading={upsert.isPending}
-                  onClick={() => void addQr()}
-                >
-                  <QrCode />
-                  Save QR
-                </Button>
-              </div>
-              <div className="rounded-xl bg-muted/45 p-4">
-                <ImageUpload
-                  label={imageKey ? "Replace selected QR" : "Choose QR image"}
-                  fallbackLabel="Choose an image to preview it here."
-                  photoKey={imageKey}
-                  previewName={label}
-                  onPhotoKeyChange={setImageKey}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        ) : null}
+            {atLimit ? (
+              <p className="text-sm text-muted-foreground">
+                You have the maximum of {FIELD_CONSTRAINTS.settings.paymentQr.maxItems} accounts.
+                Remove one to add another.
+              </p>
+            ) : null}
+          </>
+        )}
       </div>
+
+      <PaymentAccountFormDialog
+        open={dialog !== null}
+        account={dialog?.account ?? null}
+        onOpenChange={(open) => {
+          if (!open) setDialog(null);
+        }}
+      />
     </AdminPageShell>
+  );
+}
+
+function AccountCard({ account, onEdit }: { account: PaymentQrCode; onEdit: () => void }) {
+  const setActive = useSetPaymentQrActive();
+  const archive = useArchivePaymentQr();
+  const [copied, setCopied] = useState(false);
+  const meta = PAYMENT_ACCOUNT_TYPE_META[account.type];
+  const switchId = `payment-account-${account.id}-shown`;
+
+  return (
+    <article
+      className={`grid h-full overflow-hidden rounded-2xl border bg-card shadow-sm sm:grid-cols-[10rem_minmax(0,1fr)] ${account.isActive ? "border-border" : "border-dashed border-border opacity-90"}`}
+    >
+      <div className="grid place-items-center bg-muted/50 p-5">
+        {account.imageKey ? (
+          <PaymentQrImage imageKey={account.imageKey} label={account.label} />
+        ) : (
+          <div className="grid aspect-square w-full max-w-[8rem] place-items-center rounded-lg border border-dashed border-border bg-background p-3 text-center text-xs text-muted-foreground">
+            <span className="grid justify-items-center gap-1.5">
+              <QrCode className="size-5" aria-hidden />
+              No QR — number only
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="grid content-between gap-4 p-5">
+        <div className="grid gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${TYPE_BADGE[account.type]}`}
+            >
+              {meta.label}
+            </span>
+            {account.isActive ? (
+              <Badge variant="success" size="sm" dot>
+                Shown at checkout
+              </Badge>
+            ) : (
+              <Badge variant="neutral" size="sm">
+                <EyeOff aria-hidden />
+                Hidden
+              </Badge>
+            )}
+          </div>
+          <h2 className="font-display text-xl leading-tight">{account.label}</h2>
+          <dl className="grid gap-1 text-sm">
+            <div className="flex flex-wrap gap-x-2">
+              <dt className="text-muted-foreground">Account name</dt>
+              <dd className="font-medium">{account.accountName}</dd>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-2">
+              <dt className="text-muted-foreground">{meta.numberLabel}</dt>
+              <dd className="font-medium tabular-nums">{account.accountNumber || "—"}</dd>
+              {account.accountNumber ? (
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 text-xs underline underline-offset-4"
+                  onClick={() => {
+                    void navigator.clipboard?.writeText(account.accountNumber);
+                    setCopied(true);
+                    window.setTimeout(() => setCopied(false), 1500);
+                  }}
+                >
+                  {copied ? (
+                    <Check className="size-3" aria-hidden />
+                  ) : (
+                    <Copy className="size-3" aria-hidden />
+                  )}
+                  {copied ? "Copied" : "Copy"}
+                </button>
+              ) : null}
+            </div>
+          </dl>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
+          <label htmlFor={switchId} className="mr-auto inline-flex items-center gap-2 text-sm">
+            <Switch
+              id={switchId}
+              checked={account.isActive}
+              disabled={setActive.isPending}
+              onCheckedChange={(checked) => {
+                void setActive
+                  .mutateAsync({ id: account.id, active: checked })
+                  .then(() =>
+                    notify.admin(checked ? "payment-account.shown" : "payment-account.hidden"),
+                  )
+                  .catch(() => notify.admin("payment-account.save-failed"));
+              }}
+            />
+            Show to customers
+          </label>
+          <Button type="button" variant="outline" size="sm" onClick={onEdit}>
+            <Pencil />
+            Edit
+          </Button>
+          <ConfirmAction
+            triggerLabel="Remove"
+            title={`Remove ${account.label}?`}
+            description={
+              account.isActive
+                ? "Customers stop seeing this account at checkout. Payments already sent to it are not affected."
+                : "It disappears from this list. Payments already sent to it are not affected."
+            }
+            confirmLabel="Remove account"
+            variant="destructive"
+            onConfirm={async () => {
+              try {
+                await archive.mutateAsync(account.id);
+                notify.admin("payment-account.removed");
+              } catch {
+                notify.admin("payment-account.save-failed");
+              }
+            }}
+          />
+        </div>
+      </div>
+    </article>
   );
 }
 
@@ -249,9 +249,12 @@ function PaymentQrImage({ imageKey, label }: { imageKey: string; label: string }
     <div
       role="img"
       aria-label={`QR code used to receive payment — ${label}`}
-      className="flex aspect-square w-full items-center justify-center rounded-lg border border-border bg-background p-3 text-center text-xs leading-4 text-muted-foreground"
+      className="grid aspect-square w-full max-w-[8rem] place-items-center rounded-lg border border-border bg-background p-3 text-center text-xs leading-4 text-muted-foreground"
     >
-      {imageKey.startsWith("pending:") ? `${label} preview` : label}
+      <span className="grid justify-items-center gap-1.5">
+        <QrCode className="size-8 text-foreground" aria-hidden />
+        {imageKey.startsWith("pending:") ? `${label} preview` : label}
+      </span>
     </div>
   );
 }

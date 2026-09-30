@@ -1,4 +1,4 @@
-import { CONTACT_DETAILS, PUBLIC_SOCIAL_LINKS } from "@balanse/domain";
+import { CONTACT_DETAILS, type PolicyDocumentVersion, PUBLIC_SOCIAL_LINKS } from "@balanse/domain";
 import { Button, MarketingImage, ScrollReveal, SectionHeading } from "@balanse/ui";
 import { CalendarClock, Mail, MapPin, Phone } from "lucide-react";
 import { BalanseHero } from "@/components/balanse/marketing/BalanseHero";
@@ -31,7 +31,7 @@ const DIRECT_CHANNELS = [
  * questions and never take a reservation — is repeated at every block on
  * purpose, because it is the whole point of the page.
  */
-export function ContactPage() {
+export function ContactPage({ policies = [] }: { policies?: PolicyDocumentVersion[] } = {}) {
   return (
     <article>
       <BalanseHero
@@ -171,7 +171,7 @@ export function ContactPage() {
                   only place a reservation is recorded.
                 </p>
               </div>
-              <ContactForm />
+              <ContactForm policies={policies} />
             </div>
           </ScrollReveal>
         </section>
