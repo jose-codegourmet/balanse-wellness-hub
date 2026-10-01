@@ -48,7 +48,7 @@ export function RosterVisibilitySetting({
             Show me on class rosters
           </label>
           <p id={`${id}-description`} className="text-xs leading-relaxed text-muted-foreground">
-            When off, you're counted as going but your name and photo are hidden from other members.
+            When off, you’re counted as going but your name and photo are hidden from other members.
             Coaches and studio staff can still see you.
           </p>
         </div>

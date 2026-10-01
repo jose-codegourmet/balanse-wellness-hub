@@ -27,7 +27,7 @@ export function OnboardingStepDone({
           tabIndex={-1}
           className="font-display text-3xl tracking-tight outline-none"
         >
-          You're all set, {displayName}!
+          You’re all set, {displayName}!
         </h2>
         <p className="max-w-prose text-sm text-muted-foreground">
           Thanks for sharing. You can change any of this later in your profile under About you.

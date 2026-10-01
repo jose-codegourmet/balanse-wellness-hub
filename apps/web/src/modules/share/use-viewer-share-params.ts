@@ -5,28 +5,33 @@ import { getMockAdapter } from "@balanse/mock";
 import { useEffect, useState } from "react";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
+const NONE: ShareParams = {};
+
 /**
  * Share attribution for links the current viewer creates (#350): a signed-in
  * customer shares with `ref=<referralCode>&src=customer`; guests share plain links.
  */
 export function useViewerShareParams(): ShareParams {
   const { principal } = useMockPrincipal();
-  const [params, setParams] = useState<ShareParams>({});
+  const customerId = principal.role === "customer" ? principal.customerId : null;
+  const [loaded, setLoaded] = useState<{ customerId: string; params: ShareParams } | null>(null);
+
   useEffect(() => {
-    if (principal.role !== "customer") {
-      setParams({});
-      return;
-    }
+    if (!customerId) return;
     let active = true;
     void getMockAdapter()
-      .getMe(principal.customerId)
+      .getMe(customerId)
       .then((profile) => {
-        if (active && profile) setParams({ ref: profile.referralCode, src: "customer" });
+        if (active && profile) {
+          setLoaded({ customerId, params: { ref: profile.referralCode, src: "customer" } });
+        }
       })
       .catch(() => undefined);
     return () => {
       active = false;
     };
-  }, [principal.role, principal.customerId]);
-  return params;
+  }, [customerId]);
+
+  // Derived, so a principal switch never shows the previous customer's code.
+  return customerId && loaded?.customerId === customerId ? loaded.params : NONE;
 }

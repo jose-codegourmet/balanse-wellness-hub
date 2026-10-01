@@ -24,8 +24,8 @@ DONE             You're all set, Annie!
 ## Entry and exit
 
 - Sign-up (email and Google) redirects here. Login never does; existing users reach it from the portal-home card or profile.
-- `completed` → redirect to `returnTo` or `/portal`. `skipped` / `in_progress` resume at the first incomplete step.
-- **Skip for now** on every step → `skipOnboarding` → `returnTo`. Saved answers are kept.
+- `completed` → redirect to `returnTo` or `/portal`. `skipped` / `in_progress` resume at the first incomplete step (`firstIncompleteOnboardingStep`); if every step is answered but Finish was never pressed, it opens on the last step.
+- **Skip for now** (wizard header, visible on every step) → `skipOnboarding` → `returnTo`. Saved answers are kept.
 - **Continue** saves the step (`saveMyOnboarding`, partial). **Back** keeps unsaved edits in memory.
 - **Finish** → `completeOnboarding` → Done. Primary CTA "Back to <page>" when `returnTo` is a public session or event page, otherwise "Browse the schedule" → `/book/calendar`. Secondary "Go to my portal".
 - `returnTo` must be a same-origin relative path.

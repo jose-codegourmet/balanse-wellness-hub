@@ -24,7 +24,9 @@ export default async function Page({
   searchParams: Promise<{ returnTo?: string }>;
 }) {
   const { returnTo: rawReturnTo } = await searchParams;
-  const returnTo = safeReturnTo(rawReturnTo, "/portal");
+  const safe = safeReturnTo(rawReturnTo, "/portal");
+  // Never bounce back into the wizard itself (redirect loop once completed).
+  const returnTo = safe.startsWith("/portal/welcome") ? "/portal" : safe;
   const principal = await getServerMockPrincipal();
   const adapter = getMockAdapter();
   const profile = await adapter.getMe(principal.customerId);

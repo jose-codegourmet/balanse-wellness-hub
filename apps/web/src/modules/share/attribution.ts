@@ -6,7 +6,6 @@ import {
   type ShareAttribution,
   type ShareParams,
 } from "@balanse/domain";
-import { cookies } from "next/headers";
 
 /**
  * Share attribution cookie (#343, #351).
@@ -78,14 +77,21 @@ export function toShareParams(attribution: ShareAttribution | null): ShareParams
   return { ref, src, via };
 }
 
+// `next/headers` is imported lazily so `src/proxy.ts` can share the pure
+// helpers above without pulling request-scoped APIs into the proxy bundle.
+async function cookieStore() {
+  const { cookies } = await import("next/headers");
+  return cookies();
+}
+
 /** Server components, server actions and route handlers. */
 export async function readShareAttribution(): Promise<ShareAttribution | null> {
-  const store = await cookies();
+  const store = await cookieStore();
   return parseShareAttributionCookie(store.get(SHARE_ATTRIBUTION_COOKIE)?.value);
 }
 
 /** Server actions and route handlers only (cookies are read-only while rendering). */
 export async function clearShareAttribution(): Promise<void> {
-  const store = await cookies();
+  const store = await cookieStore();
   store.delete({ name: SHARE_ATTRIBUTION_COOKIE, path: "/" });
 }

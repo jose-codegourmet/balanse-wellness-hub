@@ -44,7 +44,11 @@ export function OnboardingWizard({
   const [profile, setProfile] = useState(initialProfile);
   const [busy, setBusy] = useState<"saving" | "skipping" | null>(null);
   const [errors, setErrors] = useState<Partial<Record<OnboardingStepId, string>>>({});
-  const headings = useRef<Partial<Record<OnboardingStepId, HTMLHeadingElement | null>>>({});
+  const youHeading = useRef<HTMLHeadingElement>(null);
+  const goalsHeading = useRef<HTMLHeadingElement>(null);
+  const interestsHeading = useRef<HTMLHeadingElement>(null);
+  const heardFromHeading = useRef<HTMLHeadingElement>(null);
+  const doneHeading = useRef<HTMLHeadingElement>(null);
   const mounted = useRef(false);
 
   // Defaults are computed once: every step form stays mounted, so Back keeps edits.
@@ -63,7 +67,14 @@ export function OnboardingWizard({
       mounted.current = true;
       return;
     }
-    headings.current[step]?.focus();
+    const heading = {
+      you: youHeading,
+      goals: goalsHeading,
+      interests: interestsHeading,
+      "heard-from": heardFromHeading,
+      done: doneHeading,
+    }[step];
+    heading.current?.focus();
   }, [step]);
 
   const index = ONBOARDING_INPUT_STEPS.indexOf(step as OnboardingInputStepId);
@@ -134,10 +145,6 @@ export function OnboardingWizard({
     );
   }
 
-  const headingRef = (id: OnboardingStepId) => (node: HTMLHeadingElement | null) => {
-    headings.current[id] = node;
-  };
-
   return (
     <div className="mx-auto grid w-full max-w-2xl gap-8 px-4 py-10 sm:px-6 md:py-14">
       <header className="grid gap-4">
@@ -190,7 +197,7 @@ export function OnboardingWizard({
         <div hidden={step !== "you"}>
           <OnboardingStepYou
             defaultValues={initial.you}
-            headingRef={headingRef("you")}
+            headingRef={youHeading}
             formError={errors.you}
             avatarUrl={profile.avatarUrl}
             seed={profile.id}
@@ -236,7 +243,7 @@ export function OnboardingWizard({
         <div hidden={step !== "goals"}>
           <OnboardingStepGoals
             defaultValues={initial.goals}
-            headingRef={headingRef("goals")}
+            headingRef={goalsHeading}
             formError={errors.goals}
             footer={footer("goals")}
             onSubmit={async (values) => {
@@ -248,7 +255,7 @@ export function OnboardingWizard({
           <OnboardingStepInterests
             classes={classes}
             defaultValues={initial.interests}
-            headingRef={headingRef("interests")}
+            headingRef={interestsHeading}
             formError={errors.interests}
             footer={footer("interests")}
             onSubmit={async (values) => {
@@ -260,7 +267,7 @@ export function OnboardingWizard({
           <OnboardingStepHeardFrom
             defaultValues={initial.heardFrom}
             referredByFriend={referredByCustomer(referralChannel)}
-            headingRef={headingRef("heard-from")}
+            headingRef={heardFromHeading}
             formError={errors["heard-from"]}
             footer={footer("heard-from")}
             onSubmit={async (values) => {
@@ -280,7 +287,7 @@ export function OnboardingWizard({
             displayName={getDisplayName(profile)}
             returnTo={returnTo}
             returnLabel={returnLabel}
-            headingRef={headingRef("done")}
+            headingRef={doneHeading}
           />
         ) : null}
       </div>

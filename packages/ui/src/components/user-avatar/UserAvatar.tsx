@@ -98,7 +98,6 @@ export function UserAvatarStack({
       ))}
       {Array.from({ length: placeholders }, (_, index) => (
         <UserAvatar
-          // biome-ignore lint/suspicious/noArrayIndexKey: decorative placeholders have no identity
           key={`placeholder-${index}`}
           placeholder
           size={size}

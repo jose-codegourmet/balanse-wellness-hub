@@ -282,6 +282,13 @@ actions consume `ADMIN_NAV_ACCESS` / `ADMIN_ROUTE_ACCESS` /
 and `useAdminAccess` — never copy permission lists into screens.
 | `modules/` | Current home for screen-level implementations and app infrastructure (auth, public, customer, admin pages; `layout/`, `providers/`, `session/`, `notifications/`). **Do not add new route-specific screens here** — colocate them under the matching `app/` route. Promote into `src/components/` only when a second unrelated route needs the piece. Cross-cutting kits that already serve many routes (admin `forms/`, session providers) stay here or in `src/components/` until a dedicated migration. |
 
+## Customer self-service writes and the web proxy (#343)
+
+- **Mock store is per runtime.** The browser and the Next server each hold their own in-memory `MockDataAdapter`. Pages rendered on the server (portal header, home nudge, public share pages, booking prefill) only see writes made on the server.
+- **Self-service writes therefore go through server actions.** Sign-up (`app/(auth)/sign-up/_lib/sign-up-actions.ts`) and profile/onboarding writes (`app/(portal)/portal/profile/_lib/`) are server actions. Routes pass them to client components as props. The customer id always comes from the server-side mock principal (`getServerMockPrincipal()`), never from the caller. Stories pass `mockCustomerSelfServiceActions(customerId)`, which runs against the in-browser store.
+- **`apps/web/src/proxy.ts`** (Next 16 renamed `middleware.ts` to `proxy.ts`) only captures share attribution (`ref` / `src` / `via`) into the HttpOnly `balanse_share_attr` cookie. It never redirects or strips the query, and skips portal, api, share, dev, `_next`, and static files. Read or clear the cookie through `src/modules/share/attribution.ts`.
+- **Public share pages** (`/sessions/...`, `/events/...`) do not have `loading.tsx`. A streaming boundary makes `permanentRedirect` / `notFound` return HTTP 200, and stale share links must 301 and unknown ones must 404.
+
 ## Buttons
 
 One button system for both apps: the editorial `Button` in `@balanse/ui` (`packages/ui/src/components/button/Button.tsx`). Crisp 6px corners, uppercase letter-spaced labels (uppercased in CSS, so write labels in sentence case), navy / gold / cream.
