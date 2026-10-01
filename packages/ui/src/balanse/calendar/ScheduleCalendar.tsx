@@ -12,6 +12,7 @@ import {
   type PublicClass,
   type PublicCoach,
   type PublicSession,
+  type ShareParams,
   sessionDisplayName,
   startOfManilaMonth,
   startOfManilaWeekMonday,
@@ -44,6 +45,8 @@ export type ScheduleCalendarProps = {
   initialClassFilter?: string;
   initialCoachFilter?: string;
   coaches?: PublicCoach[];
+  /** #350 — attribution for share links from the selected session (signed-in customer's ref). */
+  shareParams?: ShareParams;
 };
 
 const AVAILABILITY_COPY: Record<PublicSession["availability"], string> = {

@@ -7,6 +7,8 @@
 4. FAQs
 5. Coaches
 5a. Packages (published catalogue)
+5b. Session page — shared link (`public/12-session-page.md`)
+5c. Event page — shared link (`public/13-event-page.md`)
 
 ## Customer Auth
 6. Login
@@ -25,6 +27,7 @@
 17. Cancellation Request
 18. Reschedule Request
 18a. Packages / owned entitlements
+18b. Onboarding / welcome wizard + profile "About you" (`customer/16-onboarding.md`)
 
 ## Admin Portal
 19. Login
@@ -42,9 +45,14 @@
 31. Settings
 31a. Bundle / package management
 31b. Event management
+31c. Marketing insights (`admin/22-marketing-insights.md`)
 
 ## Added because the business flows require them
 Admin Dashboard, Coach Management, Booking Management, Payment Review, Cancellation Requests, Reschedule Requests, Session Roster/Check-In, Settings, and the customer booking/payment/request detail screens.
+
+## Share and profile update (#343)
+
+Added: 5b, 5c, 18b, 31c. Updated: Sign Up (first + last name), Profile (photo, nickname, roster privacy, About you), Booking Detail (Invite friends), Customer Management, Session Roster / Check-In, Event management (public page, Share event) and Coach My Students (avatar, nickname, About).
 
 ## Marketing asset guidance
 

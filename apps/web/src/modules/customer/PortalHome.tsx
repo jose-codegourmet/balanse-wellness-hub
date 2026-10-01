@@ -1,12 +1,13 @@
 "use client";
 
-import type { CustomerBooking, CustomerProfile } from "@balanse/domain";
-import { needsAttentionBookings, upcomingConfirmed } from "@balanse/domain";
+import type { CustomerBooking, CustomerOnboardingAnswers, CustomerProfile } from "@balanse/domain";
+import { needsAttentionBookings, onboardingCompletion, upcomingConfirmed } from "@balanse/domain";
 import { Button, FeedbackState } from "@balanse/ui";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
+import { CompleteProfileCard } from "@/components/balanse/complete-profile-card/CompleteProfileCard";
 import { BookingSummary } from "@/components/balanse/portal/BookingSummary";
 import "@/components/balanse/portal/portal-home.css";
 import { BookingCard } from "./BookingCard";
@@ -30,9 +31,12 @@ function orientation(bookings: CustomerBooking[], attention: number, hasNext: bo
 export function PortalHome({
   profile,
   bookings,
+  onboardingAnswers = null,
 }: {
   profile: CustomerProfile;
   bookings: CustomerBooking[];
+  /** Onboarding answers for the "Complete your profile" nudge (#352). */
+  onboardingAnswers?: CustomerOnboardingAnswers | null;
 }) {
   const router = useRouter();
   const browse = () => router.push("/portal/schedule");
@@ -40,6 +44,11 @@ export function PortalHome({
   const attention = useMemo(() => needsAttentionBookings(bookings), [bookings]);
   const attentionPreview = attention.slice(0, ATTENTION_PREVIEW_LIMIT);
   const hasMoreAttention = attention.length > attentionPreview.length;
+  const onboardingStatus = profile.onboardingStatus;
+  const completion = useMemo(
+    () => onboardingCompletion(onboardingAnswers, profile),
+    [onboardingAnswers, profile],
+  );
 
   return (
     <div className="portal-page portal-home">
@@ -91,6 +100,14 @@ export function PortalHome({
               <FeedbackState id="customer.no-upcoming" onAction={browse} />
             )}
           </div>
+          {/* Below the next booking, compact, never dismissible (#352). */}
+          {onboardingStatus === "completed" ? null : (
+            <CompleteProfileCard
+              className="mt-4"
+              status={onboardingStatus}
+              completion={completion}
+            />
+          )}
         </section>
 
         <section

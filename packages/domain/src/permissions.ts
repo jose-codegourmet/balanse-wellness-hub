@@ -53,6 +53,7 @@ export const PERMISSION_KEYS = [
   "reports.capacity.read",
   "reports.coach_costs.read",
   "reports.session.read",
+  "reports.marketing.read",
   "staff.read",
   "staff.manage",
   "roles.read",
@@ -308,6 +309,12 @@ export const PERMISSION_REGISTRY: readonly PermissionDefinition[] = [
     "Session reports",
     "View session drill-downs, including revenue and coach cost.",
     true,
+  ),
+  permission(
+    "reports.marketing.read",
+    "reports",
+    "Marketing insights",
+    "View aggregate marketing insights: sign-up sources, onboarding answers, referrals. Counts only.",
   ),
   permission(
     "staff.read",

@@ -1,0 +1,36 @@
+/// #344 — non-sensitive onboarding answers, 1:1 with Profile. A missing row
+/// means "not started"; existing users get no row on backfill. OQ-3 still
+/// forbids DOB / health / injury / emergency-contact questions.
+/// `*Other` free text is capped at 120 chars (DB check).
+model ProfileOnboarding {
+  profileId       String           @id @db.Uuid
+  goals           FitnessGoal[]    @default([])
+  goalsOther      String           @default("")
+  experienceLevel ExperienceLevel?
+  interestsOther  String           @default("")
+  heardFrom       HeardFromSource?
+  heardFromOther  String           @default("")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  profile   Profile                @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  interests ProfileClassInterest[]
+
+  @@map("profile_onboarding")
+}
+
+/// #344 — classes a customer is curious about (onboarding "Interests" step).
+model ProfileClassInterest {
+  id        String   @id @default(cuid())
+  profileId String   @db.Uuid
+  classId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  onboarding ProfileOnboarding @relation(fields: [profileId], references: [profileId], onDelete: Cascade)
+  gymClass   GymClass          @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, classId])
+  @@index([classId])
+  @@map("profile_class_interests")
+}

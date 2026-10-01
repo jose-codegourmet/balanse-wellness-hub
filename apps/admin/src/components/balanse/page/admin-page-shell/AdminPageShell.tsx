@@ -4,6 +4,8 @@ import type { AdminPageShellProps } from "./AdminPageShell.meta";
 
 export function AdminPageShell({
   title,
+  leading,
+  subtitle,
   description,
   eyebrow,
   breadcrumb,
@@ -28,15 +30,21 @@ export function AdminPageShell({
             </p>
           ) : null}
           <div className={cn("flex flex-wrap items-end justify-between gap-5", !eyebrow && "mt-5")}>
-            <div className="min-w-0 max-w-3xl">
-              <h1 className="font-display text-3xl leading-tight tracking-tight sm:text-4xl">
-                {title}
-              </h1>
-              {description ? (
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-                  {description}
-                </p>
-              ) : null}
+            <div className={cn("min-w-0 max-w-3xl", leading && "flex items-center gap-4 sm:gap-5")}>
+              {leading ? <div className="shrink-0">{leading}</div> : null}
+              <div className="min-w-0">
+                <h1 className="font-display text-3xl leading-tight tracking-tight sm:text-4xl">
+                  {title}
+                </h1>
+                {subtitle ? (
+                  <div className="mt-2 flex flex-wrap items-center gap-2">{subtitle}</div>
+                ) : null}
+                {description ? (
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+                    {description}
+                  </p>
+                ) : null}
+              </div>
             </div>
             {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
           </div>

@@ -2,6 +2,7 @@
 
 ```text
 RESCHEDULE REQUESTS
+Booking reference
 CURRENT BOOKING
 REQUESTED SESSION
 Target capacity / coach
@@ -9,3 +10,4 @@ Target capacity / coach
 ```
 
 Open rules: price differences, class-type restrictions, cutoff, target-full behavior.
+Search matches customer name or booking reference across the full queue before pagination.

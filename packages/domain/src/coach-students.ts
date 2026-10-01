@@ -1,4 +1,6 @@
 import type { BookingStatus } from "./enums";
+import type { CustomerOnboardingAnswers } from "./onboarding";
+import { splitFullName } from "./profile";
 import type { CustomerBooking, CustomerProfile } from "./types";
 
 export type CoachStudentSession = {
@@ -13,6 +15,10 @@ export type CoachStudentSession = {
 export type CoachStudent = {
   id: string;
   fullName: string;
+  firstName: string;
+  lastName: string;
+  nickname: string | null;
+  avatarUrl: string | null;
   email: string;
   contactNumber: string;
   sessionsAttended: number;
@@ -25,6 +31,8 @@ export type CoachStudent = {
 export type CoachStudentDetail = CoachStudent & {
   upcoming: CoachStudentSession[];
   attendance: CoachStudentSession[];
+  /** Goals / experience / interests for this coach's own student. Never referral data. */
+  onboarding: CustomerOnboardingAnswers | null;
 };
 
 const ATTENDED_STATUSES = new Set<BookingStatus>(["CHECKED_IN", "COMPLETED"]);
@@ -69,6 +77,7 @@ export function buildCoachStudents(
   bookings: readonly CustomerBooking[],
   coachId: string,
   nowIso: string,
+  onboardingFor: (customerId: string) => CustomerOnboardingAnswers | null = () => null,
 ): CoachStudentDetail[] {
   const profileById = new Map(profiles.map((profile) => [profile.id, profile]));
   const grouped = new Map<string, CustomerBooking[]>();
@@ -99,10 +108,19 @@ export function buildCoachStudents(
         (total, booking) => total + (isContribution(booking) ? booking.session.pricePhp : 0),
         0,
       );
+      const fullName = profile?.fullName ?? rows[0]?.customerName ?? "Student";
+      const name = profile
+        ? { firstName: profile.firstName, lastName: profile.lastName }
+        : splitFullName(fullName);
       return [
         {
           id: customerId,
-          fullName: profile?.fullName ?? rows[0]?.customerName ?? "Student",
+          fullName,
+          firstName: name.firstName,
+          lastName: name.lastName,
+          nickname: profile?.nickname ?? null,
+          avatarUrl: profile?.avatarUrl ?? null,
+          onboarding: onboardingFor(customerId),
           email: profile?.email ?? "",
           contactNumber: profile?.contactNumber ?? "",
           sessionsAttended: attendance.length,

@@ -3,11 +3,15 @@
 ```text
 BOOKINGS
 [Pending] [Confirmed] [Waitlisted] [Expired] [History]
-[Search Customer] [Class] [Date]
-Customer | Class | Time | Payment | Status | Review
+[Search Customer or Reference] [Class] [Date]
+Customer | Reference | Class | Time | Payment | Status | Review
 ```
 
 Booking detail actions: confirm, reject, view proof, view policy acceptance, open cancellation/reschedule request, check in, mark no-show. Important actions should be auditable.
+
+Booking status tabs update `?tab=`. Direct links such as `/bookings?tab=confirmed` open the matching view; a missing or unknown tab falls back to Pending.
+
+Show the same plain-text `BWH-…` booking reference used by the customer on list rows and detail, and include it in staff search.
 
 ## Reporting relationship
 

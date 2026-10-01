@@ -5,10 +5,11 @@ import { Badge, Button } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { AdminPageTabs } from "@/components/balanse/page/admin-page-tabs/AdminPageTabs";
+import { useTabParam } from "@/components/balanse/page/useTabParam";
 import {
   adminBookingsQuery,
   adminBundleAcquisitionsQuery,
@@ -106,7 +107,7 @@ const columns: ColumnDef<TransactionRecord, unknown>[] = [
 
 export function TransactionsPage({ empty = false }: TransactionsPageProps) {
   const { principal } = useMockPrincipal();
-  const [tab, setTab] = useState("all");
+  const [tab, setTab] = useTabParam("tab", tabs, "all");
   const { data: bookings } = useSuspenseQuery(adminBookingsQuery(principal));
   const { data: acquisitions } = useSuspenseQuery(adminBundleAcquisitionsQuery(principal));
   const { data: customers } = useSuspenseQuery(adminCustomersQuery(principal));

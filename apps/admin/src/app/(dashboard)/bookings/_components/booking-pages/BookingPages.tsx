@@ -4,6 +4,7 @@ import {
   ADMIN_BOOKING_TABS,
   type AdminBookingTab,
   auditConfirmationCopy,
+  bookingReference,
   type CustomerBooking,
   customerStatusLabel,
   filterAdminBookings,
@@ -29,12 +30,12 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowLeftIcon, ArrowRightIcon, XIcon } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { AdminPageTabs } from "@/components/balanse/page/admin-page-tabs/AdminPageTabs";
+import { useTabParam } from "@/components/balanse/page/useTabParam";
 import { adminNowIso } from "@/lib/clock";
 import {
   adminBookingDetailQuery,
@@ -45,23 +46,25 @@ import {
 import { AdminCan } from "@/modules/authorization/useAdminAccess";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
-function customerNameLookup(customers: { id: string; fullName: string }[]) {
-  return (id: string) => customers.find((row) => row.id === id)?.fullName ?? id;
+function customerNameLookup(
+  customers: { id: string; fullName: string }[],
+  bookings: CustomerBooking[],
+) {
+  const names = new Map(bookings.map((row) => [row.customerId, row.customerName]));
+  for (const customer of customers) names.set(customer.id, customer.fullName);
+  return (id: string) => names.get(id) ?? id;
 }
 
 export function BookingListPage() {
-  const params = useSearchParams();
   const { principal } = useMockPrincipal();
-  const [tab, setTab] = useState<AdminBookingTab>(
-    (params.get("tab") as AdminBookingTab) || "pending",
-  );
+  const [tab, setTab] = useTabParam<AdminBookingTab>("tab", ADMIN_BOOKING_TABS, "pending");
   const [classId, setClassId] = useState("all");
   const [dateRange, setDateRange] = useState<DateRangePickerValues | undefined>();
   const { data: bookings } = useSuspenseQuery(adminBookingsQuery(principal));
   const { data: classes } = useSuspenseQuery(adminClassesQuery(principal));
   const { data: customers } = useSuspenseQuery(adminCustomersQuery(principal));
 
-  const names = useMemo(() => customerNameLookup(customers), [customers]);
+  const names = useMemo(() => customerNameLookup(customers, bookings), [bookings, customers]);
   const filtered = useMemo(
     () =>
       bookings
@@ -86,6 +89,15 @@ export function BookingListPage() {
         header: "Customer",
         accessorFn: (row) => names(row.customerId),
         meta: { primaryLink: (row) => `/bookings/${row.id}`, mobile: { role: "title" } },
+      },
+      {
+        id: "reference",
+        header: "Reference",
+        accessorFn: (row) => bookingReference(row.id),
+        meta: { mobile: { role: "meta", order: 0 } },
+        cell: ({ getValue }) => (
+          <span className="break-all font-mono text-xs font-medium">{String(getValue())}</span>
+        ),
       },
       {
         id: "class",
@@ -178,7 +190,7 @@ export function BookingListPage() {
             data={filtered}
             columns={columns}
             getRowId={(row) => row.id}
-            searchPlaceholder="Search customer"
+            searchPlaceholder="Search customer or reference"
             emptyFilterLabel="No bookings match these filters."
             toolbar={
               <>
@@ -242,7 +254,7 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
 
   if (!booking) return null;
   const name =
-    customers.find((row) => row.id === booking.customerId)?.fullName ?? booking.customerId;
+    customers.find((row) => row.id === booking.customerId)?.fullName ?? booking.customerName;
 
   async function refresh() {
     await bookingQuery.refetch();
@@ -265,6 +277,9 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
       breadcrumb={[{ label: "Bookings", href: "/bookings" }, { label: name }]}
     >
       <p className="font-medium">{name}</p>
+      <p className="mt-1 font-mono text-xs font-medium text-muted-foreground">
+        Reference {bookingReference(booking.id)}
+      </p>
       <p className="text-sm text-muted-foreground">
         {sessionDisplayName(booking.session)} ·{" "}
         {formatSessionRange(booking.session.startsAt, booking.session.endsAt)}
@@ -428,7 +443,7 @@ function CancelledBookingDetail({
           <dl className="mt-6 grid gap-4 border-t border-destructive/20 pt-5 sm:grid-cols-2">
             <div>
               <dt className="text-xs font-medium text-muted-foreground">Booking reference</dt>
-              <dd className="mt-1 font-mono text-sm">{booking.id}</dd>
+              <dd className="mt-1 font-mono text-sm">{bookingReference(booking.id)}</dd>
             </div>
             <div>
               <dt className="text-xs font-medium text-muted-foreground">Payment status</dt>

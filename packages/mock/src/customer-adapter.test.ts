@@ -27,7 +27,7 @@ describe("customer mock adapter", () => {
 
   it("patches the same profile object the booking form reads", async () => {
     const adapter = createMemoryAdapter();
-    await adapter.patchMe("cust-ana", { fullName: "Ana Updated", contactNumber: "+63 111" });
+    await adapter.patchMe("cust-ana", { lastName: "Updated", contactNumber: "+63 111" });
     const me = await adapter.getMe("cust-ana");
     expect(me?.fullName).toBe("Ana Updated");
     expect(me?.contactNumber).toBe("+63 111");

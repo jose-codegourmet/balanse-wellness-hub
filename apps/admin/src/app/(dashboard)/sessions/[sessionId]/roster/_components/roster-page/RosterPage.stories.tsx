@@ -38,3 +38,29 @@ export const CoachCrossBoundary: Story = {
   args: { sessionId: "session-wed-open" },
   parameters: { staffId: "staff-ephraim" },
 };
+
+/** #353 community event: avatars, nicknames, opted-out guests (eye-off), onboarding answers. */
+export const CommunityAvatars: Story = {
+  args: { sessionId: "session-event-pilates" },
+};
+
+/** Guest sheet with goals / experience chips and expandable Interests / Other. */
+export const GuestSheetWithAnswers: Story = {
+  args: { sessionId: "session-event-pilates", initialGuestId: "booking-community-pil-01" },
+};
+
+/** Assigned coach (Ephraim, Capoeira event): sees answers for guests in their own session. */
+export const CoachAssignedWithAnswers: Story = {
+  args: { sessionId: "session-event-capoeira", initialGuestId: "booking-community-cap-02" },
+  parameters: { staffId: "staff-ephraim" },
+};
+
+/**
+ * Coach on an assigned session whose guests saved no answers: the sheet shows no chip row.
+ * (A viewer without `customers.read` who isn't the assigned coach receives `onboarding: null`
+ * from the adapter and sees the same sheet; the Coach role cannot open other rosters.)
+ */
+export const CoachWithoutAnswers: Story = {
+  args: { sessionId: "session-wed-cutoff", initialGuestId: "booking-roster-03" },
+  parameters: { staffId: "staff-ephraim" },
+};

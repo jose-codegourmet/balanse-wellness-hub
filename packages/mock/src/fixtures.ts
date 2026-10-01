@@ -24,6 +24,8 @@ import {
 } from "@balanse/domain";
 
 import { classContent } from "./class-content";
+import { communityMembers, coreCustomers } from "./community-fixtures";
+import { eventFixtureSessions } from "./event-fixtures";
 import { MAIN_STUDIO_VENUE_ID } from "./venue-fixtures";
 
 /** Frozen "now" so Storybook and screenshots stay deterministic. Wed 10:50 Asia/Manila. */
@@ -394,31 +396,39 @@ export const publicSessions: PublicSession[] = [
     availability: "open",
     status: "PUBLISHED",
   }),
+  // #343 — event sessions are ordinary bookable sessions (the event wraps them).
+  session({
+    id: "session-event-pilates",
+    classId: "class-pilates",
+    name: "Pilates for a Cause",
+    coachIds: ["coach-jodi", "coach-sofia"],
+    startsAt: "2026-09-26T00:00:00.000Z",
+    endsAt: "2026-09-26T01:30:00.000Z",
+    pricePhp: 1000,
+    capacity: 30,
+    remainingSlots: 17,
+    reservable: true,
+    availability: "open",
+    status: "PUBLISHED",
+  }),
+  session({
+    id: "session-event-capoeira",
+    classId: "class-groundworks",
+    name: "Capoeira Workshop",
+    coachIds: ["coach-ephraim"],
+    startsAt: "2026-10-10T00:00:00.000Z",
+    endsAt: "2026-10-10T01:30:00.000Z",
+    pricePhp: 900,
+    capacity: 20,
+    remainingSlots: 18,
+    reservable: true,
+    availability: "open",
+    status: "PUBLISHED",
+  }),
 ];
 
-export const customers: CustomerProfile[] = [
-  {
-    id: "cust-ana",
-    fullName: "Ana Delgado",
-    email: "ana@example.com",
-    contactNumber: "+63 917 000 0001",
-    authMethod: "google",
-  },
-  {
-    id: "cust-ben",
-    fullName: "Ben Santos",
-    email: "ben@example.com",
-    contactNumber: "+63 917 000 0002",
-    authMethod: "email",
-  },
-  {
-    id: "cust-empty",
-    fullName: "Empty Inbox",
-    email: "empty@example.com",
-    contactNumber: "+63 917 000 0003",
-    authMethod: "email",
-  },
-];
+/** Core demo customers plus the #343 community members (nicknames, avatars, opt-outs). */
+export const customers: CustomerProfile[] = [...coreCustomers, ...communityMembers];
 
 export const policyAcceptances: Record<string, PolicyAcceptance[]> = {
   "cust-ana": [
@@ -626,6 +636,70 @@ function buildRosterBookings(): CustomerBooking[] {
   );
 }
 
+/**
+ * #343 public roster demo: community members booked into shareable sessions.
+ * Pilates for a Cause has 11 going (two opted out) plus held/pending rows that
+ * must not appear on the public roster.
+ */
+function buildCommunityBookings(): CustomerBooking[] {
+  const paid: Partial<CustomerBooking> = {
+    paymentMethod: "GCASH",
+    paymentStatus: "VERIFIED",
+    holdExpiresAt: null,
+  };
+  const rows: [string, BookingStatus, string, string, Partial<CustomerBooking>][] = [
+    ["pil-01", "CONFIRMED", "session-event-pilates", "cust-m-01", paid],
+    ["pil-02", "CONFIRMED", "session-event-pilates", "cust-m-02", paid],
+    ["pil-03", "CONFIRMED", "session-event-pilates", "cust-m-03", paid],
+    ["pil-04", "CONFIRMED", "session-event-pilates", "cust-m-04", paid],
+    ["pil-05", "CONFIRMED", "session-event-pilates", "cust-m-05", paid],
+    ["pil-06", "CONFIRMED", "session-event-pilates", "cust-m-06", paid],
+    ["pil-07", "CONFIRMED", "session-event-pilates", "cust-m-07", paid],
+    ["pil-08", "CONFIRMED", "session-event-pilates", "cust-m-08", paid],
+    ["pil-09", "CONFIRMED", "session-event-pilates", "cust-m-09", paid],
+    ["pil-10", "CONFIRMED", "session-event-pilates", "cust-m-10", paid],
+    ["pil-ben", "CONFIRMED", "session-event-pilates", "cust-ben", paid],
+    [
+      "pil-11",
+      "HELD_AWAITING_PAYMENT",
+      "session-event-pilates",
+      "cust-m-11",
+      { paymentMethod: "PAY_AT_COUNTER", holdExpiresAt: "2026-09-18T02:00:00.000Z" },
+    ],
+    [
+      "pil-12",
+      "PAYMENT_SUBMITTED",
+      "session-event-pilates",
+      "cust-m-12",
+      {
+        paymentMethod: "GCASH",
+        paymentStatus: "PROOF_SUBMITTED",
+        proofPreviewUrl: MOCK_PROOF_PREVIEW_URL,
+        holdExpiresAt: "2026-09-18T02:00:00.000Z",
+      },
+    ],
+    ["past-02", "CHECKED_IN", "session-past-open", "cust-m-02", paid],
+    ["past-03", "CHECKED_IN", "session-past-open", "cust-m-03", paid],
+    ["past-04", "CHECKED_IN", "session-past-open", "cust-m-04", paid],
+    ["past-06", "NO_SHOW", "session-past-open", "cust-m-06", paid],
+    ["full-05", "CONFIRMED", "session-sat-full", "cust-m-05", paid],
+    ["full-07", "CONFIRMED", "session-sat-full", "cust-m-07", paid],
+    ["full-08", "CONFIRMED", "session-sat-full", "cust-m-08", paid],
+    ["full-10", "CONFIRMED", "session-sat-full", "cust-m-10", paid],
+    ["dance-01", "CONFIRMED", "session-sun-dance", "cust-m-01", paid],
+    ["dance-12", "CONFIRMED", "session-sun-dance", "cust-m-12", paid],
+    ["cap-02", "CONFIRMED", "session-event-capoeira", "cust-m-02", paid],
+    ["cap-09", "CONFIRMED", "session-event-capoeira", "cust-m-09", paid],
+  ];
+  return rows.map(([key, status, sessionId, customerId, extras], index) =>
+    booking(`booking-community-${key}`, status, sessionId, {
+      customerId,
+      createdAt: `2026-09-1${index % 5}T0${index % 9}:00:00.000Z`,
+      ...extras,
+    }),
+  );
+}
+
 export const bookings: CustomerBooking[] = BOOKING_STATUSES.map((status, index) => {
   const extras: Partial<CustomerBooking> = {};
   if (status === "HELD_AWAITING_PAYMENT") {
@@ -698,6 +772,7 @@ export const bookings: CustomerBooking[] = BOOKING_STATUSES.map((status, index) 
     paymentStatus: "NONE",
   }),
   ...buildRosterBookings(),
+  ...buildCommunityBookings(),
   ...buildGeneratedQueueBookings(),
 ]);
 
@@ -709,7 +784,9 @@ export const adminSessions: AdminSession[] = publicSessions.map((row) => {
   });
   return {
     ...row,
-    venueId: MAIN_STUDIO_VENUE_ID,
+    venueId:
+      eventFixtureSessions.find((fixture) => fixture.id === row.id)?.venueId ??
+      MAIN_STUDIO_VENUE_ID,
     bookable: row.reservable,
     coachAssignments,
     coachRatePhp: coachAssignments.reduce(

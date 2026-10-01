@@ -6,10 +6,14 @@ import {
   formatSessionDate,
   formatSessionTime,
 } from "@balanse/domain";
-import { Badge, Button, FeedbackState, StatusBadge } from "@balanse/ui";
+import { Badge, Button, FeedbackState, StatusBadge, UserAvatar } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowLeft, CalendarCheck2, CalendarClock, CircleDollarSign } from "lucide-react";
 import Link from "next/link";
+import {
+  CustomerAboutCard,
+  useInterestClassLookup,
+} from "@/components/balanse/customer/customer-about-card/CustomerAboutCard";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { coachStudentDetailQuery } from "@/lib/query/queries";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
@@ -47,6 +51,7 @@ function SessionRows({ rows, empty }: { rows: readonly CoachStudentSession[]; em
 export function CoachStudentDetailPage({ customerId }: CoachStudentDetailPageProps) {
   const { principal } = useMockPrincipal();
   const detailQuery = useSuspenseQuery(coachStudentDetailQuery(principal, customerId));
+  const interestClasses = useInterestClassLookup();
   const student = detailQuery.data;
 
   if (!student) {
@@ -64,6 +69,7 @@ export function CoachStudentDetailPage({ customerId }: CoachStudentDetailPagePro
     );
   }
 
+  const nickname = student.nickname?.trim();
   const nextLabel = student.nextBooking
     ? `${student.nextBooking.className} · ${formatSessionDate(student.nextBooking.startsAt)} ${formatSessionTime(student.nextBooking.startsAt)}`
     : "No upcoming class";
@@ -80,6 +86,24 @@ export function CoachStudentDetailPage({ customerId }: CoachStudentDetailPagePro
       description="Attendance and contribution are limited to your own classes."
       eyebrow="Student profile"
       title={student.fullName}
+      leading={
+        <span aria-hidden>
+          <UserAvatar
+            name={{ firstName: student.firstName, lastName: student.lastName }}
+            avatarUrl={student.avatarUrl}
+            seed={student.id}
+            size="xl"
+            className="shadow-sm ring-2 ring-background"
+          />
+        </span>
+      }
+      subtitle={
+        nickname ? (
+          <span className="text-sm text-muted-foreground">
+            Goes by <span className="font-medium text-foreground italic">{nickname}</span>
+          </span>
+        ) : undefined
+      }
       stats={
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-xl border border-border/70 bg-card p-4">
@@ -103,6 +127,13 @@ export function CoachStudentDetailPage({ customerId }: CoachStudentDetailPagePro
       }
     >
       <div className="grid gap-6 lg:grid-cols-2">
+        <CustomerAboutCard
+          className="lg:col-span-2"
+          onboarding={student.onboarding}
+          classes={interestClasses.classes}
+          classHref={interestClasses.classHref}
+          showHeardFrom={false}
+        />
         <section className="rounded-xl border border-border/70 bg-card p-5">
           <div className="mb-4">
             <h2 className="font-display text-2xl">Upcoming classes</h2>

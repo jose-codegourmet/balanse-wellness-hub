@@ -7,6 +7,7 @@ import {
   Dumbbell,
   LayoutDashboard,
   MapPin,
+  Megaphone,
   Package,
   QrCode,
   ReceiptText,
@@ -38,6 +39,7 @@ export const NAV_ICONS: Record<AdminNavItem["id"], typeof LayoutDashboard> = {
   sales: TrendingUp,
   transactions: ReceiptText,
   reports: BarChart3,
+  "marketing-insights": Megaphone,
   staff: Users,
   settings: Settings,
 };
@@ -58,7 +60,7 @@ export const NAV_GROUPS: { label: string; ids: AdminNavItem["id"][] }[] = [
     ],
   },
   { label: "Directory", ids: ["customers", "coaches", "classes", "venues", "bundles", "staff"] },
-  { label: "Studio", ids: ["sales", "transactions", "reports", "settings"] },
+  { label: "Studio", ids: ["sales", "transactions", "reports", "marketing-insights", "settings"] },
 ];
 
 export function countForItem(

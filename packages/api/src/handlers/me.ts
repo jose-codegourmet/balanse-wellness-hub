@@ -2,6 +2,7 @@ import { requireCustomer, resolveActor } from "../auth";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { asString, ok, readJson } from "../http";
+import { splitLegacyFullName } from "../profile-names";
 
 export async function getMe(deps: ApiDeps, req: Request): Promise<Response> {
   const actor = requireCustomer(await resolveActor(deps, req));
@@ -32,8 +33,9 @@ export async function patchMe(deps: ApiDeps, req: Request): Promise<Response> {
   if (Object.keys(fields).length > 0) {
     throw new ApiError(400, "validation_error", "Profile update failed validation.", { fields });
   }
-  const data: { fullName?: string; contactNumber?: string } = {};
-  if (fullName !== undefined) data.fullName = fullName.trim();
+  const data: { firstName?: string; lastName?: string; contactNumber?: string } = {};
+  // fullName is derived in the database (#344); write the split instead.
+  if (fullName !== undefined) Object.assign(data, splitLegacyFullName(fullName));
   if (contactNumber !== undefined) data.contactNumber = contactNumber.trim();
   const profile = await deps.prisma.profile.update({
     where: { id: actor.userId },

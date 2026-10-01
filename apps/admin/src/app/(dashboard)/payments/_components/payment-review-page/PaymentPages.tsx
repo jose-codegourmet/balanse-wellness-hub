@@ -4,6 +4,7 @@ import {
   type AdminPaymentTab,
   type AdminToastId,
   auditConfirmationCopy,
+  bookingReference,
   type CustomerBooking,
   formatHoldDeadline,
   formatPeso,
@@ -29,6 +30,7 @@ import {
   DialogTitle,
   DialogTrigger,
   FeedbackState,
+  Input,
   StatusBadge,
 } from "@balanse/ui";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -245,6 +247,7 @@ function PaymentQueueCard({
     >
       <AdminQueueCard
         who={row.customerName}
+        reference={bookingReference(row.id)}
         what={`${sessionDisplayName(row.session)} · ${formatSessionDate(row.session.startsAt)}`}
         when={queueAge(row, nowIso)}
         status={row.status}
@@ -435,18 +438,19 @@ function PaymentQueueCard({
 function usePaymentTabCounts(
   canReadPayments: boolean,
   canReadRefunds: boolean,
+  search: string,
 ): Partial<Record<AdminPaymentTab, number>> {
   const { principal } = useMockPrincipal();
   const gcash = useInfiniteQuery({
-    ...adminPaymentsQueueInfiniteQuery(principal, "gcash"),
+    ...adminPaymentsQueueInfiniteQuery(principal, "gcash", search),
     enabled: canReadPayments,
   });
   const counter = useInfiniteQuery({
-    ...adminPaymentsQueueInfiniteQuery(principal, "counter"),
+    ...adminPaymentsQueueInfiniteQuery(principal, "counter", search),
     enabled: canReadPayments,
   });
   const refunds = useInfiniteQuery({
-    ...adminPaymentsQueueInfiniteQuery(principal, "refunds"),
+    ...adminPaymentsQueueInfiniteQuery(principal, "refunds", search),
     enabled: canReadRefunds,
   });
   return {
@@ -479,7 +483,8 @@ export function PaymentReviewPage({
   );
   const tab =
     tabOverride && visibleTabs.some((item) => item.id === tabOverride) ? tabOverride : urlTab;
-  const query = useInfiniteQuery(adminPaymentsQueueInfiniteQuery(principal, tab));
+  const [search, setSearch] = useState("");
+  const query = useInfiniteQuery(adminPaymentsQueueInfiniteQuery(principal, tab, search.trim()));
   const nowIso = adminNowIso();
   const stamp = auditConfirmationCopy("This payment action", "Admin", nowIso);
   const [exiting, setExiting] = useState<Map<string, CustomerBooking>>(new Map());
@@ -514,7 +519,7 @@ export function PaymentReviewPage({
   }, [empty, error, exiting, loading, queried]);
 
   const totalCount = empty || error ? 0 : (query.data?.pages[0]?.totalCount ?? items.length);
-  const tabCounts = usePaymentTabCounts(canReadPayments, canReadRefunds);
+  const tabCounts = usePaymentTabCounts(canReadPayments, canReadRefunds, search.trim());
   const tabsWithCounts = (visibleTabs.length ? visibleTabs : PAYMENT_TABS).map((item) => {
     const count = item.id === tab ? totalCount : tabCounts[item.id];
     return count === undefined ? item : { ...item, label: `${item.label} · ${count}` };
@@ -535,6 +540,14 @@ export function PaymentReviewPage({
             setUrlTab(id as AdminPaymentTab);
           }}
         >
+          <Input
+            type="search"
+            aria-label="Search payments by customer or reference"
+            placeholder="Search customer or reference"
+            className="mb-4 w-full max-w-sm"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
           {tab === "counter" ? <CounterHelpNote /> : null}
           <AdminQueueList
             key={tab}
@@ -587,7 +600,15 @@ export function PaymentReviewPage({
                 />
               ) : undefined
             }
-            empty={<FeedbackState id="admin.no-pending-payments" />}
+            empty={
+              <FeedbackState
+                id="admin.no-pending-payments"
+                title={search.trim() ? "No matching payments" : undefined}
+                description={
+                  search.trim() ? "Try another customer or booking reference." : undefined
+                }
+              />
+            }
           />
         </AdminPageTabs>
       }

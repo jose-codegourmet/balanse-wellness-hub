@@ -2,6 +2,7 @@
 
 import {
   auditConfirmationCopy,
+  bookingReference,
   type CustomerBooking,
   formatRelativeTime,
   formatSessionDate,
@@ -10,7 +11,7 @@ import {
   SLOT_LOCKED_UNTIL_CANCEL_NOTE,
   sessionDisplayName,
 } from "@balanse/domain";
-import { Badge, cn, FeedbackState, StatusBadge } from "@balanse/ui";
+import { Badge, cn, FeedbackState, Input, StatusBadge } from "@balanse/ui";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
@@ -99,6 +100,7 @@ function CancellationRequestCard({
     >
       <AdminQueueCard
         who={row.customerName}
+        reference={bookingReference(row.id)}
         what={`${sessionDisplayName(row.session)} · ${formatSessionDate(row.session.startsAt)}`}
         when={requestAge(row, nowIso)}
         status={row.status}
@@ -215,7 +217,8 @@ export function CancellationQueuePage({
   nextPageError,
 }: CancellationQueuePageProps) {
   const { principal } = useMockPrincipal();
-  const query = useInfiniteQuery(adminCancellationsInfiniteQuery(principal));
+  const [search, setSearch] = useState("");
+  const query = useInfiniteQuery(adminCancellationsInfiniteQuery(principal, search.trim()));
   const nowIso = adminNowIso();
   const stamp = auditConfirmationCopy("This cancellation action", "Admin", nowIso);
   const [exiting, setExiting] = useState<Map<string, CustomerBooking>>(new Map());
@@ -269,6 +272,14 @@ export function CancellationQueuePage({
       description={SLOT_LOCKED_UNTIL_CANCEL_NOTE}
       actions={<AdminQueueCount count={totalCount} label="open requests" />}
     >
+      <Input
+        type="search"
+        aria-label="Search cancellation requests by customer or reference"
+        placeholder="Search customer or reference"
+        className="mb-4 w-full max-w-sm"
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
+      />
       <AdminQueueList
         label="Cancellation requests"
         items={items}
@@ -316,7 +327,13 @@ export function CancellationQueuePage({
             />
           ) : undefined
         }
-        empty={<FeedbackState id="admin.no-cancellation-requests" />}
+        empty={
+          <FeedbackState
+            id="admin.no-cancellation-requests"
+            title={search.trim() ? "No matching cancellation requests" : undefined}
+            description={search.trim() ? "Try another customer or booking reference." : undefined}
+          />
+        }
       />
     </AdminPageShell>
   );

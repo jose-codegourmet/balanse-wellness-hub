@@ -18,6 +18,7 @@ import type { ApiDeps } from "../deps";
 import { ApiError, isLastSuperAdminProtectedError, mapUnknownError } from "../errors";
 import { asString, ok, pagination, readJson, searchParams } from "../http";
 import { bookingStatusPayload, presentStaff } from "../presenters";
+import { splitLegacyFullName } from "../profile-names";
 import { actorHas } from "../sensitive";
 import { CUSTOMER_SENSITIVE_READ_POLICY } from "../settings";
 import { fieldError, requireString, throwFields } from "../validation";
@@ -100,10 +101,11 @@ export async function postStaff(deps: ApiDeps, req: Request): Promise<Response> 
         "No auth profile exists for this email. Provision the user in Supabase Auth first, or configure SUPABASE_SERVICE_ROLE_KEY for invites.",
       );
     }
+    const names = splitLegacyFullName(name);
     profile = await deps.prisma.profile.upsert({
       where: { id: invited.userId },
-      create: { id: invited.userId, fullName: name, email, contactNumber: "" },
-      update: { fullName: name, email },
+      create: { id: invited.userId, ...names, email, contactNumber: "" },
+      update: { ...names, email },
     });
   }
   const existingStaff = await deps.prisma.staffMember.findFirst({

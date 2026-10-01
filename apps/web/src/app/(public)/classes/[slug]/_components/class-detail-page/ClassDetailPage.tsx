@@ -1,11 +1,20 @@
 "use client";
-import { parseClassPreview, sessionDisplayName } from "@balanse/domain";
+import {
+  buildPublicSessionPath,
+  manilaYmd,
+  parseClassPreview,
+  sessionDisplayName,
+  withShareParams,
+} from "@balanse/domain";
 import { Button, CoachPhoto, renderMarkdownSubset } from "@balanse/ui";
 import { ArrowDown, ArrowLeft, ArrowUpRight, CalendarDays, Clock3, Ticket } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { ClassGallery } from "@/components/balanse/class-gallery/ClassGallery";
+import { ShareAction } from "@/components/balanse/share-action/ShareAction";
+import { publicSiteOrigin } from "@/modules/share/site-origin";
+import { useViewerShareParams } from "@/modules/share/use-viewer-share-params";
 import type { ClassDetailPageProps } from "./ClassDetailPage.schema";
 import "../../../_components/classes-page/classes.css";
 
@@ -44,6 +53,7 @@ export function ClassDetailPage({
     };
   });
   const hash = useSyncExternalStore(subscribe, previewSnapshot, () => "");
+  const shareParams = useViewerShareParams();
   const gymClass = preview ? parseClassPreview(hash) : initial;
   if (!gymClass)
     return (
@@ -181,24 +191,46 @@ export function ClassDetailPage({
           </div>
           {upcoming.length ? (
             <div className="class-session-list">
-              {upcoming.map((session) => (
-                <Link
-                  href={`/portal/book/${session.id}`}
-                  key={session.id}
-                  className="class-session"
-                >
-                  <CalendarDays aria-hidden="true" />
-                  <div>
-                    <h3>{sessionDisplayName(session)}</h3>
-                    <p>{dateLabel(session.startsAt)}</p>
-                    <small>{session.coachName}</small>
+              {upcoming.map((session) => {
+                const publicPath = buildPublicSessionPath({
+                  classSlug: gymClass.slug,
+                  startsAt: session.startsAt,
+                  id: session.id,
+                });
+                return (
+                  <div key={session.id} className="class-session-row">
+                    <Link href={`/portal/book/${session.id}`} className="class-session">
+                      <CalendarDays aria-hidden="true" />
+                      <div>
+                        <h3>{sessionDisplayName(session)}</h3>
+                        <p>{dateLabel(session.startsAt)}</p>
+                        <small>{session.coachName}</small>
+                      </div>
+                      <span>
+                        {peso(session.pricePhp)}
+                        <ArrowUpRight size={20} aria-hidden="true" />
+                      </span>
+                    </Link>
+                    <div className="class-session-share">
+                      <Link href={publicPath}>Details</Link>
+                      <ShareAction
+                        iconOnly
+                        size="sm"
+                        variant="ghost"
+                        url={withShareParams(`${publicSiteOrigin()}${publicPath}`, shareParams)}
+                        title={sessionDisplayName(session)}
+                        subtitle={dateLabel(session.startsAt)}
+                        posterUrl={withShareParams(
+                          `/share/poster/sessions/${encodeURIComponent(session.id)}`,
+                          shareParams,
+                        )}
+                        fileSlug={`${gymClass.slug}-${manilaYmd(session.startsAt)}`}
+                        aria-label={`Share ${sessionDisplayName(session)} on ${dateLabel(session.startsAt)}`}
+                      />
+                    </div>
                   </div>
-                  <span>
-                    {peso(session.pricePhp)}
-                    <ArrowUpRight size={20} aria-hidden="true" />
-                  </span>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="class-no-sessions">

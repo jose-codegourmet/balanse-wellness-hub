@@ -1,7 +1,12 @@
 "use client";
 
-import { CUSTOMER_NAV_ITEMS, customerInitials, isCustomerNavActive } from "@balanse/domain";
-import { BrandLockup, Button } from "@balanse/ui";
+import {
+  CUSTOMER_NAV_ITEMS,
+  isCustomerNavActive,
+  type PersonName,
+  splitFullName,
+} from "@balanse/domain";
+import { BrandLockup, Button, UserAvatar } from "@balanse/ui";
 import {
   ArrowLeft,
   BookOpenCheck,
@@ -46,13 +51,38 @@ const icons = {
 export type PortalAccount = {
   fullName: string;
   email: string;
+  /** Customer id; seeds the initials tone so it matches every other avatar. */
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  /** Photo, or null for initials (#351). */
+  avatarUrl?: string | null;
 };
+
+function accountName(account: PortalAccount): PersonName {
+  if (account.firstName !== undefined) {
+    return { firstName: account.firstName, lastName: account.lastName ?? "" };
+  }
+  return splitFullName(account.fullName);
+}
+
+function AccountAvatar({ account, className }: { account: PortalAccount; className?: string }) {
+  return (
+    <UserAvatar
+      name={accountName(account)}
+      avatarUrl={account.avatarUrl ?? null}
+      seed={account.id}
+      size="lg"
+      className={className}
+    />
+  );
+}
 
 function AccountIdentity({ account }: { account: PortalAccount }) {
   return (
     <>
-      <span className="profile-avatar portal-account-avatar" aria-hidden="true">
-        {customerInitials(account.fullName)}
+      <span aria-hidden="true" className="contents">
+        <AccountAvatar account={account} className="portal-account-avatar" />
       </span>
       <span className="portal-account-identity">
         <strong>{account.fullName}</strong>
@@ -182,13 +212,26 @@ export function BalansePortalNavigation({ account }: { account?: PortalAccount }
           <Link href="/" aria-label="Balansé home">
             <BrandLockup />
           </Link>
-          <DialogTrigger
-            render={
-              <Button variant="outline" aria-label="Open portal menu">
-                <Menu size={20} /> Menu
-              </Button>
-            }
-          />
+          <div className="flex items-center gap-3">
+            {account ? (
+              <Link
+                href="/portal/profile"
+                aria-label={`${account.fullName} profile`}
+                className="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
+                <span aria-hidden="true" className="contents">
+                  <AccountAvatar account={account} />
+                </span>
+              </Link>
+            ) : null}
+            <DialogTrigger
+              render={
+                <Button variant="outline" aria-label="Open portal menu">
+                  <Menu size={20} /> Menu
+                </Button>
+              }
+            />
+          </div>
         </header>
         <DialogContent
           showCloseButton={false}

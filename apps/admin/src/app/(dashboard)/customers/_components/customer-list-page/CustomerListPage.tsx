@@ -1,10 +1,23 @@
 "use client";
 
-import { type AdminCustomer, formatRelativeTime, formatSessionDate } from "@balanse/domain";
-import { Badge, Button, FeedbackState } from "@balanse/ui";
+import {
+  type AdminCustomer,
+  formatRelativeTime,
+  formatSessionDate,
+  ONBOARDING_STATUS_LABELS,
+} from "@balanse/domain";
+import { Badge, Button, FeedbackState, UserAvatar } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { CalendarClock, Clock, CopyIcon, type LucideIcon, UserMinus, Users } from "lucide-react";
+import {
+  CalendarClock,
+  Clock,
+  CopyIcon,
+  EyeOffIcon,
+  type LucideIcon,
+  UserMinus,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useMemo } from "react";
@@ -27,13 +40,40 @@ import {
   isRecentlyActive,
   parseCustomerFacets,
 } from "../../_lib/customer-roster";
+import type { CustomerListPageProps } from "./CustomerListPage.meta";
 
-export type CustomerListPageProps = {
-  empty?: boolean;
-  loading?: boolean;
-  error?: boolean;
-  focusCustomerId?: string;
-};
+export type { CustomerListPageProps } from "./CustomerListPage.meta";
+
+/** Name cell: avatar, full name, nickname subtitle, and the public-roster opt-out mark. */
+function CustomerNameCell({ customer }: { customer: AdminCustomer }) {
+  const nickname = customer.nickname?.trim();
+  return (
+    <span className="flex min-w-0 items-center gap-3">
+      <span aria-hidden className="shrink-0">
+        <UserAvatar
+          name={{ firstName: customer.firstName, lastName: customer.lastName }}
+          avatarUrl={customer.avatarUrl}
+          seed={customer.id}
+          size="lg"
+        />
+      </span>
+      <span className="min-w-0">
+        <span className="line-clamp-2">{customer.fullName}</span>
+        {nickname || !customer.showOnPublicRoster ? (
+          <span className="inline-flex items-center gap-1.5 text-xs font-normal text-muted-foreground">
+            {nickname ? <span className="italic">{nickname}</span> : null}
+            {customer.showOnPublicRoster ? null : (
+              <span className="inline-flex items-center gap-1" title="Hidden on public roster">
+                <EyeOffIcon aria-hidden className="size-3" />
+                <span className="sr-only">Hidden on public roster</span>
+              </span>
+            )}
+          </span>
+        ) : null}
+      </span>
+    </span>
+  );
+}
 
 function CopyableText({ value }: { value: string }) {
   return (
@@ -134,8 +174,12 @@ function CustomerListPageInner({ empty, loading, error, focusCustomerId }: Custo
   const columns = useMemo<ColumnDef<AdminCustomer, unknown>[]>(
     () => [
       {
-        accessorKey: "fullName",
+        id: "fullName",
         header: "Name",
+        // Search matches nickname too: the global filter reads this accessor.
+        accessorFn: (row) => [row.fullName, row.nickname].filter(Boolean).join(" "),
+        sortingFn: (a, b) => a.original.fullName.localeCompare(b.original.fullName),
+        cell: ({ row }) => <CustomerNameCell customer={row.original} />,
         meta: { primaryLink: (row) => `/customers/${row.id}`, mobile: { role: "title" } },
       },
       {
@@ -171,6 +215,23 @@ function CustomerListPageInner({ empty, loading, error, focusCustomerId }: Custo
             </Badge>
           );
         },
+      },
+      {
+        id: "onboarding",
+        header: "Onboarding",
+        accessorFn: (row) => ONBOARDING_STATUS_LABELS[row.onboardingStatus],
+        enableColumnFilter: true,
+        enableGlobalFilter: false,
+        meta: { enableFaceting: true, facetLabel: "Onboarding", mobile: { role: "meta" } },
+        cell: ({ row }) => (
+          <Badge
+            appearance="soft"
+            size="sm"
+            variant={row.original.onboardingStatus === "completed" ? "success" : "neutral"}
+          >
+            {ONBOARDING_STATUS_LABELS[row.original.onboardingStatus]}
+          </Badge>
+        ),
       },
       {
         id: "visited",
@@ -264,7 +325,7 @@ function CustomerListPageInner({ empty, loading, error, focusCustomerId }: Custo
         data={rows}
         columns={columns}
         getRowId={(row) => row.id}
-        searchPlaceholder="Search name, email, or phone"
+        searchPlaceholder="Search name, nickname, email, or phone"
         empty={
           <FeedbackState
             id="admin.no-customers"

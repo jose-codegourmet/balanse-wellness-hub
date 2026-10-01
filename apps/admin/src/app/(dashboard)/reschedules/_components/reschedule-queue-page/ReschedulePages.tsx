@@ -2,6 +2,7 @@
 
 import {
   auditConfirmationCopy,
+  bookingReference,
   type CustomerBooking,
   computeSessionInventory,
   formatRelativeTime,
@@ -15,6 +16,7 @@ import {
   Badge,
   cn,
   FeedbackState,
+  Input,
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -213,6 +215,7 @@ function RescheduleRequestCard({
     >
       <AdminQueueCard
         who={row.customerName}
+        reference={bookingReference(row.id)}
         what={`${sessionDisplayName(row.session)} · ${formatSessionDate(row.session.startsAt)}`}
         when={requestAge(row, nowIso)}
         status={row.status}
@@ -295,7 +298,8 @@ export function RescheduleQueuePage({
   focus,
 }: RescheduleQueuePageProps) {
   const { principal } = useMockPrincipal();
-  const query = useInfiniteQuery(adminReschedulesInfiniteQuery(principal));
+  const [search, setSearch] = useState("");
+  const query = useInfiniteQuery(adminReschedulesInfiniteQuery(principal, search.trim()));
   const bookingsQuery = useQuery(adminBookingsQuery(principal));
   const nowIso = adminNowIso();
   const stamp = auditConfirmationCopy("This reschedule action", "Admin", nowIso);
@@ -352,6 +356,14 @@ export function RescheduleQueuePage({
       description={RESCHEDULE_HISTORY_NOTE}
       actions={<AdminQueueCount count={totalCount} label="open requests" />}
     >
+      <Input
+        type="search"
+        aria-label="Search reschedule requests by customer or reference"
+        placeholder="Search customer or reference"
+        className="mb-4 w-full max-w-sm"
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
+      />
       <AdminQueueList
         label="Reschedule requests"
         items={items}
@@ -401,7 +413,13 @@ export function RescheduleQueuePage({
             />
           ) : undefined
         }
-        empty={<FeedbackState id="admin.no-reschedule-requests" />}
+        empty={
+          <FeedbackState
+            id="admin.no-reschedule-requests"
+            title={search.trim() ? "No matching reschedule requests" : undefined}
+            description={search.trim() ? "Try another customer or booking reference." : undefined}
+          />
+        }
       />
     </AdminPageShell>
   );

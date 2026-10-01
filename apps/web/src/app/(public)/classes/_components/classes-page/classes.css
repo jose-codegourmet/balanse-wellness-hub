@@ -56,3 +56,7 @@
 .class-detail a:focus-visible,.class-directory a:focus-visible { outline:3px solid currentColor; outline-offset:6px; }
 @media(max-width:700px) { .class-directory-heading,.class-directory-grid,.class-coaches,.class-about,.class-rate { grid-template-columns:1fr; } .class-directory-heading { gap:1rem; padding-bottom:3rem; } .class-directory-heading > p:last-child { margin-top:1rem; } .class-hero { min-height:580px; height:78svh; } .class-hero-content { padding-bottom:3rem; } .class-hero-shade { background:linear-gradient(90deg,#101d1dc9,#101d1d45); } .class-about { gap:2rem; } .class-rate-amount { border-left:0; border-top:1px solid var(--border); padding:2rem 0 0; } .class-coach-roster { gap:1rem; } .class-session { gap:.75rem; } .class-session > svg { display:none; } .class-session > span { gap:.5rem; font-size:.85rem; } }
 @media(prefers-reduced-motion:reduce) { .class-card-image img { transition:none; } }
+.class-session-row { border-top:1px solid var(--border); }
+.class-session-row .class-session { border-top:0; }
+.class-session-share { display:flex; align-items:center; justify-content:flex-end; gap:.75rem; padding-bottom:1rem; font-size:.85rem; }
+.class-session-share a { text-decoration:underline; text-underline-offset:4px; }

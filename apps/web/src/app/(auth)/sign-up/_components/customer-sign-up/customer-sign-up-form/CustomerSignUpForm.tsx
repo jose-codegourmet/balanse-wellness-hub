@@ -1,100 +1,131 @@
 "use client";
 
-import { Button, Input, Label, PasswordInput, PhPhoneInput } from "@balanse/ui";
-import { ArrowUpRight } from "lucide-react";
+import {
+  Button,
+  Field,
+  FieldError,
+  FieldLabel,
+  Input,
+  PasswordInput,
+  PhPhoneInput,
+} from "@balanse/ui";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowUpRight, LoaderCircle } from "lucide-react";
 import type { ReactNode } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { customerSignUpFormDefaultValues } from "./CustomerSignUpForm.defaults";
+import {
+  type CustomerSignUpFormValues,
+  customerSignUpFormSchema,
+} from "./CustomerSignUpForm.schema";
 
-type SignUpField = "fullName" | "email" | "contactNumber" | "password" | "confirmPassword";
-type SignUpValues = Record<SignUpField, string>;
-type SignUpErrors = Partial<Record<SignUpField, string>>;
-
-export function CustomerSignUpForm({
-  values,
-  errors,
-  onChange,
-  onSubmit,
-  beforeSubmit,
-}: {
-  values: SignUpValues;
-  errors: SignUpErrors;
-  onChange: (field: SignUpField, value: string) => void;
-  onSubmit: () => void;
+export type CustomerSignUpFormProps = {
+  /** Initial values. Remount (change `key`) to apply a new prefill such as Google. */
+  defaultValues?: CustomerSignUpFormValues;
+  onSubmit: (values: CustomerSignUpFormValues) => void | Promise<void>;
+  submitting?: boolean;
+  /** Form-level failure from the account action. */
+  formError?: string | null;
   /** Rendered above the submit button, e.g. admin-attached policy acceptance. */
   beforeSubmit?: ReactNode;
-}) {
+  /** Called before validation results are applied; return false to block submit. */
+  canSubmit?: () => boolean;
+};
+
+export function CustomerSignUpForm({
+  defaultValues = customerSignUpFormDefaultValues,
+  onSubmit,
+  submitting = false,
+  formError,
+  beforeSubmit,
+  canSubmit,
+}: CustomerSignUpFormProps) {
+  const form = useForm<CustomerSignUpFormValues>({
+    resolver: zodResolver(customerSignUpFormSchema),
+    defaultValues,
+  });
+  const { errors } = form.formState;
+  const google = defaultValues.authMethod === "google";
+
   return (
     <form
       className="auth-form"
       noValidate
+      aria-busy={submitting}
       onSubmit={(event) => {
-        event.preventDefault();
-        onSubmit();
+        // Policies live outside the form; reveal their error alongside field errors.
+        const allowed = canSubmit ? canSubmit() : true;
+        void form.handleSubmit(async (values) => {
+          if (!allowed) return;
+          await onSubmit(values);
+        })(event);
       }}
     >
-      <div className="auth-field">
-        <Label htmlFor="signup-name">Full name</Label>
-        <Input
-          id="signup-name"
-          name="name"
-          autoComplete="name"
-          value={values.fullName}
-          aria-invalid={Boolean(errors.fullName)}
-          onChange={(event) => onChange("fullName", event.target.value)}
-        />
-        {errors.fullName ? <p className="auth-error">{errors.fullName}</p> : null}
+      <div className="grid gap-5 sm:grid-cols-2 sm:gap-4">
+        <Field className="auth-field" invalid={Boolean(errors.firstName)}>
+          <FieldLabel>First name</FieldLabel>
+          <Input autoComplete="given-name" {...form.register("firstName")} />
+          <FieldError className="auth-error" errors={[errors.firstName]} />
+        </Field>
+        <Field className="auth-field" invalid={Boolean(errors.lastName)}>
+          <FieldLabel>Last name</FieldLabel>
+          <Input autoComplete="family-name" {...form.register("lastName")} />
+          <FieldError className="auth-error" errors={[errors.lastName]} />
+        </Field>
       </div>
-      <div className="auth-field">
-        <Label htmlFor="signup-email">Email</Label>
-        <Input
-          id="signup-email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          value={values.email}
-          aria-invalid={Boolean(errors.email)}
-          onChange={(event) => onChange("email", event.target.value)}
+      <Field className="auth-field" invalid={Boolean(errors.email)}>
+        <FieldLabel>Email</FieldLabel>
+        <Input type="email" autoComplete="email" readOnly={google} {...form.register("email")} />
+        <FieldError className="auth-error" errors={[errors.email]} />
+      </Field>
+      <Field className="auth-field" invalid={Boolean(errors.contactNumber)}>
+        <FieldLabel>Contact number</FieldLabel>
+        <Controller
+          control={form.control}
+          name="contactNumber"
+          render={({ field }) => (
+            <PhPhoneInput
+              name={field.name}
+              ref={field.ref}
+              value={field.value}
+              onBlur={field.onBlur}
+              onChange={(event) => field.onChange(event.target.value)}
+              autoComplete="tel"
+            />
+          )}
         />
-        {errors.email ? <p className="auth-error">{errors.email}</p> : null}
-      </div>
-      <div className="auth-field">
-        <Label htmlFor="signup-contact">Contact number</Label>
-        <PhPhoneInput
-          id="signup-contact"
-          name="tel"
-          autoComplete="tel"
-          value={values.contactNumber}
-          aria-invalid={Boolean(errors.contactNumber)}
-          onChange={(event) => onChange("contactNumber", event.target.value)}
-        />
-        {errors.contactNumber ? <p className="auth-error">{errors.contactNumber}</p> : null}
-      </div>
-      <div className="auth-field">
-        <Label htmlFor="signup-password">Password</Label>
-        <PasswordInput
-          id="signup-password"
-          name="new-password"
-          autoComplete="new-password"
-          value={values.password}
-          aria-invalid={Boolean(errors.password)}
-          onChange={(event) => onChange("password", event.target.value)}
-        />
-        {errors.password ? <p className="auth-error">{errors.password}</p> : null}
-      </div>
-      <div className="auth-field">
-        <Label htmlFor="signup-confirm">Confirm password</Label>
-        <PasswordInput
-          id="signup-confirm"
-          name="confirm-password"
-          autoComplete="new-password"
-          value={values.confirmPassword}
-          aria-invalid={Boolean(errors.confirmPassword)}
-          onChange={(event) => onChange("confirmPassword", event.target.value)}
-        />
-        {errors.confirmPassword ? <p className="auth-error">{errors.confirmPassword}</p> : null}
-      </div>
+        <FieldError className="auth-error" errors={[errors.contactNumber]} />
+      </Field>
+      {google ? null : (
+        <>
+          <Field className="auth-field" invalid={Boolean(errors.password)}>
+            <FieldLabel>Password</FieldLabel>
+            <PasswordInput autoComplete="new-password" {...form.register("password")} />
+            <FieldError className="auth-error" errors={[errors.password]} />
+          </Field>
+          <Field className="auth-field" invalid={Boolean(errors.confirmPassword)}>
+            <FieldLabel>Confirm password</FieldLabel>
+            <PasswordInput autoComplete="new-password" {...form.register("confirmPassword")} />
+            <FieldError className="auth-error" errors={[errors.confirmPassword]} />
+          </Field>
+        </>
+      )}
       {beforeSubmit}
-      <Button type="submit" className="mt-1 w-full">
-        Create account <ArrowUpRight className="size-4" aria-hidden="true" />
+      {formError ? (
+        <p role="alert" className="auth-form-error">
+          {formError}
+        </p>
+      ) : null}
+      <Button type="submit" className="mt-1 w-full" disabled={submitting}>
+        {submitting ? (
+          <>
+            <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> Creating account…
+          </>
+        ) : (
+          <>
+            Create account <ArrowUpRight className="size-4" aria-hidden="true" />
+          </>
+        )}
       </Button>
     </form>
   );

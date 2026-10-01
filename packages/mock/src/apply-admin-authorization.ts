@@ -271,9 +271,19 @@ export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter
       const session = hasPermission(actor, "coach_rates.read")
         ? roster.session
         : stripSessionRates(roster.session);
+      // Onboarding answers: customers.read, or the coach assigned to this session.
+      const includeOnboarding =
+        hasPermission(actor, "customers.read") || sessionAssignedToActor(roster.session, actor);
+      const people = Object.fromEntries(
+        Object.entries(roster.people).map(([id, person]) => [
+          id,
+          includeOnboarding ? person : { ...person, onboarding: null },
+        ]),
+      );
       return {
         ...roster,
         session,
+        people,
         confirmed: roster.confirmed.map((row) => stripRosterBooking(row, includePayment)),
         held: roster.held.map((row) => stripRosterBooking(row, includePayment)),
         waitlisted: roster.waitlisted.map((row) => stripRosterBooking(row, includePayment)),
@@ -375,6 +385,10 @@ export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter
         });
       }
       return inner.disableAdminStaff(id);
+    },
+    getAdminMarketingInsights: (query) => {
+      requirePermission("reports.marketing.read");
+      return inner.getAdminMarketingInsights(query);
     },
     getAdminCustomers: (filters) => {
       requirePermission("customers.read");

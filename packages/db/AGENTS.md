@@ -125,3 +125,7 @@ The leftover `StaffRole` enum is not dropped in this wave.
 ## Session bundles (BE-058)
 
 `bundles`, `bundle_class_applicability`, `bundle_acquisitions`, `bundle_acquisition_payments`, `customer_bundles`, and `bundle_redemptions` implement session packages. Remaining credits are derived from the redemption ledger. The Prisma migration is staged and must not be applied to the shared project until histories are reconciled. See `docs/backend/session-bundles.md`.
+
+## Profile identity (#344) and public read (#345)
+
+`Profile` has `firstName` / `lastName` (required on write), optional `nickname` (2–30 chars), `avatarKey` (private `avatars` bucket, `avatars/<profileId>/<cuid>.webp`), `showOnPublicRoster`, DB-generated `referralCode`, and sign-up attribution (`referredById`, `referralChannel`). `fullName` is **deprecated and derived** by trigger `profiles_sync_full_name`; write `firstName` / `lastName`, never `fullName`. Onboarding answers live in `onboarding.prisma` (`ProfileOnboarding`, `ProfileClassInterest`). Customers may update only the identity/preference columns (column grants). Public session/event/roster reads go through `app_public.public_session`, `public_event`, `public_session_roster` (SECURITY DEFINER; anon gets counts only). Neither migration is applied to the shared project yet. See `docs/backend/auth.md`, `docs/backend/rls-policies.md`, and `docs/backend/migrations.md`.

@@ -2,7 +2,30 @@
 
 **INF-005.** Providers and URLs are configured on project `xydundrayuusqizssgby`. FE screens stay mock-only this phase (`WIRE-002` later). Role rows are `BE-003`.
 
-Profile rows (`BE-002`) are created by trigger `on_auth_user_created` → `app_private.handle_new_user` (full name / email / contact number only; OQ-3).
+Profile rows (`BE-002`) are created by trigger `on_auth_user_created` → `app_private.handle_new_user`. OQ-3 still forbids DOB / health / emergency contact.
+
+## Sign-up metadata (#344)
+
+`handle_new_user` reads `raw_user_meta_data` (client `options.data` on sign-up; Google fills `given_name` / `family_name` / `full_name` / `name`). Keys:
+
+| Key | Use |
+| --- | --- |
+| `first_name` | `firstName`. Fallbacks, in order: `given_name` (Google), first token of `full_name` / `name`, email local part, `'Member'`. |
+| `last_name` | `lastName`. Fallbacks: `family_name`, remainder of `full_name` / `name` after the first space, `''`. |
+| `contact_number` | `contactNumber` (default `''`). |
+| `ref` | Another profile's `referralCode` (case-insensitive). Sets `referredById`. |
+| `ref_channel` | `CUSTOMER_LINK` / `CUSTOMER_QR` / `STUDIO_LINK` / `STUDIO_QR`. Ignored unless it is a valid `referral_channel`. |
+
+The trigger also gets `referralCode` from the column default (`app_private.generate_referral_code()`: 8 chars Crockford base32, random, not derived from email or id) and `fullName` from the sync trigger (deprecated, derived).
+
+Attribution rules (last touch is decided by the client, which keeps the 30-day share cookie):
+
+- A `ref` that matches another profile's code sets `referredById` and `referralChannel` (`CUSTOMER_LINK` / `CUSTOMER_QR` from `ref_channel`; anything else defaults to `CUSTOMER_LINK`).
+- Unknown codes, self-referral, and codes that belong to a **staff-only** profile (a `staff_members` row and no bookings) are ignored.
+- Without a valid `ref`, only `STUDIO_LINK` / `STUDIO_QR` are kept (studio links carry no code). `CUSTOMER_*` without a valid `ref` is dropped.
+- Attribution errors are swallowed. Sign-up never fails because of `ref` / `ref_channel`. `ON CONFLICT (id) DO NOTHING` is unchanged.
+
+`referralCode`, `referredById` and `referralChannel` are not customer-writable afterwards (column grants, see [rls-policies.md](./rls-policies.md)). Do not use `user_metadata` for authorization; these keys are attribution only.
 
 ## Providers
 

@@ -3,6 +3,7 @@
 ```text
 CANCELLATION REQUESTS
 Customer
+Booking reference
 Booking
 Payment status
 Request time
@@ -12,3 +13,4 @@ Reason
 ```
 
 Slot stays locked until admin completes cancellation.
+Search matches customer name or booking reference across the full queue before pagination.

@@ -1,11 +1,12 @@
 "use client";
 
 import { CUSTOMER_PROFILE_SECTIONS, type CustomerProfileSectionId } from "@balanse/domain";
-import { FileCheck2, KeyRound, Lock, UserRound } from "lucide-react";
+import { FileCheck2, KeyRound, Lock, Sparkles, UserRound } from "lucide-react";
 import Link from "next/link";
 
-const icons = {
+const icons: Record<CustomerProfileSectionId, typeof UserRound> = {
   basic: UserRound,
+  about: Sparkles,
   account: KeyRound,
   password: Lock,
   policies: FileCheck2,

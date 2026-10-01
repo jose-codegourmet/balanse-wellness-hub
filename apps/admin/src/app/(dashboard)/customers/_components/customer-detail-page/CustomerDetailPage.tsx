@@ -7,6 +7,8 @@ import {
   formatPeso,
   formatSessionDate,
   formatSessionTimeRange,
+  ONBOARDING_STATUS_LABELS,
+  type OnboardingStatus,
   paymentStatusLabel,
   refundStatusLabel,
   sessionDisplayName,
@@ -19,18 +21,32 @@ import {
   CollapsibleTrigger,
   cn,
   StatusBadge,
+  UserAvatar,
 } from "@balanse/ui";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowLeftIcon, MailIcon, PhoneIcon, PlusIcon, ShieldCheckIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  EyeOffIcon,
+  MailIcon,
+  PhoneIcon,
+  PlusIcon,
+  ShieldCheckIcon,
+} from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import {
+  CustomerAboutCard,
+  useInterestClassLookup,
+} from "@/components/balanse/customer/customer-about-card/CustomerAboutCard";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { AdminPageTabs } from "@/components/balanse/page/admin-page-tabs/AdminPageTabs";
 import { useTabParam } from "@/components/balanse/page/useTabParam";
 import { adminBundlesQuery, adminCustomerDetailQuery } from "@/lib/query/queries";
 import { useCanAdminAction, useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { CustomerReferralCard } from "../customer-referral-card/CustomerReferralCard";
 import { GrantPackageForm } from "../grant-package-form/GrantPackageForm";
+import type { CustomerDetailPageProps } from "./CustomerDetailPage.meta";
 
 type CustomerBooking = AdminCustomerDetail["upcoming"][number];
 
@@ -80,14 +96,12 @@ function activityRows(detail: AdminCustomerDetail, tab: ActivityTabId): Customer
   }
 }
 
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
-}
+const ONBOARDING_BADGE_VARIANT: Record<OnboardingStatus, "success" | "warning" | "neutral"> = {
+  completed: "success",
+  in_progress: "neutral",
+  skipped: "warning",
+  not_started: "neutral",
+};
 
 function Panel({
   title,
@@ -292,13 +306,14 @@ function PackageItem({ entitlement }: { entitlement: CustomerEntitlement }) {
   );
 }
 
-export function CustomerDetailPage({ customerId }: { customerId: string }) {
+export function CustomerDetailPage({ customerId }: CustomerDetailPageProps) {
   const { principal } = useMockPrincipal();
   const canReadBundles = useCanAdminRoute("/bundles");
   const canManageBundles = useCanAdminAction("bundles-manage");
   const canReadRefunds = useCanAdminAction("refunds-read");
   const canOpenBooking = useCanAdminRoute("/bookings");
   const [tab, setTab] = useTabParam<ActivityTabId>("tab", ACTIVITY_TABS, "upcoming");
+  const interestClasses = useInterestClassLookup();
   const query = useSuspenseQuery(adminCustomerDetailQuery(principal, customerId));
   const bundlesQuery = useQuery({
     ...adminBundlesQuery(principal),
@@ -310,11 +325,46 @@ export function CustomerDetailPage({ customerId }: { customerId: string }) {
   const entitlements = detail.entitlements ?? [];
   const rows = activityRows(detail, tab);
   const lastVisit = detail.lastVisitAt ? formatSessionDate(detail.lastVisitAt) : "Never";
+  const personName = { firstName: detail.firstName, lastName: detail.lastName };
+  const nickname = detail.nickname?.trim();
 
   return (
     <AdminPageShell
       eyebrow="Customer"
       title={detail.fullName}
+      leading={
+        <span aria-hidden>
+          <UserAvatar
+            name={personName}
+            avatarUrl={detail.avatarUrl}
+            seed={detail.id}
+            size="xl"
+            className="shadow-sm ring-2 ring-background"
+          />
+        </span>
+      }
+      subtitle={
+        <>
+          {nickname ? (
+            <span className="text-sm text-muted-foreground">
+              Goes by <span className="font-medium text-foreground italic">{nickname}</span>
+            </span>
+          ) : null}
+          <Badge
+            appearance="soft"
+            size="sm"
+            variant={ONBOARDING_BADGE_VARIANT[detail.onboardingStatus]}
+          >
+            Onboarding: {ONBOARDING_STATUS_LABELS[detail.onboardingStatus]}
+          </Badge>
+          {detail.showOnPublicRoster ? null : (
+            <Badge appearance="soft" size="sm" variant="neutral">
+              <EyeOffIcon aria-hidden className="size-3" />
+              Hidden on public roster
+            </Badge>
+          )}
+        </>
+      }
       description={`Signed in with ${detail.authMethod === "google" ? "Google" : "email"}.`}
       breadcrumb={[{ label: "Customers", href: "/customers" }, { label: detail.fullName }]}
       actions={
@@ -390,14 +440,20 @@ export function CustomerDetailPage({ customerId }: { customerId: string }) {
         <aside className="grid gap-6">
           <Panel title="Profile">
             <div className="flex items-center gap-3 px-5 pt-5">
-              <span
-                aria-hidden
-                className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary font-display text-lg text-primary-foreground"
-              >
-                {initials(detail.fullName)}
+              <span aria-hidden className="shrink-0">
+                <UserAvatar
+                  name={personName}
+                  avatarUrl={detail.avatarUrl}
+                  seed={detail.id}
+                  size="lg"
+                  className="size-12"
+                />
               </span>
               <div className="min-w-0">
                 <p className="truncate font-medium">{detail.fullName}</p>
+                {nickname ? (
+                  <p className="truncate text-xs text-muted-foreground italic">{nickname}</p>
+                ) : null}
                 <p className="text-xs text-muted-foreground">
                   {detail.lastVisitAt ? `Last visit ${lastVisit}` : "No visits yet"}
                 </p>
@@ -418,6 +474,15 @@ export function CustomerDetailPage({ customerId }: { customerId: string }) {
               />
             </dl>
           </Panel>
+
+          <CustomerAboutCard
+            onboarding={detail.onboarding}
+            onboardingStatus={detail.onboardingStatus}
+            classes={interestClasses.classes}
+            classHref={interestClasses.classHref}
+          />
+
+          {detail.referral ? <CustomerReferralCard referral={detail.referral} /> : null}
 
           {canReadBundles ? (
             <Panel title="Packages">

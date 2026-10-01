@@ -6,10 +6,11 @@ import {
   type MetricSeries,
 } from "./contracts";
 import type { FieldErrors, LoginInput } from "./customer-portal";
-import { HOLD_DURATION_HOURS } from "./customer-portal";
+import { bookingReference, HOLD_DURATION_HOURS } from "./customer-portal";
 import type { CoachRateType, PaymentStatus, SessionStatus, VenueKind } from "./enums";
 import { BOOKING_STATUSES } from "./enums";
 import { manilaYmd } from "./format";
+import type { CustomerOnboardingAnswers } from "./onboarding";
 import type { PolicyFormRequirements } from "./policy-forms";
 import { roleLabel } from "./roles";
 import type {
@@ -17,6 +18,8 @@ import type {
   AdminCustomer,
   AdminStaff,
   CustomerBooking,
+  CustomerProfile,
+  CustomerReferralSummary,
   PaymentInstructions,
   PaymentQrCode,
   PolicyAcceptance,
@@ -270,6 +273,9 @@ export type AdminCustomerDetail = AdminCustomer & {
   acquisitions: BundleAcquisition[];
   /** HTTP-shaped pending paid requests when present. */
   pendingAcquisitions?: BundleAcquisition[];
+  /** Onboarding answers (`customers.read`). `null` when none were saved. */
+  onboarding: CustomerOnboardingAnswers | null;
+  referral: CustomerReferralSummary;
 };
 
 export type AdminDashboardSnapshot = {
@@ -359,7 +365,11 @@ export function filterAdminBookings(
     if (filters.to && sessionDay > filters.to) return false;
     if (filters.query) {
       const q = filters.query.toLowerCase();
-      if (!customerName(booking.customerId).toLowerCase().includes(q) && !booking.id.includes(q)) {
+      if (
+        !customerName(booking.customerId).toLowerCase().includes(q) &&
+        !booking.id.toLowerCase().includes(q) &&
+        !bookingReference(booking.id).toLowerCase().includes(q)
+      ) {
         return false;
       }
     }
@@ -900,13 +910,7 @@ export function isPaidStatus(status: PaymentStatus): boolean {
 }
 
 export function buildAdminCustomerRow(
-  profile: {
-    id: string;
-    fullName: string;
-    email: string;
-    contactNumber: string;
-    authMethod: "email" | "google";
-  },
+  profile: CustomerProfile,
   bookings: CustomerBooking[],
 ): AdminCustomer {
   const mine = bookings.filter((b) => b.customerId === profile.id);

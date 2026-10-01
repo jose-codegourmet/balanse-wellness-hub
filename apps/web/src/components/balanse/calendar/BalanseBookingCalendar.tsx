@@ -3,6 +3,7 @@
 import { BALANSE_BREAKPOINTS } from "@balanse/config";
 import {
   SESSION_AVAILABILITY_LABELS as AVAILABILITY,
+  buildPublicSessionPath,
   filterPublicSessions,
   formatPeso,
   formatSessionDate,
@@ -12,8 +13,10 @@ import {
   moveScheduleDate,
   type PublicSession,
   type ScheduleGridView,
+  type ShareParams,
   scheduleGridDays,
   sessionDisplayName,
+  withShareParams,
 } from "@balanse/domain";
 import {
   Button,
@@ -33,9 +36,12 @@ import {
   Timer,
   Users,
 } from "lucide-react";
+import Link from "next/link";
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import { ShareAction } from "@/components/balanse/share-action/ShareAction";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/jabkit/dialog";
 import { cn } from "@/lib/utils";
+import { publicSiteOrigin } from "@/modules/share/site-origin";
 import { CoachAvatar } from "./CoachAvatar";
 import "./booking-calendar.css";
 
@@ -95,6 +101,53 @@ const capacityCopy = (session: PublicSession, becameFull?: boolean) =>
 
 /** App-owned adaptation of Jabkit FullscreenCalendar's bordered event grid.
  * Jabkit sources stay pristine; customer events open booking details rather than an event editor. */
+/** #350 — public page link + share for the selected session. Hidden for past sessions. */
+function SessionShareRow({
+  session,
+  classSlug,
+  shareParams,
+}: {
+  session: PublicSession;
+  classSlug: string | undefined;
+  shareParams: ShareParams;
+}) {
+  if (session.availability === "past") return null;
+  const path = buildPublicSessionPath({
+    classSlug: classSlug ?? session.className,
+    startsAt: session.startsAt,
+    id: session.id,
+  });
+  const cancelled = session.availability === "cancelled";
+  return (
+    <div className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3">
+      <Link
+        href={path}
+        className="inline-flex items-center gap-1 text-sm font-medium underline underline-offset-4"
+      >
+        Details &amp; who&rsquo;s going
+      </Link>
+      <ShareAction
+        iconOnly
+        size="sm"
+        variant="ghost"
+        url={withShareParams(`${publicSiteOrigin()}${path}`, shareParams)}
+        title={sessionDisplayName(session)}
+        subtitle={`${formatSessionDate(session.startsAt)} · ${formatSessionTime(session.startsAt)}`}
+        posterUrl={
+          cancelled
+            ? undefined
+            : withShareParams(
+                `/share/poster/sessions/${encodeURIComponent(session.id)}`,
+                shareParams,
+              )
+        }
+        fileSlug={`${classSlug ?? "session"}-${manilaYmd(session.startsAt)}`}
+        aria-label={`Share ${sessionDisplayName(session)} on ${formatSessionDate(session.startsAt)}`}
+      />
+    </div>
+  );
+}
+
 export function BalanseBookingCalendar({
   sessions,
   classes,
@@ -111,6 +164,7 @@ export function BalanseBookingCalendar({
   viewerBookingSessionIds = [],
   sessionBecameFullId,
   audience = "guest",
+  shareParams = {},
 }: ScheduleCalendarProps) {
   const breakpoint = useBreakpoint();
   const [date, setDate] = useState(() => manilaYmd(nowIso));
@@ -599,6 +653,11 @@ export function BalanseBookingCalendar({
                   </p>
                 </div>
               )}
+              <SessionShareRow
+                session={selected}
+                classSlug={classes.find((item) => item.id === selected.classId)?.slug}
+                shareParams={shareParams}
+              />
             </div>
           ) : detailDay ? (
             <>

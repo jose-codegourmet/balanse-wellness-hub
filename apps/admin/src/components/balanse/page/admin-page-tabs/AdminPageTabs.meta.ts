@@ -1,4 +1,4 @@
-/** Shared responsive page tabs; inactive desktop labels retain readable contrast on the warm background. */
+/** Responsive admin composition of shared Tabs, TabsList, TabsTrigger, and TabsContent. */
 import type * as React from "react";
 
 export type AdminPageTab = {
@@ -10,6 +10,7 @@ export type AdminPageTab = {
 export type AdminPageTabsMobileBehavior = "tabs" | "stack";
 
 export type AdminPageTabsProps = {
+  /** Pair with `useTabParam` when selections should be reflected in `?tab=`. */
   tabs: readonly AdminPageTab[];
   value: string;
   onValueChange: (value: string) => void;

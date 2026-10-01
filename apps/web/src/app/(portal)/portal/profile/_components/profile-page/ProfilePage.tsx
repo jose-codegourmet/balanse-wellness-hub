@@ -1,9 +1,19 @@
 "use client";
 
-import type { CustomerProfile, CustomerProfileSectionId, PolicyAcceptance } from "@balanse/domain";
-import { customerInitials } from "@balanse/domain";
+import type {
+  CustomerOnboardingAnswers,
+  CustomerProfile,
+  CustomerProfileSectionId,
+  PolicyAcceptance,
+  PublicClass,
+  ReferralChannel,
+} from "@balanse/domain";
+import { joinFullName } from "@balanse/domain";
+import { UserAvatar } from "@balanse/ui";
 import { UserRound } from "lucide-react";
 import { useState } from "react";
+import type { CustomerOnboardingActions } from "../../_lib/customer-self-service.types";
+import { AboutYouSection } from "./about-you-section/AboutYouSection";
 import { AccountSettingsSection } from "./account-settings-section/AccountSettingsSection";
 import { BasicProfileSection } from "./basic-profile-section/BasicProfileSection";
 import { PasswordSettingsSection } from "./password-settings-section/PasswordSettingsSection";
@@ -22,14 +32,25 @@ export function ProfilePage({
   section = "basic",
   forcedStatus,
   forcedPasswordStatus,
+  about,
+  actions,
 }: {
   initialProfile: CustomerProfile;
   initialAcceptances: PolicyAcceptance[];
   section?: CustomerProfileSectionId;
   forcedStatus?: "saving" | "failed";
   forcedPasswordStatus?: "saved";
+  /** Loaded only for the `about` section (#352). */
+  about?: {
+    answers: CustomerOnboardingAnswers | null;
+    classes: PublicClass[];
+    referralChannel: ReferralChannel | null;
+  };
+  /** Self-service server actions from the route; stories pass mock ones. */
+  actions: CustomerOnboardingActions;
 }) {
   const [savedProfile, setSavedProfile] = useState(initialProfile);
+  const fullName = joinFullName(savedProfile) || savedProfile.fullName;
 
   return (
     <div className="portal-profile">
@@ -39,11 +60,15 @@ export function ProfilePage({
         <p>A few details to make every visit feel personal.</p>
       </header>
       <div className="profile-summary">
-        <div className="profile-avatar" aria-hidden="true">
-          {customerInitials(savedProfile.fullName)}
-        </div>
+        <UserAvatar
+          name={{ firstName: savedProfile.firstName, lastName: savedProfile.lastName }}
+          avatarUrl={savedProfile.avatarUrl}
+          seed={savedProfile.id}
+          size="xl"
+          className="size-16 text-xl"
+        />
         <div>
-          <h2 className="font-display">{savedProfile.fullName}</h2>
+          <h2 className="font-display">{fullName}</h2>
           <p>{savedProfile.email}</p>
         </div>
         <span className="profile-account-label">
@@ -57,7 +82,17 @@ export function ProfilePage({
             <BasicProfileSection
               profile={savedProfile}
               onSaved={setSavedProfile}
+              actions={actions}
               forcedStatus={forcedStatus}
+            />
+          ) : null}
+          {section === "about" ? (
+            <AboutYouSection
+              profile={savedProfile}
+              answers={about?.answers ?? null}
+              classes={about?.classes ?? []}
+              referralChannel={about?.referralChannel ?? null}
+              actions={actions}
             />
           ) : null}
           {section === "account" ? <AccountSettingsSection profile={savedProfile} /> : null}

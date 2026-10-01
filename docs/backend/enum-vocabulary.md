@@ -35,4 +35,17 @@ Customer-facing booking/refund labels: `docs/screen-specs/shared/02-status-langu
 | `customer_bundle_status` | `ACTIVE`, `EXHAUSTED`, `EXPIRED`, `REVOKED` | Issued entitlement. |
 | `bundle_redemption_status` | `HELD`, `CONSUMED`, `RESTORED` | Credit ledger. |
 
+## Profile / onboarding (#344)
+
+Values must match the option lists in `@balanse/domain` (`packages/domain/src/onboarding.ts`, #346). Labels live there, not in the database.
+
+| Enum | Values | Notes |
+| --- | --- | --- |
+| `fitness_goal` (`FitnessGoal`) | `STRENGTH`, `FLEXIBILITY_MOBILITY`, `WEIGHT_MANAGEMENT`, `STRESS_RELIEF`, `POSTURE_CORE`, `ENDURANCE`, `COMMUNITY`, `OTHER` | Multi-select. **No medical / injury value** (OQ-3). `OTHER` pairs with `goalsOther` (≤ 120 chars). |
+| `experience_level` (`ExperienceLevel`) | `NEW`, `SOME`, `REGULAR`, `ADVANCED` | Single choice, nullable. |
+| `heard_from_source` (`HeardFromSource`) | `FRIEND`, `INSTAGRAM`, `FACEBOOK`, `TIKTOK`, `GOOGLE`, `EVENT`, `WALK_IN`, `OTHER` | Single choice, nullable. `OTHER` pairs with `heardFromOther`. |
+| `referral_channel` (`ReferralChannel`) | `CUSTOMER_LINK`, `CUSTOMER_QR`, `STUDIO_LINK`, `STUDIO_QR` | Set once at sign-up by `handle_new_user`. `CUSTOMER_*` requires a valid `ref`; `STUDIO_*` does not. Internal (marketing insights counts only). |
+
+All four are re-exported from `@balanse/db/enums`.
+
 No invented **booking** states beyond the docs above. Bundle enums are internal catalogue/ledger vocabulary (customer chrome says “Package”).

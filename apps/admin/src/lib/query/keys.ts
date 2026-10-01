@@ -97,14 +97,21 @@ export const adminKeys = {
       [...adminKeys.reports.all(scope), "session", sessionId] as const,
   },
 
+  /** #354 — aggregate sign-up insights keyed by the Manila sign-up date range. */
+  marketingInsights: (scope: AdminAuthScope, range: { from: string; to: string }) =>
+    [...adminKeys.all(scope), "marketing-insights", range] as const,
+
+  /** Active public class catalogue (names for onboarding interests when `classes.read` is absent). */
+  publicClasses: (scope: AdminAuthScope) => [...adminKeys.all(scope), "public-classes"] as const,
+
   /** Infinite queue keys for FE-ADM-020 (#210). Prefix stays `queues`. */
   queues: {
     all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "queues"] as const,
-    payments: (scope: AdminAuthScope, tab: AdminPaymentTab) =>
-      [...adminKeys.queues.all(scope), "payments", tab] as const,
-    cancellations: (scope: AdminAuthScope) =>
-      [...adminKeys.queues.all(scope), "cancellations"] as const,
-    reschedules: (scope: AdminAuthScope) =>
-      [...adminKeys.queues.all(scope), "reschedules"] as const,
+    payments: (scope: AdminAuthScope, tab: AdminPaymentTab, search = "") =>
+      [...adminKeys.queues.all(scope), "payments", tab, search] as const,
+    cancellations: (scope: AdminAuthScope, search = "") =>
+      [...adminKeys.queues.all(scope), "cancellations", search] as const,
+    reschedules: (scope: AdminAuthScope, search = "") =>
+      [...adminKeys.queues.all(scope), "reschedules", search] as const,
   },
 } as const;

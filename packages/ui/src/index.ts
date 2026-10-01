@@ -89,3 +89,7 @@ export * from "./lib/utils";
 export * from "./lib/control-surface";
 export * from "./components/option-row/OptionRow";
 export * from "./components/password-input/PasswordInput";
+export * from "./components/share-dialog/ShareDialog";
+export * from "./components/share-dialog/QrMatrix";
+export * from "./components/user-avatar/UserAvatar";
+export type * from "./components/user-avatar/UserAvatar.meta";

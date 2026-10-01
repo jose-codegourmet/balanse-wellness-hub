@@ -7,6 +7,7 @@
 | `NEXT_PUBLIC_SUPABASE_URL` | `apps/web`, `apps/admin`, root Turbo `globalEnv` | Yes | `https://xydundrayuusqizssgby.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `apps/web`, `apps/admin` | Yes | Dashboard → API → publishable key (`sb_publishable_…`). Legacy anon JWT is compatibility-only. |
 | `NEXT_PUBLIC_SITE_URL` | `apps/web`, `apps/admin` | Yes | Origin used for Auth redirects (`http://localhost:9000` / `:9001`). |
+| `NEXT_PUBLIC_WEB_SITE_URL` | `apps/admin` (`src/lib/web-origin.ts`) | Yes | Public `apps/web` origin admin uses to build share links and QR codes for public session/event pages (#347). Defaults to `http://localhost:9000`; trailing slash trimmed. `apps/web` keeps using `NEXT_PUBLIC_SITE_URL`. |
 | `NEXT_PUBLIC_APP_MODE` | `apps/web`, `apps/admin` | Yes | `mock` for INF-008 previews. Later wiring uses `live`. |
 | `NEXT_PUBLIC_ENABLE_MOCK_HARNESS` | `apps/web`, `apps/admin` | Yes | FE mock role switcher. |
 | `JABKIT_REGISTRY` | `apps/web`, `apps/admin` | Yes | Jabkit component registry URL. |

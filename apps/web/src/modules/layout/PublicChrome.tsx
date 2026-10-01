@@ -46,7 +46,14 @@ export function PublicHeader() {
       pathname={pathname}
       hash={hash}
       principalRole={principal.role}
-      bookingVisible={bookingVisible || pathname === "/book/quick" || pathname === "/book/calendar"}
+      bookingVisible={
+        bookingVisible ||
+        pathname === "/book/quick" ||
+        pathname === "/book/calendar" ||
+        // Shareable session/event pages render their own sticky booking bar (#343).
+        pathname.startsWith("/sessions/") ||
+        pathname.startsWith("/events/")
+      }
     />
   );
 }

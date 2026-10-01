@@ -1,6 +1,7 @@
 import type { CustomerProfileSectionId } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { getServerMockPrincipal } from "@/modules/session/server-principal";
+import { customerOnboardingServerActions } from "../../_lib/customer-self-service-routes";
 import { ProfilePage } from "../profile-page/ProfilePage";
 
 export type ProfileSectionRouteProps = {
@@ -10,7 +11,8 @@ export type ProfileSectionRouteProps = {
 /**
  * Shared loader for the `/portal/profile/*` submenu routes (FE-CUS-017). Each
  * section is a real route so deep links and the back button both work; they
- * only differ by which section the shared shell renders.
+ * only differ by which section the shared shell renders. The "About you"
+ * section (#352) additionally loads onboarding answers and active classes.
  */
 export async function ProfileSectionRoute({ section }: ProfileSectionRouteProps) {
   const principal = await getServerMockPrincipal();
@@ -29,7 +31,26 @@ export async function ProfileSectionRoute({ section }: ProfileSectionRouteProps)
     );
   }
 
+  const about =
+    section === "about"
+      ? await Promise.all([
+          adapter.getMyOnboarding(profile.id),
+          adapter.getPublicClasses(),
+          adapter.getMyReferralChannel(profile.id),
+        ]).then(([answers, classes, referralChannel]) => ({
+          answers,
+          classes: classes.filter((gymClass) => gymClass.active),
+          referralChannel,
+        }))
+      : undefined;
+
   return (
-    <ProfilePage initialProfile={profile} initialAcceptances={acceptances} section={section} />
+    <ProfilePage
+      initialProfile={profile}
+      initialAcceptances={acceptances}
+      section={section}
+      about={about}
+      actions={customerOnboardingServerActions}
+    />
   );
 }

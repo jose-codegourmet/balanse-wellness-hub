@@ -1,134 +1,116 @@
 "use client";
 
-import type { CustomerProfile } from "@balanse/domain";
-import { validateCustomerProfile } from "@balanse/domain";
-import { getMockAdapter } from "@balanse/mock";
-import { Button, Input, Label, PhPhoneInput } from "@balanse/ui";
+import type { CustomerProfile, CustomerProfilePatch } from "@balanse/domain";
+import { Button, Field, FieldError, FieldLabel, Input, PhPhoneInput } from "@balanse/ui";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowUpRight, LoaderCircle, Mail, Phone } from "lucide-react";
 import { useState } from "react";
+import { Controller, FormProvider, useForm } from "react-hook-form";
 import { notify } from "@/modules/notifications/notify";
+import { ProfileNameFields } from "../../../profile-name-fields/ProfileNameFields";
+import { basicProfileFormValuesFrom } from "./BasicProfileForm.defaults";
+import { type BasicProfileFormValues, basicProfileFormSchema } from "./BasicProfileForm.schema";
+
+export type BasicProfileFormProps = {
+  profile: CustomerProfile;
+  /** Persist the patch; resolve to the saved profile, or an error message. */
+  onSave: (
+    patch: CustomerProfilePatch,
+  ) => Promise<{ ok: true; value: CustomerProfile } | { ok: false; error: string }>;
+  onSaved: (next: CustomerProfile) => void;
+  forcedStatus?: "saving" | "failed";
+};
 
 export function BasicProfileForm({
   profile,
+  onSave,
   onSaved,
   forcedStatus,
-}: {
-  profile: CustomerProfile;
-  onSaved: (next: CustomerProfile) => void;
-  forcedStatus?: "saving" | "failed";
-}) {
-  const [fullName, setFullName] = useState(profile.fullName);
-  const [email, setEmail] = useState(profile.email);
-  const [contactNumber, setContactNumber] = useState(profile.contactNumber);
-  const [errors, setErrors] = useState<
-    Partial<Record<"fullName" | "email" | "contactNumber", string>>
-  >({});
-  const [status, setStatus] = useState<"idle" | "saving" | "saved" | "failed">(
-    forcedStatus ?? "idle",
-  );
+}: BasicProfileFormProps) {
+  const form = useForm<BasicProfileFormValues>({
+    resolver: zodResolver(basicProfileFormSchema),
+    defaultValues: basicProfileFormValuesFrom(profile),
+  });
+  const { errors } = form.formState;
+  const [status, setStatus] = useState<"idle" | "saving" | "failed">(forcedStatus ?? "idle");
 
   return (
-    <form
-      className="profile-form"
-      aria-busy={status === "saving"}
-      noValidate
-      onSubmit={(event) => {
-        event.preventDefault();
-        const result = validateCustomerProfile({ fullName, email, contactNumber });
-        if (!result.ok) {
-          setErrors(result.errors);
-          return;
-        }
-        setErrors({});
-        setStatus("saving");
-        void getMockAdapter()
-          .patchMe(profile.id, { fullName, email, contactNumber })
-          .then(() => {
-            onSaved({ ...profile, fullName, email, contactNumber });
-            setStatus("saved");
-            notify.portal("profile.saved");
-          })
-          .catch(() => {
+    <FormProvider {...form}>
+      <form
+        className="profile-form"
+        aria-busy={status === "saving"}
+        noValidate
+        onSubmit={form.handleSubmit(async (values) => {
+          setStatus("saving");
+          const result = await onSave({
+            firstName: values.firstName,
+            lastName: values.lastName,
+            nickname: values.nickname || null,
+            email: values.email,
+            contactNumber: values.contactNumber,
+          });
+          if (!result.ok) {
             setStatus("failed");
             notify.portal("profile.save-failed");
-          });
-      }}
-    >
-      <div className="grid gap-1.5">
-        <Label htmlFor="profile-name">Full name</Label>
-        <Input
-          id="profile-name"
-          value={fullName}
-          autoComplete="name"
-          aria-invalid={Boolean(errors.fullName)}
-          aria-describedby={errors.fullName ? "profile-name-error" : undefined}
-          onChange={(event) => setFullName(event.target.value)}
-        />
-        {errors.fullName ? (
-          <p id="profile-name-error" className="text-sm text-destructive">
-            {errors.fullName}
-          </p>
-        ) : null}
-      </div>
-      <div className="grid gap-1.5">
-        <Label htmlFor="profile-email">
-          <Mail size={14} aria-hidden="true" /> Email address
-        </Label>
-        <Input
-          id="profile-email"
-          type="email"
-          value={email}
-          autoComplete="email"
-          aria-invalid={Boolean(errors.email)}
-          aria-describedby={errors.email ? "profile-email-error" : undefined}
-          onChange={(event) => setEmail(event.target.value)}
-        />
-        {errors.email ? (
-          <p id="profile-email-error" className="text-sm text-destructive">
-            {errors.email}
-          </p>
-        ) : null}
-      </div>
-      <div className="grid gap-1.5">
-        <Label htmlFor="profile-contact">
-          <Phone size={14} aria-hidden="true" /> Contact number
-        </Label>
-        <PhPhoneInput
-          id="profile-contact"
-          value={contactNumber}
-          autoComplete="tel"
-          aria-invalid={Boolean(errors.contactNumber)}
-          aria-describedby={errors.contactNumber ? "profile-contact-error" : undefined}
-          onChange={(event) => setContactNumber(event.target.value)}
-        />
-        {errors.contactNumber ? (
-          <p id="profile-contact-error" className="text-sm text-destructive">
-            {errors.contactNumber}
-          </p>
-        ) : null}
-      </div>
-      {/* A successful save is announced by the toast. Failures keep a
+            return;
+          }
+          form.reset(basicProfileFormValuesFrom(result.value));
+          onSaved(result.value);
+          setStatus("idle");
+          notify.portal("profile.saved");
+        })}
+      >
+        <ProfileNameFields avatarUrl={profile.avatarUrl} seed={profile.id} />
+        <Field invalid={Boolean(errors.email)}>
+          <FieldLabel>
+            <Mail size={14} aria-hidden="true" /> Email address
+          </FieldLabel>
+          <Input type="email" autoComplete="email" {...form.register("email")} />
+          <FieldError errors={[errors.email]} />
+        </Field>
+        <Field invalid={Boolean(errors.contactNumber)}>
+          <FieldLabel>
+            <Phone size={14} aria-hidden="true" /> Contact number
+          </FieldLabel>
+          <Controller
+            control={form.control}
+            name="contactNumber"
+            render={({ field }) => (
+              <PhPhoneInput
+                name={field.name}
+                ref={field.ref}
+                value={field.value}
+                onBlur={field.onBlur}
+                onChange={(event) => field.onChange(event.target.value)}
+                autoComplete="tel"
+              />
+            )}
+          />
+          <FieldError errors={[errors.contactNumber]} />
+        </Field>
+        {/* A successful save is announced by the toast. Failures keep a
             form-level live region so the message stays next to the fields
             after the toast has auto-dismissed. */}
-      {status === "failed" ? (
-        <p role="alert" aria-live="assertive" className="text-sm text-destructive">
-          The mock profile could not be saved. Try again.
-        </p>
-      ) : null}
-      <div className="profile-form-actions">
-        <span>You can update these anytime.</span>
-        <Button type="submit" disabled={status === "saving"}>
-          {status === "saving" ? (
-            <>
-              <LoaderCircle size={16} className="animate-spin" aria-hidden="true" /> Saving…
-            </>
-          ) : (
-            <>
-              Save changes <ArrowUpRight size={17} aria-hidden="true" />
-            </>
-          )}
-        </Button>
-      </div>
-    </form>
+        {status === "failed" ? (
+          <p role="alert" aria-live="assertive" className="text-sm text-destructive">
+            The mock profile could not be saved. Try again.
+          </p>
+        ) : null}
+        <div className="profile-form-actions">
+          <span>You can update these anytime.</span>
+          <Button type="submit" disabled={status === "saving"}>
+            {status === "saving" ? (
+              <>
+                <LoaderCircle size={16} className="animate-spin" aria-hidden="true" /> Saving…
+              </>
+            ) : (
+              <>
+                Save changes <ArrowUpRight size={17} aria-hidden="true" />
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+    </FormProvider>
   );
 }

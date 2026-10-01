@@ -30,6 +30,7 @@
     "input-otp": "^1.4.2",
     "lucide-react": "^1.24.0",
     "next-themes": "^0.4.6",
+    "qrcode": "^1.5.4",
     "react-day-picker": "^10.0.1",
     "react-hook-form": "^7.83.0",
     "react-resizable-panels": "^4.12.2",
@@ -44,8 +45,9 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@storybook/nextjs-vite": "^10.5.0",
     "@balanse/mock": "workspace:*",
+    "@storybook/nextjs-vite": "^10.5.0",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "typescript": "^5"

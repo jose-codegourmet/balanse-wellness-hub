@@ -185,3 +185,53 @@ enum BundleRedemptionStatus {
 
   @@map("bundle_redemption_status")
 }
+
+/// #344 — onboarding goals. Values match `FITNESS_GOALS` in `@balanse/domain`.
+/// No medical / injury value (OQ-3).
+enum FitnessGoal {
+  STRENGTH
+  FLEXIBILITY_MOBILITY
+  WEIGHT_MANAGEMENT
+  STRESS_RELIEF
+  POSTURE_CORE
+  ENDURANCE
+  COMMUNITY
+  OTHER
+
+  @@map("fitness_goal")
+}
+
+/// #344 — self-reported experience. Values match `EXPERIENCE_LEVELS` in `@balanse/domain`.
+enum ExperienceLevel {
+  NEW
+  SOME
+  REGULAR
+  ADVANCED
+
+  @@map("experience_level")
+}
+
+/// #344 — "How did you hear about us". Values match `HEARD_FROM_SOURCES` in `@balanse/domain`.
+enum HeardFromSource {
+  FRIEND
+  INSTAGRAM
+  FACEBOOK
+  TIKTOK
+  GOOGLE
+  EVENT
+  WALK_IN
+  OTHER
+
+  @@map("heard_from_source")
+}
+
+/// #344 — sign-up attribution channel. CUSTOMER_* need a valid `ref`; STUDIO_* do not.
+/// Values match `REFERRAL_CHANNELS` in `@balanse/domain`.
+enum ReferralChannel {
+  CUSTOMER_LINK
+  CUSTOMER_QR
+  STUDIO_LINK
+  STUDIO_QR
+
+  @@map("referral_channel")
+}

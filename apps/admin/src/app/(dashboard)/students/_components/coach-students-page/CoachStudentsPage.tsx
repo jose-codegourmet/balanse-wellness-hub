@@ -6,11 +6,10 @@ import {
   formatSessionDate,
   formatSessionTime,
 } from "@balanse/domain";
-import { Badge, FeedbackState, ToggleGroup, ToggleGroupItem } from "@balanse/ui";
+import { Badge, FeedbackState, ToggleGroup, ToggleGroupItem, UserAvatar } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { CalendarClock, CircleDollarSign, UsersRound } from "lucide-react";
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
@@ -44,17 +43,37 @@ export function CoachStudentsPage({ empty = false }: CoachStudentsPageProps) {
   const columns = useMemo<ColumnDef<CoachStudent, unknown>[]>(
     () => [
       {
-        accessorKey: "fullName",
+        id: "fullName",
         header: "Student",
+        // Search matches nickname too: the global filter reads this accessor.
+        accessorFn: (row) => [row.fullName, row.nickname].filter(Boolean).join(" "),
+        sortingFn: (a, b) => a.original.fullName.localeCompare(b.original.fullName),
+        // `primaryLink` wraps the cell in the student link (no nested anchor).
         meta: { primaryLink: (row) => `/students/${row.id}`, mobile: { role: "title" } },
-        cell: ({ row }) => (
-          <Link
-            className="font-medium underline underline-offset-4"
-            href={`/students/${row.original.id}`}
-          >
-            {row.original.fullName}
-          </Link>
-        ),
+        cell: ({ row }) => {
+          const student = row.original;
+          const nickname = student.nickname?.trim();
+          return (
+            <span className="flex min-w-0 items-center gap-3">
+              <span aria-hidden className="shrink-0">
+                <UserAvatar
+                  name={{ firstName: student.firstName, lastName: student.lastName }}
+                  avatarUrl={student.avatarUrl}
+                  seed={student.id}
+                  size="lg"
+                />
+              </span>
+              <span className="min-w-0">
+                <span className="line-clamp-2">{student.fullName}</span>
+                {nickname ? (
+                  <span className="inline-block text-xs font-normal text-muted-foreground italic">
+                    {nickname}
+                  </span>
+                ) : null}
+              </span>
+            </span>
+          );
+        },
       },
       {
         id: "next-or-last",
@@ -163,7 +182,7 @@ export function CoachStudentsPage({ empty = false }: CoachStudentsPageProps) {
               <p className="py-6 text-sm text-muted-foreground">No students in this cohort yet.</p>
             }
             getRowId={(row) => row.id}
-            searchPlaceholder="Search your students"
+            searchPlaceholder="Search name or nickname"
             tableId="coach-students"
             title={scope === "upcoming" ? "Upcoming students" : "Existing students"}
           />

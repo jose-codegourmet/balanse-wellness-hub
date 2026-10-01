@@ -20,7 +20,7 @@ HTTP contracts are #320, documented in [api-routes.md](./api-routes.md). Screens
 
 There is no venue column. An event shows its session's venue (`sessions.venueId` → `venues`); to hold an event off-site, set the session's venue to an `OFFSITE` venue. `venueName` / `venueAddress` were dropped by `20260928090000_venues_on_sessions`, which lifted any non-studio text into `OFFSITE` venues first. See [venues.md](./venues.md).
 
-There is no `slug`. Add one only if a public event surface is approved (#317 Q1).
+There is no `slug` column. Public read is now approved (#343 / #345), superseding "No slug until a public event surface is approved (#317 Q1)": the public URL `/events/<title-slug>/<YYYY-MM-DD>/<eventId>` derives the slug from `title` at render time, and the id is authoritative.
 
 There are no price or capacity columns. Reporting stays on the session (`22-inventory-and-sales-reporting.md`).
 
@@ -61,9 +61,19 @@ Handlers must not insert a second audit row for the same transition. Set the act
 SELECT set_config('app.actor_staff_id', '<staff id>', true);
 ```
 
+## Public read (#345)
+
+Approved. Anonymous and signed-in visitors read events only through `app_public.public_event(p_event_id)` (and the linked-event columns of `app_public.public_session`). Rules:
+
+- Returns a row only for `PUBLISHED` or `CANCELLED` events whose session is `PUBLISHED` or `CANCELLED`. `DRAFT` and `ARCHIVED` return nothing.
+- Effective status is `CANCELLED` whenever the session is `CANCELLED` (R3), even if the event row still says `PUBLISHED`.
+- Never returns `internalNotes` or `isPlaceholder`. Venue comes from the session (`name`, `address`; never venue `notes`).
+
+The table itself stays staff-only. See [rls-policies.md](./rls-policies.md#public-read-functions-345).
+
 ## RLS
 
-No grants to `anon`. `authenticated` select requires `events.read`, `events.manage`, or `is_admin()`. Writes require `events.manage` or `is_admin()`.
+No table grants to `anon`. `authenticated` select requires `events.read`, `events.manage`, or `is_admin()`. Writes require `events.manage` or `is_admin()`.
 
 The #298 trigger `staff_role_permissions_builtin_guard` locks Front Desk and Coach matrices. The migration disables that trigger only for the seed insert, then re-enables it.
 

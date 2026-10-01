@@ -18,7 +18,18 @@ export default async function PortalLayout({ children }: { children: React.React
     <PortalGuard>
       <div className="portal-shell">
         <PortalNav
-          account={profile ? { fullName: profile.fullName, email: profile.email } : undefined}
+          account={
+            profile
+              ? {
+                  id: profile.id,
+                  fullName: profile.fullName,
+                  firstName: profile.firstName,
+                  lastName: profile.lastName,
+                  avatarUrl: profile.avatarUrl,
+                  email: profile.email,
+                }
+              : undefined
+          }
         />
         <div className="portal-workspace">
           <main id="main-content" className="min-w-0 flex-1">

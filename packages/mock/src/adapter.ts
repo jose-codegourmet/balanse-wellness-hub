@@ -8,6 +8,7 @@ import type {
   AdminPaymentTab,
   AdminReportFilters,
   AdminReports,
+  AdminRosterPerson,
   AdminSession,
   AdminSettings,
   AdminStaff,
@@ -27,10 +28,15 @@ import type {
   CursorPage,
   CustomerBooking,
   CustomerEntitlement,
+  CustomerOnboardingAnswers,
   CustomerPolicyForm,
   CustomerProfile,
+  CustomerProfilePatch,
   DuplicateScheduleInput,
   EventStatus,
+  MarketingInsights,
+  MarketingInsightsQuery,
+  OnboardingStatus,
   PaymentAccountType,
   PaymentInstructions,
   PaymentMethod,
@@ -43,22 +49,28 @@ import type {
   PublicClass,
   PublicCoach,
   PublicContent,
+  PublicEventPage,
+  PublicRoster,
   PublicSession,
+  PublicSessionPage,
   RecurringScheduleInput,
   ScheduleGenerationResult,
   SessionReportDrilldown,
   SessionStatus,
+  ShareParams,
   SubstituteCoachOption,
   VenueKind,
 } from "@balanse/domain";
 
 export type AdminPaymentQueueQuery = {
   tab?: AdminPaymentTab;
+  search?: string;
   limit?: number;
   cursor?: string;
 };
 
 export type AdminRequestQueueQuery = {
+  search?: string;
   limit?: number;
   cursor?: string;
 };
@@ -76,19 +88,46 @@ export type MockDataAdapter = {
   getPublicBundles: () => Promise<PublicBundle[]>;
   getPublicBundle: (slugOrId: string) => Promise<PublicBundle | null>;
 
+  /** #343 — null for DRAFT (or unknown) sessions. */
+  getPublicSessionPage: (sessionId: string) => Promise<PublicSessionPage | null>;
+  /** #343 — null for DRAFT / ARCHIVED events. Effective CANCELLED when its session is cancelled. */
+  getPublicEventPage: (eventId: string) => Promise<PublicEventPage | null>;
+  /**
+   * #343 — mirrors `app_public.public_session_roster`: counts for a guest
+   * (`viewer` null), display-only rows for a signed-in customer. Null for DRAFT.
+   */
+  getPublicRoster: (
+    sessionId: string,
+    viewer: { customerId: string } | null,
+  ) => Promise<PublicRoster | null>;
+
   getMe: (customerId: string) => Promise<CustomerProfile | null>;
-  patchMe: (
+  patchMe: (customerId: string, patch: CustomerProfilePatch) => Promise<CustomerProfile>;
+  /** #343 — data URL (JPG/PNG/WEBP ≤ 5 MB) from the cropper, or null to remove. */
+  setMyAvatar: (customerId: string, avatar: { dataUrl: string } | null) => Promise<CustomerProfile>;
+  getMyOnboarding: (customerId: string) => Promise<CustomerOnboardingAnswers | null>;
+  saveMyOnboarding: (
     customerId: string,
-    patch: Partial<Pick<CustomerProfile, "fullName" | "email" | "contactNumber">>,
-  ) => Promise<CustomerProfile>;
+    patch: Partial<Omit<CustomerOnboardingAnswers, "updatedAt">>,
+  ) => Promise<CustomerOnboardingAnswers>;
+  completeOnboarding: (customerId: string) => Promise<CustomerProfile>;
+  skipOnboarding: (customerId: string) => Promise<CustomerProfile>;
+  /** Referral channel recorded at sign-up (for the onboarding heard-from prefill). */
+  getMyReferralChannel: (
+    customerId: string,
+  ) => Promise<import("@balanse/domain").ReferralChannel | null>;
   getMePolicyAcceptances: (customerId: string) => Promise<PolicyAcceptance[]>;
   /** Current versions of the policies admin attached to a customer form. */
   getCustomerFormPolicies: (form: CustomerPolicyForm) => Promise<PolicyDocumentVersion[]>;
   acceptPolicies: (customerId: string, acceptances: PolicyAcceptance[]) => Promise<void>;
   createCustomer: (input: {
-    fullName: string;
+    firstName: string;
+    lastName: string;
     email: string;
     contactNumber: string;
+    authMethod?: "email" | "google";
+    /** Share attribution from the `balanse_share_attr` cookie. Unknown codes are ignored. */
+    attribution?: ShareParams;
   }) => Promise<CustomerProfile>;
 
   getMyEntitlements: (customerId: string) => Promise<CustomerEntitlement[]>;
@@ -256,6 +295,8 @@ export type MockDataAdapter = {
     noShow: number;
     occupancy: number;
     attendanceUtilisation: number;
+    /** #343 — identity per customer id. Onboarding stripped unless the viewer may see it. */
+    people: Record<string, AdminRosterPerson>;
   }>;
   checkIn: (bookingId: string) => Promise<CustomerBooking>;
   markNoShow: (bookingId: string) => Promise<CustomerBooking>;
@@ -285,9 +326,13 @@ export type MockDataAdapter = {
   }) => Promise<AdminStaffRole>;
   archiveAdminStaffRole: (id: string) => Promise<AdminStaffRole>;
   getAdminCustomers: (filters?: {
+    /** Matches name, nickname, email, or contact number. */
     query?: string;
     hasUpcoming?: boolean;
+    onboardingStatus?: OnboardingStatus;
   }) => Promise<AdminCustomer[]>;
+  /** #354 — `reports.marketing.read`. Counts only. */
+  getAdminMarketingInsights: (query: MarketingInsightsQuery) => Promise<MarketingInsights>;
   getAdminCustomer: (id: string) => Promise<AdminCustomerDetail | null>;
   getAdminSettings: () => Promise<AdminSettings>;
   upsertPolicyDocument: (input: {

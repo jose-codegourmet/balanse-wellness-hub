@@ -4,13 +4,15 @@
 PAYMENTS
 [GCash Pending] [Pay at Counter] [Refunds]
 
-Customer | Session | Amount | Hold Expiry
+[Search Customer or Reference]
+Customer | Booking Reference | Session | Amount | Hold Expiry
 Payment proof preview
 [Confirm Payment & Booking] [Reject]
 ```
 
 Pay at Counter: find held booking -> receive cash -> record payment -> confirm -> optionally check in.
 Refund transfer remains manual; app records refund status.
+Search matches customer name or booking reference across the full queue before pagination.
 
 ## Reporting relationship
 

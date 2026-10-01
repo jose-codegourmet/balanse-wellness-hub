@@ -14,6 +14,8 @@ import {
   bookingMood,
 } from "@/components/balanse/portal/BookingSummary";
 import { BookingStatusBanner } from "@/components/balanse/portal/booking-status-banner/BookingStatusBanner";
+import { InviteFriendsCard } from "@/components/balanse/portal/invite-friends-card/InviteFriendsCard";
+import type { InviteFriendsCardProps } from "@/components/balanse/portal/invite-friends-card/InviteFriendsCard.meta";
 import "@/components/balanse/portal/portal-booking.css";
 
 type Advisory = {
@@ -77,9 +79,12 @@ function advisoriesFor(booking: CustomerBooking): Advisory[] {
 export function BookingDetail({
   booking,
   profile,
+  invite = null,
 }: {
   booking: CustomerBooking;
   profile: CustomerProfile | null;
+  /** #350 — built by the route for upcoming active bookings; null hides the card. */
+  invite?: InviteFriendsCardProps["invite"] | null;
 }) {
   const actions = customerBookingActions(booking.status);
   const advisories = advisoriesFor(booking);
@@ -132,6 +137,8 @@ export function BookingDetail({
           ) : null}
         </div>
       </section>
+
+      {invite ? <InviteFriendsCard invite={invite} /> : null}
 
       <section data-section="payment" className="portal-section">
         <div className="portal-section-title">

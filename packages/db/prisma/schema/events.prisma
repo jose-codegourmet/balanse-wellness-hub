@@ -1,6 +1,8 @@
 /// #319 — 1:0..1 operational wrapper on one GymSession.
 /// Price, capacity, schedule, venue, and coach staffing stay on the session.
-/// No slug until a public event surface is approved (#317 Q1).
+/// Public read is approved (#343 / #345) through `app_public.public_event` only (never
+/// `internalNotes` / `isPlaceholder`). No slug column: the URL slug is derived from
+/// `title` at render time.
 model SessionEvent {
   id                   String      @id @default(cuid())
   sessionId            String      @unique

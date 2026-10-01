@@ -17,6 +17,7 @@ export function AdminQueueCard({
   what,
   when,
   status,
+  reference,
   body,
   media,
   actions,
@@ -47,6 +48,11 @@ export function AdminQueueCard({
             <h2 className="min-w-0 font-display text-lg leading-tight wrap-break-word">{who}</h2>
             <StatusBadge status={status} surface="admin" />
           </div>
+          {reference ? (
+            <p className="mt-1 break-all font-mono text-xs font-medium tracking-wide text-foreground">
+              Reference {reference}
+            </p>
+          ) : null}
           <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
             <span className="text-pretty">{what}</span>
             <time className="inline-flex items-center gap-1 text-xs">

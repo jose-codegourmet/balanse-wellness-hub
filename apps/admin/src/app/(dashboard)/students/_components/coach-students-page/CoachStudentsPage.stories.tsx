@@ -22,6 +22,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Includes community members with avatars and nicknames (e.g. "Migs"). */
 export const Upcoming: Story = {};
 
 export const Empty: Story = { args: { empty: true } };

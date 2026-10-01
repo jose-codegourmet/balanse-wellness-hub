@@ -17,3 +17,7 @@ Idempotent upserts:
 - Placeholder policy versions (`isPlaceholder`, body says it is not legal text)
 
 No real customer rows. No invented waiver lawyering.
+
+## Profile identity (#344)
+
+The database seed creates **no** customer profiles (profiles need `auth.users`), so it seeds no nicknames, avatars, onboarding answers or referral codes. Demo customers with nicknames, avatars, roster opt-outs and onboarding answers live in `@balanse/mock` fixtures (#346). If demo customers are ever added to the DB seed, create them through `auth.users` so `handle_new_user` fills `firstName` / `lastName` / `referralCode`, mark demo-only content `isPlaceholder` where the table has that flag, and never store a real photo in `avatars`.

@@ -90,8 +90,12 @@ export const eventFixtures: StoredSessionEvent[] = [
     summary: "Off-site pilates morning. Proceeds support Everlasting Hope Cebu.",
     description:
       "Registration at 7:30 AM, pilates at 8:00 AM, Mandani Bay Garden Area. Capped at the session capacity. This is a placeholder shaped like the 26 Sep 2026 announcement.",
-    posterImage: null,
-    galleryImages: [],
+    // #343 demo: site paths render publicly; signed-upload object keys do not.
+    posterImage: "/assets/marketing/classes/mat-pilates-hero.webp",
+    galleryImages: [
+      "/assets/marketing/classes/mat-pilates-hero.webp",
+      "/assets/marketing/classes/yoga-hero.webp",
+    ],
     beneficiary: "Everlasting Hope Cebu, Banawa",
     whatToBring: "Mat, water, and a towel. The studio floor is not the venue.",
     internalNotes: PRICE_NOTE,

@@ -45,6 +45,7 @@ model GymClass {
   sessions GymSession[]
   marketingCoaches ClassMarketingCoach[]
   bundleApplicability BundleClassApplicability[]
+  interestedProfiles ProfileClassInterest[]
 
   @@index([active])
   @@map("classes")
@@ -149,14 +150,19 @@ model PendingUpload {
   purpose     String
   entityId    String?
   actorId     String?
+  /// #344 — customer actor (e.g. `purpose = 'profile_avatar'`). At most one of
+  /// `actorId` / `profileId` is set (DB check).
+  profileId   String?   @db.Uuid
   confirmedAt DateTime? @db.Timestamptz
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  actor StaffMember? @relation(fields: [actorId], references: [id])
+  actor   StaffMember? @relation(fields: [actorId], references: [id])
+  profile Profile?     @relation(fields: [profileId], references: [id], onDelete: SetNull)
 
   @@index([confirmedAt, createdAt])
   @@index([actorId])
+  @@index([profileId])
   @@map("pending_uploads")
 }
 

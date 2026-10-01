@@ -1,6 +1,6 @@
 "use client";
 
-import { safeAppPath, validateCustomerLogin } from "@balanse/domain";
+import { safeReturnTo, validateCustomerLogin } from "@balanse/domain";
 import { BrandLockup, Button, LocalizedSkeleton, MarketingImage } from "@balanse/ui";
 import { ArrowUpRight, Check } from "lucide-react";
 import Link from "next/link";
@@ -18,7 +18,7 @@ export function CustomerLogin({
 }) {
   const router = useRouter();
   const { setPrincipal } = useMockPrincipal();
-  const returnTo = safeAppPath(returnToProp);
+  const returnTo = safeReturnTo(returnToProp);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<Partial<Record<"email" | "password" | "form", string>>>(

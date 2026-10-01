@@ -9,6 +9,15 @@
         "export PATH=$HOME/.nvm/versions/node/v24.15.0/bin:$PATH && cd $HOME/Documents/web_work/balanse-wellness-hub && pnpm --filter admin dev"
       ],
       "port": 9001
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "export PATH=$HOME/.nvm/versions/node/v24.15.0/bin:$PATH && cd $HOME/Documents/web_work/balanse-wellness-hub && pnpm --filter web dev"
+      ],
+      "port": 9000
     }
   ]
 }

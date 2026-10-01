@@ -25,9 +25,14 @@ import {
 import Link from "next/link";
 import { CoachOption } from "@/components/balanse/coach/coach-option/CoachOption";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
+import {
+  PublicShareAction,
+  sessionShareTarget,
+} from "@/components/balanse/public-share-action/PublicShareAction";
 import { adminNowIso } from "@/lib/clock";
 import { useCancelAdminSession } from "@/lib/query/mutations";
 import {
+  adminClassesQuery,
   adminCoachesQuery,
   adminEventForSessionQuery,
   adminVenuesQuery,
@@ -215,6 +220,8 @@ function SessionDetail({
   const canReadCoaches = useCanAdminRoute("/coaches");
   const coachesQuery = useQuery({ ...adminCoachesQuery(principal), enabled: canReadCoaches });
   const venuesQuery = useQuery(adminVenuesQuery(principal));
+  const classesQuery = useQuery(adminClassesQuery(principal));
+  const classSlug = classesQuery.data?.find((row) => row.id === session.classId)?.slug;
   const canCancelSession = useCanAdminAction("schedule-cancel");
   const canUpdateSession = useCanAdminAction("schedule-update");
   const canOpenRoster = useCanAdminAction("roster-read");
@@ -366,6 +373,11 @@ function SessionDetail({
           </div>
         </div>
       ) : null}
+
+      <div className="grid gap-2">
+        <SectionLabel>Share</SectionLabel>
+        <PublicShareAction target={sessionShareTarget(session, classSlug, venue?.name)} />
+      </div>
 
       <ClassChangeSessionActions session={session} canCancelDirectly={canCancelSession} />
 

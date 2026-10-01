@@ -182,6 +182,9 @@ export const ADMIN_NAV_ACCESS: readonly AdminAccessRequirement[] = [
     superAdminOnly: true,
   },
   nav("reports", "/reports", "Reports", REPORT_READ_PERMISSIONS),
+  nav("marketing-insights", "/marketing-insights", "Marketing insights", [
+    "reports.marketing.read",
+  ]),
   nav("staff", "/staff", "Staff", [...STAFF_READ, ...ROLE_READ]),
   nav("settings", "/settings", "Settings", SETTINGS_MANAGE_PERMISSIONS),
 ];
@@ -297,6 +300,13 @@ export const ADMIN_ROUTE_ACCESS: readonly AdminAccessRequirement[] = [
   route("report-session", "/reports/:sessionId", "Session report", ["reports.session.read"], {
     navId: "reports",
   }),
+  route(
+    "marketing-insights",
+    "/marketing-insights",
+    "Marketing insights",
+    ["reports.marketing.read"],
+    { navId: "marketing-insights" },
+  ),
   route("staff-roles-new", "/staff/roles/new", "Create role", ["roles.manage"], { navId: "staff" }),
   route("staff-role-detail", "/staff/roles/:roleId", "Role detail", ROLE_READ, { navId: "staff" }),
   route("staff-roles", "/staff/roles", "Roles", ROLE_READ, { navId: "staff" }),

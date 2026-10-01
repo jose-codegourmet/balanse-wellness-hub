@@ -275,37 +275,75 @@ export const adminSessionReportQuery = (principal: MockPrincipal, sessionId: str
   });
 };
 
-export const adminPaymentsQueueInfiniteQuery = (principal: MockPrincipal, tab: AdminPaymentTab) => {
+/** Manila calendar range (`YYYY-MM-DD`) → inclusive instant bounds for sign-up dates. */
+export function marketingInsightsBounds(range: { from: string; to: string }) {
+  return {
+    from: `${range.from}T00:00:00.000+08:00`,
+    to: `${range.to}T23:59:59.999+08:00`,
+  };
+}
+
+/** #354 — counts only; gated on `reports.marketing.read` by the mock authorization layer. */
+export const adminMarketingInsightsQuery = (
+  principal: MockPrincipal,
+  range: { from: string; to: string },
+) => {
   const scope = adminAuthScope(principal);
-  return infiniteQueryOptions({
-    queryKey: adminKeys.queues.payments(scope, tab),
-    queryFn: ({ pageParam }) =>
-      withPrincipal(principal, () => getMockAdapter().getAdminPayments({ tab, cursor: pageParam })),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
+  return queryOptions({
+    queryKey: adminKeys.marketingInsights(scope, range),
+    queryFn: () =>
+      withPrincipal(principal, () =>
+        getMockAdapter().getAdminMarketingInsights(marketingInsightsBounds(range)),
+      ),
   });
 };
 
-export const adminCancellationsInfiniteQuery = (principal: MockPrincipal) => {
+/** Active public classes. Used to name onboarding interests for staff without `classes.read`. */
+export const adminPublicClassesQuery = (principal: MockPrincipal) => {
+  const scope = adminAuthScope(principal);
+  return queryOptions({
+    queryKey: adminKeys.publicClasses(scope),
+    queryFn: () => withPrincipal(principal, () => getMockAdapter().getPublicClasses()),
+  });
+};
+
+export const adminPaymentsQueueInfiniteQuery = (
+  principal: MockPrincipal,
+  tab: AdminPaymentTab,
+  search = "",
+) => {
   const scope = adminAuthScope(principal);
   return infiniteQueryOptions({
-    queryKey: adminKeys.queues.cancellations(scope),
+    queryKey: adminKeys.queues.payments(scope, tab, search),
     queryFn: ({ pageParam }) =>
       withPrincipal(principal, () =>
-        getMockAdapter().getAdminCancellationRequests({ cursor: pageParam }),
+        getMockAdapter().getAdminPayments({ tab, search, cursor: pageParam }),
       ),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
 };
 
-export const adminReschedulesInfiniteQuery = (principal: MockPrincipal) => {
+export const adminCancellationsInfiniteQuery = (principal: MockPrincipal, search = "") => {
   const scope = adminAuthScope(principal);
   return infiniteQueryOptions({
-    queryKey: adminKeys.queues.reschedules(scope),
+    queryKey: adminKeys.queues.cancellations(scope, search),
     queryFn: ({ pageParam }) =>
       withPrincipal(principal, () =>
-        getMockAdapter().getAdminRescheduleRequests({ cursor: pageParam }),
+        getMockAdapter().getAdminCancellationRequests({ search, cursor: pageParam }),
+      ),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+  });
+};
+
+export const adminReschedulesInfiniteQuery = (principal: MockPrincipal, search = "") => {
+  const scope = adminAuthScope(principal);
+  return infiniteQueryOptions({
+    queryKey: adminKeys.queues.reschedules(scope, search),
+    queryFn: ({ pageParam }) =>
+      withPrincipal(principal, () =>
+        getMockAdapter().getAdminRescheduleRequests({ search, cursor: pageParam }),
       ),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last) => last.nextCursor ?? undefined,

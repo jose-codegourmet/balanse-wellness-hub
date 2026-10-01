@@ -11,9 +11,10 @@ export const metadata: Metadata = {
 export default async function Page() {
   const principal = await getServerMockPrincipal();
   const adapter = getMockAdapter();
-  const [profile, bookings] = await Promise.all([
+  const [profile, bookings, onboardingAnswers] = await Promise.all([
     adapter.getMe(principal.customerId),
     adapter.getBookings(principal.customerId),
+    adapter.getMyOnboarding(principal.customerId).catch(() => null),
   ]);
 
   if (!profile) {
@@ -25,5 +26,5 @@ export default async function Page() {
     );
   }
 
-  return <PortalHome profile={profile} bookings={bookings} />;
+  return <PortalHome profile={profile} bookings={bookings} onboardingAnswers={onboardingAnswers} />;
 }

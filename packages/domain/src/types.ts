@@ -7,6 +7,7 @@ import type {
   SessionStatus,
   StaffRole,
 } from "./enums";
+import type { OnboardingStatus } from "./onboarding";
 import type { CustomerPolicyForm } from "./policy-forms";
 
 export type PublicClass = {
@@ -80,11 +81,35 @@ export type PublicContent = {
 
 export type CustomerProfile = {
   id: string;
+  firstName: string;
+  /** Required on write; may be empty for legacy single-word names until the customer completes it. */
+  lastName: string;
+  /**
+   * @deprecated Derived `${firstName} ${lastName}`. Kept so existing readers compile;
+   * write `firstName` / `lastName` instead.
+   */
   fullName: string;
+  /** Optional public display name. Display = nickname, else first name. */
+  nickname: string | null;
+  /** Resolved avatar URL (mock: data URL or placeholder asset). `null` → initials. */
+  avatarUrl: string | null;
+  /** When false the customer is counted but not listed on public rosters. */
+  showOnPublicRoster: boolean;
+  /** Code carried by links this customer shares (`?ref=`). */
+  referralCode: string;
+  onboardingStatus: OnboardingStatus;
   email: string;
   contactNumber: string;
   authMethod: "email" | "google";
 };
+
+/** Fields a customer may change on their own profile. */
+export type CustomerProfilePatch = Partial<
+  Pick<
+    CustomerProfile,
+    "firstName" | "lastName" | "nickname" | "email" | "contactNumber" | "showOnPublicRoster"
+  >
+>;
 
 export type PolicyAcceptance = {
   documentName: string;
@@ -184,4 +209,22 @@ export type AdminCustomer = CustomerProfile & {
   bookingCount: number;
   upcomingCount: number;
   lastVisitAt: string | null;
+};
+
+/** Identity shown next to a booking on admin rosters. */
+export type AdminRosterPerson = {
+  customerId: string;
+  firstName: string;
+  lastName: string;
+  nickname: string | null;
+  avatarUrl: string | null;
+  showOnPublicRoster: boolean;
+  /** `null` when the viewer may not see onboarding answers, or none exist. */
+  onboarding: import("./onboarding").CustomerOnboardingAnswers | null;
+};
+
+export type CustomerReferralSummary = {
+  referredBy: { id: string; fullName: string } | null;
+  channel: import("./onboarding").ReferralChannel | null;
+  referrals: { id: string; fullName: string }[];
 };

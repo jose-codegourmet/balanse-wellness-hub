@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { BalanseBookingCalendar } from "@/components/balanse/calendar/BalanseBookingCalendar";
 import { BalanseQuickBooking } from "@/components/balanse/calendar/BalanseQuickBooking";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useViewerShareParams } from "@/modules/share/use-viewer-share-params";
 
 export function ScheduleCalendarSection({
   audience,
@@ -38,6 +39,7 @@ export function ScheduleCalendarSection({
   const [loading, setLoading] = useState(audience === "customer");
   const [loadError, setLoadError] = useState(initialLoadError);
   const [fullId, setFullId] = useState<string | null>(null);
+  const shareParams = useViewerShareParams();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -101,6 +103,7 @@ export function ScheduleCalendarSection({
       loadError={loadError}
       sessionBecameFullId={fullId}
       viewerBookingSessionIds={bookingSessionIds}
+      shareParams={shareParams}
       onRetry={() => void load()}
       initialClassFilter={initialClassFilter}
       initialCoachFilter={initialCoachFilter}

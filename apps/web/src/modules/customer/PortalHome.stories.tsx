@@ -35,6 +35,16 @@ export const AttentionHeavy: Story = {
   },
 };
 
+/** Onboarding finished: the "Complete your profile" card is gone. */
+export const OnboardingCompleted: Story = {
+  args: { profile: { ...ana, onboardingStatus: "completed" } },
+};
+
+/** Skipped after the "You" step: the nudge reads 1 of 4 and resumes at Goals. */
+export const OnboardingSkipped: Story = {
+  args: { profile: { ...ana, nickname: "Annie", onboardingStatus: "skipped" } },
+};
+
 export const EmptyInbox: Story = {
   args: { profile: customers[2], bookings: [] },
 };

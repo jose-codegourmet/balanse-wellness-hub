@@ -24,4 +24,16 @@ type Story = StoryObj<typeof meta>;
 
 export const Student: Story = { args: { customerId: "cust-q-roster-00" } };
 
+/** Community member in Ephraim's Capoeira event: avatar, nickname "Migs", and About answers. */
+export const StudentWithAbout: Story = {
+  args: { customerId: "cust-m-02" },
+  parameters: { nextjs: { navigation: { pathname: "/students/cust-m-02" } } },
+};
+
+/** Not-started onboarding (`cust-m-09`): About shows "Hasn't completed onboarding yet". */
+export const StudentWithoutAnswers: Story = {
+  args: { customerId: "cust-m-09" },
+  parameters: { nextjs: { navigation: { pathname: "/students/cust-m-09" } } },
+};
+
 export const Missing: Story = { args: { customerId: "cust-empty" } };

@@ -49,7 +49,7 @@ const meta: Meta<typeof AdminPageTabs> = {
     docs: {
       description: {
         component:
-          "Responsive admin tabs. Line tabs at md+; sticky chip row below md when mobileBehavior is tabs. Triggers are type=button so they do not submit parent forms. Keyboard: Left/Right/Home/End.",
+          "Responsive admin tabs built from the shared Tabs primitives. Line tabs at md+; sticky chip row below md when mobileBehavior is tabs. Triggers are type=button so they do not submit parent forms. Keyboard: Left/Right/Home/End.",
       },
     },
   },
@@ -115,7 +115,7 @@ export const KeyboardNavigation: Story = {
     docs: {
       description: {
         story:
-          "Focus a tab, then use Left/Right to move, Home/End to jump to the first or last tab, and Enter/Space to activate.",
+          "Focus a tab, then use Left/Right to select another tab or Home/End to select the first or last tab. Enter/Space also activate the focused tab.",
       },
     },
   },

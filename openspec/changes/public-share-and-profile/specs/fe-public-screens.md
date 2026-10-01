@@ -1,0 +1,17 @@
+# Delta: FE public screens
+
+Base: `openspec/specs/fe-public-screens.md`. Merge on archive.
+
+## MODIFIED Requirements
+
+9. General “Book a class” / “Find your next class” entry points use `/book/quick`. Schedule links, footer/closing schedule CTAs, and coach/class-filtered discovery use `/book/calendar`; they must not return visitors to the landing page. Direct links for an already selected session retain `/portal/book/[sessionId]`. The floating mobile booking CTA is hidden on both dedicated booking pages. **Added:** `/book/calendar` session rows and popovers, and the upcoming-sessions list on `/classes/[slug]`, gain a **Details** link to the public session page and a share icon button (accessible label "Share <Class> on <date>"); the existing Book link is unchanged.
+
+## ADDED Requirements
+
+10. Public session page at `/sessions/<class-slug>/<YYYY-MM-DD>/<sessionId>` (date = start date in `Asia/Manila`). The id is authoritative. A stale slug or date returns a 301 to the canonical path and keeps the query string. Session `DRAFT` → 404. It shows hero (class image, occurrence title or class name, availability chip), date/time range with duration, venue name and address (never venue notes), price, capacity / spots left, a "Part of <event title>" link when the session has a published or cancelled event, coaches (photo, name, specialties), a class blurb linking to `/classes/[slug]`, and the "Who's going" block. See `docs/screen-specs/public/12-session-page.md`.
+11. Public event page at `/events/<event-title-slug>/<YYYY-MM-DD>/<eventId>`. The slug is derived from the title at render time. Same canonical-redirect rule. Event `DRAFT` / `ARCHIVED` → 404. It leads with poster (fallback class hero), title, summary, date/time, venue and status, then About, gallery, Supporting (beneficiary), What to bring (each hidden when empty), and reuses the session page's facts, coaches and roster. `internalNotes` is never rendered. See `docs/screen-specs/public/13-event-page.md`.
+12. "Who's going": attendees are `CONFIRMED` and `CHECKED_IN` bookings. Guests see "X going · Y spots left" and **Sign in to see who's going** (`/login?returnTo=` current path + query). Any signed-in customer sees avatars and display names (nickname, else first name), a **You** badge on themselves and **+N others** for opted-out attendees. An opted-out viewer sees their own row marked "Only you can see this". Visibility comes from `getPublicRoster`, not component conditionals.
+13. Booking on public pages reuses `public-cta.ts`: Book this session / Join waitlist / past-cutoff disabled / View my booking. Cancelled → Cancelled banner, no booking button. Past → "This session has ended" (or "This event has ended"), no booking button, roster still shown per viewer rules. Event pages also gate on the registration window ("Registration opens <date>" / "Registration closed") on top of the canonical cutoff.
+14. Public pages expose Share (copy link, native share, QR, QR PNG, poster card). Signed-in customers' links carry `ref=<referralCode>&src=customer`; guests' links carry no params. Cancelled and past pages share the link and QR only.
+15. Metadata: canonical URL, OG image from the shared renderer, and `noindex` when cancelled or past. Published, upcoming pages are indexable.
+16. Screens read `getPublicSessionPage`, `getPublicEventPage` and `getPublicRoster` through `getMockAdapter()`. No `/api/*` or Supabase calls.

@@ -22,7 +22,7 @@ export type CustomerNavId =
   | "achievements";
 
 /** Submenu under the Profile destination (FE-CUS-017). */
-export type CustomerProfileSectionId = "basic" | "account" | "password" | "policies";
+export type CustomerProfileSectionId = "basic" | "about" | "account" | "password" | "policies";
 
 export type AdminNavId =
   | "dashboard"
@@ -42,6 +42,7 @@ export type AdminNavId =
   | "sales"
   | "transactions"
   | "reports"
+  | "marketing-insights"
   | "staff"
   | "settings";
 
@@ -68,7 +69,7 @@ export type CustomerProfileSection = {
   label: string;
   href: string;
   /** Stable `data-section` selector carried over from the single-page profile. */
-  dataSection: "profile" | "account" | "password" | "policy-history";
+  dataSection: "profile" | "about" | "account" | "password" | "policy-history";
 };
 
 /** Public set. Classes have their own catalogue; Schedule opens the booking calendar. */
@@ -100,6 +101,7 @@ export const CUSTOMER_NAV_ITEMS: readonly CustomerNavItem[] = [
  */
 export const CUSTOMER_PROFILE_SECTIONS: readonly CustomerProfileSection[] = [
   { id: "basic", label: "Basic profile", href: "/portal/profile", dataSection: "profile" },
+  { id: "about", label: "About you", href: "/portal/profile/about", dataSection: "about" },
   {
     id: "account",
     label: "Account settings",
@@ -138,6 +140,7 @@ export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
   { id: "sales", label: "Sales", href: "/sales" },
   { id: "transactions", label: "Transactions", href: "/transactions" },
   { id: "reports", label: "Reports", href: "/reports" },
+  { id: "marketing-insights", label: "Marketing insights", href: "/marketing-insights" },
   { id: "staff", label: "Staff", href: "/staff" },
   { id: "settings", label: "Settings", href: "/settings" },
 ] as const;

@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  type PolicyDocumentVersion,
-  PROFILE_FIELDS_NOTE,
-  safeAppPath,
-  toPolicyAcceptances,
-  validateCustomerSignUp,
-} from "@balanse/domain";
-import { getMockAdapter, MOCK_NOW_ISO } from "@balanse/mock";
+import { type PolicyDocumentVersion, PROFILE_FIELDS_NOTE, safeReturnTo } from "@balanse/domain";
 import { BrandLockup, Button, LocalizedSkeleton, MarketingImage } from "@balanse/ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,40 +10,86 @@ import {
   usePolicyAcceptance,
 } from "@/components/balanse/policy-acceptance/PolicyAcceptance";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import {
+  MOCK_GOOGLE_SIGN_UP_IDENTITY,
+  type MockGoogleIdentity,
+} from "../../_lib/mock-google-identity";
+import type { CreateCustomerAccountResult } from "../../_lib/sign-up-actions";
 import { CustomerSignUpForm } from "./customer-sign-up-form/CustomerSignUpForm";
+import {
+  customerSignUpFormDefaultValues,
+  customerSignUpGoogleDefaults,
+} from "./customer-sign-up-form/CustomerSignUpForm.defaults";
+import type {
+  CustomerSignUpFormValues,
+  CustomerSignUpIdentity,
+} from "./customer-sign-up-form/CustomerSignUpForm.schema";
+
+export type CustomerSignUpProps = {
+  forcedStatus?: "submitting";
+  returnTo?: string;
+  /** Current versions of the policies admin attached to sign up. */
+  policies?: PolicyDocumentVersion[];
+  /**
+   * Creates the account. The route passes the `createCustomerAccount` server
+   * action (reads and clears the share-attribution cookie); stories pass a stub.
+   */
+  createAccount: (input: CustomerSignUpIdentity) => Promise<CreateCustomerAccountResult>;
+  /** Mock Google identity used by "Continue with Google". */
+  googleIdentity?: MockGoogleIdentity;
+};
+
+/** Onboarding runs right after sign-up and then returns to `returnTo` (#352). */
+export function welcomePathFor(returnTo: string): string {
+  return `/portal/welcome?returnTo=${encodeURIComponent(returnTo)}`;
+}
 
 export function CustomerSignUp({
   forcedStatus,
   returnTo: returnToProp,
   policies = [],
-}: {
-  forcedStatus?: "submitting";
-  returnTo?: string;
-  /** Current versions of the policies admin attached to sign up. */
-  policies?: PolicyDocumentVersion[];
-}) {
+  createAccount,
+  googleIdentity = MOCK_GOOGLE_SIGN_UP_IDENTITY,
+}: CustomerSignUpProps) {
   const router = useRouter();
   const { setPrincipal } = useMockPrincipal();
-  const returnTo = safeAppPath(returnToProp);
+  const returnTo = safeReturnTo(returnToProp);
   const policyAcceptance = usePolicyAcceptance(policies);
+  const [prefill, setPrefill] = useState<CustomerSignUpFormValues>(customerSignUpFormDefaultValues);
+  const [status, setStatus] = useState<"idle" | "submitting" | "redirecting">(
+    forcedStatus === "submitting" ? "redirecting" : "idle",
+  );
+  const [formError, setFormError] = useState<string | null>(null);
+  const usingGoogle = prefill.authMethod === "google";
+
   function policiesAccepted() {
     if (policyAcceptance.check()) return true;
     document.getElementById("signup-policies")?.scrollIntoView({ block: "center" });
     return false;
   }
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [contactNumber, setContactNumber] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [errors, setErrors] = useState<
-    Partial<Record<"fullName" | "email" | "contactNumber" | "password" | "confirmPassword", string>>
-  >({});
-  const [status, setStatus] = useState<"idle" | "submitting">(
-    forcedStatus === "submitting" ? "submitting" : "idle",
-  );
 
-  if (status === "submitting") {
+  async function submit(values: CustomerSignUpFormValues) {
+    setStatus("submitting");
+    setFormError(null);
+    const result = await createAccount({
+      authMethod: values.authMethod,
+      firstName: values.firstName,
+      lastName: values.lastName,
+      email: values.email,
+      contactNumber: values.contactNumber,
+    });
+    if (!result.ok) {
+      setStatus("idle");
+      setFormError(result.error);
+      return;
+    }
+    setStatus("redirecting");
+    setPrincipal({ role: "customer", customerId: result.customerId });
+    router.push(welcomePathFor(returnTo));
+    router.refresh();
+  }
+
+  if (status === "redirecting") {
     return <LocalizedSkeleton lines={6} label="Creating account" />;
   }
 
@@ -66,39 +105,56 @@ export function CustomerSignUp({
             <h1>Create your account</h1>
             <p>Set up your member profile, then reserve the classes that fit your week.</p>
           </div>
-          {/* {PROFILE_FIELDS_NOTE} */}
           <p className="sr-only">{PROFILE_FIELDS_NOTE}</p>
 
-          <Button
-            type="button"
-            variant="outline"
-            className="mt-8 w-full md:mt-9"
-            onClick={() => {
-              if (!policiesAccepted()) return;
-              setPrincipal({ role: "customer", customerId: "cust-ana" });
-              router.push(returnTo);
-              router.refresh();
-            }}
-          >
-            Continue with Google
-          </Button>
+          {usingGoogle ? (
+            <div className="mt-8 grid gap-2 text-sm md:mt-9" role="status">
+              <p>
+                Signed in with Google as <strong>{prefill.email}</strong>. Check your name and add
+                your contact number to finish.
+              </p>
+              <Button
+                type="button"
+                variant="link"
+                className="self-start"
+                onClick={() => setPrefill(customerSignUpFormDefaultValues)}
+              >
+                Use email instead
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-8 w-full md:mt-9"
+                onClick={() =>
+                  setPrefill(
+                    customerSignUpGoogleDefaults({
+                      givenName: googleIdentity.given_name,
+                      familyName: googleIdentity.family_name,
+                      email: googleIdentity.email,
+                    }),
+                  )
+                }
+              >
+                Continue with Google
+              </Button>
 
-          <div className="my-6 flex w-full items-center gap-3 text-sm text-muted-foreground">
-            <span className="h-px flex-1 bg-border" />
-            or
-            <span className="h-px flex-1 bg-border" />
-          </div>
+              <div className="my-6 flex w-full items-center gap-3 text-sm text-muted-foreground">
+                <span className="h-px flex-1 bg-border" />
+                or
+                <span className="h-px flex-1 bg-border" />
+              </div>
+            </>
+          )}
 
           <CustomerSignUpForm
-            values={{ fullName, email, contactNumber, password, confirmPassword }}
-            errors={errors}
-            onChange={(field, value) => {
-              if (field === "fullName") setFullName(value);
-              if (field === "email") setEmail(value);
-              if (field === "contactNumber") setContactNumber(value);
-              if (field === "password") setPassword(value);
-              if (field === "confirmPassword") setConfirmPassword(value);
-            }}
+            key={prefill.authMethod}
+            defaultValues={prefill}
+            submitting={status === "submitting"}
+            formError={formError}
+            canSubmit={policiesAccepted}
             beforeSubmit={
               <PolicyAcceptance
                 {...policyAcceptance.props}
@@ -106,39 +162,15 @@ export function CustomerSignUp({
                 title="Before you join"
               />
             }
-            onSubmit={() => {
-              const result = validateCustomerSignUp({
-                fullName,
-                email,
-                contactNumber,
-                password,
-                confirmPassword,
-              });
-              const accepted = policiesAccepted();
-              if (!result.ok) {
-                setErrors(result.errors);
-                return;
-              }
-              if (!accepted) return;
-              setErrors({});
-              setStatus("submitting");
-              void getMockAdapter()
-                .createCustomer({ fullName, email, contactNumber })
-                .then(async (profile) => {
-                  await getMockAdapter().acceptPolicies(
-                    profile.id,
-                    toPolicyAcceptances(policies, MOCK_NOW_ISO, "sign_up"),
-                  );
-                  setPrincipal({ role: "customer", customerId: profile.id });
-                  router.push(returnTo === "/portal" ? "/portal" : returnTo);
-                  router.refresh();
-                });
-            }}
+            onSubmit={submit}
           />
 
           <p className="auth-signup-prompt">
             Already have an account?{" "}
-            <Link href="/login" className="auth-inline-link">
+            <Link
+              href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+              className="auth-inline-link"
+            >
               Log In
             </Link>
           </p>

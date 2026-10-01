@@ -9,6 +9,7 @@ import type {
   AdminVenue,
   CursorPage,
   CustomerBooking,
+  CustomerProfile,
   PaymentAccountSummary,
   PaymentMethod,
   PaymentQrCode,
@@ -22,6 +23,7 @@ import {
   ADMIN_REQUEST_QUEUE_SORT,
   addCalendarDays,
   bookingListTab,
+  bookingReference,
   buildAdminCustomerRow,
   buildAdminDashboard,
   buildCoachStudents,
@@ -95,6 +97,21 @@ import {
   withdrawClassChangeRequest,
 } from "./class-change-engine";
 import { classChangeRequestFixtures } from "./class-change-fixtures";
+import {
+  applyProfilePatch,
+  buildAdminRosterPeople,
+  buildMarketingInsights,
+  buildPublicEventPage,
+  buildPublicRoster,
+  buildPublicSessionPage,
+  type CommunityState,
+  customerReferralSummary,
+  generateReferralCode,
+  mergeOnboarding,
+  resolveSignupAttribution,
+  validateAvatarDataUrl,
+} from "./community-engine";
+import { onboardingFixtures, referralFixtures, signupDates } from "./community-fixtures";
 import { deriveGrossSalesSeries } from "./dashboard-series";
 import {
   archiveAdminEvent,
@@ -143,6 +160,14 @@ function clone<T>(value: T): T {
 
 function requestQueueKey(row: CustomerBooking): string {
   return row.requestCreatedAt ?? row.createdAt;
+}
+
+function matchesQueueSearch(row: CustomerBooking, search?: string): boolean {
+  const term = search?.trim().toLowerCase();
+  if (!term) return true;
+  return [row.customerName, row.id, bookingReference(row.id)].some((value) =>
+    value.toLowerCase().includes(term),
+  );
 }
 
 function sortRequestQueue(rows: CustomerBooking[]): CustomerBooking[] {
@@ -323,6 +348,20 @@ export function createMemoryAdapter(): MockDataAdapter {
   let bookings = seedBookings.map((b) => clone(b));
   let sessions = seedSessions.map((s) => clone(s));
   const profiles = customers.map((c) => clone(c));
+  const community: CommunityState = {
+    onboarding: clone(onboardingFixtures),
+    referrals: clone(referralFixtures),
+    signupAt: clone(signupDates),
+  };
+  const onboardingFor = (customerId: string) => {
+    const answers = community.onboarding[customerId];
+    return answers ? clone(answers) : null;
+  };
+  const findProfile = (customerId: string) => {
+    const profile = profiles.find((p) => p.id === customerId);
+    if (!profile) throw new Error("Profile not found");
+    return profile;
+  };
   const acceptances: Record<string, PolicyAcceptance[]> = clone(seedAcceptances);
   let classes = seedClasses.map((c) => clone(c));
   let coaches = seedCoaches.map((c) => clone(c));
@@ -603,15 +642,103 @@ export function createMemoryAdapter(): MockDataAdapter {
         return clone(toPublicBundle(bundle));
       }),
 
+    getPublicSessionPage: (sessionId) =>
+      applyMockEffects(
+        () => {
+          const session = sessions.find((s) => s.id === sessionId);
+          if (!session || session.status === "DRAFT") return null;
+          return clone(
+            buildPublicSessionPage(session, withFullOverlay(asPublic(session)), {
+              classes,
+              coaches,
+              venues,
+              events: eventState.events,
+            }),
+          );
+        },
+        { publicSessions: true },
+      ),
+    getPublicEventPage: (eventId) =>
+      applyMockEffects(
+        () => {
+          const event = eventState.events.find((row) => row.id === eventId);
+          if (!event || event.status === "DRAFT" || event.status === "ARCHIVED") return null;
+          const session = sessions.find((s) => s.id === event.sessionId);
+          if (!session || session.status === "DRAFT") return null;
+          const sessionPage = buildPublicSessionPage(session, withFullOverlay(asPublic(session)), {
+            classes,
+            coaches,
+            venues,
+            events: eventState.events,
+          });
+          return clone(buildPublicEventPage(event, sessionPage));
+        },
+        { publicSessions: true },
+      ),
+    getPublicRoster: (sessionId, viewer) =>
+      applyMockEffects(
+        () => {
+          const session = sessions.find((s) => s.id === sessionId);
+          if (!session || session.status === "DRAFT") return null;
+          return buildPublicRoster({
+            session: withFullOverlay(asPublic(session)),
+            bookings,
+            profiles,
+            viewerCustomerId: viewer?.customerId ?? null,
+          });
+        },
+        { publicSessions: true },
+      ),
+
     getMe: (customerId) =>
-      applyMockEffects(() => profiles.find((p) => p.id === customerId) ?? null),
-    patchMe: (customerId, patch) =>
       applyMockEffects(() => {
         const profile = profiles.find((p) => p.id === customerId);
-        if (!profile) throw new Error("Profile not found");
-        Object.assign(profile, patch);
+        return profile ? clone(profile) : null;
+      }),
+    patchMe: (customerId, patch) =>
+      applyMockEffects(() => {
+        const profile = findProfile(customerId);
+        applyProfilePatch(profile, patch);
+        for (const booking of bookings) {
+          if (booking.customerId === customerId) booking.customerName = profile.fullName;
+        }
         return clone(profile);
       }),
+    setMyAvatar: (customerId, avatar) =>
+      applyMockEffects(() => {
+        const profile = findProfile(customerId);
+        if (avatar) validateAvatarDataUrl(avatar.dataUrl);
+        profile.avatarUrl = avatar?.dataUrl ?? null;
+        return clone(profile);
+      }),
+    getMyOnboarding: (customerId) =>
+      applyMockEffects(() => {
+        findProfile(customerId);
+        const answers = community.onboarding[customerId];
+        return answers ? clone(answers) : null;
+      }),
+    saveMyOnboarding: (customerId, patch) =>
+      applyMockEffects(() => {
+        const profile = findProfile(customerId);
+        const next = mergeOnboarding(community.onboarding[customerId], patch, MOCK_NOW_ISO);
+        community.onboarding[customerId] = next;
+        if (profile.onboardingStatus !== "completed") profile.onboardingStatus = "in_progress";
+        return clone(next);
+      }),
+    completeOnboarding: (customerId) =>
+      applyMockEffects(() => {
+        const profile = findProfile(customerId);
+        profile.onboardingStatus = "completed";
+        return clone(profile);
+      }),
+    skipOnboarding: (customerId) =>
+      applyMockEffects(() => {
+        const profile = findProfile(customerId);
+        if (profile.onboardingStatus !== "completed") profile.onboardingStatus = "skipped";
+        return clone(profile);
+      }),
+    getMyReferralChannel: (customerId) =>
+      applyMockEffects(() => community.referrals[customerId]?.channel ?? null),
     getMePolicyAcceptances: (customerId) =>
       applyMockEffects(() => clone(acceptances[customerId] ?? [])),
     getCustomerFormPolicies: (form) =>
@@ -627,15 +754,30 @@ export function createMemoryAdapter(): MockDataAdapter {
       }),
     createCustomer: (input) =>
       applyMockEffects(() => {
-        const profile = {
-          id: `cust-${input.email.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-          fullName: input.fullName,
-          email: input.email,
+        const id = `cust-${input.email.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+        const profile: CustomerProfile = {
+          id,
+          firstName: "",
+          lastName: "",
+          fullName: "",
+          nickname: null,
+          avatarUrl: null,
+          showOnPublicRoster: true,
+          referralCode: generateReferralCode(
+            new Set(profiles.map((row) => row.referralCode)),
+            input.email.toLowerCase(),
+          ),
+          onboardingStatus: "not_started",
+          email: input.email.trim(),
           contactNumber: input.contactNumber,
-          authMethod: "email" as const,
+          authMethod: input.authMethod ?? "email",
         };
+        applyProfilePatch(profile, { firstName: input.firstName, lastName: input.lastName });
+        const referral = resolveSignupAttribution(input.attribution, profiles, profile.email);
         profiles.push(profile);
         acceptances[profile.id] = [];
+        community.signupAt[profile.id] = MOCK_NOW_ISO;
+        if (referral) community.referrals[profile.id] = referral;
         return clone(profile);
       }),
 
@@ -823,7 +965,7 @@ export function createMemoryAdapter(): MockDataAdapter {
     getCoachStudents: (coachId) =>
       applyMockEffects(() => {
         if (!coachId) return [];
-        return buildCoachStudents(profiles, bookings, coachId, MOCK_NOW_ISO).map(
+        return buildCoachStudents(profiles, bookings, coachId, MOCK_NOW_ISO, onboardingFor).map(
           ({ upcoming: _upcoming, attendance: _attendance, ...student }) => student,
         );
       }),
@@ -831,7 +973,7 @@ export function createMemoryAdapter(): MockDataAdapter {
       applyMockEffects(() => {
         if (!coachId) return null;
         return coachStudentById(
-          buildCoachStudents(profiles, bookings, coachId, MOCK_NOW_ISO),
+          buildCoachStudents(profiles, bookings, coachId, MOCK_NOW_ISO, onboardingFor),
           customerId,
         );
       }),
@@ -862,7 +1004,10 @@ export function createMemoryAdapter(): MockDataAdapter {
         }
         if (emptyQueues()) return EMPTY_CURSOR_PAGE;
         const tab = query.tab ?? "gcash";
-        const sorted = sortPaymentTab(filterPaymentQueue(bookings, tab), tab).map((b) => clone(b));
+        const sorted = sortPaymentTab(
+          filterPaymentQueue(bookings, tab).filter((row) => matchesQueueSearch(row, query.search)),
+          tab,
+        ).map((b) => clone(b));
         return sliceCursorPage(sorted, {
           sort: paymentQueueSort(tab),
           limit: query.limit,
@@ -1220,7 +1365,10 @@ export function createMemoryAdapter(): MockDataAdapter {
         }
         if (emptyQueues()) return EMPTY_CURSOR_PAGE;
         const sorted = sortRequestQueue(
-          bookings.filter((b) => b.status === "CANCELLATION_REQUESTED"),
+          bookings.filter(
+            (row) =>
+              row.status === "CANCELLATION_REQUESTED" && matchesQueueSearch(row, query.search),
+          ),
         ).map((b) => clone(b));
         return sliceCursorPage(sorted, {
           sort: ADMIN_REQUEST_QUEUE_SORT,
@@ -1258,7 +1406,9 @@ export function createMemoryAdapter(): MockDataAdapter {
         }
         if (emptyQueues()) return EMPTY_CURSOR_PAGE;
         const sorted = sortRequestQueue(
-          bookings.filter((b) => b.status === "RESCHEDULE_REQUESTED"),
+          bookings.filter(
+            (row) => row.status === "RESCHEDULE_REQUESTED" && matchesQueueSearch(row, query.search),
+          ),
         ).map((b) => clone(b));
         return sliceCursorPage(sorted, {
           sort: ADMIN_REQUEST_QUEUE_SORT,
@@ -1329,6 +1479,7 @@ export function createMemoryAdapter(): MockDataAdapter {
           noShow: inventory.noShow,
           occupancy: inventory.confirmed / Math.max(1, session.capacity),
           attendanceUtilisation: inventory.checkedIn / Math.max(1, session.capacity),
+          people: buildAdminRosterPeople(rows, profiles, community),
         };
       }),
     checkIn: (bookingId) =>
@@ -1528,15 +1679,24 @@ export function createMemoryAdapter(): MockDataAdapter {
           staffRows,
         );
       }),
+    getAdminMarketingInsights: (query) =>
+      applyMockEffects(() =>
+        buildMarketingInsights({ profiles, classes, state: community, query }),
+      ),
     getAdminCustomers: (filters) =>
       applyMockEffects(() => {
-        const rows = profiles.map((p) => buildAdminCustomerRow(p, bookings));
+        const rows = profiles.map((p) => buildAdminCustomerRow(clone(p), bookings));
         return rows.filter((row) => {
           if (filters?.hasUpcoming && row.upcomingCount === 0) return false;
+          if (filters?.onboardingStatus) {
+            // "skipped" filter also covers in-progress-then-skipped; in_progress counts as not done.
+            if (row.onboardingStatus !== filters.onboardingStatus) return false;
+          }
           if (filters?.query) {
             const q = filters.query.toLowerCase();
             if (
               !row.fullName.toLowerCase().includes(q) &&
+              !(row.nickname ?? "").toLowerCase().includes(q) &&
               !row.email.toLowerCase().includes(q) &&
               !row.contactNumber.toLowerCase().includes(q)
             ) {
@@ -1551,9 +1711,11 @@ export function createMemoryAdapter(): MockDataAdapter {
         const profile = profiles.find((p) => p.id === id);
         if (!profile) return null;
         const mine = bookings.filter((b) => b.customerId === id);
-        const row = buildAdminCustomerRow(profile, bookings);
+        const row = buildAdminCustomerRow(clone(profile), bookings);
         return {
           ...row,
+          onboarding: onboardingFor(id),
+          referral: customerReferralSummary(id, profiles, community),
           upcoming: mine.filter((b) => bookingListTab(b.status) === "upcoming"),
           pending: mine.filter((b) => bookingListTab(b.status) === "pending"),
           history: mine.filter((b) => bookingListTab(b.status) === "history"),

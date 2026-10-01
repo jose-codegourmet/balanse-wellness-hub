@@ -21,10 +21,12 @@ async function seedProfile(fullName = "Test User") {
     `${id}@example.test`,
     fullName,
   );
+  const [firstName = "Test", ...rest] = fullName.trim().split(" ");
+  const lastName = rest.join(" ");
   await prisma.profile.upsert({
     where: { id },
-    create: { id, fullName, email: `${id}@example.test`, contactNumber: "0999" },
-    update: { fullName },
+    create: { id, firstName, lastName, email: `${id}@example.test`, contactNumber: "0999" },
+    update: { firstName, lastName },
   });
   return id;
 }

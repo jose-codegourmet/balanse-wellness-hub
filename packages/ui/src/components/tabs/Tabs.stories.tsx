@@ -59,6 +59,27 @@ export const Line: Story = {
   ),
 };
 
+export const Chips: Story = {
+  render: (args) => (
+    <Tabs {...args} defaultValue="pending" className="max-w-md">
+      <TabsList variant="chip" aria-label="Booking status" activateOnFocus>
+        <TabsTrigger value="pending" variant="chip">
+          Pending
+        </TabsTrigger>
+        <TabsTrigger value="confirmed" variant="chip">
+          Confirmed
+        </TabsTrigger>
+        <TabsTrigger value="waitlisted" variant="chip">
+          Waitlisted
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="pending">Pending bookings.</TabsContent>
+      <TabsContent value="confirmed">Confirmed bookings.</TabsContent>
+      <TabsContent value="waitlisted">Waitlisted bookings.</TabsContent>
+    </Tabs>
+  ),
+};
+
 export const Vertical: Story = {
   render: (args) => (
     <Tabs {...args} defaultValue="profile" orientation="vertical" className="max-w-lg">

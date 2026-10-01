@@ -14,6 +14,10 @@ import type { ReactNode } from "react";
 import { CoachOption } from "@/components/balanse/coach/coach-option/CoachOption";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import {
+  eventShareTarget,
+  PublicShareAction,
+} from "@/components/balanse/public-share-action/PublicShareAction";
+import {
   adminBookingsQuery,
   adminClassesQuery,
   adminEventDetailQuery,
@@ -135,6 +139,12 @@ export function EventDetailPage({ eventId, loading, error, preview }: EventDetai
       breadcrumb={[{ label: "Events", href: "/events" }, { label: event.title }]}
       actions={
         <div className="flex flex-wrap items-center gap-2">
+          <PublicShareAction
+            target={eventShareTarget(event)}
+            label="Share event"
+            size="default"
+            className="flex flex-wrap items-center gap-2"
+          />
           <AdminCan action="events-manage">
             <Button
               nativeButton={false}

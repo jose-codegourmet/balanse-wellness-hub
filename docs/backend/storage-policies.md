@@ -5,6 +5,7 @@ Buckets from INF-004. Object key prefixes:
 - `payment-proofs/{bookingId}/{uuid}.ext` — private
 - `coach-photos/{coachId}/{uuid}.ext` — public read
 - `marketing-assets/{page}/{slug}.ext` — public read
+- `avatars/{profileId}/{cuid}.webp` — private (#344)
 
 MIME/size limits stay on `storage.buckets` (server-enforced). Upsert of payment proofs needs INSERT + SELECT + UPDATE (granted to the owning customer).
 
@@ -15,6 +16,17 @@ MIME/size limits stay on `storage.buckets` (server-enforced). Upsert of payment 
 | Super Admin (`is_admin()`) | all + signed URLs later (BE-037) | write/delete |
 | Front Desk (`payments.read` / `payments.review`) | payment-proofs read; review writes | — |
 | `coaches.manage` / `settings.content.manage` | — | matching bucket writes |
+
+`avatars` (#344, migration `20261001090100_be344_extend_profile_identity`):
+
+| Principal | avatars |
+| --- | --- |
+| anon | deny |
+| customer | select / insert / update / delete only where `(storage.foldername(name))[1] = 'avatars'` and `[2] = auth.uid()` |
+| other customers | deny (no customer-to-customer read) |
+| `customers.read` staff / Super Admin | select |
+
+Policies: `avatars_owner_select`, `avatars_owner_insert`, `avatars_owner_update`, `avatars_owner_delete`, `avatars_staff_read`. Public roster avatars are **never** read through these policies: the server mints signed URLs with the service role for `avatar_key` values returned by `app_public.public_session_roster` (#345). `profiles.avatarKey` has a check constraint that pins the key to `avatars/<own id>/…`, so a customer cannot point their profile at someone else's object.
 
 Admin review signed URLs are **not** minted in this schema PR; the SQL policy allows admin SELECT so a later service-role signer can work.
 

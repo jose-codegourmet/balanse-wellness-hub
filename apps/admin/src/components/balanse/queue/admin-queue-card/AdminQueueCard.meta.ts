@@ -6,6 +6,8 @@ export type AdminQueueCardProps = {
   what: string;
   when: string;
   status: CustomerStatusKey;
+  /** Customer-facing booking reference, shown for staff lookup. */
+  reference?: string;
   body?: React.ReactNode;
   media?: React.ReactNode;
   actions?: React.ReactNode;

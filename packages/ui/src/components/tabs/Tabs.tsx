@@ -7,6 +7,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import * as React from "react";
 import { cn } from "../../lib/utils";
 import { Button } from "../button/Button";
+import { chipVariants } from "../chip/Chip";
 
 function Tabs({ className, orientation = "horizontal", ...props }: TabsPrimitive.Root.Props) {
   return (
@@ -26,6 +27,7 @@ const tabsListVariants = cva(
       variant: {
         default: "bg-muted",
         line: "gap-1 bg-transparent",
+        chip: "gap-2 rounded-none bg-transparent p-0 group-data-horizontal/tabs:h-auto",
       },
     },
     defaultVariants: {
@@ -56,11 +58,24 @@ const tabsTriggerClassName = cn(
   "after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
 );
 
-function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
+function TabsTrigger({
+  className,
+  variant = "default",
+  ...props
+}: TabsPrimitive.Tab.Props & { variant?: "default" | "chip" }) {
   return (
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
-      className={cn(tabsTriggerClassName, className)}
+      data-variant={variant}
+      className={cn(
+        variant === "chip"
+          ? cn(
+              chipVariants({ selected: false }),
+              "snap-start data-active:border-primary data-active:bg-primary data-active:text-primary-foreground",
+            )
+          : tabsTriggerClassName,
+        className,
+      )}
       {...props}
     />
   );

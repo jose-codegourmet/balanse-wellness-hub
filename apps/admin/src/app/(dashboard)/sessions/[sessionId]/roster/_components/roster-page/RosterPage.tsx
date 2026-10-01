@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  type AdminRosterPerson,
   type BookingStatus,
   type CustomerBooking,
   formatSessionDate,
@@ -11,8 +12,7 @@ import {
 } from "@balanse/domain";
 import { isMockAuthorizationError } from "@balanse/mock";
 import {
-  Avatar,
-  AvatarFallback,
+  Badge,
   Button,
   Chip,
   CoachPhoto,
@@ -27,16 +27,26 @@ import {
   SheetHeader,
   SheetTitle,
   StatusBadge,
+  UserAvatar,
 } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
-import { Check, Hourglass, Search, ShieldCheck, X } from "lucide-react";
+import { Check, EyeOff, Hourglass, Search, ShieldCheck, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { AccessDenied } from "@/components/balanse/access-denied/AccessDenied";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
+import {
+  CustomerAboutCard,
+  type InterestClass,
+  useInterestClassLookup,
+} from "@/components/balanse/customer/customer-about-card/CustomerAboutCard";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
+import {
+  PublicShareAction,
+  sessionShareTarget,
+} from "@/components/balanse/public-share-action/PublicShareAction";
 import { useCheckIn, useMarkNoShow } from "@/lib/query/mutations";
-import { adminSessionRosterQuery } from "@/lib/query/queries";
+import { adminPublicClassesQuery, adminSessionRosterQuery } from "@/lib/query/queries";
 import { AdminCan, useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
@@ -66,6 +76,8 @@ const FILTERS: { id: GroupFilter; label: string }[] = [
 
 type Guest = {
   row: CustomerBooking;
+  /** #353 identity (avatar, names, opt-out, onboarding when the viewer may see it). */
+  person: AdminRosterPerson | null;
   group: RosterGroup;
   /** 1-based FIFO position, waitlist only. */
   position?: number;
@@ -80,14 +92,26 @@ function groupForStatus(status: BookingStatus): RosterGroup {
   return "held";
 }
 
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
+function guestName(guest: Guest): string {
+  if (guest.person) {
+    const full = `${guest.person.firstName} ${guest.person.lastName}`.trim();
+    if (full) return full;
+  }
+  return guest.row.customerName ?? "Guest";
 }
+
+function guestNickname(guest: Guest): string | null {
+  return guest.person?.nickname?.trim() || null;
+}
+
+function isHiddenOnPublicRoster(guest: Guest): boolean {
+  return guest.person?.showOnPublicRoster === false;
+}
+
+type InterestLookup = {
+  classes: Readonly<Record<string, InterestClass>>;
+  classHref: ((classId: string) => string | null) | null;
+};
 
 function guestCaption(guest: Guest): string {
   return guest.group === "waitlist" && guest.position
@@ -100,12 +124,14 @@ export function RosterPage({ sessionId, initialGuestId = null }: RosterPageProps
   const canReadPayments = useCanAdminRoute("/payments");
   const canOpenCoach = useCanAdminRoute("/coaches");
   const rosterQuery = useQuery(adminSessionRosterQuery(principal, sessionId));
+  const publicClassesQuery = useQuery(adminPublicClassesQuery(principal));
   const checkIn = useCheckIn();
   const markNoShow = useMarkNoShow();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<GroupFilter>("all");
   const [openId, setOpenId] = useState<string | null>(initialGuestId);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const interestClasses = useInterestClassLookup();
 
   if (rosterQuery.isPending && !rosterQuery.data) {
     return (
@@ -139,11 +165,17 @@ export function RosterPage({ sessionId, initialGuestId = null }: RosterPageProps
   }
 
   const roster = rosterQuery.data;
+  const personFor = (row: CustomerBooking) => roster.people?.[row.customerId] ?? null;
   const guests: Guest[] = [
-    ...roster.confirmed.map<Guest>((row) => ({ row, group: groupForStatus(row.status) })),
-    ...roster.held.map<Guest>((row) => ({ row, group: "held" })),
+    ...roster.confirmed.map<Guest>((row) => ({
+      row,
+      person: personFor(row),
+      group: groupForStatus(row.status),
+    })),
+    ...roster.held.map<Guest>((row) => ({ row, person: personFor(row), group: "held" })),
     ...roster.waitlisted.map<Guest>((row, index) => ({
       row,
+      person: personFor(row),
       group: "waitlist",
       position: index + 1,
     })),
@@ -151,7 +183,7 @@ export function RosterPage({ sessionId, initialGuestId = null }: RosterPageProps
     (a, b) =>
       GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group) ||
       (a.position ?? 0) - (b.position ?? 0) ||
-      (a.row.customerName ?? "").localeCompare(b.row.customerName ?? ""),
+      guestName(a).localeCompare(guestName(b)),
   );
   const counts = Object.fromEntries(
     FILTERS.map(({ id }) => [
@@ -163,7 +195,7 @@ export function RosterPage({ sessionId, initialGuestId = null }: RosterPageProps
   const visible = guests.filter(
     (guest) =>
       (filter === "all" || guest.group === filter) &&
-      (!query || (guest.row.customerName ?? "").toLowerCase().includes(query)),
+      (!query || `${guestName(guest)} ${guestNickname(guest) ?? ""}`.toLowerCase().includes(query)),
   );
   const openGuest = openId ? (guests.find((guest) => guest.row.id === openId) ?? null) : null;
 
@@ -191,6 +223,16 @@ export function RosterPage({ sessionId, initialGuestId = null }: RosterPageProps
       title={sessionDisplayName(roster.session)}
       description={`${formatSessionDate(roster.session.startsAt)} · ${formatSessionTimeRange(roster.session.startsAt, roster.session.endsAt)}`}
       breadcrumb={BREADCRUMB}
+      actions={
+        <PublicShareAction
+          target={sessionShareTarget(
+            roster.session,
+            publicClassesQuery.data?.find((row) => row.id === roster.session.classId)?.slug,
+          )}
+          size="default"
+          className="flex flex-wrap items-center gap-2"
+        />
+      }
       stats={<RosterStats roster={roster} />}
     >
       <div className="grid gap-8">
@@ -258,7 +300,7 @@ export function RosterPage({ sessionId, initialGuestId = null }: RosterPageProps
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search guests"
-                aria-label="Search guests by name"
+                aria-label="Search guests by name or nickname"
                 className="pl-9"
               />
             </div>
@@ -304,6 +346,7 @@ export function RosterPage({ sessionId, initialGuestId = null }: RosterPageProps
         guest={openGuest}
         onClose={() => setOpenId(null)}
         showPayment={canReadPayments}
+        interestClasses={interestClasses}
         busy={busyId !== null}
         checkingIn={openGuest !== null && busyId === openGuest.row.id && checkIn.isPending}
         onCheckIn={(id) =>
@@ -436,31 +479,62 @@ function GuestMark({ guest }: { guest: Guest }) {
 }
 
 function GuestAvatar({ guest, className }: { guest: Guest; className?: string }) {
-  const name = guest.row.customerName ?? "Guest";
   const faded = guest.group === "no_show";
+  const name = guest.person
+    ? { firstName: guest.person.firstName, lastName: guest.person.lastName }
+    : { firstName: guestName(guest), lastName: "" };
   return (
-    <Avatar className={cn("size-16", className)}>
-      <AvatarFallback
+    <span aria-hidden className={cn("relative inline-flex size-16 shrink-0", className)}>
+      <UserAvatar
+        name={name}
+        avatarUrl={guest.person?.avatarUrl}
+        seed={guest.row.customerId}
         className={cn(
-          "bg-secondary text-base font-semibold text-foreground",
-          faded && "opacity-50 line-through decoration-destructive/60",
+          "size-full text-base font-semibold",
+          faded && "opacity-50 grayscale line-through decoration-destructive/60",
         )}
-      >
-        {initials(name)}
-      </AvatarFallback>
+      />
       <GuestMark guest={guest} />
-    </Avatar>
+    </span>
+  );
+}
+
+/** Small eye-off mark so the front desk doesn't promise public visibility. */
+function HiddenOnPublicRoster({ withLabel = false }: { withLabel?: boolean }) {
+  if (withLabel) {
+    return (
+      <Badge appearance="soft" size="sm" variant="neutral">
+        <EyeOff aria-hidden className="size-3" />
+        Hidden on public roster
+      </Badge>
+    );
+  }
+  return (
+    <span className="inline-flex items-center" title="Hidden on public roster">
+      <EyeOff aria-hidden className="size-3" />
+      <span className="sr-only">Hidden on public roster</span>
+    </span>
   );
 }
 
 function GuestTile({ guest, onOpen }: { guest: Guest; onOpen: () => void }) {
-  const name = guest.row.customerName ?? "Guest";
+  const name = guestName(guest);
+  const nickname = guestNickname(guest);
+  const hidden = isHiddenOnPublicRoster(guest);
   const caption = guestCaption(guest);
+  const spoken = [
+    name,
+    nickname ? `goes by ${nickname}` : null,
+    caption,
+    hidden ? "hidden on public roster" : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
   return (
     <button
       type="button"
       onClick={onOpen}
-      aria-label={`${name}, ${caption}. Open guest details`}
+      aria-label={`${spoken}. Open guest details`}
       className="group/guest flex w-full flex-col items-center gap-2 rounded-xl px-1 py-2 text-center outline-none transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
     >
       <GuestAvatar
@@ -468,8 +542,14 @@ function GuestTile({ guest, onOpen }: { guest: Guest; onOpen: () => void }) {
         className="transition-transform group-hover/guest:scale-[1.04] motion-reduce:transition-none motion-reduce:transform-none"
       />
       <span className="w-full">
-        <span className="line-clamp-1 text-sm font-medium">{name}</span>
-        <span className="block text-xs text-muted-foreground">{caption}</span>
+        <span className="line-clamp-2 text-sm leading-snug font-medium">{name}</span>
+        {nickname ? (
+          <span className="line-clamp-1 text-xs text-muted-foreground italic">{nickname}</span>
+        ) : null}
+        <span className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
+          {caption}
+          {hidden ? <HiddenOnPublicRoster /> : null}
+        </span>
       </span>
     </button>
   );
@@ -479,6 +559,7 @@ function GuestSheet({
   guest,
   onClose,
   showPayment,
+  interestClasses,
   busy,
   checkingIn,
   onCheckIn,
@@ -487,12 +568,14 @@ function GuestSheet({
   guest: Guest | null;
   onClose: () => void;
   showPayment: boolean;
+  interestClasses: InterestLookup;
   busy: boolean;
   checkingIn: boolean;
   onCheckIn: (bookingId: string) => void;
   onNoShow: (bookingId: string) => void;
 }) {
-  const name = guest?.row.customerName ?? "Guest";
+  const name = guest ? guestName(guest) : "Guest";
+  const nickname = guest ? guestNickname(guest) : null;
   return (
     <Sheet open={guest !== null} onOpenChange={(open) => !open && onClose()}>
       <SheetContent
@@ -505,7 +588,11 @@ function GuestSheet({
               <GuestAvatar guest={guest} className="size-14" />
               <div className="min-w-0">
                 <SheetTitle className="font-display text-xl">{name}</SheetTitle>
-                <SheetDescription>{guestCaption(guest)}</SheetDescription>
+                <SheetDescription>
+                  {nickname ? <span className="italic">{nickname}</span> : null}
+                  {nickname ? " · " : null}
+                  {guestCaption(guest)}
+                </SheetDescription>
               </div>
             </SheetHeader>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 text-sm">
@@ -515,7 +602,15 @@ function GuestSheet({
                   Payment: {paymentStatusLabel(guest.row.paymentStatus)}
                 </span>
               ) : null}
+              {isHiddenOnPublicRoster(guest) ? <HiddenOnPublicRoster withLabel /> : null}
             </div>
+            <CustomerAboutCard
+              variant="compact"
+              className="px-4"
+              onboarding={guest.person?.onboarding ?? null}
+              classes={interestClasses.classes}
+              classHref={interestClasses.classHref}
+            />
             <div className="flex flex-wrap gap-x-4 gap-y-2 px-4 text-sm">
               <AdminCan href="/bookings">
                 <Link className="underline underline-offset-4" href={`/bookings/${guest.row.id}`}>

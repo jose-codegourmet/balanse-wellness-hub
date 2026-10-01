@@ -12,7 +12,14 @@ const meta = {
   component: BalansePortalNavigation,
   parameters: { layout: "fullscreen" },
   args: {
-    account: { fullName: "Ana Delgado", email: "ana@example.com" },
+    account: {
+      id: "cust-ana",
+      fullName: "Ana Delgado",
+      firstName: "Ana",
+      lastName: "Delgado",
+      email: "ana@example.com",
+      avatarUrl: null,
+    },
   },
   decorators: [
     (Story) => (
@@ -28,6 +35,20 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Sidebar: Story = {};
+
+/** With a photo (#351): the avatar replaces the initials in the footer and mobile header. */
+export const WithPhoto: Story = {
+  args: {
+    account: {
+      id: "cust-ben",
+      fullName: "Ben Santos",
+      firstName: "Ben",
+      lastName: "Santos",
+      email: "ben@example.com",
+      avatarUrl: "/assets/placeholders/avatars/avatar-02.svg",
+    },
+  },
+};
 
 /** Before the customer has a mock profile the footer drops to logout alone. */
 export const WithoutAccount: Story = { args: { account: undefined } };

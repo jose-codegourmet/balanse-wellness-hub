@@ -2,6 +2,7 @@ import { getMockAdapter } from "@balanse/mock";
 import type { Metadata } from "next";
 import { BookingDetail } from "@/modules/customer/BookingDetail";
 import { getServerMockPrincipal } from "@/modules/session/server-principal";
+import { buildBookingInvite } from "@/modules/share/public-page";
 
 export const metadata: Metadata = {
   title: "Booking detail",
@@ -26,5 +27,6 @@ export default async function Page({ params }: { params: Promise<{ bookingId: st
     );
   }
 
-  return <BookingDetail booking={booking} profile={profile} />;
+  const invite = await buildBookingInvite(booking, profile);
+  return <BookingDetail booking={booking} profile={profile} invite={invite} />;
 }

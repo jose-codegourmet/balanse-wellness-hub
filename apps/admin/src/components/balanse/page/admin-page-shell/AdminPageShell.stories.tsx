@@ -1,4 +1,4 @@
-import { Button } from "@balanse/ui";
+import { Badge, Button, UserAvatar } from "@balanse/ui";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { AdminPageTabs } from "../admin-page-tabs/AdminPageTabs";
 import { adminPageTabsDefaultValues } from "../admin-page-tabs/AdminPageTabs.stories-data";
@@ -34,6 +34,26 @@ export const WithActions: Story = {
           Export
         </Button>
         <Button type="button">Add booking</Button>
+      </>
+    ),
+  },
+};
+
+/** Record header: avatar in `leading`, nickname and status badges in `subtitle`. */
+export const WithLeadingAndSubtitle: Story = {
+  args: {
+    title: "Maria Clara Reyes",
+    leading: (
+      <span aria-hidden>
+        <UserAvatar name={{ firstName: "Maria Clara", lastName: "Reyes" }} size="xl" />
+      </span>
+    ),
+    subtitle: (
+      <>
+        <span className="text-sm text-muted-foreground">Goes by Clara</span>
+        <Badge appearance="soft" size="sm" variant="success">
+          Onboarding: Completed
+        </Badge>
       </>
     ),
   },

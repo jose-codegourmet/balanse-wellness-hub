@@ -22,6 +22,17 @@ BE-056: prefer `POST /api/admin/settings/payment-qrs` (collection). Legacy `POST
 
 Payment proofs stay private (`getAdminPaymentProofSignedUrl`).
 
+## Customer avatar (`profile_avatar`, #344)
+
+Same BE-052 mint / confirm / reap lifecycle. No new upload mechanism and **no handler this phase** (`PATCH /api/me` and avatar endpoints are not authorized yet).
+
+- Bucket `avatars` (private), 5 MiB, `image/jpeg` / `image/png` / `image/webp`. FE crops to a 512×512 circle and uploads WEBP.
+- Key: `avatars/<profileId>/<cuid>.webp`. `profiles.avatarKey` must match `^avatars/<id>/[A-Za-z0-9_-]+\.(webp|jpg|jpeg|png)$` (DB check).
+- `pending_uploads` row: `bucket = 'avatars'`, `purpose = 'profile_avatar'`, `entityId = profileId`, **`profileId`** = the customer (new nullable actor column; `actorId` stays the staff actor). At most one of `actorId` / `profileId` is set (`pending_uploads_single_actor`).
+- Confirm sets `profiles.avatarKey` and deletes the previous avatar object. Remove sets it to `null` (initials fallback) and deletes the object.
+- Reads are always signed URLs (≈10 minutes). No public URL, no image transformations on a public path.
+- Customer avatar changes are self-edits and do not write `audit_events`.
+
 ## Derivatives
 
 **No server image pipeline on confirm.** Public buckets use [Supabase image transformations](https://supabase.com/docs/guides/storage/serving/image-transformations) on read (`width`, `resize`, `format=origin` / webp). Cache: CDN on the public object URL. FE still asks for 1:1, 4:5, 480w + master; those are transform query params, not extra stored objects. Admin-side crop (`image-cropper`) is optional and out of band.
