@@ -112,7 +112,8 @@ ALTER TABLE "profiles"
   ADD COLUMN "firstName" TEXT,
   ADD COLUMN "lastName" TEXT NOT NULL DEFAULT '',
   ADD COLUMN "nickname" TEXT,
-  ADD COLUMN "avatarKey" TEXT,
+  -- IF NOT EXISTS: 20261001130000_profile_avatar_storage may have added it first.
+  ADD COLUMN IF NOT EXISTS "avatarKey" TEXT,
   ADD COLUMN "showOnPublicRoster" BOOLEAN NOT NULL DEFAULT true,
   ADD COLUMN "referralCode" TEXT,
   ADD COLUMN "referredById" UUID,
@@ -163,6 +164,8 @@ ALTER TABLE "profiles" ALTER COLUMN "referralCode" SET NOT NULL;
 ALTER TABLE "profiles" ALTER COLUMN "referralCode" SET DEFAULT app_private.generate_referral_code();
 -- fullName is derived by trigger below; the default lets new writers omit it.
 ALTER TABLE "profiles" ALTER COLUMN "fullName" SET DEFAULT '';
+
+ALTER TABLE "profiles" DROP CONSTRAINT IF EXISTS "profiles_avatar_key_owner";
 
 ALTER TABLE "profiles"
   ADD CONSTRAINT "profiles_first_name_present"

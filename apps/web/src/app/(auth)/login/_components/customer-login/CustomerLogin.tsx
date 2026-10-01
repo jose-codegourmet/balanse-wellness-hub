@@ -1,37 +1,70 @@
 "use client";
 
-import { safeReturnTo, validateCustomerLogin } from "@balanse/domain";
+import { safeReturnTo } from "@balanse/domain";
 import { BrandLockup, Button, LocalizedSkeleton, MarketingImage } from "@balanse/ui";
 import { ArrowUpRight, Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import type { LoginErrors, SignInWithPasswordResult } from "../../_lib/login-actions";
 import { CustomerLoginForm } from "./customer-login-form/CustomerLoginForm";
+
+const AUTH_ERRORS: Record<string, string> = {
+  google: "We couldn't reach Google. Try again.",
+  callback: "Sign in didn't finish. Try again.",
+};
 
 export function CustomerLogin({
   forcedStatus,
   returnTo: returnToProp,
+  authError,
+  signIn,
 }: {
   forcedStatus?: "submitting" | "invalid";
   returnTo?: string;
+  /** `?error=` from `/auth/google` or `/auth/callback`. */
+  authError?: string;
+  /**
+   * Email/password log in. The route passes the `signInWithPassword` server
+   * action (Supabase Auth); stories pass a stub.
+   */
+  signIn: (input: { email: string; password: string }) => Promise<SignInWithPasswordResult>;
 }) {
   const router = useRouter();
-  const { setPrincipal } = useMockPrincipal();
   const returnTo = safeReturnTo(returnToProp);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<Partial<Record<"email" | "password" | "form", string>>>(
-    forcedStatus === "invalid"
-      ? { form: "Those credentials are not recognised in this mock." }
-      : {},
-  );
+  const [errors, setErrors] = useState<LoginErrors>(() => {
+    if (forcedStatus === "invalid") {
+      return { form: "That email and password don't match. Try again." };
+    }
+    const message = authError ? AUTH_ERRORS[authError] : undefined;
+    return message ? { form: message } : {};
+  });
   const [status, setStatus] = useState<"idle" | "submitting">(
     forcedStatus === "submitting" ? "submitting" : "idle",
   );
 
-  function completeLogin(customerId: string) {
-    setPrincipal({ role: "customer", customerId });
+  function continueWithGoogle() {
+    setStatus("submitting");
+    // Server route: starts Supabase OAuth and redirects to Google.
+    window.location.assign(`/auth/google?returnTo=${encodeURIComponent(returnTo)}`);
+  }
+
+  async function submitPassword() {
+    setStatus("submitting");
+    const result = await signIn({ email, password }).catch(
+      (): SignInWithPasswordResult => ({
+        ok: false,
+        errors: { form: "We couldn't sign you in. Try again in a moment." },
+      }),
+    );
+    if (!result.ok) {
+      setErrors(result.errors);
+      setStatus("idle");
+      return;
+    }
+    setErrors({});
     router.push(returnTo);
     router.refresh();
   }
@@ -56,13 +89,13 @@ export function CustomerLogin({
             <h1>Welcome back</h1>
             <p>Pick up where you left off, or make room for your next class.</p>
           </div>
-          <p className="sr-only">Mock login only. Google is the primary path.</p>
+          <p className="sr-only">Google is the primary way to log in.</p>
 
           <Button
             type="button"
             variant="outline"
             className="mt-8 w-full md:mt-9"
-            onClick={() => completeLogin("cust-ana")}
+            onClick={continueWithGoogle}
           >
             <span className="auth-google-mark" aria-hidden="true">
               G
@@ -81,16 +114,7 @@ export function CustomerLogin({
             errors={errors}
             onEmailChange={setEmail}
             onPasswordChange={setPassword}
-            onSubmit={() => {
-              const result = validateCustomerLogin({ email, password });
-              if (!result.ok) {
-                setErrors(result.errors);
-                return;
-              }
-              setErrors({});
-              setStatus("submitting");
-              window.setTimeout(() => completeLogin(result.customerId), 350);
-            }}
+            onSubmit={() => void submitPassword()}
           />
           <Link href="/forgot-password" className="auth-forgot-link">
             Forgot password <ArrowUpRight className="size-3" aria-hidden="true" />

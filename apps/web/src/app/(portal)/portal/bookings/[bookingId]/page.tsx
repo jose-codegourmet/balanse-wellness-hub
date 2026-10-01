@@ -1,7 +1,7 @@
 import { getMockAdapter } from "@balanse/mock";
 import type { Metadata } from "next";
 import { BookingDetail } from "@/modules/customer/BookingDetail";
-import { getServerMockPrincipal } from "@/modules/session/server-principal";
+import { getCurrentCustomer } from "@/modules/session/current-customer";
 import { buildBookingInvite } from "@/modules/share/public-page";
 
 export const metadata: Metadata = {
@@ -11,18 +11,17 @@ export const metadata: Metadata = {
 
 export default async function Page({ params }: { params: Promise<{ bookingId: string }> }) {
   const { bookingId } = await params;
-  const principal = await getServerMockPrincipal();
-  const adapter = getMockAdapter();
   const [booking, profile] = await Promise.all([
-    adapter.getBooking(bookingId),
-    adapter.getMe(principal.customerId),
+    getMockAdapter().getBooking(bookingId),
+    getCurrentCustomer(),
   ]);
 
-  if (!booking) {
+  // Customers only ever see their own bookings.
+  if (!booking || booking.customerId !== profile?.id) {
     return (
       <section className="mx-auto max-w-3xl px-4 py-12">
         <h1 className="font-display text-3xl">Booking detail</h1>
-        <p className="mt-3 text-sm text-muted-foreground">That booking is not in this mock.</p>
+        <p className="mt-3 text-sm text-muted-foreground">We couldn't find that booking.</p>
       </section>
     );
   }

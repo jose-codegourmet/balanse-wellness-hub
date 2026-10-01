@@ -4,6 +4,24 @@
 
 Profile rows (`BE-002`) are created by trigger `on_auth_user_created` → `app_private.handle_new_user`. OQ-3 still forbids DOB / health / emergency contact.
 
+## Customer app wiring (`apps/web`, 2026-10-01)
+
+The mock principal and harness customer switcher are gone from `apps/web`. Server-side only (`@supabase/ssr`, publishable key, cookies):
+
+| Route / module | Role |
+| --- | --- |
+| `src/proxy.ts` | Refreshes the session cookie on every page request; guests on `/portal/**` go to `/login?returnTo=…`. |
+| `GET /auth/google?returnTo=` | Starts Google OAuth (PKCE) for log in and sign up. |
+| `GET /auth/callback?code=&returnTo=` | OAuth and email-confirmation target. New accounts (no `contactNumber`) go to `/sign-up` to finish; others to `returnTo`. |
+| `POST /auth/sign-out` | Portal logout. |
+| `modules/session/current-customer.ts` | `getSessionUser()` (claims only) and `getCurrentCustomer()` (`profiles` row → `CustomerProfile`). Tolerates the BE-002 table and the #344 columns. |
+
+Profile photos are in Supabase Storage (`modules/session/avatar-storage.ts`): private `avatars` bucket, key `avatars/<userId>/<uuid>.<ext>` in `profiles.avatarKey`, uploaded/deleted as the signed-in user (Storage RLS, own folder only), shown via 1-hour signed URLs. Schema: `supabase/migrations/20261001130000_profile_avatar_storage.sql` (the avatar slice of #344, idempotent; #344 was made tolerant of it).
+
+Hosted project state (checked 2026-10-01): `profiles` had RLS on but no policies and there is no `on_auth_user_created` trigger, so the app creates the user's row on first profile write (`ensureProfileRow` / `saveProfileFields`). `20261001130000_profile_avatar_storage` and `20261001140000_profiles_self_policies` were applied through the Supabase connector.
+
+Bookings, packages, onboarding answers and policy acceptances are still mocked: the signed-in profile is mirrored into `MockDataAdapter.ensureCustomer` under the Supabase user id, so a new account starts with no bookings. Profile name/contact/roster/onboarding timestamps are written to `profiles` (falling back to `fullName` / `contactNumber` until #344 is applied). Google sign-ups cannot carry share attribution (no metadata on OAuth); email sign-ups pass `ref` / `ref_channel`.
+
 ## Sign-up metadata (#344)
 
 `handle_new_user` reads `raw_user_meta_data` (client `options.data` on sign-up; Google fills `given_name` / `family_name` / `full_name` / `name`). Keys:

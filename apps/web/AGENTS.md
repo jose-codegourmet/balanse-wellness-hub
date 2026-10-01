@@ -1,6 +1,6 @@
 # Web app
 
-Public and customer mocks. Use `getMockAdapter()`. Jabkit wrappers belong in `src/components/balanse`.
+Public and customer mocks. Use `getMockAdapter()`. Customer auth is Supabase (`src/modules/session/`); get the signed-in customer with `getCurrentCustomer()`, never a mock principal. Jabkit wrappers belong in `src/components/balanse`.
 
 ## Read order
 

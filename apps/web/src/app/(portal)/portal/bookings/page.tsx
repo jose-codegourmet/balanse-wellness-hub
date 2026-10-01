@@ -1,6 +1,6 @@
 import { getMockAdapter } from "@balanse/mock";
 import type { Metadata } from "next";
-import { getServerMockPrincipal } from "@/modules/session/server-principal";
+import { getCurrentCustomer } from "@/modules/session/current-customer";
 import { MyBookingsPage } from "./_components/my-bookings-page/MyBookingsPage";
 
 export const metadata: Metadata = {
@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
-  const principal = await getServerMockPrincipal();
+  const profile = await getCurrentCustomer();
   const { tab } = await searchParams;
-  const bookings = await getMockAdapter().getBookings(principal.customerId);
+  const bookings = profile ? await getMockAdapter().getBookings(profile.id) : [];
 
   return <MyBookingsPage bookings={bookings} initialTab={tab} />;
 }

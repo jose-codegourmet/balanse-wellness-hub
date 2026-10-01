@@ -6,7 +6,6 @@ import { MockHarnessAffordance } from "@balanse/ui";
 import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 // Collapse store is duplicated with apps/admin MockSessionHarness (sessionStorage +
 // event contract from #258). Collapsed chrome is shared MockHarnessAffordance.
@@ -55,29 +54,10 @@ function useMockHarnessCollapsed() {
   return { collapsed, persistCollapsed };
 }
 
-const CUSTOMERS = [
-  { id: "cust-ana", label: "Ana Delgado (Google)" },
-  { id: "cust-ben", label: "Ben Santos (email)" },
-  { id: "cust-empty", label: "Empty Inbox" },
-];
-
-const BOOKINGS = [
-  "booking-waitlisted",
-  "booking-held_awaiting_payment",
-  "booking-payment_submitted",
-  "booking-confirmed",
-  "booking-cancellation_requested",
-  "booking-reschedule_requested",
-  "booking-cancelled",
-  "booking-expired",
-  "booking-hold-capped",
-];
-
 type Scenario = "normal" | "schedule-failed" | "session-became-full" | "proof-upload-failed";
 
 export function MockSessionHarness() {
   const enabled = isMockHarnessEnabled();
-  const { principal, setPrincipal } = useMockPrincipal();
   const router = useRouter();
   const [scenario, setScenario] = useState<Scenario>("normal");
   const { collapsed, persistCollapsed } = useMockHarnessCollapsed();
@@ -138,55 +118,6 @@ export function MockSessionHarness() {
           </button>
         </div>
         <div className="mt-2 flex flex-wrap gap-3 text-sm">
-          <label className="flex items-center gap-2">
-            Principal
-            <select
-              className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
-              value={principal.role}
-              onChange={(event) => {
-                setPrincipal({ role: event.target.value as typeof principal.role });
-                router.refresh();
-              }}
-            >
-              <option value="guest">Guest</option>
-              <option value="customer">Customer</option>
-              <option value="admin">Admin</option>
-            </select>
-          </label>
-          <label className="flex items-center gap-2">
-            Customer
-            <select
-              className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
-              value={principal.customerId}
-              onChange={(event) => {
-                setPrincipal({ customerId: event.target.value });
-                router.refresh();
-              }}
-            >
-              {CUSTOMERS.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex items-center gap-2">
-            Showcase booking
-            <select
-              className="rounded-md border border-foreground/20 bg-background px-2 py-1 text-foreground"
-              value={principal.showcaseBookingId}
-              onChange={(event) => {
-                setPrincipal({ showcaseBookingId: event.target.value });
-                router.refresh();
-              }}
-            >
-              {BOOKINGS.map((id) => (
-                <option key={id} value={id}>
-                  {id}
-                </option>
-              ))}
-            </select>
-          </label>
           <label className="flex items-center gap-2">
             Calendar scenario
             <select

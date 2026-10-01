@@ -15,7 +15,7 @@ import {
   withShareParams,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { getServerMockPrincipal } from "@/modules/session/server-principal";
+import { getCurrentCustomer } from "@/modules/session/current-customer";
 import { publicSiteOrigin } from "@/modules/share/site-origin";
 
 /** Bookings that mean "you already have a place (or a pending one) in this session". */
@@ -39,22 +39,16 @@ export type PublicViewerContext = {
 };
 
 export async function getPublicViewerContext(sessionId: string): Promise<PublicViewerContext> {
-  const principal = await getServerMockPrincipal();
-  if (principal.role !== "customer") {
-    return { viewer: null, shareParams: {}, existingBookingId: null };
-  }
-  const adapter = getMockAdapter();
-  const [profile, bookings] = await Promise.all([
-    adapter.getMe(principal.customerId),
-    adapter.getBookings(principal.customerId),
-  ]);
+  const profile = await getCurrentCustomer();
   if (!profile) return { viewer: null, shareParams: {}, existingBookingId: null };
+  const bookings = await getMockAdapter().getBookings(profile.id);
   const existing = bookings.find(
     (booking) => booking.sessionId === sessionId && ACTIVE_BOOKING_STATUSES.has(booking.status),
   );
   return {
     viewer: { customerId: profile.id },
-    shareParams: { ref: profile.referralCode, src: "customer" },
+    // No code until the #344 profile columns exist on the project.
+    shareParams: profile.referralCode ? { ref: profile.referralCode, src: "customer" } : {},
     existingBookingId: existing?.id ?? null,
   };
 }

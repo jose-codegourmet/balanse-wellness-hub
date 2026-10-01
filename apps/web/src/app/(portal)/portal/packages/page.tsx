@@ -1,6 +1,6 @@
 import { getMockAdapter } from "@balanse/mock";
 import type { Metadata } from "next";
-import { getServerMockPrincipal } from "@/modules/session/server-principal";
+import { getCurrentCustomer } from "@/modules/session/current-customer";
 import { MyPackagesPage } from "./_components/my-packages-page/MyPackagesPage";
 
 export const metadata: Metadata = {
@@ -9,11 +9,12 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const principal = await getServerMockPrincipal();
+  const profile = await getCurrentCustomer();
+  const customerId = profile?.id ?? "";
   const adapter = getMockAdapter();
   const [entitlements, acquisitions, catalogue] = await Promise.all([
-    adapter.getMyEntitlements(principal.customerId),
-    adapter.getMyAcquisitions(principal.customerId),
+    adapter.getMyEntitlements(customerId),
+    adapter.getMyAcquisitions(customerId),
     adapter.getPublicBundles(),
   ]);
   return (

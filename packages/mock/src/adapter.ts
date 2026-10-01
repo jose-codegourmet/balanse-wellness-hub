@@ -102,6 +102,12 @@ export type MockDataAdapter = {
   ) => Promise<PublicRoster | null>;
 
   getMe: (customerId: string) => Promise<CustomerProfile | null>;
+  /**
+   * Registers a customer authenticated outside the mock (Supabase Auth) so the
+   * still-mocked customer features (bookings, onboarding answers, avatar) can
+   * key off the real user id. Returns the stored row; an existing row wins.
+   */
+  ensureCustomer: (profile: CustomerProfile) => Promise<CustomerProfile>;
   patchMe: (customerId: string, patch: CustomerProfilePatch) => Promise<CustomerProfile>;
   /** #343 — data URL (JPG/PNG/WEBP ≤ 5 MB) from the cropper, or null to remove. */
   setMyAvatar: (customerId: string, avatar: { dataUrl: string } | null) => Promise<CustomerProfile>;

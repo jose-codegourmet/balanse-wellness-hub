@@ -6,13 +6,13 @@
  * contact number (`PhPhoneInput`), password and confirm. No other fields
  * (OQ-3).
  *
- * - `defaultValues` comes from `CustomerSignUpForm.defaults.ts`. The mock
- *   "Continue with Google" path passes `customerSignUpGoogleDefaults(...)`
+ * - `defaultValues` comes from `CustomerSignUpForm.defaults.ts`. Finishing a
+ *   Google sign-up passes `customerSignUpGoogleDefaults(...)`
  *   (`authMethod: "google"`): names and email are prefilled, the email is
  *   read-only and the password fields are hidden. Change the `key` to apply a
  *   new prefill.
  * - `customerSignUpIdentitySchema` is the subset the sign-up server action
- *   re-validates before `createCustomer`.
+ *   re-validates before calling Supabase Auth.
  * - `canSubmit` lets the parent block submit (policy acceptance lives outside
  *   the form) while still revealing field errors.
  *

@@ -7,7 +7,7 @@ import {
 import { getMockAdapter } from "@balanse/mock";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getServerMockPrincipal } from "@/modules/session/server-principal";
+import { getCurrentCustomer } from "@/modules/session/current-customer";
 import { customerOnboardingServerActions } from "../profile/_lib/customer-self-service-routes";
 import { OnboardingWizard } from "./_components/onboarding-wizard/OnboardingWizard";
 import { publicReturnLabel } from "./_lib/public-return-label";
@@ -27,18 +27,9 @@ export default async function Page({
   const safe = safeReturnTo(rawReturnTo, "/portal");
   // Never bounce back into the wizard itself (redirect loop once completed).
   const returnTo = safe.startsWith("/portal/welcome") ? "/portal" : safe;
-  const principal = await getServerMockPrincipal();
+  const profile = await getCurrentCustomer();
+  if (!profile) redirect(`/login?returnTo=${encodeURIComponent("/portal/welcome")}`);
   const adapter = getMockAdapter();
-  const profile = await adapter.getMe(principal.customerId);
-
-  if (!profile) {
-    return (
-      <section className="mx-auto max-w-2xl px-4 py-12">
-        <h1 className="font-display text-3xl">Welcome</h1>
-        <p className="mt-3 text-sm text-muted-foreground">No mock profile is selected.</p>
-      </section>
-    );
-  }
 
   // Finished onboarding never shows again; go where the customer was heading.
   if (profile.onboardingStatus === "completed") redirect(returnTo);

@@ -10,7 +10,7 @@ export const customerSignUpFormDefaultValues: CustomerSignUpFormValues = {
   confirmPassword: "",
 };
 
-/** Mock Google identity prefill (`given_name` / `family_name` / `email`). */
+/** Google identity prefill (`given_name` / `family_name` / `email`). */
 export function customerSignUpGoogleDefaults(identity: {
   givenName: string;
   familyName?: string | null;

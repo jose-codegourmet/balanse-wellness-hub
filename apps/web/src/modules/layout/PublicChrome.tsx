@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BalanseNavigation } from "@/components/balanse/marketing/BalanseNavigation";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useSession } from "@/modules/session/SessionProvider";
 
 export const NextNavLink: NavLinkComponent = ({ href, className, children, onClick, ...rest }) => (
   <Link href={href} className={className} onClick={onClick} aria-current={rest["aria-current"]}>
@@ -15,7 +15,7 @@ export const NextNavLink: NavLinkComponent = ({ href, className, children, onCli
 
 export function PublicHeader() {
   const pathname = usePathname();
-  const { principal } = useMockPrincipal();
+  const session = useSession();
   const [hash, setHash] = useState("");
   const [bookingVisible, setBookingVisible] = useState(pathname === "/");
 
@@ -45,7 +45,7 @@ export function PublicHeader() {
     <BalanseNavigation
       pathname={pathname}
       hash={hash}
-      principalRole={principal.role}
+      principalRole={session ? "customer" : "guest"}
       bookingVisible={
         bookingVisible ||
         pathname === "/book/quick" ||

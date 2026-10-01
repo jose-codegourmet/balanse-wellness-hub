@@ -1,7 +1,7 @@
 import { getMockAdapter } from "@balanse/mock";
 import type { Metadata } from "next";
 import { BookingForm } from "@/modules/customer/BookingForm";
-import { getServerMockPrincipal } from "@/modules/session/server-principal";
+import { getCurrentCustomer } from "@/modules/session/current-customer";
 
 export const metadata: Metadata = {
   title: "Reserve your spot",
@@ -17,12 +17,11 @@ export default async function Page({
 }) {
   const { sessionId } = await params;
   const { intent } = await searchParams;
-  const principal = await getServerMockPrincipal();
+  const profile = await getCurrentCustomer();
   const adapter = getMockAdapter();
-  const [session, profile, entitlements, policies] = await Promise.all([
+  const [session, entitlements, policies] = await Promise.all([
     adapter.getPublicSession(sessionId),
-    adapter.getMe(principal.customerId),
-    adapter.getEligibleEntitlements(principal.customerId, sessionId),
+    profile ? adapter.getEligibleEntitlements(profile.id, sessionId) : [],
     adapter.getCustomerFormPolicies("booking"),
   ]);
 
@@ -30,9 +29,7 @@ export default async function Page({
     return (
       <section className="mx-auto max-w-3xl px-4 py-12">
         <h1 className="font-display text-3xl">Reserve your spot</h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          That session is not available in this mock.
-        </p>
+        <p className="mt-3 text-sm text-muted-foreground">That session is not available.</p>
       </section>
     );
   }

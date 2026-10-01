@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckIcon, CopyIcon, ImageDownIcon, QrCodeIcon, Share2Icon } from "lucide-react";
+import { CheckIcon, CopyIcon, ExternalLinkIcon, QrCodeIcon, Share2Icon } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -146,7 +146,6 @@ function ShareDialogBody({
 }: ShareContentProps) {
   const [copyState, setCopyState] = useState<CopyState>("idle");
   const [nativeShare, setNativeShare] = useState(false);
-  const [posterLoading, setPosterLoading] = useState(false);
   const [qrSaving, setQrSaving] = useState(false);
   const fallbackRef = useRef<HTMLInputElement>(null);
   const resetTimer = useRef<number | undefined>(undefined);
@@ -214,25 +213,6 @@ function ShareDialogBody({
       raise({ tone: "error", title: "Couldn't create the QR image", description: "Try again." });
     } finally {
       setQrSaving(false);
-    }
-  }
-
-  async function handleDownloadPoster() {
-    if (!posterUrl) return;
-    setPosterLoading(true);
-    try {
-      const response = await fetch(posterUrl);
-      if (!response.ok) throw new Error(`Poster request failed (${response.status})`);
-      const blob = await response.blob();
-      saveBlob(blob, `balanse-${slug}-poster.png`);
-    } catch {
-      raise({
-        tone: "error",
-        title: "Couldn't download the poster",
-        description: "Check your connection and try again.",
-      });
-    } finally {
-      setPosterLoading(false);
     }
   }
 
@@ -332,15 +312,14 @@ function ShareDialogBody({
         </Button>
         {posterUrl ? (
           <Button
-            type="button"
+            nativeButton={false}
             variant="outline"
             size="sm"
             className="sm:flex-1"
-            onClick={handleDownloadPoster}
-            loading={posterLoading}
+            render={<a href={posterUrl} target="_blank" rel="noreferrer" />}
           >
-            <ImageDownIcon aria-hidden data-icon="inline-start" />
-            {posterLoading ? "Preparing poster…" : "Download poster card"}
+            <ExternalLinkIcon aria-hidden data-icon="inline-start" />
+            View poster card
           </Button>
         ) : null}
       </div>

@@ -1,6 +1,6 @@
 # Agent Instructions — Balansé Wellness Hub
 
-Read this file first. Product truth lives in OpenSpec (`openspec/specs/`, in-flight work in `openspec/changes/`), then `docs/MVP-ROADMAP.md` and `docs/screen-specs/`. This phase is **mocks only** for screens except the explicitly authorized database-backed class catalogue (2026-09-21). Class routes use server-side Supabase calls and verified admin server actions; other screens remain on MockDataAdapter. No direct Supabase client calls from UI. See `docs/backend/class-catalogue.md`.
+Read this file first. Product truth lives in OpenSpec (`openspec/specs/`, in-flight work in `openspec/changes/`), then `docs/MVP-ROADMAP.md` and `docs/screen-specs/`. This phase is **mocks only** for screens except the explicitly authorized database-backed class catalogue (2026-09-21). Class routes use server-side Supabase calls and verified admin server actions; other screens remain on MockDataAdapter. Customer auth in `apps/web` is real Supabase Auth (Google + email, 2026-10-01): the session comes from `src/modules/session/current-customer.ts`, and the signed-in profile is mirrored into MockDataAdapter so still-mocked customer data keys off the real user id. No direct Supabase client calls from UI. See `docs/backend/class-catalogue.md`.
 
 ## Read order
 

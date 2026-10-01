@@ -16,7 +16,7 @@ function personName(label: string) {
  * re-validates with this schema, so it never trusts the browser.
  */
 export const customerSignUpIdentitySchema = z.object({
-  /** `google` when the mock Google identity prefilled the form; no password then. */
+  /** `google` when a signed-in Google account prefilled the form; no password then. */
   authMethod: z.enum(["email", "google"]),
   firstName: personName("First name"),
   lastName: personName("Last name"),

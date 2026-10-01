@@ -3,7 +3,7 @@
 import type { ShareParams } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 import { useEffect, useState } from "react";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useSession } from "@/modules/session/SessionProvider";
 
 const NONE: ShareParams = {};
 
@@ -12,8 +12,7 @@ const NONE: ShareParams = {};
  * customer shares with `ref=<referralCode>&src=customer`; guests share plain links.
  */
 export function useViewerShareParams(): ShareParams {
-  const { principal } = useMockPrincipal();
-  const customerId = principal.role === "customer" ? principal.customerId : null;
+  const customerId = useSession()?.customerId ?? null;
   const [loaded, setLoaded] = useState<{ customerId: string; params: ShareParams } | null>(null);
 
   useEffect(() => {
@@ -22,7 +21,7 @@ export function useViewerShareParams(): ShareParams {
     void getMockAdapter()
       .getMe(customerId)
       .then((profile) => {
-        if (active && profile) {
+        if (active && profile?.referralCode) {
           setLoaded({ customerId, params: { ref: profile.referralCode, src: "customer" } });
         }
       })
@@ -32,6 +31,6 @@ export function useViewerShareParams(): ShareParams {
     };
   }, [customerId]);
 
-  // Derived, so a principal switch never shows the previous customer's code.
+  // Derived, so an account switch never shows the previous customer's code.
   return customerId && loaded?.customerId === customerId ? loaded.params : NONE;
 }

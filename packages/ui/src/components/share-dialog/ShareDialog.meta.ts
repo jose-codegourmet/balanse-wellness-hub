@@ -19,9 +19,8 @@ import type { ButtonVariantProps } from "../button/Button";
  *    error correction `M`, 4-module quiet zone. Encodes `url` with `via=qr`
  *    set. Caption shows the shortened link (host + path).
  * 4. **Download QR (PNG).** 1024×1024, `balanse-<fileSlug>-qr.png`.
- * 5. **Download poster card.** Only when `posterUrl` is set. Fetches the image
- *    and saves `balanse-<fileSlug>-poster.png`, with a loading state and an
- *    error toast on failure.
+ * 5. **View poster card.** Only when `posterUrl` is set. Opens the rendered
+ *    poster image in a new tab, where the browser's image viewer can save it.
  *
  * Desktop (≥ 768px, Tailwind `md`) renders a `Dialog`; mobile renders a bottom
  * `Drawer` with the same content (`useIsMobile`).
@@ -71,7 +70,7 @@ export type ShareContentProps = {
   title: string;
   /** Date, time and venue line. Shown under the title and sent as share `text`. */
   subtitle?: string;
-  /** `/share/poster/...` image URL. Enables "Download poster card". */
+  /** `/share/poster/...` image URL. Enables "View poster card". */
   posterUrl?: string;
   /** Slug used in download file names: `balanse-<fileSlug>-qr.png`. */
   fileSlug: string;

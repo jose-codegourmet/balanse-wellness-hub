@@ -15,7 +15,6 @@ import {
   AlertDialogTitle,
 } from "@/components/jabkit/alert-dialog";
 import { cn } from "@/components/jabkit/lib/cn";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 /**
  * The portal's single logout entry point (FE-CUS-018). The confirm lives here;
@@ -36,7 +35,6 @@ export function BalansePortalLogout({
   onOpenChange?: (open: boolean) => void;
   className?: string;
 }) {
-  const { setPrincipal } = useMockPrincipal();
   const [uncontrolledOpen, setUncontrolledOpen] = useState(initialOpen);
   const open = openProp ?? uncontrolledOpen;
 
@@ -45,10 +43,10 @@ export function BalansePortalLogout({
     onOpenChange?.(next);
   }
 
-  function logOut() {
-    setPrincipal({ role: "guest" });
-    // `app/(portal)/layout.tsx` reads the mock principal cookie on the server,
-    // so a hard navigation keeps that guest redirect authoritative.
+  async function logOut() {
+    // Ends the Supabase session server-side and clears the auth cookies.
+    await fetch("/auth/sign-out", { method: "POST" }).catch(() => undefined);
+    // A hard navigation drops every client cache of the signed-in session.
     window.location.assign("/login");
   }
 
@@ -81,7 +79,7 @@ export function BalansePortalLogout({
               keeps it the initially focused control. */}
           <AlertDialogCancel render={<Button variant="outline">Stay signed in</Button>} />
           {/* Brand primary, not `destructive`: logging out is routine. */}
-          <AlertDialogAction render={<Button>Log out</Button>} onClick={logOut} />
+          <AlertDialogAction render={<Button>Log out</Button>} onClick={() => void logOut()} />
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

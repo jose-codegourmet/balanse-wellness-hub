@@ -1,7 +1,7 @@
 import { getMockAdapter } from "@balanse/mock";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getServerMockPrincipal } from "@/modules/session/server-principal";
+import { getCurrentCustomer } from "@/modules/session/current-customer";
 import { EntitlementDetailPage } from "../_components/entitlement-detail-page/EntitlementDetailPage";
 
 export const metadata: Metadata = {
@@ -11,11 +11,12 @@ export const metadata: Metadata = {
 
 export default async function Page({ params }: { params: Promise<{ entitlementId: string }> }) {
   const { entitlementId } = await params;
-  const principal = await getServerMockPrincipal();
+  const profile = await getCurrentCustomer();
+  if (!profile) notFound();
   const adapter = getMockAdapter();
   const [entitlement, redemptions] = await Promise.all([
-    adapter.getMyEntitlement(principal.customerId, entitlementId),
-    adapter.getEntitlementRedemptions(principal.customerId, entitlementId),
+    adapter.getMyEntitlement(profile.id, entitlementId),
+    adapter.getEntitlementRedemptions(profile.id, entitlementId),
   ]);
   if (!entitlement) notFound();
   return <EntitlementDetailPage entitlement={entitlement} redemptions={redemptions} />;

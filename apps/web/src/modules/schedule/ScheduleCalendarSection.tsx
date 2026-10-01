@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BalanseBookingCalendar } from "@/components/balanse/calendar/BalanseBookingCalendar";
 import { BalanseQuickBooking } from "@/components/balanse/calendar/BalanseQuickBooking";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useSession } from "@/modules/session/SessionProvider";
 import { useViewerShareParams } from "@/modules/share/use-viewer-share-params";
 
 export function ScheduleCalendarSection({
@@ -30,11 +30,11 @@ export function ScheduleCalendarSection({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { principal } = useMockPrincipal();
+  const customerId = useSession()?.customerId ?? null;
   const [sessions, setSessions] = useState(initialSessions);
   const [classes, setClasses] = useState(initialClasses);
   const [bookingSessionIds, setBookingSessionIds] = useState<string[]>([]);
-  // Customer schedules depend on the current mock principal's bookings. Start in
+  // Customer schedules depend on the signed-in customer's bookings. Start in
   // a loading state so the public timetable never flashes before that scope loads.
   const [loading, setLoading] = useState(audience === "customer");
   const [loadError, setLoadError] = useState(initialLoadError);
@@ -53,8 +53,8 @@ export function ScheduleCalendarSection({
       setSessions(nextSessions);
       setClasses(nextClasses);
       setFullId(getMockRuntime().sessionBecameFullId);
-      if (audience === "customer") {
-        const bookings = await adapter.getBookings(principal.customerId);
+      if (audience === "customer" && customerId) {
+        const bookings = await adapter.getBookings(customerId);
         setBookingSessionIds(bookings.map((booking) => booking.sessionId));
       } else {
         setBookingSessionIds([]);
@@ -64,7 +64,7 @@ export function ScheduleCalendarSection({
     } finally {
       setLoading(false);
     }
-  }, [audience, principal.customerId]);
+  }, [audience, customerId]);
 
   useEffect(() => {
     const runtime = getMockRuntime();
@@ -119,7 +119,7 @@ export function ScheduleCalendarSection({
         const bookingPath = waitlist
           ? `/portal/book/${session.id}?intent=waitlist`
           : `/portal/book/${session.id}`;
-        if (principal.role === "guest") {
+        if (!customerId) {
           router.push(`/login?returnTo=${encodeURIComponent(bookingPath)}`);
           return;
         }

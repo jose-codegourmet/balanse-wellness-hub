@@ -5,7 +5,7 @@ import { Toaster } from "../sonner/Sonner";
 import { ShareButton } from "./ShareDialog";
 import type { ShareButtonProps } from "./ShareDialog.meta";
 
-/** 1×1 PNG so the poster download works offline in Storybook. */
+/** 1×1 PNG so the poster preview opens offline in Storybook. */
 const DEMO_POSTER_URL =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
 
@@ -72,7 +72,7 @@ const meta: Meta<typeof ShareButton> = {
     docs: {
       description: {
         component:
-          "Copy link, native share, QR (SVG + 1024px PNG) and poster download for public session and event links. `ShareButton` owns the trigger; `ShareDialog` is the controlled surface. Desktop uses Dialog, < 768px uses Drawer.",
+          "Copy link, native share, QR (SVG + 1024px PNG) and poster preview for public session and event links. `ShareButton` owns the trigger; `ShareDialog` is the controlled surface. Desktop uses Dialog, < 768px uses Drawer.",
       },
     },
   },
@@ -95,13 +95,6 @@ export const Open: Story = {
 export const WithPoster: Story = {
   tags: ["!autodocs"],
   args: { defaultOpen: true, posterUrl: DEMO_POSTER_URL },
-  beforeEach: withNativeShare,
-};
-
-/** The poster route fails: the button shows its loading state, then an error toast. */
-export const PosterDownloadError: Story = {
-  tags: ["!autodocs"],
-  args: { defaultOpen: true, posterUrl: "/share/poster/sessions/does-not-exist" },
   beforeEach: withNativeShare,
 };
 

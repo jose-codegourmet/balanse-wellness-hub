@@ -9,55 +9,62 @@ import {
   PolicyAcceptance,
   usePolicyAcceptance,
 } from "@/components/balanse/policy-acceptance/PolicyAcceptance";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
-import {
-  MOCK_GOOGLE_SIGN_UP_IDENTITY,
-  type MockGoogleIdentity,
-} from "../../_lib/mock-google-identity";
-import type { CreateCustomerAccountResult } from "../../_lib/sign-up-actions";
+import type { CreateCustomerAccountResult, CustomerSignUpInput } from "../../_lib/sign-up-actions";
+import { welcomePathFor } from "../../_lib/welcome-path";
 import { CustomerSignUpForm } from "./customer-sign-up-form/CustomerSignUpForm";
 import {
   customerSignUpFormDefaultValues,
   customerSignUpGoogleDefaults,
 } from "./customer-sign-up-form/CustomerSignUpForm.defaults";
-import type {
-  CustomerSignUpFormValues,
-  CustomerSignUpIdentity,
-} from "./customer-sign-up-form/CustomerSignUpForm.schema";
+import type { CustomerSignUpFormValues } from "./customer-sign-up-form/CustomerSignUpForm.schema";
+
+/** Google claims of a signed-in account that has not finished sign-up. */
+export type GoogleSignUpIdentity = {
+  givenName: string;
+  familyName?: string | null;
+  email: string;
+};
 
 export type CustomerSignUpProps = {
-  forcedStatus?: "submitting";
+  forcedStatus?: "submitting" | "confirm_email";
   returnTo?: string;
   /** Current versions of the policies admin attached to sign up. */
   policies?: PolicyDocumentVersion[];
   /**
-   * Creates the account. The route passes the `createCustomerAccount` server
-   * action (reads and clears the share-attribution cookie); stories pass a stub.
+   * Creates (email) or finishes (Google) the account. The route passes the
+   * `createCustomerAccount` server action (Supabase Auth; reads and clears the
+   * share-attribution cookie); stories pass a stub.
    */
-  createAccount: (input: CustomerSignUpIdentity) => Promise<CreateCustomerAccountResult>;
-  /** Mock Google identity used by "Continue with Google". */
-  googleIdentity?: MockGoogleIdentity;
+  createAccount: (
+    input: CustomerSignUpInput,
+    returnTo?: string,
+  ) => Promise<CreateCustomerAccountResult>;
+  /**
+   * Set when the visitor is already signed in with Google but has not
+   * finished sign-up (`/auth/callback` sends new accounts here). Prefills the
+   * form so they check their name and add a contact number.
+   */
+  googleIdentity?: GoogleSignUpIdentity | null;
 };
-
-/** Onboarding runs right after sign-up and then returns to `returnTo` (#352). */
-export function welcomePathFor(returnTo: string): string {
-  return `/portal/welcome?returnTo=${encodeURIComponent(returnTo)}`;
-}
 
 export function CustomerSignUp({
   forcedStatus,
   returnTo: returnToProp,
   policies = [],
   createAccount,
-  googleIdentity = MOCK_GOOGLE_SIGN_UP_IDENTITY,
+  googleIdentity,
 }: CustomerSignUpProps) {
   const router = useRouter();
-  const { setPrincipal } = useMockPrincipal();
   const returnTo = safeReturnTo(returnToProp);
   const policyAcceptance = usePolicyAcceptance(policies);
-  const [prefill, setPrefill] = useState<CustomerSignUpFormValues>(customerSignUpFormDefaultValues);
+  const [prefill, setPrefill] = useState<CustomerSignUpFormValues>(() =>
+    googleIdentity ? customerSignUpGoogleDefaults(googleIdentity) : customerSignUpFormDefaultValues,
+  );
   const [status, setStatus] = useState<"idle" | "submitting" | "redirecting">(
     forcedStatus === "submitting" ? "redirecting" : "idle",
+  );
+  const [confirmEmail, setConfirmEmail] = useState<string | null>(
+    forcedStatus === "confirm_email" ? "you@example.com" : null,
   );
   const [formError, setFormError] = useState<string | null>(null);
   const usingGoogle = prefill.authMethod === "google";
@@ -71,26 +78,83 @@ export function CustomerSignUp({
   async function submit(values: CustomerSignUpFormValues) {
     setStatus("submitting");
     setFormError(null);
-    const result = await createAccount({
-      authMethod: values.authMethod,
-      firstName: values.firstName,
-      lastName: values.lastName,
-      email: values.email,
-      contactNumber: values.contactNumber,
-    });
+    const result = await createAccount(
+      {
+        authMethod: values.authMethod,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        contactNumber: values.contactNumber,
+        ...(values.authMethod === "email" ? { password: values.password } : {}),
+      },
+      returnTo,
+    ).catch(
+      (): CreateCustomerAccountResult => ({
+        ok: false,
+        error: "We couldn't create your account. Try again.",
+      }),
+    );
     if (!result.ok) {
       setStatus("idle");
       setFormError(result.error);
       return;
     }
+    if (result.next === "confirm_email") {
+      setStatus("idle");
+      setConfirmEmail(result.email);
+      return;
+    }
     setStatus("redirecting");
-    setPrincipal({ role: "customer", customerId: result.customerId });
     router.push(welcomePathFor(returnTo));
+    router.refresh();
+  }
+
+  function continueWithGoogle() {
+    setStatus("redirecting");
+    // Server route: starts Supabase OAuth. New accounts come back here to finish.
+    window.location.assign(`/auth/google?returnTo=${encodeURIComponent(returnTo)}`);
+  }
+
+  async function switchToEmail() {
+    // Leave the half-finished Google session so the email form starts clean.
+    await fetch("/auth/sign-out", { method: "POST" }).catch(() => undefined);
+    setPrefill(customerSignUpFormDefaultValues);
     router.refresh();
   }
 
   if (status === "redirecting") {
     return <LocalizedSkeleton lines={6} label="Creating account" />;
+  }
+
+  if (confirmEmail) {
+    return (
+      <section className="auth-shell">
+        <div className="auth-panel">
+          <div className="auth-panel-inner">
+            <Link href="/" className="auth-brand" aria-label="Balansé home">
+              <BrandLockup />
+            </Link>
+            <div className="auth-heading" role="status">
+              <p className="auth-kicker">Almost there</p>
+              <h1>Check your inbox</h1>
+              <p>
+                We sent a confirmation link to <strong>{confirmEmail}</strong>. Open it on this
+                device to finish creating your account.
+              </p>
+            </div>
+            <p className="auth-signup-prompt">
+              Already confirmed?{" "}
+              <Link
+                href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+                className="auth-inline-link"
+              >
+                Log In
+              </Link>
+            </p>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -117,7 +181,7 @@ export function CustomerSignUp({
                 type="button"
                 variant="link"
                 className="self-start"
-                onClick={() => setPrefill(customerSignUpFormDefaultValues)}
+                onClick={() => void switchToEmail()}
               >
                 Use email instead
               </Button>
@@ -128,15 +192,7 @@ export function CustomerSignUp({
                 type="button"
                 variant="outline"
                 className="mt-8 w-full md:mt-9"
-                onClick={() =>
-                  setPrefill(
-                    customerSignUpGoogleDefaults({
-                      givenName: googleIdentity.given_name,
-                      familyName: googleIdentity.family_name,
-                      email: googleIdentity.email,
-                    }),
-                  )
-                }
+                onClick={continueWithGoogle}
               >
                 Continue with Google
               </Button>

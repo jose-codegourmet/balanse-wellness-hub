@@ -18,7 +18,7 @@ import type { ReactNode } from "react";
  * Branded share images for public session and event pages (#347).
  *
  * - **Poster** 1080×1350 (Instagram portrait) with a scannable QR, served by
- *   `/share/poster/{sessions,events}/[id]` and downloaded from `ShareDialog`.
+ *   `/share/poster/{sessions,events}/[id]` and opened from `ShareDialog`.
  * - **OG** 1200×630 link preview without a QR, for `opengraph-image.tsx`.
  *
  * Runtime: **Node.js only** (reads `public/` from disk and uses `qrcode`).

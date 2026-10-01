@@ -1,6 +1,7 @@
 import type { CustomerProfileSectionId } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { getServerMockPrincipal } from "@/modules/session/server-principal";
+import { redirect } from "next/navigation";
+import { getCurrentCustomer } from "@/modules/session/current-customer";
 import { customerOnboardingServerActions } from "../../_lib/customer-self-service-routes";
 import { ProfilePage } from "../profile-page/ProfilePage";
 
@@ -15,21 +16,10 @@ export type ProfileSectionRouteProps = {
  * section (#352) additionally loads onboarding answers and active classes.
  */
 export async function ProfileSectionRoute({ section }: ProfileSectionRouteProps) {
-  const principal = await getServerMockPrincipal();
+  const profile = await getCurrentCustomer();
+  if (!profile) redirect("/login?returnTo=/portal/profile");
   const adapter = getMockAdapter();
-  const [profile, acceptances] = await Promise.all([
-    adapter.getMe(principal.customerId),
-    adapter.getMePolicyAcceptances(principal.customerId),
-  ]);
-
-  if (!profile) {
-    return (
-      <section className="mx-auto max-w-3xl px-4 py-12">
-        <h1 className="font-display text-3xl">Profile</h1>
-        <p className="mt-3 text-sm text-muted-foreground">No mock profile is selected.</p>
-      </section>
-    );
-  }
+  const acceptances = await adapter.getMePolicyAcceptances(profile.id);
 
   const about =
     section === "about"

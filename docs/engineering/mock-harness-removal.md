@@ -9,3 +9,5 @@ When real Supabase Auth lands:
 5. Keep screens talking to a data adapter; swap `@balanse/mock` for the WIRE-001 client.
 
 The harness is imported only from app providers/shells, never from screen-level feature components.
+
+`apps/web` (2026-10-01): steps 2–3 done — `MockSessionProvider` and the portal mock-cookie guard are replaced by Supabase Auth (see `docs/backend/auth.md`). The web harness keeps only the calendar scenario switcher. `apps/admin` is unchanged.

@@ -1,7 +1,8 @@
 import { getMockAdapter } from "@balanse/mock";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { PortalHome } from "@/modules/customer/PortalHome";
-import { getServerMockPrincipal } from "@/modules/session/server-principal";
+import { getCurrentCustomer } from "@/modules/session/current-customer";
 
 export const metadata: Metadata = {
   title: "Home",
@@ -9,22 +10,13 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const principal = await getServerMockPrincipal();
+  const profile = await getCurrentCustomer();
+  if (!profile) redirect("/login?returnTo=/portal");
   const adapter = getMockAdapter();
-  const [profile, bookings, onboardingAnswers] = await Promise.all([
-    adapter.getMe(principal.customerId),
-    adapter.getBookings(principal.customerId),
-    adapter.getMyOnboarding(principal.customerId).catch(() => null),
+  const [bookings, onboardingAnswers] = await Promise.all([
+    adapter.getBookings(profile.id),
+    adapter.getMyOnboarding(profile.id).catch(() => null),
   ]);
-
-  if (!profile) {
-    return (
-      <section className="mx-auto max-w-6xl px-4 py-12">
-        <h1 className="font-display text-3xl">Home</h1>
-        <p className="mt-3 text-sm text-muted-foreground">No mock profile is selected.</p>
-      </section>
-    );
-  }
 
   return <PortalHome profile={profile} bookings={bookings} onboardingAnswers={onboardingAnswers} />;
 }

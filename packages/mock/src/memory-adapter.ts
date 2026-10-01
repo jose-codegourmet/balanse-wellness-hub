@@ -695,6 +695,15 @@ export function createMemoryAdapter(): MockDataAdapter {
         const profile = profiles.find((p) => p.id === customerId);
         return profile ? clone(profile) : null;
       }),
+    ensureCustomer: (seed) =>
+      applyMockEffects(() => {
+        const existing = profiles.find((p) => p.id === seed.id);
+        if (existing) return clone(existing);
+        profiles.push(clone(seed));
+        acceptances[seed.id] ??= [];
+        community.signupAt[seed.id] ??= MOCK_NOW_ISO;
+        return clone(seed);
+      }),
     patchMe: (customerId, patch) =>
       applyMockEffects(() => {
         const profile = findProfile(customerId);
