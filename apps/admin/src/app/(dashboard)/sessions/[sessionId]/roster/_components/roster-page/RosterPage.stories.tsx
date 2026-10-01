@@ -11,12 +11,22 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Confirmed, checked-in, completed, no-show, held, and waitlisted rows. */
+/** Every booking status in one grid: to check in, checked in, held, waitlist, no-show. */
 export const Default: Story = {};
 
 /** Class about to start: 2 checked in, 3 still to check in, 1 paying at the counter. */
 export const DoorCheckIn: Story = {
   args: { sessionId: "session-wed-cutoff" },
+};
+
+/** Guest sheet for a CONFIRMED guest: Check in and No-show actions. */
+export const GuestSheetToCheckIn: Story = {
+  args: { sessionId: "session-wed-cutoff", initialGuestId: "booking-roster-03" },
+};
+
+/** Guest sheet for a held guest: payment first, no attendance actions. */
+export const GuestSheetHeld: Story = {
+  args: { sessionId: "session-wed-cutoff", initialGuestId: "booking-roster-06" },
 };
 
 export const CoachOwned: Story = {

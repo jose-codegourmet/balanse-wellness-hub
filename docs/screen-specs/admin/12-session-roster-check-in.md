@@ -39,10 +39,9 @@ Keep these as separate metrics.
 
 ## Current screen (mock, #334)
 
-- Header: session name, date/time, coaches. Stats: **Checked in / confirmed** (emphasised), places available, held, waitlisted. A capacity bar splits checked in / confirmed-not-checked-in / held against capacity, with capacity, occupancy, attendance, and no-show counts beneath.
-- Toolbar: search guests by name (all sections) and an attendance filter for the Attendance list — All, To check in, Checked in, No-show — each with a count.
-- **Attendance** lists confirmed, checked-in, completed, and no-show guests (no-show guests stay visible). CONFIRMED rows: **Check in** (one tap, toast) and **No-show** (confirm dialog, no refund).
-- **Held / pending**: held, payment submitted, cancellation or reschedule requested. No attendance actions.
-- **Waitlist**: FIFO order with position numbers.
-- Every row shows status, payment (when the actor may read payments), and a link to the booking (when the actor may read bookings). Each section has an empty state for "no guests" and "no matches".
+- Header (`AdminPageShell`): session name, date, time range, breadcrumb back to Schedule. Stats: **Checked in / confirmed** (emphasised), places left, held, waitlist, and a capacity bar (checked in / to check in / held against capacity) with the capacity and any no-show count beneath. Occupancy and attendance percentages are not shown here; they belong to Reports.
+- **Coaches**: the session's coaches as photo circles with a shield mark; each links to the coach profile when the actor may open Coaches.
+- **Participants**: one avatar grid for everyone on the session — confirmed, checked in, completed, no-show, held / pending, and waitlisted — with search by name and count chips: All, To check in, Checked in, Held, Waitlist, No-show. Each face shows the guest's name and a short status; checked-in faces carry a check mark, no-shows a cross (struck through), held guests an hourglass, and waitlisted guests their FIFO position. Order: to check in, checked in, held, waitlist, no-show. The grid fills its container (`auto-fill`), so it follows the sidebar, not the viewport.
+- **Guest sheet**: tapping a face opens a bottom sheet with the full status badge, payment (when the actor may read payments), and links to the booking and customer profile (when permitted). CONFIRMED guests with the attendance action get **Check in** (one tap, toast, sheet closes) and **No-show** (confirm dialog, no refund). Held and waitlisted guests have no attendance actions.
+- Empty states: "Nobody has booked this session yet." and "No guests match this search or filter."
 - Mock example with attendees: `/sessions/session-wed-cutoff/roster` (Calisthenics, past cutoff) — 2 checked in, 3 to check in, 1 held paying at the counter. `/sessions/session-wed-open/roster` covers every booking status.

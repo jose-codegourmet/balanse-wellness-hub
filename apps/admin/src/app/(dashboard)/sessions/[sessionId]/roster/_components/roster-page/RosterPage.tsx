@@ -1,29 +1,35 @@
 "use client";
 
 import {
-  attendanceUtilisation,
   type BookingStatus,
   type CustomerBooking,
-  formatRatioPercent,
   formatSessionDate,
-  formatSessionTime,
+  formatSessionTimeRange,
   NO_REFUND_ON_NOSHOW_NOTE,
-  occupancyRatio,
   paymentStatusLabel,
   sessionDisplayName,
 } from "@balanse/domain";
 import { isMockAuthorizationError } from "@balanse/mock";
 import {
+  Avatar,
+  AvatarFallback,
   Button,
+  Chip,
+  CoachPhoto,
+  cn,
   DetailPageSkeleton,
   FeedbackState,
   Input,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
   StatusBadge,
-  ToggleGroup,
-  ToggleGroupItem,
 } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { Check, Hourglass, Search, ShieldCheck, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { AccessDenied } from "@/components/balanse/access-denied/AccessDenied";
@@ -34,23 +40,44 @@ import { adminSessionRosterQuery } from "@/lib/query/queries";
 import { AdminCan, useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
 import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import type { RosterGroup, RosterPageProps } from "./RosterPage.meta";
+
+export type { RosterGroup, RosterPageProps } from "./RosterPage.meta";
 
 const BREADCRUMB = [{ label: "Schedule", href: "/schedule" }, { label: "Roster" }];
 
-type AttendanceFilter = "all" | "to_check_in" | "checked_in" | "no_show";
+type GroupFilter = "all" | RosterGroup;
 
-const ATTENDANCE_FILTERS: { id: AttendanceFilter; label: string }[] = [
+/** Display order inside the grid: who the door needs first, no-shows last. */
+const GROUP_ORDER: RosterGroup[] = ["to_check_in", "checked_in", "held", "waitlist", "no_show"];
+
+const GROUP_LABEL: Record<RosterGroup, string> = {
+  to_check_in: "To check in",
+  checked_in: "Checked in",
+  held: "Held",
+  waitlist: "Waitlist",
+  no_show: "No-show",
+};
+
+const FILTERS: { id: GroupFilter; label: string }[] = [
   { id: "all", label: "All" },
-  { id: "to_check_in", label: "To check in" },
-  { id: "checked_in", label: "Checked in" },
-  { id: "no_show", label: "No-show" },
+  ...GROUP_ORDER.map((id) => ({ id, label: GROUP_LABEL[id] })),
 ];
 
-function matchesAttendance(status: BookingStatus, filter: AttendanceFilter): boolean {
-  if (filter === "to_check_in") return status === "CONFIRMED";
-  if (filter === "checked_in") return status === "CHECKED_IN";
-  if (filter === "no_show") return status === "NO_SHOW";
-  return true;
+type Guest = {
+  row: CustomerBooking;
+  group: RosterGroup;
+  /** 1-based FIFO position, waitlist only. */
+  position?: number;
+};
+
+function groupForStatus(status: BookingStatus): RosterGroup {
+  if (status === "CONFIRMED") return "to_check_in";
+  if (status === "CHECKED_IN" || status === "COMPLETED") return "checked_in";
+  if (status === "NO_SHOW") return "no_show";
+  if (status === "WAITLISTED") return "waitlist";
+  // HELD_AWAITING_PAYMENT, PAYMENT_SUBMITTED, CANCELLATION_REQUESTED, RESCHEDULE_REQUESTED
+  return "held";
 }
 
 function initials(name: string): string {
@@ -62,14 +89,22 @@ function initials(name: string): string {
     .join("");
 }
 
-export function RosterPage({ sessionId }: { sessionId: string }) {
+function guestCaption(guest: Guest): string {
+  return guest.group === "waitlist" && guest.position
+    ? `Waitlist #${guest.position}`
+    : GROUP_LABEL[guest.group];
+}
+
+export function RosterPage({ sessionId, initialGuestId = null }: RosterPageProps) {
   const { principal } = useMockPrincipal();
   const canReadPayments = useCanAdminRoute("/payments");
+  const canOpenCoach = useCanAdminRoute("/coaches");
   const rosterQuery = useQuery(adminSessionRosterQuery(principal, sessionId));
   const checkIn = useCheckIn();
   const markNoShow = useMarkNoShow();
   const [search, setSearch] = useState("");
-  const [attendance, setAttendance] = useState<AttendanceFilter>("all");
+  const [filter, setFilter] = useState<GroupFilter>("all");
+  const [openId, setOpenId] = useState<string | null>(initialGuestId);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   if (rosterQuery.isPending && !rosterQuery.data) {
@@ -104,23 +139,33 @@ export function RosterPage({ sessionId }: { sessionId: string }) {
   }
 
   const roster = rosterQuery.data;
-  const query = search.trim().toLowerCase();
-  const byName = (row: CustomerBooking) =>
-    !query || (row.customerName ?? "").toLowerCase().includes(query);
-  const attendanceCounts: Record<AttendanceFilter, number> = {
-    all: roster.confirmed.length,
-    to_check_in: roster.confirmed.filter((row) => matchesAttendance(row.status, "to_check_in"))
-      .length,
-    checked_in: roster.confirmed.filter((row) => matchesAttendance(row.status, "checked_in"))
-      .length,
-    no_show: roster.confirmed.filter((row) => matchesAttendance(row.status, "no_show")).length,
-  };
-  const confirmedRows = roster.confirmed.filter(
-    (row) => byName(row) && matchesAttendance(row.status, attendance),
+  const guests: Guest[] = [
+    ...roster.confirmed.map<Guest>((row) => ({ row, group: groupForStatus(row.status) })),
+    ...roster.held.map<Guest>((row) => ({ row, group: "held" })),
+    ...roster.waitlisted.map<Guest>((row, index) => ({
+      row,
+      group: "waitlist",
+      position: index + 1,
+    })),
+  ].sort(
+    (a, b) =>
+      GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group) ||
+      (a.position ?? 0) - (b.position ?? 0) ||
+      (a.row.customerName ?? "").localeCompare(b.row.customerName ?? ""),
   );
-  const heldRows = roster.held.filter(byName);
-  const waitlistRows = roster.waitlisted.filter(byName);
-  const filtering = query !== "" || attendance !== "all";
+  const counts = Object.fromEntries(
+    FILTERS.map(({ id }) => [
+      id,
+      id === "all" ? guests.length : guests.filter((guest) => guest.group === id).length,
+    ]),
+  ) as Record<GroupFilter, number>;
+  const query = search.trim().toLowerCase();
+  const visible = guests.filter(
+    (guest) =>
+      (filter === "all" || guest.group === filter) &&
+      (!query || (guest.row.customerName ?? "").toLowerCase().includes(query)),
+  );
+  const openGuest = openId ? (guests.find((guest) => guest.row.id === openId) ?? null) : null;
 
   async function runAttendance(
     bookingId: string,
@@ -131,6 +176,7 @@ export function RosterPage({ sessionId }: { sessionId: string }) {
     try {
       await action(bookingId);
       onDone();
+      setOpenId(null);
     } catch {
       notify.admin("booking.check-in-failed");
     } finally {
@@ -143,129 +189,135 @@ export function RosterPage({ sessionId }: { sessionId: string }) {
       className="max-w-6xl overflow-x-hidden"
       eyebrow="Live session roster"
       title={sessionDisplayName(roster.session)}
-      description={`${formatSessionDate(roster.session.startsAt)} · ${formatSessionTime(roster.session.startsAt)} · ${roster.session.coachName}`}
+      description={`${formatSessionDate(roster.session.startsAt)} · ${formatSessionTimeRange(roster.session.startsAt, roster.session.endsAt)}`}
       breadcrumb={BREADCRUMB}
       stats={<RosterStats roster={roster} />}
     >
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <div className="relative w-full xl:max-w-xs">
-          <Search
-            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden
-          />
-          <Input
-            type="search"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search guests"
-            aria-label="Search guests by name"
-            className="pl-9"
-          />
-        </div>
-        <ToggleGroup
-          variant="outline"
-          size="sm"
-          value={[attendance]}
-          onValueChange={(next) => {
-            const picked = Array.isArray(next) ? next[0] : next;
-            if (ATTENDANCE_FILTERS.some((filter) => filter.id === picked))
-              setAttendance(picked as AttendanceFilter);
-          }}
-          aria-label="Filter by attendance"
-          className="max-w-full overflow-x-auto"
-        >
-          {ATTENDANCE_FILTERS.map((filter) => (
-            <ToggleGroupItem key={filter.id} value={filter.id}>
-              {filter.label}
-              <span className="ml-1.5 tabular-nums opacity-70">{attendanceCounts[filter.id]}</span>
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </div>
-
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(18rem,0.75fr)]">
-        <div className="grid gap-6">
-          <RosterSection
-            title="Attendance"
-            description="Confirmed guests. Check people in as they arrive."
-            count={confirmedRows.length}
-            total={roster.confirmed.length}
-            empty={
-              filtering
-                ? "No confirmed guests match this search or filter."
-                : "No confirmed guests yet."
-            }
+      <div className="grid gap-8">
+        <section aria-labelledby="roster-coaches">
+          <h2
+            id="roster-coaches"
+            className="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase"
           >
-            {confirmedRows.map((row) => (
-              <GuestRow key={row.id} row={row} showPayment={canReadPayments}>
-                {row.status === "CONFIRMED" ? (
-                  <AdminCan action="attendance">
-                    <Button
-                      type="button"
-                      loading={busyId === row.id && checkIn.isPending}
-                      disabled={busyId !== null}
-                      onClick={() =>
-                        runAttendance(row.id, checkIn.mutateAsync, () =>
-                          notify.admin("booking.checked-in"),
-                        )
-                      }
+            Coaches
+          </h2>
+          <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-5">
+            {roster.session.coaches.map((coach) => {
+              const face = (
+                <span className="relative block">
+                  <CoachPhoto
+                    photoKey={coach.photoKey}
+                    name={coach.name}
+                    className="size-16 rounded-full shadow-sm ring-2 ring-background"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="absolute -right-0.5 -bottom-0.5 grid size-6 place-items-center rounded-full bg-primary text-primary-foreground ring-2 ring-background"
+                  >
+                    <ShieldCheck className="size-3.5" />
+                  </span>
+                </span>
+              );
+              return (
+                <li key={coach.id} className="flex w-24 flex-col items-center gap-2 text-center">
+                  {canOpenCoach ? (
+                    <Link
+                      href={`/coaches/${coach.id}`}
+                      className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      aria-label={`${coach.name}, coach`}
                     >
-                      Check in
-                    </Button>
-                    <ConfirmAction
-                      triggerLabel="No-show"
-                      title={`Mark ${row.customerName ?? "this guest"} as no-show?`}
-                      description={NO_REFUND_ON_NOSHOW_NOTE}
-                      confirmLabel="Mark no-show"
-                      variant="outline"
-                      disabled={busyId !== null}
-                      onConfirm={() =>
-                        runAttendance(row.id, markNoShow.mutateAsync, () =>
-                          notify.success({
-                            title: "Marked no-show",
-                            description: "Attendance is recorded for this booking.",
-                          }),
-                        )
-                      }
-                    />
-                  </AdminCan>
-                ) : null}
-              </GuestRow>
-            ))}
-          </RosterSection>
+                      {face}
+                    </Link>
+                  ) : (
+                    face
+                  )}
+                  <span className="line-clamp-2 text-xs leading-snug font-medium">
+                    {coach.name}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
 
-          <RosterSection
-            title="Held / pending"
-            description="Holding a place but not confirmed. Resolve payment before class."
-            count={heldRows.length}
-            total={roster.held.length}
-            empty={query ? "No held guests match this search." : "Nobody is holding a place."}
-          >
-            {heldRows.map((row) => (
-              <GuestRow key={row.id} row={row} showPayment={canReadPayments} />
-            ))}
-          </RosterSection>
-        </div>
+        <section aria-labelledby="roster-participants" className="grid gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2
+              id="roster-participants"
+              className="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase"
+            >
+              Participants
+            </h2>
+            <div className="relative w-full sm:max-w-xs">
+              <Search
+                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden
+              />
+              <Input
+                type="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search guests"
+                aria-label="Search guests by name"
+                className="pl-9"
+              />
+            </div>
+          </div>
 
-        <RosterSection
-          title="Waitlist"
-          description="First in, first offered."
-          count={waitlistRows.length}
-          total={roster.waitlisted.length}
-          empty={query ? "No waitlisted guests match this search." : "The waitlist is empty."}
-          ordered
-        >
-          {waitlistRows.map((row) => (
-            <GuestRow
-              key={row.id}
-              row={row}
-              showPayment={false}
-              position={roster.waitlisted.indexOf(row) + 1}
-              hideStatus
-            />
-          ))}
-        </RosterSection>
+          <fieldset className="-mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
+            <legend className="sr-only">Filter guests</legend>
+            {FILTERS.map(({ id, label }) => (
+              <Chip
+                key={id}
+                size="sm"
+                selected={filter === id}
+                onClick={() => setFilter(id)}
+                className="snap-start"
+              >
+                {label}
+                <span className={cn("tabular-nums", filter === id ? "opacity-80" : "opacity-60")}>
+                  · {counts[id]}
+                </span>
+              </Chip>
+            ))}
+          </fieldset>
+
+          {visible.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+              {guests.length === 0
+                ? "Nobody has booked this session yet."
+                : "No guests match this search or filter."}
+            </p>
+          ) : (
+            <ul className="grid grid-cols-[repeat(auto-fill,minmax(5.5rem,1fr))] gap-x-2 gap-y-6">
+              {visible.map((guest) => (
+                <li key={guest.row.id}>
+                  <GuestTile guest={guest} onOpen={() => setOpenId(guest.row.id)} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
+
+      <GuestSheet
+        guest={openGuest}
+        onClose={() => setOpenId(null)}
+        showPayment={canReadPayments}
+        busy={busyId !== null}
+        checkingIn={openGuest !== null && busyId === openGuest.row.id && checkIn.isPending}
+        onCheckIn={(id) =>
+          runAttendance(id, checkIn.mutateAsync, () => notify.admin("booking.checked-in"))
+        }
+        onNoShow={(id) =>
+          runAttendance(id, markNoShow.mutateAsync, () =>
+            notify.success({
+              title: "Marked no-show",
+              description: "Attendance is recorded for this booking.",
+            }),
+          )
+        }
+      />
     </AdminPageShell>
   );
 }
@@ -281,24 +333,12 @@ type RosterCounts = {
 };
 
 function RosterStats({ roster }: { roster: RosterCounts }) {
-  const occupancy = occupancyRatio(roster.confirmedCount, roster.capacity);
-  const attendance = attendanceUtilisation(roster.checkedIn, roster.capacity);
   const awaiting = Math.max(0, roster.confirmedCount - roster.checkedIn);
   const scale = Math.max(roster.capacity, roster.confirmedCount + roster.heldCount, 1);
   const segments = [
     { key: "checked-in", value: roster.checkedIn, className: "bg-primary", label: "Checked in" },
-    {
-      key: "awaiting",
-      value: awaiting,
-      className: "bg-primary/45",
-      label: "Confirmed, not checked in",
-    },
-    {
-      key: "held",
-      value: roster.heldCount,
-      className: "bg-[var(--balanse-gold)]",
-      label: "Held",
-    },
+    { key: "awaiting", value: awaiting, className: "bg-primary/45", label: "To check in" },
+    { key: "held", value: roster.heldCount, className: "bg-(--balanse-gold)", label: "Held" },
   ];
 
   return (
@@ -314,15 +354,15 @@ function RosterStats({ roster }: { roster: RosterCounts }) {
             </span>
           </dd>
         </div>
-        <Stat label="Places available" value={roster.available} />
+        <Stat label="Places left" value={roster.available} />
         <Stat label="Held" value={roster.heldCount} />
-        <Stat label="Waitlisted" value={roster.waitlistedCount} />
+        <Stat label="Waitlist" value={roster.waitlistedCount} />
       </dl>
       <div className="grid gap-2">
         <div
           className="flex h-2.5 overflow-hidden rounded-full bg-muted"
           role="img"
-          aria-label={`${roster.checkedIn} checked in, ${awaiting} confirmed not checked in, ${roster.heldCount} held, ${roster.available} available, of ${roster.capacity} places`}
+          aria-label={`${roster.checkedIn} checked in, ${awaiting} to check in, ${roster.heldCount} held, ${roster.available} places left, of ${roster.capacity}`}
         >
           {segments.map((segment) =>
             segment.value > 0 ? (
@@ -344,8 +384,8 @@ function RosterStats({ roster }: { roster: RosterCounts }) {
             ))}
           </span>
           <span className="tabular-nums">
-            Capacity {roster.capacity} · Occupancy {formatRatioPercent(occupancy)} · Attendance{" "}
-            {formatRatioPercent(attendance)} · No-show {roster.noShow}
+            Capacity {roster.capacity}
+            {roster.noShow > 0 ? ` · No-show ${roster.noShow}` : ""}
           </span>
         </div>
       </div>
@@ -362,85 +402,166 @@ function Stat({ label, value }: { label: string; value: number }) {
   );
 }
 
-function RosterSection({
-  title,
-  description,
-  count,
-  total,
-  empty,
-  ordered = false,
-  children,
-}: {
-  title: string;
-  description: string;
-  count: number;
-  total: number;
-  empty: string;
-  ordered?: boolean;
-  children: React.ReactNode;
-}) {
-  const List = ordered ? "ol" : "ul";
+/** Corner mark on a guest's avatar. `null` keeps the face clean (still to check in). */
+function GuestMark({ guest }: { guest: Guest }) {
+  if (guest.group === "to_check_in") return null;
+  const base =
+    "absolute -right-0.5 -bottom-0.5 grid size-6 place-items-center rounded-full text-[0.65rem] font-semibold ring-2 ring-background";
+  if (guest.group === "checked_in") {
+    return (
+      <span aria-hidden="true" className={cn(base, "bg-primary text-primary-foreground")}>
+        <Check className="size-3.5" />
+      </span>
+    );
+  }
+  if (guest.group === "no_show") {
+    return (
+      <span aria-hidden="true" className={cn(base, "bg-destructive text-background")}>
+        <X className="size-3.5" />
+      </span>
+    );
+  }
+  if (guest.group === "held") {
+    return (
+      <span aria-hidden="true" className={cn(base, "bg-(--balanse-gold) text-foreground")}>
+        <Hourglass className="size-3.5" />
+      </span>
+    );
+  }
   return (
-    <section className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm">
-      <header className="flex items-start justify-between gap-3 border-b border-border/70 bg-muted/25 p-4 sm:p-5">
-        <div>
-          <h2 className="font-display text-2xl">{title}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-        </div>
-        <span className="shrink-0 rounded-sm bg-muted px-2.5 py-1 text-xs font-medium tabular-nums">
-          {count === total ? total : `${count} of ${total}`}
-        </span>
-      </header>
-      {count === 0 ? (
-        <p className="p-5 text-sm text-muted-foreground">{empty}</p>
-      ) : (
-        <List className="divide-y divide-border/70">{children}</List>
-      )}
-    </section>
+    <span aria-hidden="true" className={cn(base, "bg-muted text-foreground tabular-nums")}>
+      {guest.position}
+    </span>
   );
 }
 
-function GuestRow({
-  row,
-  showPayment,
-  position,
-  hideStatus = false,
-  children,
-}: {
-  row: CustomerBooking;
-  showPayment: boolean;
-  position?: number;
-  hideStatus?: boolean;
-  children?: React.ReactNode;
-}) {
-  const name = row.customerName ?? "Guest";
+function GuestAvatar({ guest, className }: { guest: Guest; className?: string }) {
+  const name = guest.row.customerName ?? "Guest";
+  const faded = guest.group === "no_show";
   return (
-    <li className="flex flex-wrap items-center gap-3 p-4 transition-colors hover:bg-muted/20 sm:px-5">
-      <span
-        className={
-          position
-            ? "grid size-9 shrink-0 place-items-center rounded-full bg-primary text-sm font-semibold text-primary-foreground tabular-nums"
-            : "grid size-9 shrink-0 place-items-center rounded-full bg-secondary text-xs font-semibold"
-        }
-        aria-hidden={position ? undefined : true}
+    <Avatar className={cn("size-16", className)}>
+      <AvatarFallback
+        className={cn(
+          "bg-secondary text-base font-semibold text-foreground",
+          faded && "opacity-50 line-through decoration-destructive/60",
+        )}
       >
-        {position ?? initials(name)}
+        {initials(name)}
+      </AvatarFallback>
+      <GuestMark guest={guest} />
+    </Avatar>
+  );
+}
+
+function GuestTile({ guest, onOpen }: { guest: Guest; onOpen: () => void }) {
+  const name = guest.row.customerName ?? "Guest";
+  const caption = guestCaption(guest);
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={`${name}, ${caption}. Open guest details`}
+      className="group/guest flex w-full flex-col items-center gap-2 rounded-xl px-1 py-2 text-center outline-none transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none"
+    >
+      <GuestAvatar
+        guest={guest}
+        className="transition-transform group-hover/guest:scale-[1.04] motion-reduce:transition-none motion-reduce:transform-none"
+      />
+      <span className="w-full">
+        <span className="line-clamp-1 text-sm font-medium">{name}</span>
+        <span className="block text-xs text-muted-foreground">{caption}</span>
       </span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-medium">{name}</p>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          {hideStatus ? null : <StatusBadge status={row.status} surface="admin" />}
-          {showPayment && row.paymentStatus !== "NONE" ? (
-            <span>Payment: {paymentStatusLabel(row.paymentStatus)}</span>
-          ) : null}
-          <AdminCan href="/bookings">
-            <Link className="underline underline-offset-4" href={`/bookings/${row.id}`}>
-              View booking
-            </Link>
-          </AdminCan>
-        </div>
-      </div>
-      {children ? <div className="flex flex-wrap gap-2 max-sm:w-full">{children}</div> : null}
-    </li>
+    </button>
+  );
+}
+
+function GuestSheet({
+  guest,
+  onClose,
+  showPayment,
+  busy,
+  checkingIn,
+  onCheckIn,
+  onNoShow,
+}: {
+  guest: Guest | null;
+  onClose: () => void;
+  showPayment: boolean;
+  busy: boolean;
+  checkingIn: boolean;
+  onCheckIn: (bookingId: string) => void;
+  onNoShow: (bookingId: string) => void;
+}) {
+  const name = guest?.row.customerName ?? "Guest";
+  return (
+    <Sheet open={guest !== null} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent
+        side="bottom"
+        className="max-h-[85dvh] overflow-y-auto sm:mx-auto sm:max-w-lg sm:rounded-t-2xl"
+      >
+        {guest ? (
+          <>
+            <SheetHeader className="flex-row items-center gap-4">
+              <GuestAvatar guest={guest} className="size-14" />
+              <div className="min-w-0">
+                <SheetTitle className="font-display text-xl">{name}</SheetTitle>
+                <SheetDescription>{guestCaption(guest)}</SheetDescription>
+              </div>
+            </SheetHeader>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 text-sm">
+              <StatusBadge status={guest.row.status} surface="admin" />
+              {showPayment && guest.row.paymentStatus !== "NONE" ? (
+                <span className="text-muted-foreground">
+                  Payment: {paymentStatusLabel(guest.row.paymentStatus)}
+                </span>
+              ) : null}
+            </div>
+            <div className="flex flex-wrap gap-x-4 gap-y-2 px-4 text-sm">
+              <AdminCan href="/bookings">
+                <Link className="underline underline-offset-4" href={`/bookings/${guest.row.id}`}>
+                  View booking
+                </Link>
+              </AdminCan>
+              <AdminCan href="/customers">
+                <Link
+                  className="underline underline-offset-4"
+                  href={`/customers/${guest.row.customerId}`}
+                >
+                  Customer profile
+                </Link>
+              </AdminCan>
+            </div>
+            {guest.row.status === "CONFIRMED" ? (
+              <AdminCan action="attendance">
+                <SheetFooter className="flex-row flex-wrap justify-end gap-2">
+                  <ConfirmAction
+                    triggerLabel="No-show"
+                    title={`Mark ${name} as no-show?`}
+                    description={NO_REFUND_ON_NOSHOW_NOTE}
+                    confirmLabel="Mark no-show"
+                    variant="outline"
+                    disabled={busy}
+                    onConfirm={() => onNoShow(guest.row.id)}
+                  />
+                  <Button
+                    type="button"
+                    loading={checkingIn}
+                    disabled={busy}
+                    onClick={() => onCheckIn(guest.row.id)}
+                  >
+                    Check in
+                  </Button>
+                </SheetFooter>
+              </AdminCan>
+            ) : guest.group === "held" ? (
+              <p className="px-4 pb-4 text-xs text-muted-foreground">
+                Holding a place but not confirmed. Resolve payment before class; no attendance
+                actions until then.
+              </p>
+            ) : null}
+          </>
+        ) : null}
+      </SheetContent>
+    </Sheet>
   );
 }

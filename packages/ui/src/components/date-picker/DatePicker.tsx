@@ -80,7 +80,23 @@ function formatDateLabel(ymd: DatePickerValues): string {
 }
 
 function formatRangeLabel(range: DateRangePickerValues): string {
-  return `${formatDateLabel(range.from)} – ${formatDateLabel(range.to)}`;
+  const from = localDateFromYmd(range.from);
+  const to = localDateFromYmd(range.to);
+  const monthDay = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
+  const end = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(to);
+
+  if (range.from === range.to) {
+    return end;
+  }
+
+  const start = monthDay.format(from);
+  return from.getFullYear() === to.getFullYear()
+    ? `${start} – ${end}`
+    : `${start}, ${from.getFullYear()} – ${end}`;
 }
 
 function isYmdBlocked(
@@ -350,6 +366,7 @@ function DateRangePicker({
 
   const today = resolveToday(todayProp);
   const hostRef = React.useRef<HTMLDivElement>(null);
+  const popupRef = React.useRef<HTMLDivElement>(null);
   const twoMonths = useTwoMonthPanel(hostRef);
   const [open, setOpen] = React.useState(false);
   const [focused, setFocused] = React.useState(false);
@@ -370,6 +387,14 @@ function DateRangePicker({
   const field = useFieldContext();
   const displayValue = focused ? draft : value ? formatRangeLabel(value) : draft;
   const isInvalid = Boolean(invalid ?? ariaInvalid ?? field?.invalid);
+
+  const focusCalendarDay = (date: Date) => {
+    window.setTimeout(() => {
+      popupRef.current
+        ?.querySelector<HTMLButtonElement>(`[data-day="${date.toLocaleDateString()}"]`)
+        ?.focus();
+    }, 0);
+  };
 
   const applyRange = (next: DateRangePickerValues | undefined) => {
     setValue(next);
@@ -498,15 +523,25 @@ function DateRangePicker({
           >
             <CalendarIcon />
           </InputGroupButton>
-          <PopoverContent align="start" className="w-auto max-w-[calc(100vw-1rem)]">
+          <PopoverContent
+            ref={popupRef}
+            anchor={hostRef}
+            align="start"
+            collisionPadding={8}
+            className={cn(
+              "max-w-[calc(100vw-1rem)] gap-3 p-3",
+              twoMonths ? "w-auto" : "w-68 pointer-coarse:w-80",
+            )}
+          >
             <PopoverTitle className="sr-only">Choose date range</PopoverTitle>
-            <div className="flex flex-wrap gap-1">
+            <div className="grid grid-cols-3 gap-1 rounded-md bg-muted/60 p-1">
               {presets.map((preset) => (
                 <Chip
                   key={preset.key}
                   size="sm"
                   selected={value?.from === preset.range.from && value?.to === preset.range.to}
                   aria-label={`Preset: ${preset.label}`}
+                  className="w-full border-transparent px-1.5 shadow-none aria-[pressed=false]:bg-transparent aria-[pressed=false]:hover:bg-background/80"
                   onClick={() => {
                     applyRange(preset.range);
                     setPending({
@@ -522,25 +557,41 @@ function DateRangePicker({
             </div>
             <Calendar
               mode="range"
+              className="self-center p-0 [--cell-size:2rem] pointer-coarse:[--cell-size:min(2.5rem,calc((100vw-2.5rem)/7))] [&_.rdp-month]:gap-2 [&_.rdp-week]:mt-1 [&_button[data-range-middle=true]]:bg-muted/45! pointer-coarse:[&_button[data-day]]:size-(--cell-size)!"
               numberOfMonths={twoMonths ? 2 : 1}
               today={localDateFromYmd(today)}
               defaultMonth={localDateFromYmd(value?.from ?? today)}
               selected={pending}
-              onSelect={(range) => {
-                setPending(range);
-                if (!range?.from || !range.to) {
+              onDayKeyDown={(date, _modifiers, event) => {
+                const dayDelta = {
+                  ArrowLeft: -1,
+                  ArrowRight: 1,
+                  ArrowUp: -7,
+                  ArrowDown: 7,
+                }[event.key];
+                if (dayDelta) {
+                  focusCalendarDay(
+                    new Date(date.getFullYear(), date.getMonth(), date.getDate() + dayDelta),
+                  );
+                }
+              }}
+              onDayClick={(date) => {
+                const clicked = ymdFromLocalDate(date);
+                if (isYmdBlocked(clicked, min, max, disabledDates)) {
                   return;
                 }
-                const next = {
-                  from: ymdFromLocalDate(range.from),
-                  to: ymdFromLocalDate(range.to),
-                };
-                if (
-                  isYmdBlocked(next.from, min, max, disabledDates) ||
-                  isYmdBlocked(next.to, min, max, disabledDates)
-                ) {
+
+                if (!pending?.from || pending.to) {
+                  setPending({ from: date, to: undefined });
+                  // The calendar replaces its day buttons after selection.
+                  focusCalendarDay(date);
                   return;
                 }
+
+                const start = ymdFromLocalDate(pending.from);
+                const next =
+                  clicked < start ? { from: clicked, to: start } : { from: start, to: clicked };
+                setPending({ from: localDateFromYmd(next.from), to: localDateFromYmd(next.to) });
                 applyRange(next);
                 setOpen(false);
               }}
