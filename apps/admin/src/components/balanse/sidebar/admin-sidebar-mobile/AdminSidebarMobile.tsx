@@ -39,7 +39,7 @@ export function AdminSidebarMobile({
 
   return (
     <div className={className} {...props}>
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/70 bg-background/85 px-4 shadow-sm shadow-primary/5 backdrop-blur-xl md:hidden">
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/70 bg-background/85 px-4 shadow-sm shadow-primary/5 backdrop-blur-xl md:px-6 lg:hidden">
         <BrandLockup showTagline={false} />
         <div className="flex items-center gap-2">
           <AdminNotificationHeader compact pathname={pathname} />
@@ -48,7 +48,7 @@ export function AdminSidebarMobile({
               render={
                 <Button
                   aria-label="Open navigation"
-                  className="md:hidden"
+                  className="lg:hidden"
                   size="icon"
                   variant="outline"
                 />

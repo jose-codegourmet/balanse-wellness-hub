@@ -14,7 +14,7 @@ export default async function DashboardLayout({
   return (
     <AdminShell defaultCollapsed={collapsed}>
       <AdminGuard>
-        <div className="min-h-dvh bg-[radial-gradient(circle_at_top_right,color-mix(in_oklab,var(--primary)_5%,transparent),transparent_32%)] px-4 py-6 md:px-8 md:py-8">
+        <div className="min-h-dvh bg-[radial-gradient(circle_at_top_right,color-mix(in_oklab,var(--primary)_5%,transparent),transparent_32%)] px-4 py-6 md:px-6 lg:px-8 lg:py-8">
           <div className="mx-auto w-full max-w-[96rem]">{children}</div>
         </div>
         {modal}

@@ -16,10 +16,18 @@ import {
   sessionDisplayName,
 } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
-import { Button, Input, Label, NativeSelect, StatusBadge } from "@balanse/ui";
+import {
+  Button,
+  DateRangePicker,
+  type DateRangePickerValues,
+  Input,
+  Label,
+  NativeSelect,
+  StatusBadge,
+} from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowLeftIcon, ArrowRightIcon, CalendarIcon, XIcon } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -48,15 +56,28 @@ export function BookingListPage() {
     (params.get("tab") as AdminBookingTab) || "pending",
   );
   const [classId, setClassId] = useState("all");
-  const [date, setDate] = useState("");
+  const [dateRange, setDateRange] = useState<DateRangePickerValues | undefined>();
   const { data: bookings } = useSuspenseQuery(adminBookingsQuery(principal));
   const { data: classes } = useSuspenseQuery(adminClassesQuery(principal));
   const { data: customers } = useSuspenseQuery(adminCustomersQuery(principal));
 
   const names = useMemo(() => customerNameLookup(customers), [customers]);
   const filtered = useMemo(
-    () => (bookings ? filterAdminBookings(bookings, { tab, query: "", classId, date }, names) : []),
-    [bookings, classId, date, names, tab],
+    () =>
+      bookings
+        ? filterAdminBookings(
+            bookings,
+            {
+              tab,
+              query: "",
+              classId,
+              from: dateRange?.from,
+              to: dateRange?.to,
+            },
+            names,
+          )
+        : [],
+    [bookings, classId, dateRange, names, tab],
   );
   const columns = useMemo<ColumnDef<CustomerBooking, unknown>[]>(
     () => [
@@ -178,31 +199,22 @@ export function BookingListPage() {
                     </option>
                   ))}
                 </NativeSelect>
-                <div className="relative">
-                  <CalendarIcon
-                    className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
-                    aria-hidden
-                  />
-                  <Input
-                    id="booking-date"
-                    aria-label="Date"
-                    type="date"
-                    size="sm"
-                    className="w-40 pl-8"
-                    value={date}
-                    onChange={(event) => {
-                      setDate(event.target.value);
-                    }}
-                  />
-                </div>
-                {classId !== "all" || date ? (
+                <DateRangePicker
+                  id="booking-date-range"
+                  aria-label="Session date range"
+                  placeholder="All dates"
+                  className="w-64 max-w-full"
+                  value={dateRange}
+                  onValueChange={setDateRange}
+                />
+                {classId !== "all" || dateRange ? (
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => {
                       setClassId("all");
-                      setDate("");
+                      setDateRange(undefined);
                     }}
                   >
                     <XIcon aria-hidden />

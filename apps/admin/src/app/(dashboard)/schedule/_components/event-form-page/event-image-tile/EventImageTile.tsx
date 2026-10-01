@@ -88,7 +88,7 @@ export function EventImageTile({
                 </span>
               </div>
             )}
-            <div className="absolute inset-x-2 bottom-2 flex justify-end gap-1.5 opacity-100 transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
+            <div className="absolute inset-x-2 bottom-2 flex justify-end gap-1.5 opacity-100 transition-opacity pointer-fine:opacity-0 pointer-fine:group-focus-within:opacity-100 pointer-fine:group-hover:opacity-100">
               <label
                 htmlFor={inputId}
                 className={cn(buttonVariants({ variant: "secondary", size: "xs" }))}

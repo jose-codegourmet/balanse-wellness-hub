@@ -59,7 +59,7 @@ export function AdminSidebar({
       />
       <aside
         className={cn(
-          "isolate sticky top-0 z-20 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground before:absolute before:inset-y-0 before:left-0 before:z-10 before:w-0.75 before:bg-(--balanse-gold) motion-reduce:transition-none motion-safe:transition-[width] motion-safe:duration-300 md:flex",
+          "isolate sticky top-0 z-20 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground before:absolute before:inset-y-0 before:left-0 before:z-10 before:w-0.75 before:bg-(--balanse-gold) motion-reduce:transition-none motion-safe:transition-[width] motion-safe:duration-300 lg:flex",
           collapsed ? "w-[4.75rem]" : "w-72",
           className,
         )}

@@ -57,17 +57,19 @@ export function ClassListPage({ empty, loading, error }: ClassListPageProps) {
       },
       {
         accessorKey: "shortDescription",
-        header: "Short description",
+        header: "Description",
         meta: { mobile: { role: "subtitle" } },
+        // line-clamp instead of truncate: truncate is nowrap, which makes max-w the column's
+        // minimum width and pushes the whole table into horizontal scroll (or cards).
         cell: ({ row }) => (
-          <span className="block max-w-[18rem] truncate" title={row.original.shortDescription}>
+          <span className="line-clamp-2 max-w-[18rem]" title={row.original.shortDescription}>
             {row.original.shortDescription}
           </span>
         ),
       },
       {
         id: "coaches",
-        header: "Assigned coaches",
+        header: "Coaches",
         accessorFn: (row) =>
           row.coachIds
             .map((id) => coaches.find((coach) => coach.id === id)?.name ?? "Coach")
@@ -76,7 +78,7 @@ export function ClassListPage({ empty, loading, error }: ClassListPageProps) {
       },
       {
         id: "marketing",
-        header: "Marketing page",
+        header: "Marketing",
         meta: { mobile: { role: "meta" } },
         cell: ({ row }) => (
           <a
@@ -86,7 +88,7 @@ export function ClassListPage({ empty, loading, error }: ClassListPageProps) {
             }
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm underline underline-offset-4"
+            className="break-all text-sm underline underline-offset-4"
           >
             {classPageHref(row.original)}
             {row.original.customPageUrl ? " ↗ Custom page" : ""}

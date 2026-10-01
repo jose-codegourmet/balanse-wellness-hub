@@ -59,13 +59,13 @@ const buttonVariants = cva(
       },
       size: {
         xs: "h-7 gap-1.5 px-2.5 text-[0.625rem] tracking-[0.12em] [&_svg:not([class*='size-'])]:size-3.5",
-        sm: "h-8 gap-1.5 px-3 text-[0.625rem] tracking-[0.13em] [&_svg:not([class*='size-'])]:size-3.5",
+        sm: "h-8 gap-1.5 px-3 text-[0.625rem] tracking-[0.13em] pointer-coarse:min-h-10 [&_svg:not([class*='size-'])]:size-3.5",
         md: "h-10 px-5 text-[0.6875rem] tracking-[0.14em] pointer-coarse:min-h-11",
         /** Alias of `md`. */
         default: "h-10 px-5 text-[0.6875rem] tracking-[0.14em] pointer-coarse:min-h-11",
         lg: "h-12 gap-2.5 px-7 text-xs tracking-[0.16em] pointer-coarse:min-h-12",
         "icon-xs": "size-7 [&_svg:not([class*='size-'])]:size-3.5",
-        "icon-sm": "size-8 [&_svg:not([class*='size-'])]:size-4",
+        "icon-sm": "size-8 pointer-coarse:size-10 [&_svg:not([class*='size-'])]:size-4",
         icon: "size-10 pointer-coarse:size-11",
         "icon-lg": "size-12",
       },

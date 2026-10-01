@@ -213,10 +213,26 @@ export type AdminVenue = {
   name: string;
   address: string;
   kind: VenueKind;
+  /**
+   * Staff-facing hours for this location, e.g. "Mon–Sat · 6:00 AM–9:00 PM".
+   * Optional until the database contract is approved.
+   */
+  openingHours?: string;
+  /**
+   * Whether the studio operates this venue. `false` represents a third-party
+   * or rented location; optional while legacy/API venue payloads catch up.
+   */
+  studioOwned?: boolean;
   /** Inactive venues stay on existing sessions but cannot be picked for new ones. */
   active: boolean;
   notes: string;
 };
+
+export function venueOperationLabel(studioOwned: boolean | undefined): string {
+  if (studioOwned === true) return "Studio-owned";
+  if (studioOwned === false) return "Third-party / rented";
+  return "Not set";
+}
 
 export function venueKindLabel(kind: VenueKind): string {
   return kind === "BRANCH" ? "Branch" : "Off-site";
@@ -318,7 +334,14 @@ export function adminBookingTab(status: CustomerBooking["status"]): AdminBooking
 
 export function filterAdminBookings(
   bookings: CustomerBooking[],
-  filters: { tab: AdminBookingTab; query?: string; classId?: string; date?: string },
+  filters: {
+    tab: AdminBookingTab;
+    query?: string;
+    classId?: string;
+    date?: string;
+    from?: string;
+    to?: string;
+  },
   customerName: (customerId: string) => string,
 ): CustomerBooking[] {
   return bookings.filter((booking) => {
@@ -330,7 +353,10 @@ export function filterAdminBookings(
     ) {
       return false;
     }
-    if (filters.date && manilaYmd(booking.session.startsAt) !== filters.date) return false;
+    const sessionDay = manilaYmd(booking.session.startsAt);
+    if (filters.date && sessionDay !== filters.date) return false;
+    if (filters.from && sessionDay < filters.from) return false;
+    if (filters.to && sessionDay > filters.to) return false;
     if (filters.query) {
       const q = filters.query.toLowerCase();
       if (!customerName(booking.customerId).toLowerCase().includes(q) && !booking.id.includes(q)) {

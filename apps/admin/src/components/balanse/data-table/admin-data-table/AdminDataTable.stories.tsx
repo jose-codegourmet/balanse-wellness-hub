@@ -250,3 +250,47 @@ export const Desktop1280: Story = {
     viewport: { defaultViewport: "desktop" },
   },
 };
+
+/** `auto` follows the table's container, not the viewport: a 40rem column on a desktop screen gets cards. */
+export const NarrowContainer1280: Story = {
+  args: { tableId: "story-narrow-container", layout: "auto" },
+  decorators: [
+    (Story) => (
+      <div className="max-w-[40rem]">
+        <Story />
+      </div>
+    ),
+  ],
+  parameters: {
+    viewport: { defaultViewport: "desktop" },
+  },
+};
+
+/** The container is wider than `cardsBelow`, but a no-wrap column would force horizontal scrolling, so `auto` still renders cards. */
+export const OverflowingContent1280: Story = {
+  args: {
+    tableId: "story-overflowing-content",
+    layout: "auto",
+    columns: [
+      ...DEMO_COLUMNS,
+      {
+        id: "address",
+        header: "Address",
+        accessorFn: () =>
+          "Unit 2A, Capitol Centrum Building, N Escario Street, Capitol Site, Cebu City, Cebu 6000, Philippines",
+        cell: ({ getValue }) => <span className="whitespace-nowrap">{String(getValue())}</span>,
+        meta: { mobile: { role: "meta" } },
+      },
+    ],
+  },
+  decorators: [
+    (Story) => (
+      <div className="max-w-[66rem]">
+        <Story />
+      </div>
+    ),
+  ],
+  parameters: {
+    viewport: { defaultViewport: "desktop" },
+  },
+};

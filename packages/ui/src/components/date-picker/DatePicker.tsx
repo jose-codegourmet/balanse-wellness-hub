@@ -333,8 +333,9 @@ function DateRangePicker({
   onBlur,
   ...inputProps
 }: DateRangePickerProps) {
-  const startedControlled = React.useRef(valueProp !== undefined);
-  const isControlled = startedControlled.current || valueProp !== undefined;
+  // A controlled picker may start with an empty range. Keep it controlled
+  // after clearing instead of falling back to its stale internal value.
+  const isControlled = onValueChange !== undefined || valueProp !== undefined;
   const [uncontrolled, setUncontrolled] = React.useState(defaultValue);
   const value = isControlled ? valueProp : uncontrolled;
   const setValue = React.useCallback(
@@ -450,7 +451,9 @@ function DateRangePicker({
         }}
         onBlur={(event) => {
           setFocused(false);
-          commitDraft();
+          if (!hostRef.current?.contains(event.relatedTarget)) {
+            commitDraft();
+          }
           onBlur?.(event);
         }}
         onChange={(event) => {

@@ -33,6 +33,25 @@ export const RangeWithPresets: Story = {
   ),
 };
 
+/** Starts controlled and empty, like the admin table filters. */
+export const ControlledEmptyRange: Story = {
+  render: () => {
+    function ControlledRange() {
+      const [range, setRange] = React.useState<{ from: string; to: string } | undefined>();
+      return (
+        <DateRangePicker
+          aria-label="Filter date range"
+          placeholder="All dates"
+          today="2026-09-16"
+          value={range}
+          onValueChange={setRange}
+        />
+      );
+    }
+    return <ControlledRange />;
+  },
+};
+
 export const MinMaxBounded: Story = {
   args: {
     min: "2026-09-10",

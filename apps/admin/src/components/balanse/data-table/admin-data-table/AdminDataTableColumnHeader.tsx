@@ -27,7 +27,9 @@ export function AdminDataTableColumnHeader<TData>({
       scope="col"
       aria-sort={canSort ? ariaSort : undefined}
       className={cn(
-        "h-11 border-b border-border bg-muted/50 px-4 align-middle whitespace-nowrap first:pl-5 last:pr-5",
+        // px-3 between columns (edges stay 5) keeps 8–9 column tables well under the 1024px
+        // cards floor, so a container that passes the floor never scrolls sideways.
+        "h-11 border-b border-border bg-muted/50 px-3 align-middle whitespace-nowrap first:pl-5 last:pr-5",
         sticky && "sticky top-0 z-10",
       )}
     >

@@ -1,10 +1,18 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { Suspense } from "react";
 import { BookingDetailPage, BookingListPage } from "./BookingPages";
 
 const meta = {
   title: "Admin/Screens/Bookings",
   component: BookingListPage,
   tags: ["autodocs"],
+  decorators: [
+    (Story) => (
+      <Suspense fallback={<p>Loading bookings…</p>}>
+        <Story />
+      </Suspense>
+    ),
+  ],
 } satisfies Meta<typeof BookingListPage>;
 
 export default meta;

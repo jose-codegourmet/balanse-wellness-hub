@@ -232,7 +232,7 @@ export function AdminNotificationHeader({
   if (compact) return inbox;
 
   return (
-    <header className="sticky top-0 z-30 hidden h-16 items-center justify-between gap-4 border-b border-border/70 bg-card bg-[radial-gradient(ellipse_at_95%_0%,color-mix(in_oklab,var(--balanse-gold)_28%,transparent),transparent_65%),linear-gradient(100deg,color-mix(in_oklab,var(--card)_80%,var(--balanse-beige)),var(--card)_55%,color-mix(in_oklab,var(--card)_78%,var(--balanse-tan)))] px-6 shadow-[0_2px_12px_-6px_color-mix(in_oklab,var(--balanse-muted-brown)_25%,transparent)] md:flex">
+    <header className="sticky top-0 z-30 hidden h-16 items-center justify-between gap-4 border-b border-border/70 bg-card bg-[radial-gradient(ellipse_at_95%_0%,color-mix(in_oklab,var(--balanse-gold)_28%,transparent),transparent_65%),linear-gradient(100deg,color-mix(in_oklab,var(--card)_80%,var(--balanse-beige)),var(--card)_55%,color-mix(in_oklab,var(--card)_78%,var(--balanse-tan)))] px-6 shadow-[0_2px_12px_-6px_color-mix(in_oklab,var(--balanse-muted-brown)_25%,transparent)] lg:flex">
       <div className="flex min-w-0 items-center gap-3">
         <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-border/70 bg-muted/30 text-foreground">
           <CurrentIcon className="size-4" strokeWidth={1.7} aria-hidden="true" />

@@ -14,6 +14,8 @@ export const venueFormSchema = z.object({
     .string()
     .trim()
     .max(limits.address.max, `Use ${limits.address.max} characters or fewer.`),
+  openingHours: z.string().trim().max(240, "Use 240 characters or fewer for opening hours."),
+  operation: z.enum(["STUDIO_OWNED", "THIRD_PARTY"]),
   notes: z.string().trim().max(limits.notes.max, `Use ${limits.notes.max} characters or fewer.`),
   active: z.boolean(),
 });

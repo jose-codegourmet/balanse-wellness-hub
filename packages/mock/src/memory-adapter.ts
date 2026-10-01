@@ -971,6 +971,8 @@ export function createMemoryAdapter(): MockDataAdapter {
           name,
           address: input.address.trim().slice(0, limits.address.max),
           kind: input.kind,
+          openingHours: input.openingHours.trim().slice(0, 240),
+          studioOwned: input.studioOwned,
           active: input.active,
           notes: input.notes.trim().slice(0, limits.notes.max),
         };

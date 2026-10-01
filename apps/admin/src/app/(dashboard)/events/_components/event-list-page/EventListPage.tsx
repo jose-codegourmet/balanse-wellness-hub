@@ -9,6 +9,8 @@ import {
 import {
   Badge,
   Button,
+  DateRangePicker,
+  type DateRangePickerValues,
   FeedbackState,
   Input,
   Label,
@@ -18,7 +20,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
@@ -75,7 +77,6 @@ function EventListPageInner({
   initialStatus = "all",
   initialSearch = "",
 }: EventListPageProps) {
-  const router = useRouter();
   const params = useSearchParams();
   const { principal } = useMockPrincipal();
   const canReadClasses = useCanAdminRoute("/classes");
@@ -92,23 +93,20 @@ function EventListPageInner({
 
   const [status, setStatus] = useState<EventStatus | "all">(initialStatus);
   const [search, setSearch] = useState(initialSearch);
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [dateRange, setDateRange] = useState<DateRangePickerValues | undefined>();
   const [sessionId, setSessionId] = useState(() => params.get("session") ?? "all");
 
   const source = useMemo(() => (empty ? [] : (eventsQuery.data ?? [])), [empty, eventsQuery.data]);
-  const rangeInvalid = Boolean(from && to && from > to);
   const filtered = useMemo(() => {
-    if (rangeInvalid) return [];
     const needle = search.trim().toLowerCase();
     return source.filter((event) => {
       if (status !== "all" && displayedEventStatus(event) !== status) return false;
       if (sessionId !== "all" && event.sessionId !== sessionId) return false;
-      if (!eventInDateRange(event, from, to)) return false;
+      if (!eventInDateRange(event, dateRange?.from ?? "", dateRange?.to ?? "")) return false;
       if (needle && !event.title.toLowerCase().includes(needle)) return false;
       return true;
     });
-  }, [from, rangeInvalid, search, sessionId, source, status, to]);
+  }, [dateRange, search, sessionId, source, status]);
 
   const sessionOptions = useMemo(() => {
     const seen = new Map<string, string>();
@@ -143,7 +141,7 @@ function EventListPageInner({
       {
         accessorKey: "title",
         header: "Event",
-        meta: { mobile: { role: "title" } },
+        meta: { primaryLink: (row) => `/events/${row.id}`, mobile: { role: "title" } },
       },
       {
         accessorKey: "sessionLabel",
@@ -185,13 +183,12 @@ function EventListPageInner({
   const createHref =
     sessionId !== "all" && !scopedHasEvent ? `/schedule/${sessionId}/event` : "/events/new";
   const filtersActive =
-    status !== "all" || sessionId !== "all" || search.trim() !== "" || from !== "" || to !== "";
+    status !== "all" || sessionId !== "all" || search.trim() !== "" || dateRange !== undefined;
 
   function clearFilters() {
     setStatus("all");
     setSearch("");
-    setFrom("");
-    setTo("");
+    setDateRange(undefined);
     setSessionId("all");
   }
 
@@ -247,26 +244,19 @@ function EventListPageInner({
           <EventFilters
             status={status}
             search={search}
-            from={from}
-            to={to}
+            dateRange={dateRange}
             sessionId={sessionId}
             sessionOptions={sessionOptions}
-            rangeInvalid={rangeInvalid}
             onStatus={setStatus}
             onSearch={setSearch}
-            onFrom={setFrom}
-            onTo={setTo}
+            onDateRange={setDateRange}
             onSession={setSessionId}
           />
           {filtered.length === 0 ? (
             <FeedbackState
               id="calendar.filter-empty"
               title="No events match these filters"
-              description={
-                rangeInvalid
-                  ? "The start of the date range has to be on or before the end."
-                  : "Try another state, date range, session, or title. The catalogue still has events."
-              }
+              description="Try another state, date range, session, or title. The catalogue still has events."
               actionLabel="Clear filters"
               onAction={filtersActive ? clearFilters : undefined}
             />
@@ -279,9 +269,6 @@ function EventListPageInner({
               persistUrl={false}
               searchable={false}
               pageSize={25}
-              onRowClick={(row) => {
-                router.push(`/events/${row.id}`);
-              }}
               rowActions={(row) => [{ id: "view", label: "View", href: `/events/${row.id}` }]}
               footnote={
                 rows.some((row) => row.placeholder)
@@ -299,32 +286,26 @@ function EventListPageInner({
 function EventFilters({
   status,
   search,
-  from,
-  to,
+  dateRange,
   sessionId,
   sessionOptions,
-  rangeInvalid,
   onStatus,
   onSearch,
-  onFrom,
-  onTo,
+  onDateRange,
   onSession,
 }: {
   status: EventStatus | "all";
   search: string;
-  from: string;
-  to: string;
+  dateRange: DateRangePickerValues | undefined;
   sessionId: string;
   sessionOptions: [string, string][];
-  rangeInvalid: boolean;
   onStatus: (value: EventStatus | "all") => void;
   onSearch: (value: string) => void;
-  onFrom: (value: string) => void;
-  onTo: (value: string) => void;
+  onDateRange: (value: DateRangePickerValues | undefined) => void;
   onSession: (value: string) => void;
 }) {
   return (
-    <div className="grid gap-3 rounded-2xl border border-border/80 bg-card p-4 shadow-sm md:grid-cols-2 xl:grid-cols-5">
+    <div className="grid gap-3 rounded-2xl border border-border/80 bg-card p-4 shadow-sm md:grid-cols-2 xl:grid-cols-4">
       <div className="grid gap-1.5">
         <Label htmlFor="event-search">Title</Label>
         <Input
@@ -370,28 +351,13 @@ function EventFilters({
           ))}
         </NativeSelect>
       </div>
-      <div className="grid gap-1.5">
-        <Label htmlFor="event-from">From</Label>
-        <Input
-          id="event-from"
-          type="date"
-          value={from}
-          aria-invalid={rangeInvalid}
-          onChange={(event) => {
-            onFrom(event.target.value);
-          }}
-        />
-      </div>
-      <div className="grid gap-1.5">
-        <Label htmlFor="event-to">To</Label>
-        <Input
-          id="event-to"
-          type="date"
-          value={to}
-          aria-invalid={rangeInvalid}
-          onChange={(event) => {
-            onTo(event.target.value);
-          }}
+      <div className="grid min-w-0 gap-1.5">
+        <Label htmlFor="event-date-range">Date range</Label>
+        <DateRangePicker
+          id="event-date-range"
+          placeholder="All dates"
+          value={dateRange}
+          onValueChange={onDateRange}
         />
       </div>
     </div>

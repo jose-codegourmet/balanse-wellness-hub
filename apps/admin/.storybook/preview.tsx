@@ -22,6 +22,11 @@ const balanseViewports = {
     name: BALANSE_BREAKPOINT_LABELS.tablet,
     styles: { width: `${BALANSE_BREAKPOINTS.tablet}px`, height: "1024px" },
   },
+  // iPad landscape: the admin shell switches to the inline sidebar at `lg` (1024px).
+  tabletLandscape: {
+    name: "Tablet landscape (1024px)",
+    styles: { width: "1024px", height: "768px" },
+  },
   desktop: {
     name: BALANSE_BREAKPOINT_LABELS.desktop,
     styles: { width: `${BALANSE_BREAKPOINTS.desktop}px`, height: "900px" },

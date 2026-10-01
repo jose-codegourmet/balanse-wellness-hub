@@ -20,7 +20,7 @@ export function AdminShell({
   const canOpenStudioSettings = useCanAdminRoute("/settings");
 
   return (
-    <div className="flex min-h-dvh flex-col md:flex-row">
+    <div className="flex min-h-dvh flex-col lg:flex-row">
       <AdminSidebar
         defaultCollapsed={defaultCollapsed}
         onLogout={() => {

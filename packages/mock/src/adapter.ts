@@ -182,6 +182,8 @@ export type MockDataAdapter = {
     name: string;
     address: string;
     kind: VenueKind;
+    openingHours: string;
+    studioOwned: boolean;
     active: boolean;
     notes: string;
   }) => Promise<AdminVenue>;

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { Suspense } from "react";
 import { AdminGuard } from "@/modules/layout/AdminGuard";
 import { ReportDrilldownPage, ReportsPage } from "./ReportsPage";
 
@@ -6,6 +7,13 @@ const meta = {
   title: "Admin/Screens/Reports",
   component: ReportsPage,
   tags: ["autodocs"],
+  decorators: [
+    (Story) => (
+      <Suspense fallback={<p>Loading reports…</p>}>
+        <Story />
+      </Suspense>
+    ),
+  ],
 } satisfies Meta<typeof ReportsPage>;
 
 export default meta;

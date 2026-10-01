@@ -101,6 +101,11 @@
   * { @apply border-border outline-ring/50; }
   body { @apply bg-background text-foreground; }
   html { @apply font-sans; }
+  /* iPad: rapid taps on controls (pagination, steppers, chips) must not trigger
+     Safari's double-tap zoom. Pinch zoom stays available. */
+  a, button, [role="button"], label, input, select, textarea, summary {
+    touch-action: manipulation;
+  }
 }
 
 /* Vendored Jabkit writes `rounded-[--radius]`, which Tailwind v4 ignores (v4 syntax is

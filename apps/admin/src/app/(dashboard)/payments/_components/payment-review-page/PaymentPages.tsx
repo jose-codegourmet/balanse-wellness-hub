@@ -124,7 +124,7 @@ function PaymentProofDialog({
           alt={alt}
           className="h-40 w-full object-contain transition-transform duration-200 group-hover:scale-[1.03] motion-reduce:transition-none"
         />
-        <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-foreground/70 py-1.5 text-xs font-medium text-background opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+        <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-foreground/70 py-1.5 text-xs font-medium text-background opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 pointer-coarse:opacity-100">
           <ZoomInIcon className="size-3.5" aria-hidden />
           View proof
         </span>

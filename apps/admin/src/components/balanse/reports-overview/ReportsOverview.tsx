@@ -1,34 +1,10 @@
 "use client";
 
 import { type AdminReports, formatPeso, formatRatioPercent, manilaYmd } from "@balanse/domain";
-import { Button } from "@balanse/ui";
-import {
-  CalendarIcon,
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  DollarSignIcon,
-  TrendingDownIcon,
-  TrendingUpIcon,
-  UsersIcon,
-} from "lucide-react";
-import { useId, useMemo, useState } from "react";
+import { DateRangePicker } from "@balanse/ui";
+import { DollarSignIcon, TrendingDownIcon, TrendingUpIcon, UsersIcon } from "lucide-react";
+import { useId, useMemo } from "react";
 import { Badge } from "@/components/jabkit/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/jabkit/dialog/Dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/jabkit/dropdown-menu/DropdownMenu";
 import { cn } from "@/components/jabkit/lib/cn";
 import type { ReportsOverviewProps } from "./ReportsOverview.meta";
 
@@ -52,58 +28,12 @@ const TONE_ICON: Record<Tone, string> = {
   "chart-5": "bg-chart-5/15 text-chart-5",
 };
 
-const PRESETS = [
-  { id: "7d", label: "Last 7 days", days: 7 },
-  { id: "30d", label: "Last 30 days", days: 30 },
-  { id: "90d", label: "Last 90 days", days: 90 },
-] as const;
-
-const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"] as const;
-const REFERENCE_DATE = "2026-09-30";
-
-function addDays(iso: string, days: number) {
-  const date = new Date(`${iso}T00:00:00.000Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
-}
-
-function shiftMonth(iso: string, months: number) {
-  const date = new Date(`${iso.slice(0, 8)}01T00:00:00.000Z`);
-  date.setUTCMonth(date.getUTCMonth() + months);
-  return date.toISOString().slice(0, 10);
-}
+const ALL_DATES = { from: "0001-01-01", to: "9999-12-31" };
 
 function formatDay(iso: string) {
   return new Date(`${iso}T00:00:00.000Z`).toLocaleDateString("en-PH", {
     month: "short",
     day: "numeric",
-    timeZone: "UTC",
-  });
-}
-
-function formatRangeLabel(start: string, end: string) {
-  const startDate = new Date(`${start}T00:00:00.000Z`);
-  const endDate = new Date(`${end}T00:00:00.000Z`);
-  const sameYear = startDate.getUTCFullYear() === endDate.getUTCFullYear();
-  const left = startDate.toLocaleDateString("en-PH", {
-    month: "short",
-    day: "numeric",
-    year: sameYear ? undefined : "numeric",
-    timeZone: "UTC",
-  });
-  const right = endDate.toLocaleDateString("en-PH", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-  return `${left} – ${right}`;
-}
-
-function formatMonthTitle(iso: string) {
-  return new Date(`${iso}T00:00:00.000Z`).toLocaleDateString("en-PH", {
-    month: "long",
-    year: "numeric",
     timeZone: "UTC",
   });
 }
@@ -127,23 +57,6 @@ function areaPath(values: number[], width = 100, height = 42, pad = 3) {
   return { line, area };
 }
 
-function monthCells(monthIso: string) {
-  const first = new Date(`${monthIso.slice(0, 8)}01T00:00:00.000Z`);
-  const year = first.getUTCFullYear();
-  const month = first.getUTCMonth();
-  const startWeekday = first.getUTCDay();
-  const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
-  const cells: Array<{ key: string; iso: string | null; label: number | null }> = [];
-  for (let i = 0; i < startWeekday; i += 1) {
-    cells.push({ key: `${year}-${month}-pad-${i}`, iso: null, label: null });
-  }
-  for (let day = 1; day <= daysInMonth; day += 1) {
-    const iso = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    cells.push({ key: iso, iso, label: day });
-  }
-  return cells;
-}
-
 function occupancyFromReports(reports: AdminReports) {
   const capacity = reports.sessionPerformance.reduce((sum, row) => sum + row.capacity, 0);
   const confirmed = reports.sessionPerformance.reduce((sum, row) => sum + row.confirmed, 0);
@@ -159,16 +72,7 @@ export function ReportsOverview({
 }: ReportsOverviewProps) {
   const headingId = useId();
   const gradientId = useId();
-  const [calendarOpen, setCalendarOpen] = useState(false);
-  const [viewMonth, setViewMonth] = useState(`${to.slice(0, 8)}01`);
-  const [draftStart, setDraftStart] = useState(from);
-  const [draftEnd, setDraftEnd] = useState(to);
-  const [picking, setPicking] = useState<"start" | "end">("start");
-
-  const activePreset = PRESETS.find((preset) => {
-    const start = addDays(REFERENCE_DATE, -(preset.days - 1));
-    return from === start && to === REFERENCE_DATE;
-  });
+  const rangeValue = from === ALL_DATES.from && to === ALL_DATES.to ? undefined : { from, to };
 
   const occupancy = occupancyFromReports(reports);
   const stats = [
@@ -225,41 +129,6 @@ export function ReportsOverview({
       }));
   }, [reports.classPerformance]);
 
-  const applyPreset = (id: string) => {
-    const preset = PRESETS.find((item) => item.id === id);
-    if (!preset) return;
-    onRangeChange({
-      from: addDays(REFERENCE_DATE, -(preset.days - 1)),
-      to: REFERENCE_DATE,
-    });
-  };
-
-  const openCalendar = (open: boolean) => {
-    setCalendarOpen(open);
-    if (open) {
-      setDraftStart(from);
-      setDraftEnd(to);
-      setViewMonth(`${to.slice(0, 8)}01`);
-      setPicking("start");
-    }
-  };
-
-  const pickDay = (iso: string) => {
-    if (picking === "start") {
-      setDraftStart(iso);
-      setDraftEnd(iso);
-      setPicking("end");
-      return;
-    }
-    if (iso < draftStart) {
-      setDraftEnd(draftStart);
-      setDraftStart(iso);
-    } else {
-      setDraftEnd(iso);
-    }
-    setPicking("start");
-  };
-
   const values = series.map((day) => day.revenue);
   const { line, area } = areaPath(values);
   const ticks = series.filter(
@@ -293,119 +162,14 @@ export function ReportsOverview({
           >
             Sales, occupancy, and class mix for the selected range.
           </p>
-          <p className="mt-2 text-xs text-muted-foreground">
-            {activePreset?.label ?? "Custom range"} · {formatRangeLabel(from, to)}
-          </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button variant="outline" size="sm" className="min-w-40 justify-between">
-                  {activePreset?.label ?? "Custom range"}
-                  <ChevronDownIcon className="opacity-70" aria-hidden />
-                </Button>
-              }
-            />
-            <DropdownMenuContent align="end" className="min-w-44">
-              {PRESETS.map((preset) => (
-                <DropdownMenuItem key={preset.id} onClick={() => applyPreset(preset.id)}>
-                  {preset.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Dialog open={calendarOpen} onOpenChange={openCalendar}>
-            <DialogTrigger
-              render={
-                <Button variant="outline" size="sm">
-                  <CalendarIcon aria-hidden />
-                  <span className="hidden sm:inline">{formatRangeLabel(from, to)}</span>
-                  <span className="sm:hidden">Range</span>
-                </Button>
-              }
-            />
-            <DialogContent className="sm:max-w-sm">
-              <DialogHeader>
-                <DialogTitle>Custom range</DialogTitle>
-                <DialogDescription>Pick a start day, then an end day.</DialogDescription>
-              </DialogHeader>
-              <div>
-                <div className="mb-3 flex items-center justify-between">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label="Previous month"
-                    onClick={() => setViewMonth(shiftMonth(viewMonth, -1))}
-                  >
-                    <ChevronLeftIcon />
-                  </Button>
-                  <p className="text-sm font-medium">{formatMonthTitle(viewMonth)}</p>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label="Next month"
-                    onClick={() => setViewMonth(shiftMonth(viewMonth, 1))}
-                  >
-                    <ChevronRightIcon />
-                  </Button>
-                </div>
-                <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-muted-foreground">
-                  {WEEKDAYS.map((day) => (
-                    <span key={day}>{day}</span>
-                  ))}
-                  {monthCells(viewMonth).map((cell) =>
-                    cell.iso ? (
-                      <button
-                        key={cell.key}
-                        type="button"
-                        onClick={() => pickDay(cell.iso as string)}
-                        className={cn(
-                          "grid size-8 place-items-center rounded-md text-xs",
-                          cell.iso >= (draftStart <= draftEnd ? draftStart : draftEnd) &&
-                            cell.iso <= (draftStart <= draftEnd ? draftEnd : draftStart)
-                            ? "bg-primary text-primary-foreground"
-                            : "hover:bg-muted",
-                        )}
-                      >
-                        {cell.label}
-                      </button>
-                    ) : (
-                      <span key={cell.key} />
-                    ),
-                  )}
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {formatRangeLabel(draftStart, draftEnd)}
-              </p>
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCalendarOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => {
-                    const start = draftStart <= draftEnd ? draftStart : draftEnd;
-                    const end = draftStart <= draftEnd ? draftEnd : draftStart;
-                    onRangeChange({ from: start, to: end });
-                    setCalendarOpen(false);
-                  }}
-                >
-                  Apply range
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
+        <DateRangePicker
+          aria-label="Report date range"
+          placeholder="All dates"
+          className="w-full max-w-72 lg:w-72"
+          value={rangeValue}
+          onValueChange={(next) => onRangeChange(next ?? ALL_DATES)}
+        />
       </header>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-live="polite">

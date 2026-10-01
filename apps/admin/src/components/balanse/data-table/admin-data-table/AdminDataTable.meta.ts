@@ -17,7 +17,7 @@ declare module "@tanstack/react-table" {
     enableFaceting?: boolean;
     facetLabel?: string;
     primaryLink?: (row: TData) => string;
-    /** Card-list placement below the tablet breakpoint. Omit to fall back to a labelled key/value row. */
+    /** Card-list placement when the table renders as cards (narrow or overflowing container). Omit to fall back to a labelled key/value row. */
     mobile?: AdminDataTableMobileMeta;
   }
 }
@@ -97,8 +97,14 @@ export type AdminDataTableProps<TData> = {
   persistPrefs?: boolean;
   rowActions?: (row: TData) => AdminDataTableRowAction<TData>[];
   /**
-   * `auto` uses `useBreakpoint()` at the tablet boundary (cards below 768).
+   * `auto` is container-based, never viewport-based (the sidebar changes the content width):
+   * cards when the table's own section is narrower than `cardsBelow`, or when the table would
+   * scroll horizontally inside it; otherwise a table. See `useAdminDataTableLayout`.
+   * Resizes are debounced (120ms) so a sidebar animation commits one re-render, and the
+   * entering layout fades in (200ms, motion-safe).
    * Pin `table` or `cards` for Storybook and one-off screens.
    */
   layout?: AdminDataTableLayout;
+  /** Container width (px) below which `auto` always renders cards. Defaults to 1024 (64rem). */
+  cardsBelow?: number;
 };

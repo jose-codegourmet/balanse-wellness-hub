@@ -10,9 +10,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Main studio, two off-site partners, and one inactive pop-up. */
+/** Main studio, two off-site partners, and one inactive pop-up. Add venue and Edit link to the form page. */
 export const AllVenues: Story = {};
 
 export const Empty: Story = { args: { empty: true } };
-
-export const AddVenueDialog: Story = { args: { previewCreate: true } };

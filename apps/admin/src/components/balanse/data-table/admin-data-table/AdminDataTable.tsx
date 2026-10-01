@@ -14,7 +14,6 @@ import {
   Separator,
   TablePageSkeleton,
   TooltipProvider,
-  useIsMobile,
 } from "@balanse/ui";
 import {
   type ColumnDef,
@@ -37,7 +36,6 @@ import { type ReactNode, Suspense, useId, useMemo, useState } from "react";
 import type {
   AdminDataTableDensity,
   AdminDataTableLabels,
-  AdminDataTableLayout,
   AdminDataTableMobileRole,
   AdminDataTableProps,
 } from "./AdminDataTable.meta";
@@ -46,11 +44,16 @@ import { AdminDataTableColumnHeader } from "./AdminDataTableColumnHeader";
 import { AdminDataTablePagination } from "./AdminDataTablePagination";
 import { AdminDataTableRowActions } from "./AdminDataTableRowActions";
 import { AdminDataTableToolbar } from "./AdminDataTableToolbar";
+import { useAdminDataTableLayout } from "./useAdminDataTableLayout";
 import { useAdminDataTablePrefs } from "./useAdminDataTablePrefs";
 import {
   type AdminDataTableUrlState,
   useAdminDataTableUrlState,
 } from "./useAdminDataTableUrlState";
+
+// The entering layout fades in on a table ↔ cards swap. The two roots are keyed so React
+// remounts them and the CSS enter animation replays; `motion-safe` honours reduced motion.
+const LAYOUT_ENTER_CLASS = "motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-200";
 
 export type {
   AdminDataTableBulkAction,
@@ -125,6 +128,7 @@ function AdminDataTableInner<TData>({
   persistPrefs,
   rowActions,
   layout = "auto",
+  cardsBelow,
   urlState,
 }: AdminDataTableProps<TData> & { urlState: AdminDataTableUrlState | null }) {
   const headingId = useId();
@@ -133,8 +137,11 @@ function AdminDataTableInner<TData>({
   const persist = persistPrefs ?? (enableColumnVisibility || enableDensity || enablePageSize);
   const [prefs, updatePrefs] = useAdminDataTablePrefs(tableId, persist, densityProp);
   const density: AdminDataTableDensity = prefs.density;
-  const isMobile = useIsMobile();
-  const cardMode = resolveCardMode(layout, isMobile);
+  const { containerRef, scrollerRef, cardMode } = useAdminDataTableLayout({
+    layout,
+    cardsBelow,
+    resetKey: `${JSON.stringify(prefs.columnVisibility)}|${density}`,
+  });
 
   const [localQuery, setLocalQuery] = useState("");
   const [localSorting, setLocalSorting] = useState<SortingState>([]);
@@ -306,9 +313,11 @@ function AdminDataTableInner<TData>({
   return (
     <TooltipProvider>
       <section
+        ref={containerRef}
         aria-labelledby={title ? headingId : undefined}
         className={cn("w-full text-foreground", className)}
         data-density={density}
+        data-layout={cardMode ? "cards" : "table"}
       >
         {title || eyebrow || description || summary ? (
           <div className="flex items-end justify-between gap-4">
@@ -405,7 +414,7 @@ function AdminDataTableInner<TData>({
             chrome="content"
           />
         ) : cardMode ? (
-          <div>
+          <div key="cards" className={LAYOUT_ENTER_CLASS}>
             {error ? (
               <div className="rounded-xl border border-border bg-card p-4">{error}</div>
             ) : table.getRowModel().rows.length === 0 ? (
@@ -438,12 +447,19 @@ function AdminDataTableInner<TData>({
             )}
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm">
+          <div
+            key="table"
+            className={cn(
+              "overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm",
+              LAYOUT_ENTER_CLASS,
+            )}
+          >
             {error ? (
               <div className="p-4">{error}</div>
             ) : (
               <>
                 <div
+                  ref={scrollerRef}
                   className={cn(
                     "overflow-x-auto",
                     stickyHeader && "max-h-[min(32rem,70vh)] overflow-y-auto",
@@ -525,12 +541,6 @@ function resolveEmpty({
     if (emptyStateId) return <FeedbackState id={emptyStateId} />;
   }
   return emptyFilterLabel;
-}
-
-function resolveCardMode(layout: AdminDataTableLayout, isMobile: boolean): boolean {
-  if (layout === "cards") return true;
-  if (layout === "table") return false;
-  return isMobile;
 }
 
 function headerLabelFromCell(cell: {
@@ -621,9 +631,11 @@ function DataCard<TData>({
               )}
             </CardTitle>
             {subtitle ? (
-              <p className="mt-1 text-sm text-muted-foreground">
+              // div, not p: cell renderers return block content (coach specialties is a flex
+              // div), and <div> inside <p> is invalid HTML that breaks hydration.
+              <div className="mt-1 text-sm text-muted-foreground">
                 {flexRender(subtitle.cell.column.columnDef.cell, subtitle.cell.getContext())}
-              </p>
+              </div>
             ) : null}
           </div>
         </div>
@@ -709,7 +721,7 @@ function DataRow<TData>({
             key={cell.id}
             className={cn(
               // Borders live on cells: `border-separate` tables ignore row borders.
-              "border-b border-border/60 px-4 align-middle leading-snug first:pl-5 last:pr-5 group-last/row:border-b-0",
+              "border-b border-border/60 px-3 align-middle leading-snug first:pl-5 last:pr-5 group-last/row:border-b-0",
               density === "compact" ? "py-2" : "py-3.5",
               cell.id === leadCellId ? "font-medium text-foreground" : "text-foreground/80",
             )}
