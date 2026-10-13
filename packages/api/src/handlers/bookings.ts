@@ -3,7 +3,7 @@ import { requireCustomer, resolveActor, writeAudit } from "../auth";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { asString, forbidForeignAttendee, ok, readJson } from "../http";
-import { overlayDerivedQr } from "../payment-qrs";
+import { listActivePaymentQrs, overlayDerivedQr } from "../payment-qrs";
 import {
   bookingStatusPayload,
   groupOwnBookings,
@@ -70,12 +70,16 @@ function presentBooking(booking: Awaited<ReturnType<typeof loadOwnBooking>>) {
     listTab: bookingListTab(booking.status),
     session: {
       id: booking.session.id,
+      classId: booking.session.classId,
       startsAt: booking.session.startsAt.toISOString(),
       endsAt: booking.session.endsAt.toISOString(),
       className: booking.session.gymClass.name,
       coachName: booking.session.coaches.map(({ coach }) => coach.name).join(" & "),
       coaches: booking.session.coaches.map(({ coach }) => coach),
       customerPrice: money(booking.session.customerPrice),
+      capacity: booking.session.capacity,
+      remainingSlots: 0,
+      status: booking.session.status,
     },
     ...bookingStatusPayload(booking.status, refund?.status),
   };
@@ -335,15 +339,39 @@ export async function postPaymentProof(deps: ApiDeps, req: Request, id: string):
   });
 }
 
+/**
+ * `accounts[]` is the real `payment_qr_codes` collection — every account
+ * currently shown at checkout, each with its own `imageKey` resolved to a
+ * public URL (WIRE-0901/#364, on top of WIRE-1701/#371's schema). The
+ * top-level `gcashName`/`gcashNumber`/`qrImageKey`/etc. fields are kept for
+ * legacy readers, derived from the first shown account (same account
+ * `overlayDerivedQr` already picks for the general settings payload).
+ */
 export async function getPaymentInstructions(deps: ApiDeps, req: Request): Promise<Response> {
   requireCustomer(await resolveActor(deps, req));
-  const settings = await overlayDerivedQr(deps, await readSettings(deps));
+  const [settings, rows] = await Promise.all([
+    overlayDerivedQr(deps, await readSettings(deps)),
+    listActivePaymentQrs(deps),
+  ]);
+  const accounts = rows.map((row) => ({
+    id: row.id,
+    type: row.type,
+    label: row.label,
+    accountName: row.accountName,
+    accountNumber: row.accountNumber,
+    imageKey: row.imageKey ? deps.storage.publicUrl("marketing-assets", row.imageKey) : null,
+  }));
+  const qrImageKey = settings.payment.gcashQrPublicUrl || settings.payment.gcashQrObjectKey || null;
   return ok({
     method: "GCASH",
     accountName: settings.payment.gcashAccountName,
     number: settings.payment.gcashNumber,
     qrObjectKey: settings.payment.gcashQrObjectKey,
     qrPublicUrl: settings.payment.gcashQrPublicUrl,
+    gcashName: settings.payment.gcashAccountName,
+    gcashNumber: settings.payment.gcashNumber,
+    qrImageKey,
+    accounts,
   });
 }
 

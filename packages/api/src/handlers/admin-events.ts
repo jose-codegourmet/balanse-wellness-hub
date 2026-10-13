@@ -6,12 +6,19 @@ import {
   type EventStatus,
   eventStatusLabel,
   FIELD_CONSTRAINTS,
+  SIGNED_UPLOAD,
   sessionStatusLabel,
 } from "@balanse/domain";
 import { requireActiveStaff, requireAnyPermission, requirePermission, resolveActor } from "../auth";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { ok, readJson, searchParams } from "../http";
+import {
+  assertOwnedEventImageKey,
+  confirmUpload,
+  extensionFor,
+  mintSignedUpload,
+} from "../uploads";
 import { fieldError, optionalString, requireString, throwFields } from "../validation";
 
 const EVENT_READ = ["events.read", "events.manage"] as const;
@@ -287,6 +294,13 @@ export async function getAdminEvents(deps: ApiDeps, req: Request): Promise<Respo
   }
   const sessionId = params.get("sessionId") ?? params.get("session");
   if (sessionId) where.sessionId = sessionId;
+  const search = params.get("search")?.trim();
+  if (search) {
+    where.OR = [
+      { title: { contains: search, mode: "insensitive" } },
+      { summary: { contains: search, mode: "insensitive" } },
+    ];
+  }
   const fromRaw = params.get("from") ?? params.get("dateFrom");
   const toRaw = params.get("to") ?? params.get("dateTo");
   if (fromRaw || toRaw) {
@@ -390,6 +404,45 @@ export async function postAdminEvent(deps: ApiDeps, req: Request): Promise<Respo
     }),
   );
   return ok({ event: presentAdminEvent(created) });
+}
+
+/**
+ * BE-052 lifecycle for event poster and gallery media. Confirmation only
+ * validates/claims the upload; the subsequent event PATCH chooses which keys
+ * are used as the poster/gallery, keeping content edits and storage lifecycle
+ * independently retryable.
+ */
+export async function postAdminEventImage(
+  deps: ApiDeps,
+  req: Request,
+  id: string,
+): Promise<Response> {
+  const actor = requirePermission(
+    requireActiveStaff(await resolveActor(deps, req)),
+    "events.manage",
+  );
+  await loadEvent(deps, id);
+  const body = await readJson(req);
+  const contentType = typeof body.contentType === "string" ? body.contentType : "";
+  const objectKey = typeof body.objectKey === "string" ? body.objectKey : "";
+  if (!objectKey) {
+    if (!contentType)
+      throwFields(fieldError("contentType", "required", "contentType is required."));
+    const key = `marketing-assets/events/${id}/${crypto.randomUUID()}.${extensionFor(contentType)}`;
+    return ok(
+      await mintSignedUpload(deps, actor, {
+        bucket: "marketing-assets",
+        purpose: "event_image",
+        entityId: id,
+        contentType,
+        allowed: new Set(SIGNED_UPLOAD.eventImageTypes),
+        objectKey: key,
+      }),
+    );
+  }
+  assertOwnedEventImageKey(id, objectKey);
+  await confirmUpload(deps, objectKey);
+  return ok({ objectKey });
 }
 
 export async function patchAdminEvent(deps: ApiDeps, req: Request, id: string): Promise<Response> {

@@ -1,5 +1,7 @@
 "use client";
 
+import type { ApiFetcher } from "@balanse/api-client";
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import { type AdminClass, classPageHref, formatPeso } from "@balanse/domain";
 import { Badge, buttonVariants } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -9,12 +11,18 @@ import { useCallback, useMemo } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
 import type { AdminDataTableRowAction } from "@/components/balanse/data-table/admin-data-table/AdminDataTable.meta";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
-import { AdminCan, useCanAdminAction } from "@/modules/authorization/useAdminAccess";
+import { useUpsertAdminClass } from "@/lib/query/mutations";
+import { adminClassesQuery, adminCoachesQuery } from "@/lib/query/queries";
+import { AdminCan, useCanAdminAction, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useClassCatalogue } from "../class-catalogue-provider/ClassCatalogueProvider";
-import { ClassDatabaseAccess } from "../class-database-access/ClassDatabaseAccess";
 
-export type ClassListPageProps = { empty?: boolean; loading?: boolean; error?: boolean };
+export type ClassListPageProps = {
+  empty?: boolean;
+  loading?: boolean;
+  error?: boolean;
+  /** Defaults to the real browser client; stories pass `mockClassFetcher`. */
+  fetcher?: ApiFetcher;
+};
 
 const CLASS_DEFAULTS_NOTE =
   "Session values override class defaults. Duration and price here are catalogue defaults, not the live session values.";
@@ -27,14 +35,19 @@ function formatPrice(amount: number | null): string {
   return amount == null ? "—" : formatPeso(amount);
 }
 
-export function ClassListPage({ empty, loading, error }: ClassListPageProps) {
-  const catalogue = useClassCatalogue();
-  const classesQuery = useSuspenseQuery(catalogue.query);
-  const upsert = catalogue.mutation;
-  const coaches = classesQuery.data.coaches;
-  const canSave = classesQuery.data.canSave;
+export function ClassListPage({
+  empty,
+  loading,
+  error,
+  fetcher = apiFetchBrowser,
+}: ClassListPageProps) {
+  const actor = useStaffActor();
+  const classesQuery = useSuspenseQuery(adminClassesQuery(actor, fetcher));
+  const coachesQuery = useSuspenseQuery(adminCoachesQuery(actor, apiFetchBrowser));
+  const upsert = useUpsertAdminClass(fetcher);
+  const coaches = coachesQuery.data;
   const canManageClasses = useCanAdminAction("classes-manage");
-  const rows = empty ? [] : classesQuery.data.classes;
+  const rows = empty ? [] : classesQuery.data;
 
   const saveClass = useCallback(
     async (input: Parameters<typeof upsert.mutateAsync>[0]) => {
@@ -141,7 +154,7 @@ export function ClassListPage({ empty, loading, error }: ClassListPageProps) {
 
   const rowActions = useCallback(
     (row: AdminClass): AdminDataTableRowAction<AdminClass>[] =>
-      !canSave || !canManageClasses
+      !canManageClasses
         ? [{ id: "edit", label: "View editor", href: `/classes/${row.id}` }]
         : [
             {
@@ -189,7 +202,7 @@ export function ClassListPage({ empty, loading, error }: ClassListPageProps) {
               },
             },
           ],
-    [saveClass, canSave, canManageClasses],
+    [saveClass, canManageClasses],
   );
 
   return (
@@ -204,14 +217,6 @@ export function ClassListPage({ empty, loading, error }: ClassListPageProps) {
         </AdminCan>
       }
     >
-      <div className="mb-4">
-        <ClassDatabaseAccess
-          canSave={canSave}
-          connect={catalogue.connect}
-          disconnect={catalogue.disconnect}
-          onConnected={() => void classesQuery.refetch()}
-        />
-      </div>
       <p className="max-w-2xl text-sm text-muted-foreground">{CLASS_DEFAULTS_NOTE}</p>
       <div className="mt-4 min-w-0 max-w-full overflow-x-auto">
         <AdminDataTable

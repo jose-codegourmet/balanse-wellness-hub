@@ -22,8 +22,12 @@ const config: StorybookConfig = {
   async viteFinal(config) {
     config.resolve ??= {};
     config.resolve.alias = {
+      // Match before the broad @ alias; never freeze the real application clock.
+      "@/lib/clock": path.resolve(dirname, "mock-clock.ts"),
       ...config.resolve.alias,
       "@": path.resolve(dirname, "../src"),
+      // Real HTTP has no server in a story; stories keep using getMockAdapter().
+      "@balanse/api-client/browser": path.resolve(dirname, "mock-api-fetch-browser.ts"),
     };
     return config;
   },

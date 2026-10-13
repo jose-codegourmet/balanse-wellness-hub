@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { AdminForm, FormField } from "@/modules/admin/forms/admin-form/AdminForm";
 import { coachPublicFormDefaultValues } from "@/modules/admin/forms/coach/coach-form.defaults";
 import { coachPublicFormSchema } from "@/modules/admin/forms/coach/coach-form.schema";
+import { mockCoachFetcher } from "../../mock-coach-fetcher.stories-data";
 import { CoachPhotoField } from "./CoachPhotoField";
 import "../coach-form-page.css";
 
@@ -15,7 +16,14 @@ const meta: Meta<typeof CoachPhotoField> = {
       onSubmit={async () => {}}
     >
       <FormField name="photoKey" label="Coach portrait" wireAria>
-        {(field) => <CoachPhotoField {...field} previewName="Maris Cabrera" />}
+        {(field) => (
+          <CoachPhotoField
+            {...field}
+            coachId="coach-maris"
+            fetcher={mockCoachFetcher}
+            previewName="Maris Cabrera"
+          />
+        )}
       </FormField>
     </AdminForm>
   ),

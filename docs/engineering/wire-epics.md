@@ -158,7 +158,7 @@ Index: #377. Filed 2026-10-02.
 
 **Scope:** public class list and detail, admin class list and editor.
 
-**Current state:** already **live** through the database RPC (`readClassCatalogue` / `writeClassCatalogue` in `@balanse/api/class-catalogue`, server actions in `apps/admin/src/lib/class-catalogue-actions.ts`, cookie-based admin sign-in). `GET /api/public/classes` and `POST/PATCH /api/admin/classes` exist but carry only `name, shortDescription, defaultDurationMinutes, defaultCustomerPrice, active`; they cannot write slug, redirect URL, description, images, or marketing coaches. `ClassCatalogueProvider` falls back to the mock when `NEXT_PUBLIC_CLASS_CATALOGUE_MODE` is not `database`.
+**Done (2026-10-02):** `GET/POST/PATCH /api/admin/classes` and `GET /api/public/classes` now route through the same `readClassCatalogue`/`writeClassCatalogue` RPC path and return the full `PublicClass` shape (slug, `customPageUrl`, `description`, images, `coachIds`). `@balanse/api-client/classes.ts`, `apps/admin/src/lib/query/{queries,mutations}/classes.ts`, and `apps/web/src/lib/query/classes.ts` are real. `ClassCatalogueProvider`, `ClassDatabaseAccess`, and the `balanse-catalogue-access` cookie flow are removed — `/classes` now uses the standard staff session (E02, #357) like every other admin screen. `apps/web/src/lib/class-catalogue.ts`'s mock branch is gone. `ScheduleCalendarSection`/`load-schedule.ts`/onboarding interests still call `getMockAdapter().getPublicClasses()` — left alone deliberately, since they're E04 (#361)'s files and mix in still-mocked sessions/coaches; E04's own WIRE-0413 swaps them once E04/E06 land. Coach data in the class editor still comes from `adminCoachesQuery` (mock, pending E06/#359). Seed reconciliation (WIRE-0506) was not run: hosted already has 13 classes with hyphenated ids (`class-yoga`, not `seed.ts`'s `class_yoga`) from an out-of-band import never captured in a migration file — see `docs/backend/class-catalogue.md`.
 
 | Task | Lane | Scope |
 | --- | --- | --- |
@@ -178,7 +178,7 @@ Index: #377. Filed 2026-10-02.
 
 **Scope:** public coach list (home, about, coaches page, class pages), admin coach CRUD, coach photo upload.
 
-**Backend state:** `GET /api/public/coaches` (reads `coaches_public`), `GET/POST /api/admin/coaches`, `PATCH .../{id}`, `POST/DELETE .../{id}/photo` (BE-052 mint/confirm) exist. `CoachPhotoField` uses `ImageUpload` (mock).
+**Done (2026-10-03):** `@balanse/api-client/coaches.ts` (`listPublicCoaches`, `listAdminCoaches`, `createCoach`, `patchCoach`, `mintCoachPhoto`, `confirmCoachPhoto`, `removeCoachPhoto`) and `packages/api-client/src/uploads.ts` (`putSignedUpload`) are real — the handlers themselves (`admin-catalogue.ts`) already existed from BE-038/BE-052 and needed no changes. `apps/admin/src/lib/query/{queries,mutations}/coaches.ts`, `CoachListPage`, `CoachFormPage`, and `CoachPhotoField` are rewired; `CoachPhotoField` is the first real (non-mock) upload binding in the admin app, doing mint → PUT → confirm and only writing `photoKey` on confirmed success (a new coach shows a "save first" state since the photo route needs a real coach id). Home/about/coaches pages on web read via `listPublicCoaches(serverFetcher(null))`. The client types rate fields as optional (`AdminCoachResponse`) since the server physically omits them for actors without `coach_rates.read` — the real permission keys are `coach-rates-read`/`coach-rates-manage`/`coaches-manage` (action ids), not the ticket's literal `coaches.rates.read` string. Seed reconciliation (WIRE-0601) was not run: hosted already has 11 coaches with hyphenated ids (`coach-rex`, not `seed.ts`'s `coach_rex`) and 8 of 11 already have curated-slug `photoKey`s; hosted rate is `0.00`, not the ticket's claimed `500.00` placeholder. `load-schedule.ts` still reads coaches from the mock adapter — left alone deliberately, same as classes, since it's E04 (#361)'s file and mixes in still-mocked sessions.
 
 | Task | Lane | Scope |
 | --- | --- | --- |
@@ -194,7 +194,7 @@ Index: #377. Filed 2026-10-02.
 
 ## WIRE-E07 — Venues
 
-**Backend state:** `GET/POST /api/admin/venues`, `PATCH .../{id}` exist; no delete (deactivate). Model lacks `openingHours`, `studioOwned`. Table missing on hosted until E00.
+**Done (2026-10-03):** `Venue.openingHours`/`Venue.studioOwned` added via migration `20261003090000_venue_operations_fields`, applied to hosted (and reconciled into `_prisma_migrations`). `presentAdminVenue`/`postAdminVenue`/`patchAdminVenue` read/write both; `@balanse/api-client/venues.ts` (`listVenues`, `createVenue`, `patchVenue`) and the admin hooks are real. `VenueListPage`/`VenueFormPage` needed no new fields — they already modeled `openingHours`/`studioOwned` (the `AdminVenue` domain type had them as optional since before the DB caught up) and the 409-duplicate-name→`name` field mapping already worked, via `assertNameAvailable`'s own pre-check, not a generic P2002 handler. `seed/venues.ts` now owns all 4 `venue-fixtures.ts` rows (`venue-main-studio` was already seeded; Mandani Bay, Mactan placeholder, and the inactive IT Park pop-up were inserted directly on hosted, ids already hyphenated and matching the fixtures — no id-reconciliation problem like classes/coaches had).
 
 | Task | Lane | Scope |
 | --- | --- | --- |
@@ -463,7 +463,7 @@ Index: #377. Filed 2026-10-02.
 
 ## WIRE-E20 — Coach Class-change Requests
 
-**Backend state:** no model, no routes. Domain types exist (`ClassChangeRequest`, kinds `RESCHEDULE | SUBSTITUTE | CANCEL`, statuses `PENDING | APPROVED | DENIED | WITHDRAWN`, approval permissions `schedule.update` / `schedule.cancel`). Screens exist on the mock: `/schedule/[sessionId]/change` (`ClassChangeRequestPage` + `class-change-form.schema.ts`), `/schedule/requests` (`ClassChangeQueuePage`, `ClassChangeRequestCard`, `ClassChangeSessionActions`).
+**Implementation (2026-10-13):** `ClassChangeRequest` schema and a staged migration, coach-scoped API routes, client and query hooks, and the three fixture rows in the database seed are in the working branch. `/schedule/[sessionId]/change` and `/schedule/requests` use the API at runtime; Storybook retains the mock engine. See `docs/backend/class-change-requests.md`.
 
 | Task | Lane | Scope |
 | --- | --- | --- |

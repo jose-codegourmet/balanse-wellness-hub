@@ -1,7 +1,8 @@
-import { getMockAdapter } from "@balanse/mock";
+import { getFormPolicies, getPublicSession, listEligiblePackages } from "@balanse/api-client";
 import type { Metadata } from "next";
+import { serverFetcher } from "@/lib/query/fetcher";
 import { BookingForm } from "@/modules/customer/BookingForm";
-import { getCurrentCustomer } from "@/modules/session/current-customer";
+import { getCurrentCustomer, getCustomerAccessToken } from "@/modules/session/current-customer";
 
 export const metadata: Metadata = {
   title: "Reserve your spot",
@@ -18,12 +19,20 @@ export default async function Page({
   const { sessionId } = await params;
   const { intent } = await searchParams;
   const profile = await getCurrentCustomer();
-  const adapter = getMockAdapter();
-  const [session, entitlements, policies] = await Promise.all([
-    adapter.getPublicSession(sessionId),
-    profile ? adapter.getEligibleEntitlements(profile.id, sessionId) : [],
-    adapter.getCustomerFormPolicies("booking"),
+  const token = await getCustomerAccessToken();
+  const fetcher = serverFetcher(token);
+  const [sessionResult, entitlements, policyResponse] = await Promise.all([
+    getPublicSession(fetcher, sessionId)
+      .then((value) => ({ value }))
+      .catch(() => ({ value: null })),
+    profile
+      ? listEligiblePackages(fetcher, sessionId)
+          .then((result) => result.items)
+          .catch(() => [])
+      : [],
+    getFormPolicies(fetcher, "booking").catch(() => ({ items: [] })),
   ]);
+  const session = sessionResult.value;
 
   if (!session || !profile) {
     return (
@@ -39,7 +48,15 @@ export default async function Page({
       session={session}
       profile={profile}
       entitlements={entitlements}
-      policies={policies}
+      policies={policyResponse.items.map((item) => ({
+        id: item.id,
+        documentName: item.documentName,
+        version: item.version,
+        promotedAt: "",
+        current: true,
+        body: item.body,
+      }))}
+      policyVersionIds={policyResponse.items.map((policy) => policy.id)}
       intent={intent === "waitlist" ? "waitlist" : "reserve"}
     />
   );

@@ -412,10 +412,16 @@ export const ADMIN_ACTION_ACCESS: readonly AdminAccessRequirement[] = [
 ];
 
 export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
+  // staffOnly + empty anyOf: any active, interactive staff member may ask "who am I?"
+  // (WIRE-0202, #357) — no specific permission required.
+  api("GET", "/api/admin/me", "Current staff identity", [], { staffOnly: true }),
+  api("POST", "/api/admin/me/photo", "Upload own staff photo", [], { staffOnly: true }),
+  api("DELETE", "/api/admin/me/photo", "Remove own staff photo", [], { staffOnly: true }),
   api("GET", "/api/admin/dashboard", "Dashboard snapshot", DASHBOARD_READ_PERMISSIONS, {
     includeFieldsIf: ["dashboard.financial.read"],
   }),
   api("GET", "/api/admin/dashboard/metrics", "Dashboard metrics", ["dashboard.financial.read"]),
+  api("GET", "/api/admin/marketing-insights", "Marketing insights", ["reports.marketing.read"]),
   api("GET", "/api/admin/sessions", "List sessions", SCHEDULE_READ_PERMISSIONS, {
     requiresOwnership: true,
   }),
@@ -428,6 +434,34 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
     "schedule.recurrence.manage",
   ]),
   api("POST", "/api/admin/sessions/:id/cancel", "Cancel session", ["schedule.cancel"]),
+  api("GET", "/api/admin/class-change-requests", "Class change requests", [
+    "schedule.read.own",
+    ...CLASS_CHANGE_REVIEW_PERMISSIONS,
+  ]),
+  api(
+    "GET",
+    "/api/admin/sessions/:id/substitute-coaches",
+    "Substitute coaches",
+    SCHEDULE_READ_PERMISSIONS,
+  ),
+  api("POST", "/api/admin/sessions/:id/class-change-requests", "Request class change", [
+    "schedule.read.own",
+  ]),
+  api("POST", "/api/admin/class-change-requests/:id/withdraw", "Withdraw class change", [
+    "schedule.read.own",
+  ]),
+  api(
+    "POST",
+    "/api/admin/class-change-requests/:id/approve",
+    "Approve class change",
+    CLASS_CHANGE_REVIEW_PERMISSIONS,
+  ),
+  api(
+    "POST",
+    "/api/admin/class-change-requests/:id/deny",
+    "Deny class change",
+    CLASS_CHANGE_REVIEW_PERMISSIONS,
+  ),
   api("GET", "/api/admin/sessions/:id/roster", "Session roster", ROSTER_READ_PERMISSIONS, {
     requiresOwnership: true,
   }),
@@ -467,13 +501,19 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
   ]),
   api("GET", "/api/admin/customers", "List customers", ["customers.read"]),
   api("GET", "/api/admin/customers/:id", "Customer detail", ["customers.read"]),
+  api("GET", "/api/admin/coach/students", "Coach students", ["roster.read.own"], {
+    coachOnly: true,
+  }),
+  api("GET", "/api/admin/coach/students/:customerId", "Coach student detail", ["roster.read.own"], {
+    coachOnly: true,
+  }),
   api("GET", "/api/admin/classes", "List classes", CLASS_READ),
   api("POST", "/api/admin/classes", "Create class", ["classes.manage"]),
   api("PATCH", "/api/admin/classes/:id", "Update class", ["classes.manage"]),
   api("GET", "/api/admin/venues", "List venues", VENUE_READ_PERMISSIONS),
   api("POST", "/api/admin/venues", "Create venue", ["classes.manage"]),
   api("PATCH", "/api/admin/venues/:id", "Update venue", ["classes.manage"]),
-  api("GET", "/api/admin/coaches", "List coaches", COACH_READ, {
+  api("GET", "/api/admin/coaches", "List coaches", [...COACH_READ, "staff.manage"], {
     includeFieldsIf: ["coach_rates.read"],
   }),
   api("POST", "/api/admin/coaches", "Create coach", ["coaches.manage"], {
@@ -486,6 +526,7 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
   api("DELETE", "/api/admin/coaches/:id/photo", "Remove coach photo", ["coaches.manage"]),
   api("GET", "/api/admin/events", "List events", EVENT_READ),
   api("POST", "/api/admin/events", "Create event", ["events.manage"]),
+  api("POST", "/api/admin/events/:id/images", "Upload event image", ["events.manage"]),
   api("GET", "/api/admin/events/:id", "Event detail", EVENT_READ),
   api("PATCH", "/api/admin/events/:id", "Update event", ["events.manage"]),
   api("POST", "/api/admin/events/:id/publish", "Publish event", ["events.manage"]),
@@ -534,13 +575,21 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
   }),
   api("GET", "/api/admin/staff", "List staff", STAFF_READ),
   api("POST", "/api/admin/staff", "Create staff", ["staff.manage"]),
+  api("POST", "/api/admin/staff/:id/invite", "Copy staff invite link", ["staff.manage"]),
+  api("POST", "/api/admin/staff/:id/reset-password", "Copy staff password reset link", [
+    "staff.manage",
+  ]),
   api("PATCH", "/api/admin/staff/:id", "Update staff", ["staff.manage"]),
+  api("POST", "/api/admin/staff/:id/photo", "Upload staff photo", ["staff.manage"]),
+  api("DELETE", "/api/admin/staff/:id/photo", "Remove staff photo", ["staff.manage"]),
   api("POST", "/api/admin/staff/:id/disable", "Disable staff", ["staff.manage"]),
   api("POST", "/api/admin/staff/:id/coach", "Link coach", ["staff.manage"]),
   api("DELETE", "/api/admin/staff/:id/coach", "Unlink coach", ["staff.manage"]),
   api("POST", "/api/admin/staff/:id/role", "Assign staff role", ["roles.manage"]),
   api("GET", "/api/admin/permissions", "Permission registry", ROLE_READ),
-  api("GET", "/api/admin/roles", "List roles", ROLE_READ),
+  // Staff detail shows an assigned role summary; managers also need the
+  // catalogue to provision accounts without permission to edit role definitions.
+  api("GET", "/api/admin/roles", "List roles", [...ROLE_READ, ...STAFF_READ]),
   api("POST", "/api/admin/roles", "Create role", ["roles.manage"]),
   api("GET", "/api/admin/roles/:id", "Role detail", ROLE_READ),
   api("PATCH", "/api/admin/roles/:id", "Update role", ["roles.manage"]),

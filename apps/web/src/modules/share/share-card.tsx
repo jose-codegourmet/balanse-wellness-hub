@@ -37,7 +37,7 @@ import type { ReactNode } from "react";
 // Public API
 // ---------------------------------------------------------------------------
 
-/** Either payload from `getPublicSessionPage` / `getPublicEventPage`. */
+/** Either payload from the public session / event page API clients. */
 export type ShareCardPage = PublicSessionPage | PublicEventPage;
 
 export type ShareCardOptions = {
@@ -78,7 +78,7 @@ export function shareCardCanonicalUrl(
  * "Cancelled" ribbon. Callers decide 404s (draft, past) before calling.
  *
  * @example
- * const page = await getMockAdapter().getPublicSessionPage(id);
+ * const page = await getPublicSession(serverFetcher(null), id);
  * return renderPosterImage(page, { share: parseShareParams({ ref, src }) });
  */
 export async function renderPosterImage(
@@ -106,7 +106,7 @@ export async function renderPosterImage(
  * export const size = OG_IMAGE_SIZE;
  * export const contentType = SHARE_IMAGE_CONTENT_TYPE;
  * export default async function Image({ params }) {
- *   const page = await getMockAdapter().getPublicSessionPage((await params).sessionId);
+ *   const page = await getPublicSession(serverFetcher(null), (await params).sessionId);
  *   if (!page) notFound();
  *   return renderOgImage(page);
  * }

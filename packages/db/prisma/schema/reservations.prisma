@@ -39,19 +39,23 @@ model Booking {
 /// BE-009 — append-only acceptances.
 model BookingPolicyAcceptance {
   id              String   @id @default(cuid())
-  bookingId       String
+  bookingId       String?
   profileId       String   @db.Uuid
   policyVersionId String
+  form            CustomerPolicyForm @default(BOOKING)
+  acquisitionId   String?
   acceptedAt      DateTime @default(now()) @db.Timestamptz
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  booking       Booking               @relation(fields: [bookingId], references: [id])
+  booking       Booking?              @relation(fields: [bookingId], references: [id], onDelete: Restrict)
   profile       Profile               @relation(fields: [profileId], references: [id])
   policyVersion PolicyDocumentVersion @relation(fields: [policyVersionId], references: [id])
 
   @@unique([bookingId, policyVersionId])
   @@index([profileId, acceptedAt])
+  @@index([form, profileId, acceptedAt])
+  @@index([acquisitionId])
   @@map("booking_policy_acceptances")
 }
 
@@ -88,16 +92,21 @@ model Payment {
   @@map("payments")
 }
 
-/// BE-056 — GCash receive-QR collection. At most one active non-archived row
-/// (partial unique index in SQL). Payments may snapshot the row that was live.
+/// BE-056 / WIRE-1701 (#371) — payment account collection (GCash, Maya, QR Ph).
+/// Several non-archived rows may be active (shown at checkout) at once;
+/// handlers keep at least one visible while any non-archived row exists.
 model PaymentQrCode {
-  id         String    @id @default(cuid())
-  label      String
-  imageKey   String    @unique
-  isActive   Boolean   @default(false)
-  archivedAt DateTime? @db.Timestamptz
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id            String             @id @default(cuid())
+  type          PaymentAccountType @default(GCASH)
+  label         String
+  accountName   String             @default("")
+  accountNumber String             @default("")
+  /// QR Ph requires one; GCash/Maya don't.
+  imageKey      String?            @unique
+  isActive      Boolean            @default(false)
+  archivedAt    DateTime?          @db.Timestamptz
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
 
   payments Payment[]
   bundleAcquisitionPayments BundleAcquisitionPayment[]

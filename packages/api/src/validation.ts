@@ -66,12 +66,16 @@ export function optionalString(
 export function optionalNullableString(
   body: Record<string, unknown>,
   path: string,
+  max?: number,
 ): string | null | undefined {
   if (!hasPath(body, path)) return undefined;
   const value = readPath(body, path);
   if (value === null) return null;
   if (typeof value !== "string") {
     throwFields(fieldError(path, "invalid_type", `${path} must be a string or null.`));
+  }
+  if (max != null && value.length > max) {
+    throwFields(fieldError(path, "too_long", `${path} must be at most ${max} characters.`));
   }
   return value;
 }

@@ -6,12 +6,7 @@ const meta: Meta<typeof AdminLoginForm> = {
   component: AdminLoginForm,
   tags: ["autodocs"],
   args: {
-    email: "",
-    password: "",
-    errors: {},
-    onEmailChange: () => undefined,
-    onPasswordChange: () => undefined,
-    onSubmit: () => undefined,
+    onSubmit: async () => undefined,
   },
 };
 export default meta;

@@ -9,7 +9,6 @@ import type {
   AdminVenue,
   CursorPage,
   CustomerBooking,
-  CustomerProfile,
   PaymentAccountSummary,
   PaymentMethod,
   PaymentQrCode,
@@ -43,7 +42,6 @@ import {
   FIELD_CONSTRAINTS,
   filterPaymentQueue,
   filterPermissionKeys,
-  formatPeso,
   isValidCustomPermissionSet,
   manilaYmd,
   roleAssignmentDeniedReason,
@@ -106,9 +104,7 @@ import {
   buildPublicSessionPage,
   type CommunityState,
   customerReferralSummary,
-  generateReferralCode,
   mergeOnboarding,
-  resolveSignupAttribution,
   validateAvatarDataUrl,
 } from "./community-engine";
 import { onboardingFixtures, referralFixtures, signupDates } from "./community-fixtures";
@@ -120,7 +116,6 @@ import {
   createAdminEvent,
   type EventEngineState,
   getAdminEvent,
-  getAdminEventForSession,
   listAdminEvents,
   publishAdminEvent,
   updateAdminEvent,
@@ -695,15 +690,6 @@ export function createMemoryAdapter(): MockDataAdapter {
         const profile = profiles.find((p) => p.id === customerId);
         return profile ? clone(profile) : null;
       }),
-    ensureCustomer: (seed) =>
-      applyMockEffects(() => {
-        const existing = profiles.find((p) => p.id === seed.id);
-        if (existing) return clone(existing);
-        profiles.push(clone(seed));
-        acceptances[seed.id] ??= [];
-        community.signupAt[seed.id] ??= MOCK_NOW_ISO;
-        return clone(seed);
-      }),
     patchMe: (customerId, patch) =>
       applyMockEffects(() => {
         const profile = findProfile(customerId);
@@ -746,8 +732,6 @@ export function createMemoryAdapter(): MockDataAdapter {
         if (profile.onboardingStatus !== "completed") profile.onboardingStatus = "skipped";
         return clone(profile);
       }),
-    getMyReferralChannel: (customerId) =>
-      applyMockEffects(() => community.referrals[customerId]?.channel ?? null),
     getMePolicyAcceptances: (customerId) =>
       applyMockEffects(() => clone(acceptances[customerId] ?? [])),
     getCustomerFormPolicies: (form) =>
@@ -761,35 +745,6 @@ export function createMemoryAdapter(): MockDataAdapter {
         if (next.length === 0) return;
         acceptances[customerId] = [...(acceptances[customerId] ?? []), ...clone(next)];
       }),
-    createCustomer: (input) =>
-      applyMockEffects(() => {
-        const id = `cust-${input.email.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
-        const profile: CustomerProfile = {
-          id,
-          firstName: "",
-          lastName: "",
-          fullName: "",
-          nickname: null,
-          avatarUrl: null,
-          showOnPublicRoster: true,
-          referralCode: generateReferralCode(
-            new Set(profiles.map((row) => row.referralCode)),
-            input.email.toLowerCase(),
-          ),
-          onboardingStatus: "not_started",
-          email: input.email.trim(),
-          contactNumber: input.contactNumber,
-          authMethod: input.authMethod ?? "email",
-        };
-        applyProfilePatch(profile, { firstName: input.firstName, lastName: input.lastName });
-        const referral = resolveSignupAttribution(input.attribution, profiles, profile.email);
-        profiles.push(profile);
-        acceptances[profile.id] = [];
-        community.signupAt[profile.id] = MOCK_NOW_ISO;
-        if (referral) community.referrals[profile.id] = referral;
-        return clone(profile);
-      }),
-
     getMyEntitlements: (customerId) =>
       applyMockEffects(() =>
         bundleState.entitlements
@@ -1507,19 +1462,6 @@ export function createMemoryAdapter(): MockDataAdapter {
         consumeCredit(bundleState, booking.id);
         return clone(decorateBooking(booking));
       }),
-    getAdminReportsSales: () =>
-      applyMockEffects(() => {
-        const reports = computeAdminReports(sessions, bookings, {
-          from: "2020-01-01",
-          to: "2030-12-31",
-        });
-        void formatPeso(reports.overview.grossSalesPhp);
-        return {
-          grossPhp: reports.overview.grossSalesPhp,
-          refundsPhp: reports.overview.refundsPhp,
-          netPhp: reports.overview.netSalesPhp,
-        };
-      }),
     getAdminReports: (filters) =>
       applyMockEffects(() => computeAdminReports(sessions, bookings, filters)),
     getAdminSessionReport: (sessionId) =>
@@ -1930,8 +1872,6 @@ export function createMemoryAdapter(): MockDataAdapter {
     getAdminEvents: (query) =>
       applyMockEffects(() => clone(listAdminEvents(eventState, sessions, query, MOCK_NOW_ISO))),
     getAdminEvent: (id) => applyMockEffects(() => clone(getAdminEvent(eventState, sessions, id))),
-    getAdminEventForSession: (sessionId) =>
-      applyMockEffects(() => clone(getAdminEventForSession(eventState, sessions, sessionId))),
     createAdminEvent: (input) =>
       applyMockEffects(() =>
         clone(createAdminEvent(eventState, sessions, input, new Date().toISOString())),
@@ -1971,37 +1911,6 @@ export function createMemoryAdapter(): MockDataAdapter {
       applyMockEffects(() => clone(approveAcquisition(bundleState, id, actorId))),
     rejectBundleAcquisition: (id, reason, actorId) =>
       applyMockEffects(() => clone(rejectAcquisition(bundleState, id, reason, actorId))),
-    getAdminCustomerEntitlements: (customerId) =>
-      applyMockEffects(() =>
-        bundleState.entitlements
-          .filter((row) => row.customerId === customerId)
-          .map((row) => clone(materializeEntitlement(bundleState, row))),
-      ),
-    getBundleAudit: (query) =>
-      applyMockEffects(() =>
-        clone(
-          bundleState.audits.filter((row) => {
-            if (query?.entitlementId && row.entitlementId !== query.entitlementId) return false;
-            if (query?.customerId && row.customerId !== query.customerId) return false;
-            if (query?.bundleId && row.bundleId !== query.bundleId) return false;
-            return true;
-          }),
-        ),
-      ),
-    expireHeldBooking: (bookingId) =>
-      applyMockEffects(() => {
-        const booking = findBooking(bookingId);
-        if (!booking) throw new Error("Booking not found");
-        booking.status = "EXPIRED";
-        restoreCredit(bundleState, booking.id, "Payment hold expired");
-        return clone(decorateBooking(booking));
-      }),
-    promoteWaitlistedBooking: (bookingId) =>
-      applyMockEffects(() => {
-        const booking = findBooking(bookingId);
-        if (!booking) throw new Error("Booking not found");
-        return clone(promoteWaitlisted(booking));
-      }),
   });
 }
 

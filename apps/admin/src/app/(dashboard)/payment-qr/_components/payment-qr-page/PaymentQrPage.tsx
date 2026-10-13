@@ -14,8 +14,8 @@ import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { useArchivePaymentQr, useSetPaymentQrActive } from "@/lib/query/mutations";
 import { adminPaymentQrsQuery } from "@/lib/query/queries";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { PaymentAccountFormDialog } from "../payment-account-form-dialog/PaymentAccountFormDialog";
 
 export type PaymentQrPageProps = {
@@ -36,8 +36,8 @@ const TYPE_BADGE: Record<PaymentAccountType, string> = {
  * shown at checkout at once.
  */
 export function PaymentQrPage({ empty, items: itemsProp }: PaymentQrPageProps) {
-  const { principal } = useMockPrincipal();
-  const listQuery = useSuspenseQuery(adminPaymentQrsQuery(principal));
+  const actor = useStaffActor();
+  const listQuery = useSuspenseQuery(adminPaymentQrsQuery(actor));
   const items = empty ? [] : (itemsProp ?? listQuery.data.items);
   const shown = items.filter((row) => row.isActive);
   const hidden = items.filter((row) => !row.isActive);

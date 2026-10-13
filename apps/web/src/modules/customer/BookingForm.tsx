@@ -1,8 +1,9 @@
 "use client";
 
+import { ApiError } from "@balanse/api-client";
 import type {
-  CustomerEntitlement,
   CustomerProfile,
+  HttpCustomerEntitlement,
   PolicyDocumentVersion,
   PublicSession,
 } from "@balanse/domain";
@@ -13,41 +14,53 @@ import {
   formatSessionRange,
   formatSessionsRemaining,
   sessionDisplayName,
-  toPolicyAcceptances,
 } from "@balanse/domain";
-import { getMockAdapter, MOCK_NOW_ISO } from "@balanse/mock";
 import { Button, LocalizedSkeleton } from "@balanse/ui";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarDays, Check, Clock3, ShieldCheck, Ticket, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import {
   PolicyAcceptance,
   usePolicyAcceptance,
 } from "@/components/balanse/policy-acceptance/PolicyAcceptance";
+import { useCreateBooking } from "@/lib/query/mutations/bookings";
 import { notify } from "@/modules/notifications/notify";
+import { bookingFormDefaults } from "./BookingForm.defaults";
+import { type BookingFormValues, bookingFormSchema } from "./BookingForm.schema";
 
 export function BookingForm({
   session,
   profile,
   entitlements = [],
   policies = [],
+  policyVersionIds = [],
   intent = "reserve",
   forcedStatus,
 }: {
   session: PublicSession;
   profile: CustomerProfile;
-  entitlements?: CustomerEntitlement[];
+  entitlements?: HttpCustomerEntitlement[];
   /** Current versions of the policies admin attached to the booking form. */
   policies?: PolicyDocumentVersion[];
+  /** Current required policy versions from `/api/me/policy-acceptances` (WIRE-1604). */
+  policyVersionIds?: string[];
   intent?: "reserve" | "waitlist";
   forcedStatus?: "submitting";
 }) {
   const router = useRouter();
   const policyAcceptance = usePolicyAcceptance(policies);
-  const [entitlementId, setEntitlementId] = useState<string>(
-    entitlements.length === 1 ? (entitlements[0]?.id ?? "") : "",
-  );
+  const booking = useCreateBooking(profile.id);
+  const form = useForm<BookingFormValues>({
+    resolver: zodResolver(bookingFormSchema),
+    defaultValues: {
+      ...bookingFormDefaults,
+      entitlementId: entitlements.length === 1 ? (entitlements[0]?.id ?? "") : "",
+    },
+  });
+  const entitlementId = form.watch("entitlementId");
   const [status, setStatus] = useState<"idle" | "submitting">(
     forcedStatus === "submitting" ? "submitting" : "idle",
   );
@@ -186,7 +199,7 @@ export function BookingForm({
                     name="package"
                     className="mt-1 size-4"
                     checked={entitlementId === ""}
-                    onChange={() => setEntitlementId("")}
+                    onChange={() => form.setValue("entitlementId", "")}
                   />
                   <span>
                     <span className="font-medium">Pay for this session instead</span>
@@ -205,12 +218,12 @@ export function BookingForm({
                       name="package"
                       className="mt-1 size-4"
                       checked={entitlementId === row.id}
-                      onChange={() => setEntitlementId(row.id)}
+                      onChange={() => form.setValue("entitlementId", row.id)}
                     />
                     <span>
-                      <span className="font-medium">{row.snapshot.name}</span>
+                      <span className="font-medium">{row.name}</span>
                       <span className="mt-1 block text-muted-foreground">
-                        {formatSessionsRemaining(row.remainingCredits)}
+                        {formatSessionsRemaining(row.balances.remaining)}
                       </span>
                     </span>
                   </label>
@@ -240,30 +253,44 @@ export function BookingForm({
             type="button"
             variant="accent"
             className="w-full sm:w-auto"
-            onClick={() => {
-              if (!policyAcceptance.check()) return;
-              setStatus("submitting");
-              void getMockAdapter()
-                .createBooking({
-                  customerId: profile.id,
-                  sessionId: session.id,
-                  entitlementId: waitlist ? null : entitlementId || null,
-                  intendedEntitlementId: waitlist ? entitlementId || null : null,
-                  policyAcceptances: toPolicyAcceptances(policies, MOCK_NOW_ISO, "booking"),
-                })
-                .then((booking) => {
-                  notify.portal(bookingCreatedToastId(booking.status));
-                  if (waitlist || booking.status === "WAITLISTED" || booking.entitlementId) {
-                    router.push(`/portal/bookings/${booking.id}`);
-                    return;
-                  }
-                  router.push(`/portal/bookings/${booking.id}/payment`);
-                })
-                .catch(() => {
-                  notify.portal("package.action-failed");
-                  setStatus("idle");
-                });
-            }}
+            onClick={() =>
+              form.handleSubmit((values) => {
+                if (!policyAcceptance.check()) return;
+                setStatus("submitting");
+                void booking
+                  .mutateAsync({
+                    sessionId: session.id,
+                    entitlementId: waitlist ? null : values.entitlementId || null,
+                    intendedEntitlementId: waitlist ? values.entitlementId || null : null,
+                    policyVersionIds,
+                  })
+                  .then(({ booking: created }) => {
+                    notify.portal(bookingCreatedToastId(created.status));
+                    if (waitlist || created.status === "WAITLISTED" || created.entitlementId) {
+                      router.push(`/portal/bookings/${created.id}`);
+                      return;
+                    }
+                    router.push(`/portal/bookings/${created.id}/payment`);
+                  })
+                  .catch((error: unknown) => {
+                    // Map the specific reservation conflicts (WIRE-0804, #363)
+                    // instead of one generic toast for every failure.
+                    const toastId =
+                      error instanceof ApiError && error.code === "booking_cutoff_reached"
+                        ? "booking.cutoff-reached"
+                        : error instanceof ApiError &&
+                            (error.code === "capacity_exceeded" ||
+                              error.code === "target_session_full")
+                          ? "booking.session-full"
+                          : error instanceof ApiError &&
+                              error.code === "missing_required_policy_acceptance"
+                            ? "booking.policy-required"
+                            : "booking.reserve-failed";
+                    notify.portal(toastId);
+                    setStatus("idle");
+                  });
+              })()
+            }
           >
             {waitlist
               ? "Join waitlist"

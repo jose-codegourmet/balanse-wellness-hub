@@ -1,5 +1,6 @@
-import { getMockAdapter } from "@balanse/mock";
+import { listPublicCoaches } from "@balanse/api-client";
 import type { Metadata } from "next";
+import { serverFetcher } from "@/lib/query/fetcher";
 import { CoachesPage } from "./_components/coaches-page/CoachesPage";
 
 export const metadata: Metadata = {
@@ -8,6 +9,6 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const coaches = await getMockAdapter().getPublicCoaches();
+  const { items: coaches } = await listPublicCoaches(serverFetcher(null));
   return <CoachesPage coaches={coaches} />;
 }

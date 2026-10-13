@@ -1,3 +1,5 @@
+"use client";
+
 import type { CustomerBooking, CustomerProfile } from "@balanse/domain";
 import {
   customerBookingActions,
@@ -8,6 +10,8 @@ import {
 import { Alert, AlertDescription, AlertTitle, Button } from "@balanse/ui";
 import { Hourglass, Info, Wallet } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import {
   BookingFacts,
   BookingReference,
@@ -90,6 +94,25 @@ export function BookingDetail({
   const advisories = advisoriesFor(booking);
   const mood = bookingMood(booking);
   const { session } = booking;
+  const router = useRouter();
+  const [now, setNow] = useState(() => Date.now());
+  const expiresAt = booking.holdExpiresAt ? new Date(booking.holdExpiresAt).getTime() : null;
+  useEffect(() => {
+    if (!expiresAt || expiresAt <= now) return;
+    const timer = window.setInterval(() => setNow(Date.now()), 1_000);
+    return () => window.clearInterval(timer);
+  }, [expiresAt]);
+  // Once the hold actually expires, re-fetch the booking (WIRE-0805, #363) so
+  // the page updates to EXPIRED/promoted-to-waitlist on its own, instead of
+  // leaving the customer looking at a stale HELD_AWAITING_PAYMENT banner.
+  const refreshedOnExpiry = useRef(false);
+  useEffect(() => {
+    if (expiresAt && expiresAt <= now && !refreshedOnExpiry.current) {
+      refreshedOnExpiry.current = true;
+      router.refresh();
+    }
+  }, [expiresAt, now, router]);
+  const remainingMinutes = expiresAt ? Math.max(0, Math.ceil((expiresAt - now) / 60_000)) : null;
 
   return (
     <div className="portal-page portal-booking-detail">
@@ -155,6 +178,13 @@ export function BookingDetail({
             <dd>{paymentStatusLabel(booking.paymentStatus)}</dd>
           </div>
         </dl>
+        {booking.status === "HELD_AWAITING_PAYMENT" && remainingMinutes !== null ? (
+          <p className="mt-4 text-sm font-medium" role="status">
+            {remainingMinutes > 0
+              ? `Your reservation hold expires in ${remainingMinutes} minute${remainingMinutes === 1 ? "" : "s"}.`
+              : "Your reservation hold has expired. This page is refreshing to show the latest status."}
+          </p>
+        ) : null}
         {advisories.length > 0 ? (
           <div className="booking-advisories">
             {advisories.map((advisory) => {

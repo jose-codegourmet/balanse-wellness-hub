@@ -99,6 +99,12 @@ export function asString(value: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+/** Raw Supabase bearer token, forwarded to RLS-scoped RPC paths so caller-level RLS applies. */
+export function bearerToken(req: Request): string | null {
+  const header = req.headers.get("authorization");
+  return header?.toLowerCase().startsWith("bearer ") ? header.slice(7).trim() : null;
+}
+
 export function forbidForeignAttendee(body: Record<string, unknown>): void {
   for (const key of ["customerId", "customer_id", "attendeeId", "attendee_id", "profileId"]) {
     if (key in body) {

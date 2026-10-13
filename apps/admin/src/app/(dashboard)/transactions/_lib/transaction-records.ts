@@ -1,8 +1,8 @@
 import {
   BUNDLE_ACQUISITION_STATUS_LABELS,
-  type BundleAcquisition,
   type CustomerBooking,
   countsTowardGrossSales,
+  type HttpBundleAcquisition,
   paymentMethodLabel,
   paymentStatusLabel,
   refundStatusLabel,
@@ -23,10 +23,10 @@ export type TransactionRecord = {
   href: string;
 };
 
-/** Current financial states from mock source records; never fabricate settlement dates. */
+/** Current financial states from API source records; never fabricate settlement dates. */
 export function transactionRecords(
   bookings: CustomerBooking[],
-  acquisitions: BundleAcquisition[],
+  acquisitions: HttpBundleAcquisition[],
   customers: { id: string; fullName: string }[],
 ): TransactionRecord[] {
   const names = new Map(customers.map((customer) => [customer.id, customer.fullName]));
@@ -74,12 +74,13 @@ export function transactionRecords(
     }
   }
   for (const acquisition of acquisitions) {
-    if (acquisition.channel !== "SELF_PURCHASE" || acquisition.pricePhp <= 0) continue;
+    if (acquisition.kind !== "CUSTOMER_PAID" || (acquisition.payment?.amountPhp ?? 0) <= 0)
+      continue;
     records.push({
       id: `purchase:${acquisition.id}`,
       reference: acquisition.id,
-      customer: names.get(acquisition.customerId) ?? acquisition.customerId,
-      description: acquisition.bundleName,
+      customer: names.get(acquisition.profileId) ?? acquisition.profileId,
+      description: "Package purchase",
       sourceCreatedAt: acquisition.createdAt,
       type: "Package purchase",
       method: "Not recorded",
@@ -92,8 +93,8 @@ export function transactionRecords(
               ? "Cancelled"
               : "Pending",
       detail: BUNDLE_ACQUISITION_STATUS_LABELS[acquisition.status],
-      amountPhp: acquisition.pricePhp,
-      href: `/customers/${acquisition.customerId}`,
+      amountPhp: acquisition.payment?.amountPhp ?? 0,
+      href: `/customers/${acquisition.profileId}`,
     });
   }
   return records.sort(

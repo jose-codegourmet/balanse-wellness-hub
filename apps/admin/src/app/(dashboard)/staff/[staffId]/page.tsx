@@ -1,9 +1,10 @@
-import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
+import { hasPermission } from "@balanse/domain";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
+import { serverFetcher } from "@/lib/query/fetcher";
 import { prefetchAdmin } from "@/lib/query/prefetch";
-import { adminStaffQuery, adminStaffRolesQuery } from "@/lib/query/queries";
+import { adminCoachesQuery, adminStaffQuery, adminStaffRolesQuery } from "@/lib/query/queries";
+import { getStaffAccessToken, getStaffSession } from "@/modules/session/current-staff";
 import { StaffDetailPage } from "../_components/staff-detail-page/StaffDetailPage";
 
 export const metadata: Metadata = {
@@ -13,9 +14,15 @@ export const metadata: Metadata = {
 
 export default async function Page({ params }: { params: Promise<{ staffId: string }> }) {
   const { staffId } = await params;
-  const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
+  const [{ actor }, token] = await Promise.all([getStaffSession(), getStaffAccessToken()]);
   return prefetchAdmin(
-    [adminStaffQuery(principal), adminStaffRolesQuery(principal)],
+    [
+      adminStaffQuery(actor, serverFetcher(token)),
+      adminStaffRolesQuery(actor, serverFetcher(token)),
+      ...(actor && hasPermission(actor, "staff.manage")
+        ? [adminCoachesQuery(actor, serverFetcher(token))]
+        : []),
+    ],
     <AdminQuerySuspense>
       <StaffDetailPage staffId={staffId} />
     </AdminQuerySuspense>,

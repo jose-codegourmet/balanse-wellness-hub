@@ -1,9 +1,9 @@
-import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
+import { serverFetcher } from "@/lib/query/fetcher";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { adminPaymentQrsQuery } from "@/lib/query/queries";
+import { getStaffAccessToken, getStaffSession } from "@/modules/session/current-staff";
 import { PaymentQrPage } from "./_components/payment-qr-page/PaymentQrPage";
 
 export const metadata: Metadata = {
@@ -12,9 +12,9 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
+  const [{ actor }, token] = await Promise.all([getStaffSession(), getStaffAccessToken()]);
   return prefetchAdmin(
-    [adminPaymentQrsQuery(principal)],
+    [adminPaymentQrsQuery(actor, serverFetcher(token))],
     <AdminQuerySuspense>
       <PaymentQrPage />
     </AdminQuerySuspense>,

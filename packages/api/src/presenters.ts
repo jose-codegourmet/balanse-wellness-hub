@@ -44,8 +44,11 @@ export function presentCoach<T extends { staffMemberId?: string | null }>(coach:
 
 export function presentPaymentQr(row: {
   id: string;
+  type: "GCASH" | "MAYA" | "QRPH";
   label: string;
-  imageKey: string;
+  accountName: string;
+  accountNumber: string;
+  imageKey: string | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -53,7 +56,10 @@ export function presentPaymentQr(row: {
 }) {
   return {
     id: row.id,
+    type: row.type,
     label: row.label,
+    accountName: row.accountName,
+    accountNumber: row.accountNumber,
     imageKey: row.imageKey,
     isActive: row.isActive,
     createdAt: row.createdAt.toISOString(),
@@ -66,6 +72,34 @@ export function money(value: unknown): string {
   if (value == null) return "0.00";
   if (typeof value === "number") return value.toFixed(2);
   return String(value);
+}
+
+export type SessionAvailability =
+  | "open"
+  | "nearly_full"
+  | "full_with_waitlist"
+  | "past"
+  | "cancelled"
+  | "past_cutoff";
+
+/**
+ * #361 — availability bucket shared by the public and admin session
+ * presenters. "nearly_full" has no formal spec threshold; ≤2 remaining
+ * slots is a judgment call consistent with the fixture data (open at 8/12
+ * remaining, nearly_full at 1/10).
+ */
+export function sessionAvailability(input: {
+  status: "DRAFT" | "PUBLISHED" | "CANCELLED";
+  remainingSlots: number;
+  pastStart: boolean;
+  pastCutoff: boolean;
+}): SessionAvailability {
+  if (input.status === "CANCELLED") return "cancelled";
+  if (input.pastStart) return "past";
+  if (input.pastCutoff) return "past_cutoff";
+  if (input.remainingSlots <= 0) return "full_with_waitlist";
+  if (input.remainingSlots <= 2) return "nearly_full";
+  return "open";
 }
 
 export function assertPublicPayload(payload: unknown): void {

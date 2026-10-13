@@ -19,6 +19,8 @@
 .about-round-link { position: absolute; left: 69%; bottom: -1.5rem; display: grid; place-items: center; width: 4rem; height: 4rem; border: .4rem solid var(--background); border-radius: 50%; background: var(--secondary); transition: transform 200ms; }
 .about-round-link:hover { transform: translateY(4px); }
 .about-intro-footer { border-bottom: 1px solid var(--border); padding: 2rem 0 1.5rem; font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-foreground); }
+.about-story { padding-block: 4rem 0; }
+.about-story .about-body { white-space: pre-wrap; max-width: 42rem; margin-left: auto; }
 .about-approach { padding-block: 6rem; scroll-margin-top: 6rem; }
 .about-section-heading { display: grid; grid-template-columns: 1fr 1fr; column-gap: 5rem; }
 .about-section-heading .marketing-eyebrow { grid-column: 1 / -1; margin-bottom: 1.5rem; }

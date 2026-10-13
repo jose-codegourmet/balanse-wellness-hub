@@ -18,7 +18,7 @@ import {
 import Link from "next/link";
 import { useFieldArray } from "react-hook-form";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
-import { useUpdateAdminSettings } from "@/lib/query/mutations";
+import { useSaveFaqs, useUpdateAdminSettings } from "@/lib/query/mutations";
 import {
   AdminForm,
   FormActions,
@@ -327,11 +327,13 @@ export function PublicContentSection({
   page?: "all" | "about" | "contact" | "faqs";
 }) {
   const update = useUpdateAdminSettings();
+  const saveFaqs = useSaveFaqs();
   if (page === "all") return <ContentOverview settings={settings} />;
 
   const defaultValues = empty
     ? publicContentFormDefaultValues
     : valuesFromPublicSettings(settings, faqsOverride);
+  const previousFaqs = faqsOverride ?? settings.faqs;
 
   return (
     <AdminForm
@@ -340,18 +342,20 @@ export function PublicContentSection({
       defaultValues={defaultValues}
       onSubmit={async (values) => {
         try {
-          const patch: Partial<AdminSettings> =
-            page === "about"
-              ? { about: values.about }
-              : page === "contact"
-                ? {
+          if (page === "faqs") {
+            await saveFaqs.mutateAsync({ previous: previousFaqs, next: values.faqs });
+          } else {
+            const patch: Partial<AdminSettings> =
+              page === "about"
+                ? { about: values.about }
+                : {
                     contact: {
                       ...settings.contact,
                       email: values.contact.email,
                     },
-                  }
-                : { faqs: values.faqs };
-          await update.mutateAsync(patch);
+                  };
+            await update.mutateAsync(patch);
+          }
           notify.admin("settings.saved");
           onSaved?.();
         } catch (error) {

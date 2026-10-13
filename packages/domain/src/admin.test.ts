@@ -8,7 +8,6 @@ import {
   countsTowardGrossSales,
   FORBIDDEN_REPORT_TERM,
   REPORT_TERMS,
-  validateAdminLogin,
   validateSessionCapacity,
 } from "./admin";
 import { BOOKING_STATUSES } from "./enums";
@@ -51,13 +50,6 @@ const booking = (
 });
 
 describe("FE-ADM admin domain", () => {
-  it("accepts admin credentials and rejects customers and invalid passwords", () => {
-    expect(validateAdminLogin({ email: "rex@balanse.example", password: "welcome" }).ok).toBe(true);
-    expect(validateAdminLogin({ email: "ana@example.com", password: "welcome" }).ok).toBe(false);
-    expect(validateAdminLogin({ email: "rex@balanse.example", password: "nope" }).ok).toBe(false);
-    expect(validateAdminLogin({ email: "", password: "" }).ok).toBe(false);
-  });
-
   it("keeps waitlisted and unpaid held out of gross sales and records refunds separately", () => {
     expect(
       countsTowardGrossSales(booking({ id: "w", status: "WAITLISTED", paymentStatus: "NONE" })),

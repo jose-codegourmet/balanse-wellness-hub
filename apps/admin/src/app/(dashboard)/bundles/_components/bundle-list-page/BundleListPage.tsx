@@ -1,12 +1,13 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
-  type BundleAcquisition,
+  type AdminBundle,
   type BundleCreditMetrics,
-  type BundleDefinition,
   bundleStatusLabel,
   EMPTY_BUNDLE_CREDIT_METRICS,
   formatPeso,
+  type HttpBundleAcquisition,
 } from "@balanse/domain";
 import { Badge, Button, FeedbackState, TablePageSkeleton } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -25,9 +26,8 @@ import {
   adminBundleMetricsQuery,
   adminBundlesQuery,
 } from "@/lib/query/queries";
-import { AdminCan, useCanAdminAction } from "@/modules/authorization/useAdminAccess";
+import { AdminCan, useCanAdminAction, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export type BundleListPageProps = {
   empty?: boolean;
@@ -43,18 +43,18 @@ const CREDIT_COLUMNS: { key: keyof BundleCreditMetrics; header: string }[] = [
   { key: "granted", header: "Granted" },
 ];
 
-function statusVariant(status: BundleDefinition["status"]) {
+function statusVariant(status: AdminBundle["status"]) {
   if (status === "PUBLISHED") return "success" as const;
   if (status === "ARCHIVED") return "danger" as const;
   return "neutral" as const;
 }
 
 export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const canManageBundles = useCanAdminAction("bundles-manage");
-  const bundlesQuery = useSuspenseQuery(adminBundlesQuery(principal));
-  const acquisitionsQuery = useSuspenseQuery(adminBundleAcquisitionsQuery(principal));
-  const metricsQuery = useSuspenseQuery(adminBundleMetricsQuery(principal));
+  const bundlesQuery = useSuspenseQuery(adminBundlesQuery(actor, apiFetchBrowser));
+  const acquisitionsQuery = useSuspenseQuery(adminBundleAcquisitionsQuery(actor, apiFetchBrowser));
+  const metricsQuery = useSuspenseQuery(adminBundleMetricsQuery(actor, apiFetchBrowser));
   const metrics = metricsQuery.data;
   const setStatus = useSetAdminBundleStatus();
   const approve = useApproveBundleAcquisition();
@@ -66,7 +66,7 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
     [acquisitionsQuery.data, empty],
   );
 
-  const columns = useMemo<ColumnDef<BundleDefinition, unknown>[]>(
+  const columns = useMemo<ColumnDef<AdminBundle, unknown>[]>(
     () => [
       {
         accessorKey: "name",
@@ -74,7 +74,7 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
         meta: { primaryLink: (row) => `/bundles/${row.id}`, mobile: { role: "title" } },
       },
       {
-        accessorKey: "sessionCredits",
+        accessorKey: "sessionCreditCount",
         header: "Sessions",
         meta: { mobile: { role: "subtitle" } },
       },
@@ -85,10 +85,10 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
         meta: { mobile: { role: "meta" } },
       },
       ...CREDIT_COLUMNS.map(
-        ({ key, header }): ColumnDef<BundleDefinition, unknown> => ({
+        ({ key, header }): ColumnDef<AdminBundle, unknown> => ({
           id: `credits-${key}`,
           header,
-          accessorFn: (row) => (metrics[row.id] ?? EMPTY_BUNDLE_CREDIT_METRICS)[key],
+          accessorFn: (row) => (metrics[row.id] ?? row.metrics ?? EMPTY_BUNDLE_CREDIT_METRICS)[key],
           cell: ({ getValue }) => <span className="tabular-nums">{getValue<number>()}</span>,
         }),
       ),
@@ -148,7 +148,7 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
           id="calendar.load-failed"
           className="mt-6"
           title="Could not load packages"
-          description="The mock harness failed this request. Retry after clearing failNext."
+          description="The package service could not be reached. Please try again."
         />
       ) : (
         <AdminDataTable
@@ -213,13 +213,16 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
           <FeedbackState id="admin.no-package-reviews" className="m-5" />
         ) : (
           <ul className="divide-y divide-border/70">
-            {reviews.map((row: BundleAcquisition) => (
+            {reviews.map((row: HttpBundleAcquisition) => (
               <li key={row.id} className="p-5 transition-colors hover:bg-muted/20">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="font-medium">{row.bundleName}</p>
+                    <p className="font-medium">
+                      {bundlesQuery.data.find((bundle) => bundle.id === row.bundleId)?.name ??
+                        "Package"}
+                    </p>
                     <p className="text-sm text-muted-foreground">
-                      {row.customerId} · {formatPeso(row.pricePhp)} · manual review
+                      {row.profileId} · {formatPeso(row.payment?.amountPhp ?? 0)} · manual review
                     </p>
                   </div>
                   <AdminCan action="bundles-manage">

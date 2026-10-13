@@ -1,16 +1,24 @@
 import {
   BOOKING_CUTOFF_MINUTES_BEFORE_START,
   BOOKING_HOLD_DURATION_HOURS,
-  CONTACT_DETAILS,
   classSlug,
 } from "@balanse/domain";
 import { PrismaClient } from "@prisma/client";
 import { seedCanonicalRolesAndPermissions } from "./constants/staff-roles";
+import { seedBookings } from "./seed/bookings";
+import { seedBundles } from "./seed/bundles";
+import { seedClassChanges } from "./seed/class-changes";
+import { seedCustomers } from "./seed/customers";
+import { seedOnboarding } from "./seed/onboarding";
+import { seedPaymentAccounts } from "./seed/payment-accounts";
+import { seedSessions } from "./seed/sessions";
+import { seedSettings } from "./seed/settings";
+import { seedStaff } from "./seed/staff";
+import { seedVenues } from "./seed/venues";
 
 const prisma = new PrismaClient();
 
 const SHARED_PROJECT_REF = "xydundrayuusqizssgby";
-const MAIN_STUDIO_VENUE_ID = "venue-main-studio";
 
 function assertSeedAllowed(): void {
   if (process.env.BALANSE_ALLOW_DB_SEED !== "1") {
@@ -29,135 +37,99 @@ function assertSeedAllowed(): void {
 const PLACEHOLDER_PRICE = "999.00";
 const PLACEHOLDER_RATE = "500.00";
 
-/** Seed coaches are teaching profiles only (`staffMemberId` stays null).
- *  BE-055: `coach_rex` is the same human as mock `staff-rex` / photo slug
- *  `rex-francis-regis`. Link after the staff account exists via
- *  `POST /api/admin/staff/{id}/coach` — do not invent a staff row here
- *  (staff requires `auth.users` + `profiles`). */
+/**
+ * Seed coaches are teaching profiles only (`staffMemberId` stays null).
+ * BE-055: `coach-rex` is the same human as mock `staff-rex` / photo slug
+ * `rex-francis-regis`. Link after the staff account exists via
+ * `POST /api/admin/staff/{id}/coach` — do not invent a staff row here
+ * (staff requires `auth.users` + `profiles`).
+ *
+ * Ids match the catalogue import's hyphenated convention (WIRE-0601, #359),
+ * so this upserts the 11 already-imported rows in place instead of creating
+ * duplicates (unlike `GymClass`, `Coach.name` has no unique constraint, so a
+ * mismatched id would silently double every row rather than error).
+ *
+ * `photoKey` is set only for the 8 coaches with an uploaded object under
+ * `coach-photos/<slug>/` in storage (`packages/domain/src/asset-manifest.json`
+ * `coach_slug`). `alec-james-co`, `kate-go`, and `sofia-ocampo` have manifest
+ * slugs but no uploaded headshot yet — stay `null` until that upload lands;
+ * do not point the DB at a storage object that does not exist.
+ */
 const COACHES = [
   {
-    id: "coach_rex",
+    id: "coach-rex",
     name: "Rex Francis Regis",
     specialties: ["Calisthenics", "Mat Pilates", "Caliyoga"],
+    photoKey: "coach-photos/rex-francis-regis",
   },
   {
-    id: "coach_ephraim",
+    id: "coach-ephraim",
     name: "Ephraim Bacaltos",
     specialties: ["Circuit Training", "Groundworks", "Calisthenics"],
+    photoKey: "coach-photos/ephraim-bacaltos",
   },
   {
-    id: "coach_rachelle",
+    id: "coach-rachelle",
     name: "Rachelle Tobiano",
     specialties: ["Kickboxing", "Brazilian Jiu-Jitsu"],
+    photoKey: "coach-photos/rachelle-tobiano",
   },
-  { id: "coach_alec", name: "Alec James Co", specialties: ["Calisthenics", "Circuit Training"] },
-  { id: "coach_jodi", name: "Jodi Tio", specialties: ["Mat Pilates"] },
-  { id: "coach_wolf", name: "Wolf", specialties: ["Yoga"] },
-  { id: "coach_kate", name: "Kate Go", specialties: ["Yoga"] },
-  { id: "coach_sofia", name: "Sofia Ocampo", specialties: ["Mat Pilates"] },
-  { id: "coach_mikaela", name: "Mikaela Danielle", specialties: ["Dance Fitness"] },
-  { id: "coach_maris", name: "Maris Cabrera", specialties: ["Dance Fitness"] },
-  { id: "coach_francis", name: "Francis Acido", specialties: ["Dance Fitness"] },
+  {
+    id: "coach-alec",
+    name: "Alec James Co",
+    specialties: ["Calisthenics", "Circuit Training"],
+    photoKey: null,
+  },
+  {
+    id: "coach-jodi",
+    name: "Jodi Tio",
+    specialties: ["Mat Pilates"],
+    photoKey: "coach-photos/jodi-tio",
+  },
+  { id: "coach-wolf", name: "Wolf", specialties: ["Yoga"], photoKey: "coach-photos/wolf" },
+  { id: "coach-kate", name: "Kate Go", specialties: ["Yoga"], photoKey: null },
+  { id: "coach-sofia", name: "Sofia Ocampo", specialties: ["Mat Pilates"], photoKey: null },
+  {
+    id: "coach-mikaela",
+    name: "Mikaela Danielle",
+    specialties: ["Dance Fitness"],
+    photoKey: "coach-photos/mikaela-danielle",
+  },
+  {
+    id: "coach-maris",
+    name: "Maris Cabrera",
+    specialties: ["Dance Fitness"],
+    photoKey: "coach-photos/maris-cabrera",
+  },
+  {
+    id: "coach-francis",
+    name: "Francis Acido",
+    specialties: ["Dance Fitness"],
+    photoKey: "coach-photos/francis-acido",
+  },
 ] as const;
 
 const CLASSES = [
-  { id: "class_yoga", name: "Yoga" },
-  { id: "class_mat_pilates", name: "Mat Pilates" },
-  { id: "class_calisthenics", name: "Calisthenics" },
-  { id: "class_caliyoga", name: "Caliyoga" },
-  { id: "class_circuit", name: "Circuit Training" },
-  { id: "class_kickboxing", name: "Kickboxing" },
-  { id: "class_bjj", name: "Brazilian Jiu-Jitsu" },
-  { id: "class_groundworks", name: "Groundworks" },
-  { id: "class_dance", name: "Dance Fitness" },
-  { id: "class_contemporary", name: "Contemporary" },
-  { id: "class_groove", name: "Groove" },
-  { id: "class_femme", name: "Femme" },
-  { id: "class_kids", name: "Kids Classes" },
+  { id: "class-yoga", name: "Yoga" },
+  { id: "class-pilates", name: "Mat Pilates" },
+  { id: "class-calisthenics", name: "Calisthenics" },
+  { id: "class-caliyoga", name: "Caliyoga" },
+  { id: "class-circuit", name: "Circuit Training" },
+  { id: "class-kickboxing", name: "Kickboxing" },
+  { id: "class-bjj", name: "Brazilian Jiu-Jitsu" },
+  { id: "class-groundworks", name: "Groundworks" },
+  { id: "class-dance", name: "Dance Fitness" },
+  { id: "class-contemporary", name: "Contemporary" },
+  { id: "class-groove", name: "Groove" },
+  { id: "class-femme", name: "Femme" },
+  { id: "class-kids", name: "Kids Classes" },
 ] as const;
-
-/** Observed Cebu slots from Facebook findings §3, week starting Monday 14 Sep 2026. */
-const WEEK_START = "2026-09-14";
-
-type Slot = { time: string; classId: string; coachId: string };
-
-const TIMETABLE: Record<number, Slot[]> = {
-  0: [
-    { time: "08:00", classId: "class_calisthenics", coachId: "coach_rex" },
-    { time: "09:30", classId: "class_calisthenics", coachId: "coach_alec" },
-    { time: "11:00", classId: "class_calisthenics", coachId: "coach_alec" },
-    { time: "15:00", classId: "class_mat_pilates", coachId: "coach_rex" },
-    { time: "16:30", classId: "class_circuit", coachId: "coach_ephraim" },
-    { time: "18:00", classId: "class_groove", coachId: "coach_francis" },
-    { time: "19:30", classId: "class_calisthenics", coachId: "coach_rex" },
-  ],
-  1: [
-    { time: "08:00", classId: "class_mat_pilates", coachId: "coach_sofia" },
-    { time: "09:30", classId: "class_bjj", coachId: "coach_rachelle" },
-    { time: "11:00", classId: "class_kickboxing", coachId: "coach_rachelle" },
-    { time: "15:00", classId: "class_yoga", coachId: "coach_wolf" },
-    { time: "16:30", classId: "class_calisthenics", coachId: "coach_rex" },
-    { time: "18:00", classId: "class_circuit", coachId: "coach_ephraim" },
-    { time: "19:30", classId: "class_yoga", coachId: "coach_kate" },
-  ],
-  2: [
-    { time: "08:00", classId: "class_mat_pilates", coachId: "coach_sofia" },
-    { time: "09:30", classId: "class_calisthenics", coachId: "coach_rex" },
-    { time: "11:00", classId: "class_groundworks", coachId: "coach_ephraim" },
-    { time: "15:00", classId: "class_caliyoga", coachId: "coach_rex" },
-    { time: "16:30", classId: "class_kickboxing", coachId: "coach_rachelle" },
-    { time: "18:00", classId: "class_calisthenics", coachId: "coach_alec" },
-    { time: "19:30", classId: "class_circuit", coachId: "coach_ephraim" },
-  ],
-  3: [
-    { time: "08:00", classId: "class_caliyoga", coachId: "coach_rex" },
-    { time: "09:30", classId: "class_kickboxing", coachId: "coach_rachelle" },
-    { time: "11:00", classId: "class_kickboxing", coachId: "coach_rachelle" },
-    { time: "16:30", classId: "class_groundworks", coachId: "coach_ephraim" },
-    { time: "18:00", classId: "class_femme", coachId: "coach_maris" },
-    { time: "19:30", classId: "class_calisthenics", coachId: "coach_rex" },
-  ],
-  4: [
-    { time: "08:00", classId: "class_calisthenics", coachId: "coach_rex" },
-    { time: "09:30", classId: "class_calisthenics", coachId: "coach_alec" },
-    { time: "11:00", classId: "class_groundworks", coachId: "coach_ephraim" },
-    { time: "15:00", classId: "class_yoga", coachId: "coach_wolf" },
-    { time: "16:30", classId: "class_kickboxing", coachId: "coach_rachelle" },
-    { time: "18:00", classId: "class_calisthenics", coachId: "coach_alec" },
-    { time: "19:30", classId: "class_groundworks", coachId: "coach_ephraim" },
-  ],
-  5: [
-    { time: "08:00", classId: "class_caliyoga", coachId: "coach_rex" },
-    { time: "09:30", classId: "class_kickboxing", coachId: "coach_rachelle" },
-    { time: "11:00", classId: "class_bjj", coachId: "coach_rachelle" },
-    { time: "15:00", classId: "class_yoga", coachId: "coach_wolf" },
-    { time: "16:30", classId: "class_calisthenics", coachId: "coach_alec" },
-    { time: "18:00", classId: "class_mat_pilates", coachId: "coach_jodi" },
-    { time: "19:30", classId: "class_circuit", coachId: "coach_ephraim" },
-  ],
-  6: [
-    { time: "08:00", classId: "class_calisthenics", coachId: "coach_rex" },
-    { time: "09:30", classId: "class_kickboxing", coachId: "coach_rachelle" },
-    { time: "11:00", classId: "class_kickboxing", coachId: "coach_rachelle" },
-    { time: "15:00", classId: "class_contemporary", coachId: "coach_mikaela" },
-    { time: "16:30", classId: "class_mat_pilates", coachId: "coach_sofia" },
-  ],
-};
-
-function manilaWallToUtc(dateYmd: string, hm: string): Date {
-  return new Date(`${dateYmd}T${hm}:00+08:00`);
-}
-
-function addDays(ymd: string, days: number): string {
-  const [y, m, d] = ymd.split("-").map(Number);
-  const dt = new Date(Date.UTC(y, m - 1, d + days));
-  return dt.toISOString().slice(0, 10);
-}
 
 async function main(): Promise<void> {
   assertSeedAllowed();
 
   await seedCanonicalRolesAndPermissions(prisma);
+  await seedCustomers(prisma);
 
   await prisma.developerConfig.upsert({
     where: { key: "BOOKING_HOLD_DURATION_HOURS" },
@@ -181,6 +153,7 @@ async function main(): Promise<void> {
         name: coach.name,
         specialties: [...coach.specialties],
         shortBio: "PLACEHOLDER bio — not owner-supplied.",
+        photoKey: coach.photoKey,
         active: true,
         defaultRate: PLACEHOLDER_RATE,
         rateType: "PER_SESSION",
@@ -191,11 +164,21 @@ async function main(): Promise<void> {
         specialties: [...coach.specialties],
         defaultRate: PLACEHOLDER_RATE,
         isPlaceholder: true,
+        // Only set a known-good manifest key; never clobber a real upload
+        // (or a still-missing one) with this fixture's own null.
+        ...(coach.photoKey ? { photoKey: coach.photoKey } : {}),
       },
     });
   }
 
+  await seedStaff(prisma);
+
   for (const klass of CLASSES) {
+    // Ids match the catalogue import's hyphenated convention (WIRE-0506, #358)
+    // so this upserts the 9 already-imported rows in place instead of
+    // duplicating them under a new id (name is @unique). `update` only
+    // touches `name`/`isPlaceholder` — never price or duration — so re-seeding
+    // never clobbers real values the import/admin editor already set.
     await prisma.gymClass.upsert({
       where: { id: klass.id },
       create: {
@@ -210,129 +193,20 @@ async function main(): Promise<void> {
       },
       update: {
         name: klass.name,
-        defaultCustomerPrice: PLACEHOLDER_PRICE,
         isPlaceholder: true,
       },
     });
   }
 
-  const waiver = await prisma.policyDocument.upsert({
-    where: { slug: "liability-waiver" },
-    create: {
-      id: "policy_waiver",
-      kind: "WAIVER",
-      slug: "liability-waiver",
-      title: "Liability waiver (PLACEHOLDER)",
-      required: true,
-    },
-    update: { title: "Liability waiver (PLACEHOLDER)", required: true },
-  });
-  const gymPolicy = await prisma.policyDocument.upsert({
-    where: { slug: "gym-policy" },
-    create: {
-      id: "policy_gym",
-      kind: "GYM_POLICY",
-      slug: "gym-policy",
-      title: "Gym policy (PLACEHOLDER)",
-      required: true,
-    },
-    update: { required: true },
-  });
+  await seedVenues(prisma);
+  await seedSessions(prisma);
+  await seedClassChanges(prisma);
 
-  const placeholderBody =
-    "PLACEHOLDER — not legal text. OQ-4: replace with Coach Rex production copy. Do not treat this as a waiver or policy.";
-
-  for (const doc of [waiver, gymPolicy]) {
-    await prisma.policyDocumentVersion.upsert({
-      where: { documentId_version: { documentId: doc.id, version: "0.1.0-placeholder" } },
-      create: {
-        id: `${doc.id}_v010`,
-        documentId: doc.id,
-        version: "0.1.0-placeholder",
-        title: `${doc.title} v0.1.0`,
-        body: placeholderBody,
-        effectiveFrom: new Date("2026-01-01T00:00:00+08:00"),
-        isCurrent: true,
-        isPlaceholder: true,
-      },
-      update: { body: placeholderBody, isCurrent: true, isPlaceholder: true },
-    });
-  }
-
-  // Stable id shared with the venues migration. Every seeded session runs at the studio.
-  await prisma.venue.upsert({
-    where: { id: MAIN_STUDIO_VENUE_ID },
-    create: {
-      id: MAIN_STUDIO_VENUE_ID,
-      name: "Balansé Studio",
-      address: CONTACT_DETAILS.address,
-      kind: "BRANCH",
-      active: true,
-    },
-    update: { address: CONTACT_DETAILS.address, kind: "BRANCH" },
-  });
-
-  for (let day = 0; day < 7; day += 1) {
-    const ymd = addDays(WEEK_START, day);
-    for (const slot of TIMETABLE[day] ?? []) {
-      const startsAt = manilaWallToUtc(ymd, slot.time);
-      const endsAt = new Date(startsAt.getTime() + 60 * 60 * 1000);
-      const id = `sess_${ymd}_${slot.time.replace(":", "")}_${slot.classId}`;
-      await prisma.gymSession.upsert({
-        where: { id },
-        create: {
-          id,
-          classId: slot.classId,
-          venueId: MAIN_STUDIO_VENUE_ID,
-          startsAt,
-          endsAt,
-          capacity: 12,
-          status: "PUBLISHED",
-          customerPrice: PLACEHOLDER_PRICE,
-          coaches: {
-            create: [
-              { coachId: slot.coachId, coachRate: PLACEHOLDER_RATE, coachRateType: "PER_SESSION" },
-            ],
-          },
-          isPlaceholder: true,
-        },
-        update: {
-          venueId: MAIN_STUDIO_VENUE_ID,
-          startsAt,
-          endsAt,
-          customerPrice: PLACEHOLDER_PRICE,
-          isPlaceholder: true,
-        },
-      });
-    }
-  }
-
-  await prisma.appMeta.upsert({
-    where: { key: "public_settings" },
-    create: {
-      key: "public_settings",
-      value: JSON.stringify({
-        business: {
-          name: "Balanse Wellness Hub",
-          phone: CONTACT_DETAILS.phone,
-          email: CONTACT_DETAILS.email,
-          address: CONTACT_DETAILS.address,
-          instagram: CONTACT_DETAILS.instagram,
-          tiktok: CONTACT_DETAILS.tiktok,
-          whatsapp: CONTACT_DETAILS.whatsapp,
-          openingHours: "",
-        },
-        payment: {
-          gcashAccountName: "",
-          gcashNumber: "",
-          gcashQrObjectKey: "",
-          gcashQrPublicUrl: "",
-        },
-        content: { about: "", contact: "", faqs: [] },
-      }),
-    },
-    update: {},
-  });
+  await seedOnboarding(prisma);
+  await seedBookings(prisma);
+  await seedBundles(prisma);
+  await seedPaymentAccounts(prisma);
+  await seedSettings(prisma);
 
   await prisma.appMeta.upsert({
     where: { key: "schema_note" },

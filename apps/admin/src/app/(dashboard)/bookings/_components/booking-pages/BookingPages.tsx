@@ -1,5 +1,7 @@
 "use client";
 
+import { getAdminCustomer } from "@balanse/api-client";
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
   ADMIN_BOOKING_TABS,
   type AdminBookingTab,
@@ -16,7 +18,6 @@ import {
   refundStatusLabel,
   sessionDisplayName,
 } from "@balanse/domain";
-import { getMockAdapter } from "@balanse/mock";
 import {
   Button,
   DateRangePicker,
@@ -37,14 +38,14 @@ import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/Admin
 import { AdminPageTabs } from "@/components/balanse/page/admin-page-tabs/AdminPageTabs";
 import { useTabParam } from "@/components/balanse/page/useTabParam";
 import { adminNowIso } from "@/lib/clock";
+import { useConfirmAdminBooking, useRejectAdminBooking } from "@/lib/query/mutations/bookings";
 import {
   adminBookingDetailQuery,
   adminBookingsQuery,
   adminClassesQuery,
   adminCustomersQuery,
 } from "@/lib/query/queries";
-import { AdminCan } from "@/modules/authorization/useAdminAccess";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { AdminCan, useStaffActor } from "@/modules/authorization/useAdminAccess";
 
 function customerNameLookup(
   customers: { id: string; fullName: string }[],
@@ -56,13 +57,15 @@ function customerNameLookup(
 }
 
 export function BookingListPage() {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const [tab, setTab] = useTabParam<AdminBookingTab>("tab", ADMIN_BOOKING_TABS, "pending");
   const [classId, setClassId] = useState("all");
   const [dateRange, setDateRange] = useState<DateRangePickerValues | undefined>();
-  const { data: bookings } = useSuspenseQuery(adminBookingsQuery(principal));
-  const { data: classes } = useSuspenseQuery(adminClassesQuery(principal));
-  const { data: customers } = useSuspenseQuery(adminCustomersQuery(principal));
+  const { data: bookings } = useSuspenseQuery(
+    adminBookingsQuery(actor, { tab, classId: classId === "all" ? undefined : classId }),
+  );
+  const { data: classes } = useSuspenseQuery(adminClassesQuery(actor, apiFetchBrowser));
+  const { data: customers } = useSuspenseQuery(adminCustomersQuery(actor, apiFetchBrowser));
 
   const names = useMemo(() => customerNameLookup(customers, bookings), [bookings, customers]);
   const filtered = useMemo(
@@ -243,9 +246,11 @@ export function BookingListPage() {
 }
 
 export function BookingDetailPage({ bookingId }: { bookingId: string }) {
-  const { principal } = useMockPrincipal();
-  const bookingQuery = useSuspenseQuery(adminBookingDetailQuery(principal, bookingId));
-  const { data: customers } = useSuspenseQuery(adminCustomersQuery(principal));
+  const actor = useStaffActor();
+  const bookingQuery = useSuspenseQuery(adminBookingDetailQuery(actor, bookingId));
+  const confirmBooking = useConfirmAdminBooking();
+  const rejectBooking = useRejectAdminBooking();
+  const { data: customers } = useSuspenseQuery(adminCustomersQuery(actor, apiFetchBrowser));
   const booking = bookingQuery.data;
   const [reason, setReason] = useState("");
   const [proofOpen, setProofOpen] = useState(false);
@@ -261,13 +266,7 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
   }
 
   if (booking.status === "CANCELLED") {
-    return (
-      <CancelledBookingDetail
-        booking={booking}
-        customerName={name}
-        onRefundComplete={() => getMockAdapter().markRefunded(booking.id).then(refresh)}
-      />
-    );
+    return <CancelledBookingDetail booking={booking} customerName={name} />;
   }
 
   return (
@@ -321,7 +320,10 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
             triggerLabel="Confirm"
             title="Confirm this booking?"
             description={actorStamp}
-            onConfirm={() => getMockAdapter().confirmAdminBooking(booking.id).then(refresh)}
+            onConfirm={async () => {
+              await confirmBooking.mutateAsync(booking.id);
+              await refresh();
+            }}
           />
         </AdminCan>
         <AdminCan action="bookings-reject">
@@ -338,9 +340,10 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
               description={`${actorStamp} A free-text reason is stored. Refund eligibility rules are not implied.`}
               variant="outline"
               disabled={!reason.trim()}
-              onConfirm={() =>
-                getMockAdapter().rejectAdminBooking(booking.id, reason).then(refresh)
-              }
+              onConfirm={async () => {
+                await rejectBooking.mutateAsync({ id: booking.id, reason });
+                await refresh();
+              }}
             />
           </div>
         </AdminCan>
@@ -353,16 +356,14 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
           type="button"
           variant="outline"
           onClick={() =>
-            void getMockAdapter()
-              .getAdminCustomer(booking.customerId)
-              .then((detail) => {
-                const accepted = detail?.policyAcceptances ?? [];
-                setPolicies(
-                  accepted.length
-                    ? accepted.map((row) => `${row.documentName} ${row.version}`).join(" · ")
-                    : "No policy acceptance on file.",
-                );
-              })
+            void getAdminCustomer(apiFetchBrowser, booking.customerId).then((detail) => {
+              const accepted = detail?.policyAcceptances ?? [];
+              setPolicies(
+                accepted.length
+                  ? accepted.map((row) => `${row.documentName} ${row.version}`).join(" · ")
+                  : "No policy acceptance on file.",
+              );
+            })
           }
         >
           View policy acceptance
@@ -382,14 +383,26 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
             triggerLabel="Check in"
             title="Check this guest in?"
             description={actorStamp}
-            onConfirm={() => getMockAdapter().checkIn(booking.id).then(refresh)}
+            onConfirm={async () => {
+              await apiFetchBrowser(`/api/admin/sessions/${booking.sessionId}/check-in`, {
+                method: "POST",
+                body: { bookingId: booking.id },
+              });
+              await refresh();
+            }}
           />
           <ConfirmAction
             triggerLabel="Mark no-show"
             title="Mark as no-show?"
             description={`${actorStamp} No refund is issued.`}
             variant="outline"
-            onConfirm={() => getMockAdapter().markNoShow(booking.id).then(refresh)}
+            onConfirm={async () => {
+              await apiFetchBrowser(`/api/admin/sessions/${booking.sessionId}/no-show`, {
+                method: "POST",
+                body: { bookingId: booking.id },
+              });
+              await refresh();
+            }}
           />
         </AdminCan>
       </div>
@@ -400,11 +413,9 @@ export function BookingDetailPage({ bookingId }: { bookingId: string }) {
 function CancelledBookingDetail({
   booking,
   customerName,
-  onRefundComplete,
 }: {
   booking: CustomerBooking;
   customerName: string;
-  onRefundComplete: () => Promise<void>;
 }) {
   const hasRefund = booking.refundStatus !== "NOT_APPLICABLE";
 
@@ -491,18 +502,6 @@ function CancelledBookingDetail({
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   {formatPeso(booking.session.pricePhp)} from the original booking payment.
                 </p>
-                {booking.refundStatus === "REFUND_PENDING" ? (
-                  <AdminCan action="refunds-manage">
-                    <div className="mt-5">
-                      <ConfirmAction
-                        triggerLabel="Mark refund complete"
-                        title="Mark this refund complete?"
-                        description="This records the refund status only; money moves outside the app."
-                        onConfirm={onRefundComplete}
-                      />
-                    </div>
-                  </AdminCan>
-                ) : null}
               </>
             ) : (
               <p className="mt-2 text-sm leading-6 text-muted-foreground">

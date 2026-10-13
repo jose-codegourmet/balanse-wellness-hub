@@ -23,8 +23,7 @@ import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { canAccessAdminHref } from "@/lib/authorization/admin-access";
 import { adminDashboardQuery } from "@/lib/query/queries";
-import { useCanAdminAction } from "@/modules/authorization/useAdminAccess";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useCanAdminAction, useStaffActor } from "@/modules/authorization/useAdminAccess";
 
 type ScheduleRow = AdminDashboardSnapshot["todaysSchedule"][number];
 
@@ -35,13 +34,13 @@ export function DashboardPage({
   initial?: AdminDashboardSnapshot;
   loading?: boolean;
 }) {
-  const { principal, actor } = useMockPrincipal();
+  const actor = useStaffActor();
   const canViewFinancials = useCanAdminAction("dashboard-financial");
   const canViewOperations = useCanAdminAction("dashboard-operations");
   const canViewCoachCost = canViewFinancials;
   const isCoachWorkspace = isCoachAuthorizationRole(actor?.roleKey ?? "");
   const query = useQuery({
-    ...adminDashboardQuery(principal),
+    ...adminDashboardQuery(actor),
     ...(initial ? { initialData: initial } : {}),
   });
   const data = query.data ?? null;

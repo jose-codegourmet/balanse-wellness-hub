@@ -56,9 +56,8 @@ import {
   useRejectAdminBooking,
 } from "@/lib/query/mutations";
 import { adminPaymentsQueueInfiniteQuery } from "@/lib/query/queries";
-import { AdminCan, useHasPermission } from "@/modules/authorization/useAdminAccess";
+import { AdminCan, useHasPermission, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 const EXIT_MS = 220;
 
@@ -208,7 +207,7 @@ function PaymentQueueCard({
   const confirm = useConfirmAdminBooking();
   const reject = useRejectAdminBooking();
   const recordCash = useRecordCash();
-  const checkIn = useCheckIn();
+  const checkIn = useCheckIn(row.sessionId);
   const markPending = useMarkRefundPending();
   const markRefunded = useMarkRefunded();
   const busy =
@@ -351,7 +350,7 @@ function PaymentQueueCard({
                     disabled={busy || leaving}
                     onConfirm={() =>
                       run(
-                        () => recordCash.mutateAsync(row.id),
+                        () => recordCash.mutateAsync(row.paymentId ?? row.id),
                         "payment.cash-recorded",
                         "payment.action-failed",
                       )
@@ -403,7 +402,7 @@ function PaymentQueueCard({
                       disabled={busy || leaving || row.refundStatus === "REFUND_PENDING"}
                       onConfirm={() =>
                         run(
-                          () => markPending.mutateAsync(row.id),
+                          () => markPending.mutateAsync(row.paymentId ?? row.id),
                           "refund.status-updated",
                           "refund.action-failed",
                         )
@@ -417,7 +416,7 @@ function PaymentQueueCard({
                       disabled={busy || leaving || row.refundStatus === "REFUNDED"}
                       onConfirm={() =>
                         run(
-                          () => markRefunded.mutateAsync(row.id),
+                          () => markRefunded.mutateAsync(row.refundId ?? row.id),
                           "refund.status-updated",
                           "refund.action-failed",
                         )
@@ -440,17 +439,17 @@ function usePaymentTabCounts(
   canReadRefunds: boolean,
   search: string,
 ): Partial<Record<AdminPaymentTab, number>> {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const gcash = useInfiniteQuery({
-    ...adminPaymentsQueueInfiniteQuery(principal, "gcash", search),
+    ...adminPaymentsQueueInfiniteQuery(actor, "gcash", search),
     enabled: canReadPayments,
   });
   const counter = useInfiniteQuery({
-    ...adminPaymentsQueueInfiniteQuery(principal, "counter", search),
+    ...adminPaymentsQueueInfiniteQuery(actor, "counter", search),
     enabled: canReadPayments,
   });
   const refunds = useInfiniteQuery({
-    ...adminPaymentsQueueInfiniteQuery(principal, "refunds", search),
+    ...adminPaymentsQueueInfiniteQuery(actor, "refunds", search),
     enabled: canReadRefunds,
   });
   return {
@@ -469,7 +468,7 @@ export function PaymentReviewPage({
   tab: tabOverride,
   proofOpen,
 }: PaymentReviewPageProps) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const canReadPayments = useHasPermission("payments.read");
   const canReadRefunds = useHasPermission("refunds.read");
   const visibleTabs = PAYMENT_TABS.filter((item) =>
@@ -484,7 +483,7 @@ export function PaymentReviewPage({
   const tab =
     tabOverride && visibleTabs.some((item) => item.id === tabOverride) ? tabOverride : urlTab;
   const [search, setSearch] = useState("");
-  const query = useInfiniteQuery(adminPaymentsQueueInfiniteQuery(principal, tab, search.trim()));
+  const query = useInfiniteQuery(adminPaymentsQueueInfiniteQuery(actor, tab, search.trim()));
   const nowIso = adminNowIso();
   const stamp = auditConfirmationCopy("This payment action", "Admin", nowIso);
   const [exiting, setExiting] = useState<Map<string, CustomerBooking>>(new Map());

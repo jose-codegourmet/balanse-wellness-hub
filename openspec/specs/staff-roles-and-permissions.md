@@ -42,3 +42,38 @@ Wave 1 contract for epic #289 (ticket #294). Downstream tickets import
 11. Wave 4 (#291) shipped coach-owned schedule, roster, attendance, and
     dashboard query filters. Wave 5 (#293) is integration closeout only —
     see `docs/backend/authorization-closeout.md`.
+12. Staff provisioning generates a manually shared Supabase invite link without
+    sending invitation email. Creation shows a copy-link modal; the staff table
+    provides an Invite cell with a direct “Copy link” button for active rows,
+    not an overflow-menu action. The button remains visible in mobile cards. The action requires
+    `staff.manage` and cannot invite a role beyond the actor's own permissions.
+    Confirmed Auth accounts keep their existing credentials; duplicate staff
+    creation is rejected. Disabled/system staff and inactive roles cannot be invited.
+13. `/auth/set-password` accepts manually shared invite and recovery links, not public signup
+    or unauthenticated reset requests. Only form submission consumes the single-use token,
+    verifies active staff access and sets a password. Missing/expired/used links,
+    password confirmation errors and clipboard failures have recoverable UI.
+    Invitation credentials never enter persistent client storage or audit metadata.
+14. A separate Reset password cell has a direct Copy link button. It generates
+    a Supabase recovery link for an existing active staff account without sending
+    reset email or changing the password at generation time. The same staff.manage,
+    target-role permission, active-role, and non-system checks as invitations apply.
+    The recipient opens the link and chooses a new password, replacing any existing
+    password. Confirmed email / prior sign-in do not block this explicit reset action.
+    Recovery and invite token types are verified separately and bound to retry proof.
+15. Existing staff detail has an Actions menu beside the name with Copy invite link
+    and Copy password reset link. These reuse the table endpoints and never send email.
+    Inactive staff/roles disable the actions; staff.manage gates the menu.
+16. Staff have a private profile avatar (the existing profiles.avatarKey, shared with
+    their own customer identity, not their public coach portrait). After the account
+    exists, authorized staff managers can upload/replace/remove JPG, PNG or WEBP up to
+    5 MiB. Uploads save independently of account fields. Confirmation verifies storage
+    metadata and a fresh, unused upload intent bound to target and manager. Reads use
+    short-lived signed URLs. Header, directory and navigation use photo/initials;
+    navigation shows the signed-in person's name and role, with email in the menu.
+17. My profile provides the same upload/replace/remove controls for any active
+    interactive staff actor, including roles without staff.manage. Self-service
+    POST/DELETE /api/admin/me/photo derive the target exclusively from the verified
+    session, never from request body/query IDs. They reuse the private avatar
+    validation and owner-bound upload lifecycle. Guest, customer, disabled staff,
+    archived roles and system actors cannot use staff self-service.

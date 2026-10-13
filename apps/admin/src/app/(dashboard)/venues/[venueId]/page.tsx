@@ -1,8 +1,8 @@
-import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { serverFetcher } from "@/lib/query/fetcher";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { adminVenuesQuery } from "@/lib/query/queries";
+import { getStaffAccessToken, getStaffSession } from "@/modules/session/current-staff";
 import { VenueFormPage } from "../_components/venue-form-page/VenueFormPage";
 
 type Params = Promise<{ venueId: string }>;
@@ -17,6 +17,9 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function Page({ params }: { params: Params }) {
   const { venueId } = await params;
-  const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
-  return prefetchAdmin([adminVenuesQuery(principal)], <VenueFormPage venueId={venueId} />);
+  const [{ actor }, token] = await Promise.all([getStaffSession(), getStaffAccessToken()]);
+  return prefetchAdmin(
+    [adminVenuesQuery(actor, serverFetcher(token))],
+    <VenueFormPage venueId={venueId} />,
+  );
 }

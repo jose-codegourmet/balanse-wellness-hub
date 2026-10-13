@@ -63,6 +63,7 @@ export const VALIDATION_ERROR_CODES = [
   "qr_limit",
   "already_linked",
   "cannot_remove_active",
+  "cannot_hide_last_account",
   "duplicate_value",
   "already_exists",
   "developer_config_forbidden",
@@ -123,6 +124,8 @@ export const FIELD_CONSTRAINTS = {
     name: { required: true, max: 120, unique: true },
     address: { required: false, max: 240 },
     kind: { required: true, enum: ["BRANCH", "OFFSITE"] },
+    openingHours: { required: false, max: 240 },
+    studioOwned: { required: false, type: "boolean" },
     notes: { required: false, max: 1000, staffOnly: true },
     active: { required: false, type: "boolean" },
   },
@@ -131,6 +134,8 @@ export const FIELD_CONSTRAINTS = {
     /** Must be an active venue on create. Overlapping times are allowed, even at the same venue. */
     venueId: { required: true, activeOnly: true },
     coachIds: { required: true, minItems: 1, unique: true, allowInactive: false },
+    /** Occurrence title, e.g. "Charity Capoeira Jam". Blank by default. */
+    name: { required: false, max: 120 },
     startsAt: { required: true },
     endsAt: { required: true, after: "startsAt" },
     maxDurationHours: 8,
@@ -220,6 +225,7 @@ export const SIGNED_UPLOAD = {
   expiresSeconds: 15 * 60,
   maxBytes: 5 * 1024 * 1024,
   coachPhotoTypes: ["image/jpeg", "image/png", "image/webp"] as const,
+  eventImageTypes: ["image/jpeg", "image/png", "image/webp"] as const,
   gcashQrTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"] as const,
   orphanReapAfterHours: 24,
 } as const;

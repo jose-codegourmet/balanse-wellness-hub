@@ -133,7 +133,21 @@ Use `(groupName)/` to organize related routes without affecting the URL. Existin
 | `apps/web` | `(public)` | `/`, `/about`, `/classes`, `/coaches`, `/contact`, `/faqs` |
 | `apps/web` | `(auth)` | `/login`, `/sign-up`, `/forgot-password` |
 | `apps/web` | `(portal)` | `/portal/*` |
-| `apps/admin` | `(dashboard)` | `/dashboard`, `/classes`, `/schedule`, … (everything except `/login` and `/dev`) |
+| `apps/admin` | `(dashboard)` | `/dashboard`, `/classes`, `/schedule`, … (excludes `/login`, invite-only `/auth/set-password`, and `/dev`) |
+
+Staff invitation setup lives outside the authenticated dashboard at
+`app/auth/set-password/`, with its form/page in `_components/` and server-only
+verification/proof helpers in `_lib/`. Invitation tokens are transient credentials,
+not React Query entity data: keep them in local component state only and never
+persist them in query caches, browser storage, logs, or audit metadata.
+
+Staff account actions are colocated under `app/(dashboard)/staff/_components/`.
+The immediate-save photo card is shared by Staff detail and My profile and lives
+at `src/components/balanse/staff-photo-card/`. These reuse the API's invite/recovery and
+private avatar lifecycle. The photo card is an independent action surface, not a
+field in the account form. Staff navigation refreshes display-only `/api/admin/me`
+data under the staff-scoped `identity` query key; permissions still come from the
+server session and are enforced on every API request.
 
 ### e. No loose non-route files in route segments
 
@@ -268,7 +282,8 @@ Both apps currently have the same four top-level folders. Neither app has `hooks
 | --- | --- |
 | `app/` | Next.js App Router routes and route files only. Colocated `_components/<kebab-name>/`, `_hooks/`, and `_lib/` for UI used by that route or group. |
 | `components/` | Shared app UI, one kebab-case folder per component. `jabkit/` is vendored and stays pristine; `balanse/` is app composition used by 2+ unrelated routes. |
-| `lib/` | Non-UI helpers (classnames, class-catalogue loaders, admin React Query). Not React components. |
+| `lib/` | Non-UI helpers: classnames, server API fetchers, authorization, and admin/web React Query keys, queries, mutations, and prefetch. No screen components or runtime mock adapters. |
+| `modules/` | Existing screen implementations and cross-cutting app infrastructure. New route-specific screens go under the matching `app/` route. |
 
 Admin React Query keys (`apps/admin/src/lib/query/keys.ts`) are rooted at
 `["admin", adminAuthScope(principal)]`. The scope is a staff authorization
@@ -280,12 +295,20 @@ Admin nav, guards, and
 actions consume `ADMIN_NAV_ACCESS` / `ADMIN_ROUTE_ACCESS` /
 `ADMIN_ACTION_ACCESS` via `apps/admin/src/lib/authorization/admin-access.ts`
 and `useAdminAccess` — never copy permission lists into screens.
-| `modules/` | Current home for screen-level implementations and app infrastructure (auth, public, customer, admin pages; `layout/`, `providers/`, `session/`, `notifications/`). **Do not add new route-specific screens here** — colocate them under the matching `app/` route. Promote into `src/components/` only when a second unrelated route needs the piece. Cross-cutting kits that already serve many routes (admin `forms/`, session providers) stay here or in `src/components/` until a dedicated migration. |
+
+Web React Query keys (`apps/web/src/lib/query/keys.ts`, #356 WIRE-0105) are
+rooted at `["web", customerId ?? "guest"]`, where `customerId` comes from the
+Supabase session (`getCurrentCustomer()` / `getSessionUser()`), never a mock
+principal. Sign-out must `clear()` the query client, not merely invalidate —
+a guest must never see the previous customer's cached data. `prefetchWeb`
+(`lib/query/prefetch.tsx`) mirrors admin's `prefetchAdmin` signature and
+`MockHydrationBoundary` for historical compatibility; its name does not imply
+runtime mock data. See
+`apps/web/src/lib/query/README.md`.
 
 ## Customer self-service writes and the web proxy (#343)
 
-- **Mock store is per runtime.** The browser and the Next server each hold their own in-memory `MockDataAdapter`. Pages rendered on the server (portal header, home nudge, public share pages, booking prefill) only see writes made on the server.
-- **Self-service writes therefore go through server actions.** Sign-up (`app/(auth)/sign-up/_lib/sign-up-actions.ts`) and profile/onboarding writes (`app/(portal)/portal/profile/_lib/`) are server actions. Routes pass them to client components as props. The customer id always comes from the server-side mock principal (`getServerMockPrincipal()`), never from the caller. Stories pass `mockCustomerSelfServiceActions(customerId)`, which runs against the in-browser store.
+- **Self-service writes use the API client.** Profile, avatar, and onboarding hooks call typed client functions under `apps/web/src/lib/query/mutations/customers.ts`; server-side actions may call the in-process API with the authenticated customer's access token. Authorization derives from the verified Supabase session, never a caller-supplied customer id. Storybook actions use an in-browser adapter and never contact live storage.
 - **`apps/web/src/proxy.ts`** (Next 16 renamed `middleware.ts` to `proxy.ts`) only captures share attribution (`ref` / `src` / `via`) into the HttpOnly `balanse_share_attr` cookie. It never redirects or strips the query, and skips portal, api, share, dev, `_next`, and static files. Read or clear the cookie through `src/modules/share/attribution.ts`.
 - **Public share pages** (`/sessions/...`, `/events/...`) do not have `loading.tsx`. A streaming boundary makes `permanentRedirect` / `notFound` return HTTP 200, and stale share links must 301 and unknown ones must 404.
 
@@ -328,6 +351,15 @@ Recorded deviations from pristine Jabkit source:
 | --- | --- | --- |
 | `apps/{admin,web}/src/components/jabkit/button/Button.tsx` | Renders `@balanse/ui` `buttonVariants` (Jabkit `primary`→`default`, `secondary`→`outline`, `ghost`, `destructive`; sizes unchanged). API unchanged. | One button system across Jabkit blocks and app code (2026-09-29 button redesign). |
 | `apps/{admin,web}/src/components/jabkit/fullscreen-calendar/FullscreenCalendar.tsx` | Toolbar uses `@balanse/ui` `Button` / `ButtonGroup` for today, previous/next month, and add; invalid `rounded-[--radius]` classes replaced with theme radii. | The hand-rolled arrow group had square corners, a gold hover, and a different height from its neighbours. |
+
+## Admin clock and previews
+
+`apps/admin/src/lib/clock.ts` is the real runtime clock; calendar dates are always
+derived in `Asia/Manila`. Never import `MOCK_NOW_ISO` into that runtime helper.
+Storybook aliases `@/lib/clock` to `.storybook/mock-clock.ts` before its broad `@`
+alias so dated preview fixtures remain deterministic without freezing the app.
+Schedule Today resolves the day at click time rather than retaining yesterday's
+rendered date in a tab left open overnight.
 
 ## Tablet and touch
 

@@ -1,7 +1,8 @@
 "use client";
 
+import { getMe } from "@balanse/api-client";
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import type { ShareParams } from "@balanse/domain";
-import { getMockAdapter } from "@balanse/mock";
 import { useEffect, useState } from "react";
 import { useSession } from "@/modules/session/SessionProvider";
 
@@ -18,10 +19,9 @@ export function useViewerShareParams(): ShareParams {
   useEffect(() => {
     if (!customerId) return;
     let active = true;
-    void getMockAdapter()
-      .getMe(customerId)
+    void getMe(apiFetchBrowser)
       .then((profile) => {
-        if (active && profile?.referralCode) {
+        if (active && profile.referralCode) {
           setLoaded({ customerId, params: { ref: profile.referralCode, src: "customer" } });
         }
       })

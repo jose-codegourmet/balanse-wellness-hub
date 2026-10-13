@@ -53,6 +53,7 @@ export async function getClassPerformance(deps: ApiDeps, req: Request): Promise<
     items: shapeClassPerformance(
       actor,
       rows.map((row) => ({
+        classId: row.classId,
         Class: row.className,
         Sessions: Number(row.sessions),
         Revenue: money(row.revenue),
@@ -70,6 +71,7 @@ export async function getCoachCosts(deps: ApiDeps, req: Request): Promise<Respon
   const rows = await reportCoachCosts(deps, filters(req));
   const body = {
     items: rows.map((row) => ({
+      coachId: row.coachId,
       Coach: row.coachName,
       Sessions: Number(row.sessions),
       "Coach Cost": money(row.coachCost),
@@ -93,6 +95,7 @@ export async function getSessionPerformance(deps: ApiDeps, req: Request): Promis
     total: rows.length,
     performanceBudget: REPORTS_PERFORMANCE_BUDGET,
     items: pageRows.map((row) => ({
+      sessionId: row.sessionId,
       "Date/Time": row.startsAt.toISOString(),
       Class: row.className,
       Capacity: Number(row.capacity),
@@ -112,6 +115,10 @@ export async function getSessionReport(deps: ApiDeps, req: Request, id: string):
   const includeCost = actorHas(actor, "reports.coach_costs.read");
   const includeSales = actorHas(actor, "reports.sales.read");
   const body = {
+    sessionId: row.sessionId,
+    className: row.className,
+    name: row.name,
+    startsAt: row.startsAt.toISOString(),
     Capacity: Number(row.capacity),
     Confirmed: Number(row.confirmed),
     Held: Number(row.held),

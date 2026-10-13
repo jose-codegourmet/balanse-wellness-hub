@@ -1,7 +1,9 @@
 import "../src/app/globals.css";
 import "../src/app/(public)/marketing.css";
 import { BALANSE_BREAKPOINT_LABELS, BALANSE_BREAKPOINTS } from "@balanse/config";
+import { customers } from "@balanse/mock";
 import type { Preview } from "@storybook/nextjs-vite";
+import { Suspense } from "react";
 import { Providers } from "../src/modules/providers/Providers";
 
 const balanseViewports = {
@@ -23,8 +25,10 @@ const preview: Preview = {
   decorators: [
     (Story) => (
       <div className="min-h-screen bg-background text-foreground">
-        <Providers>
-          <Story />
+        <Providers session={{ customerId: customers[0].id, email: customers[0].email }}>
+          <Suspense fallback={<div className="p-6 text-sm">Loading preview…</div>}>
+            <Story />
+          </Suspense>
         </Providers>
       </div>
     ),

@@ -27,6 +27,8 @@ export type AdminScheduleCalendarProps = {
   onViewChange?: (view: AdminCalendarView) => void;
   /** Today / previous / next. Moves the anchor without opening anything. */
   onNavigate: (ymd: string) => void;
+  /** Read the live date at click time. Defaults to todayYmd in previews. */
+  onToday?: () => void;
   /** A day box (or its "+N more") was clicked. */
   onOpenDay: (ymd: string) => void;
   /** A session in the grid was clicked. */

@@ -89,15 +89,21 @@ ALTER TABLE public.audit_events ENABLE ROW LEVEL SECURITY;
 -- ---------------------------------------------------------------------------
 -- Policies
 -- ---------------------------------------------------------------------------
+-- WIRE-0002 (#355): the standalone profile_avatar_storage/profiles_self_policies
+-- slices already created these three policies on hosted before this migration's
+-- turn came up in the reconciled deploy order. Guard so deploy is idempotent.
+DROP POLICY IF EXISTS profiles_self_select ON public.profiles;
 CREATE POLICY profiles_self_select ON public.profiles
   FOR SELECT TO authenticated
   USING (id = auth.uid() OR public.is_admin());
 
+DROP POLICY IF EXISTS profiles_self_update ON public.profiles;
 CREATE POLICY profiles_self_update ON public.profiles
   FOR UPDATE TO authenticated
   USING (id = auth.uid() OR public.is_admin())
   WITH CHECK (id = auth.uid() OR public.is_admin());
 
+DROP POLICY IF EXISTS profiles_self_insert ON public.profiles;
 CREATE POLICY profiles_self_insert ON public.profiles
   FOR INSERT TO authenticated
   WITH CHECK (id = auth.uid() OR public.is_admin());

@@ -1,10 +1,10 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import { AdminNotificationHeader } from "@/components/balanse/admin-notification-header/AdminNotificationHeader";
 import { AdminSidebar } from "@/components/balanse/sidebar/admin-sidebar/AdminSidebar";
 import { useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 export function AdminShell({
   children,
@@ -15,7 +15,7 @@ export function AdminShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { setPrincipal } = useMockPrincipal();
+  const queryClient = useQueryClient();
   const canOpenProfile = useCanAdminRoute("/my-profile");
   const canOpenStudioSettings = useCanAdminRoute("/settings");
 
@@ -23,8 +23,9 @@ export function AdminShell({
     <div className="flex min-h-dvh flex-col lg:flex-row">
       <AdminSidebar
         defaultCollapsed={defaultCollapsed}
-        onLogout={() => {
-          setPrincipal({ role: "guest", staffId: null });
+        onLogout={async () => {
+          await fetch("/auth/sign-out", { method: "POST" });
+          queryClient.clear();
           router.push("/login");
           router.refresh();
         }}

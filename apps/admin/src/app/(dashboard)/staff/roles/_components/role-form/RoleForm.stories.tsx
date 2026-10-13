@@ -1,4 +1,4 @@
-import { FRONT_DESK_PERMISSION_KEYS } from "@balanse/domain";
+import { FRONT_DESK_PERMISSION_KEYS, PERMISSION_REGISTRY } from "@balanse/domain";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { RoleForm } from "./RoleForm";
 import { roleFormDefaultValues, roleFormValuesFrom } from "./RoleForm.defaults";
@@ -9,6 +9,7 @@ const meta = {
   component: RoleForm,
   tags: ["autodocs"],
   args: {
+    permissions: PERMISSION_REGISTRY,
     defaultValues: roleFormDefaultValues,
     onSubmit: async () => undefined,
   },

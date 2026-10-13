@@ -301,10 +301,6 @@ export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter
       await requireSessionScope(inner, sessionId, "attendance.manage.own", "attendance.manage.all");
       return inner.markNoShow(bookingId);
     },
-    getAdminReportsSales: () => {
-      requirePermission("reports.sales.read");
-      return inner.getAdminReportsSales();
-    },
     getAdminReports: async (filters) => {
       const actor = requireAnyPermission([
         "reports.sales.read",
@@ -462,10 +458,6 @@ export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter
       requireAnyPermission(["events.read", "events.manage"]);
       return inner.getAdminEvent(id);
     },
-    getAdminEventForSession: (sessionId) => {
-      requireAnyPermission(["events.read", "events.manage"]);
-      return inner.getAdminEventForSession(sessionId);
-    },
     createAdminEvent: (input) => {
       requirePermission("events.manage");
       return inner.createAdminEvent(input);
@@ -529,14 +521,6 @@ export function applyAdminAuthorization(inner: MockDataAdapter): MockDataAdapter
       requirePermission("bundles.manage");
       const actor = requireStaffActor();
       return inner.rejectBundleAcquisition(id, reason, actorId ?? actor.staffId);
-    },
-    getAdminCustomerEntitlements: (customerId) => {
-      requireAnyPermission(["bundles.read", "bundles.manage"]);
-      return inner.getAdminCustomerEntitlements(customerId);
-    },
-    getBundleAudit: (query) => {
-      requireAnyPermission(["bundles.read", "bundles.manage"]);
-      return inner.getBundleAudit(query);
     },
   };
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { ApiError } from "@balanse/api-client";
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
   type AdminRosterPerson,
   type BookingStatus,
@@ -10,7 +12,6 @@ import {
   paymentStatusLabel,
   sessionDisplayName,
 } from "@balanse/domain";
-import { isMockAuthorizationError } from "@balanse/mock";
 import {
   Badge,
   Button,
@@ -47,9 +48,8 @@ import {
 } from "@/components/balanse/public-share-action/PublicShareAction";
 import { useCheckIn, useMarkNoShow } from "@/lib/query/mutations";
 import { adminPublicClassesQuery, adminSessionRosterQuery } from "@/lib/query/queries";
-import { AdminCan, useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
+import { AdminCan, useCanAdminRoute, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import type { RosterGroup, RosterPageProps } from "./RosterPage.meta";
 
 export type { RosterGroup, RosterPageProps } from "./RosterPage.meta";
@@ -120,13 +120,13 @@ function guestCaption(guest: Guest): string {
 }
 
 export function RosterPage({ sessionId, initialGuestId = null }: RosterPageProps) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const canReadPayments = useCanAdminRoute("/payments");
   const canOpenCoach = useCanAdminRoute("/coaches");
-  const rosterQuery = useQuery(adminSessionRosterQuery(principal, sessionId));
-  const publicClassesQuery = useQuery(adminPublicClassesQuery(principal));
-  const checkIn = useCheckIn();
-  const markNoShow = useMarkNoShow();
+  const rosterQuery = useQuery(adminSessionRosterQuery(actor, apiFetchBrowser, sessionId));
+  const publicClassesQuery = useQuery(adminPublicClassesQuery(actor, apiFetchBrowser));
+  const checkIn = useCheckIn(sessionId);
+  const markNoShow = useMarkNoShow(sessionId);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<GroupFilter>("all");
   const [openId, setOpenId] = useState<string | null>(initialGuestId);
@@ -143,10 +143,7 @@ export function RosterPage({ sessionId, initialGuestId = null }: RosterPageProps
 
   if (rosterQuery.isError || !rosterQuery.data) {
     const error = rosterQuery.error;
-    if (
-      isMockAuthorizationError(error) &&
-      (error.code === "ownership" || error.code === "forbidden")
-    ) {
+    if (error instanceof ApiError && error.isForbidden) {
       return <AccessDenied kind="ownership" homeHref="/schedule" />;
     }
     return (

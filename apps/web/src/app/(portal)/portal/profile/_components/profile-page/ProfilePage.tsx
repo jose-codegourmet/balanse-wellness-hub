@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import type {
   CustomerOnboardingAnswers,
   CustomerProfile,
@@ -10,9 +11,11 @@ import type {
 } from "@balanse/domain";
 import { joinFullName } from "@balanse/domain";
 import { UserAvatar } from "@balanse/ui";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { UserRound } from "lucide-react";
 import { useState } from "react";
-import type { CustomerOnboardingActions } from "../../_lib/customer-self-service.types";
+import { myProfileQuery } from "@/lib/query/customers";
+import type { CustomerProfileActions } from "../../_lib/customer-self-service.types";
 import { AboutYouSection } from "./about-you-section/AboutYouSection";
 import { AccountSettingsSection } from "./account-settings-section/AccountSettingsSection";
 import { BasicProfileSection } from "./basic-profile-section/BasicProfileSection";
@@ -46,10 +49,13 @@ export function ProfilePage({
     classes: PublicClass[];
     referralChannel: ReferralChannel | null;
   };
-  /** Self-service server actions from the route; stories pass mock ones. */
-  actions: CustomerOnboardingActions;
+  /** Profile/avatar server actions from the route; stories pass mock ones. */
+  actions: CustomerProfileActions;
 }) {
-  const [savedProfile, setSavedProfile] = useState(initialProfile);
+  const profileQuery = useSuspenseQuery(myProfileQuery(initialProfile.id, apiFetchBrowser));
+  const [savedProfile, setSavedProfile] = useState<CustomerProfile>(
+    profileQuery.data ?? initialProfile,
+  );
   const fullName = joinFullName(savedProfile) || savedProfile.fullName;
 
   return (
@@ -92,7 +98,6 @@ export function ProfilePage({
               answers={about?.answers ?? null}
               classes={about?.classes ?? []}
               referralChannel={about?.referralChannel ?? null}
-              actions={actions}
             />
           ) : null}
           {section === "account" ? <AccountSettingsSection profile={savedProfile} /> : null}

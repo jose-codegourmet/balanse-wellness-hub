@@ -1,6 +1,7 @@
-import { getMockAdapter } from "@balanse/mock";
+import { listMyPackages, listPublicPackages } from "@balanse/api-client";
 import type { Metadata } from "next";
-import { getCurrentCustomer } from "@/modules/session/current-customer";
+import { serverFetcher } from "@/lib/query/fetcher";
+import { getCurrentCustomer, getCustomerAccessToken } from "@/modules/session/current-customer";
 import { MyPackagesPage } from "./_components/my-packages-page/MyPackagesPage";
 
 export const metadata: Metadata = {
@@ -10,14 +11,17 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const profile = await getCurrentCustomer();
-  const customerId = profile?.id ?? "";
-  const adapter = getMockAdapter();
-  const [entitlements, acquisitions, catalogue] = await Promise.all([
-    adapter.getMyEntitlements(customerId),
-    adapter.getMyAcquisitions(customerId),
-    adapter.getPublicBundles(),
+  if (!profile) return <MyPackagesPage entitlements={[]} acquisitions={[]} catalogue={[]} />;
+  const fetcher = serverFetcher(await getCustomerAccessToken());
+  const [owned, catalogue] = await Promise.all([
+    listMyPackages(fetcher),
+    listPublicPackages(fetcher),
   ]);
   return (
-    <MyPackagesPage entitlements={entitlements} acquisitions={acquisitions} catalogue={catalogue} />
+    <MyPackagesPage
+      entitlements={owned.items}
+      acquisitions={owned.pendingAcquisitions}
+      catalogue={catalogue.items}
+    />
   );
 }

@@ -5,7 +5,6 @@ import {
   type CursorPage,
   type MetricSeries,
 } from "./contracts";
-import type { FieldErrors, LoginInput } from "./customer-portal";
 import { bookingReference, HOLD_DURATION_HOURS } from "./customer-portal";
 import type { CoachRateType, PaymentStatus, SessionStatus, VenueKind } from "./enums";
 import { BOOKING_STATUSES } from "./enums";
@@ -27,74 +26,6 @@ import type {
   PublicContent,
   PublicSession,
 } from "./types";
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-/** Mock admin credentials. Not real auth. */
-export const MOCK_ADMIN_CREDENTIALS = [
-  {
-    email: "rex@balanse.example",
-    password: "welcome",
-    staffId: "staff-rex",
-    name: "Rex Francis Regis",
-    roleLabel: "Super Admin",
-    accessSummary: "Every admin page and action, including sensitive financial data.",
-  },
-  {
-    email: "partner@balanse.example",
-    password: "welcome",
-    staffId: "staff-partner",
-    name: "Studio Partner",
-    roleLabel: "Front Desk",
-    accessSummary: "Bookings, payments, attendance, customers, classes, and coaches.",
-  },
-  {
-    email: "ephraim@balanse.example",
-    password: "welcome",
-    staffId: "staff-ephraim",
-    name: "Ephraim Bacaltos",
-    roleLabel: "Coach",
-    accessSummary: "Own schedule, own rosters, and attendance for assigned sessions only.",
-  },
-  {
-    email: "mia@balanse.example",
-    password: "welcome",
-    staffId: "staff-custom",
-    name: "Mia Reyes",
-    roleLabel: "Community Host",
-    accessSummary: "Read-only dashboard, customers, classes, and coach directory.",
-  },
-  {
-    email: "camille@balanse.example",
-    password: "welcome",
-    staffId: "staff-content-editor",
-    name: "Camille Flores",
-    roleLabel: "Content Editor",
-    accessSummary: "Public website content and policy management only.",
-  },
-  {
-    email: "paolo@balanse.example",
-    password: "welcome",
-    staffId: "staff-role-auditor",
-    name: "Paolo Cruz",
-    roleLabel: "Role Auditor",
-    accessSummary: "Read-only access to roles and their permission matrices.",
-  },
-  {
-    email: "disabled@balanse.example",
-    password: "welcome",
-    staffId: "staff-disabled",
-    name: "Inactive Coordinator",
-    roleLabel: "Revoked account",
-    accessSummary: "Demonstrates the disabled-account access screen.",
-  },
-] as const;
-
-/** Known customer emails used to demonstrate a non-admin rejection. */
-export const MOCK_NON_ADMIN_CREDENTIALS = [
-  { email: "ana@example.com", password: "welcome" },
-  { email: "ben@example.com", password: "welcome" },
-] as const;
 
 export const ADMIN_LOGIN_HELP = "Need access or password help? Contact the system administrator.";
 
@@ -146,37 +77,6 @@ export const SESSION_STATUS_LABELS: Record<SessionStatus, string> = {
 
 export function sessionStatusLabel(status: SessionStatus): string {
   return SESSION_STATUS_LABELS[status];
-}
-
-export function validateAdminLogin(
-  input: LoginInput,
-):
-  | { ok: false; errors: FieldErrors<"email" | "password" | "form"> }
-  | { ok: true; staffId: string } {
-  const errors: FieldErrors<"email" | "password" | "form"> = {};
-  if (!input.email.trim()) errors.email = "Email is required.";
-  else if (!EMAIL_RE.test(input.email.trim())) errors.email = "Enter a valid email.";
-  if (!input.password) errors.password = "Password is required.";
-  if (Object.keys(errors).length > 0) return { ok: false, errors };
-
-  const email = input.email.trim().toLowerCase();
-  const nonAdmin = MOCK_NON_ADMIN_CREDENTIALS.find(
-    (row) => row.email.toLowerCase() === email && row.password === input.password,
-  );
-  if (nonAdmin) {
-    return {
-      ok: false,
-      errors: { form: "This account is not an admin. Contact the system administrator." },
-    };
-  }
-
-  const match = MOCK_ADMIN_CREDENTIALS.find(
-    (row) => row.email.toLowerCase() === email && row.password === input.password,
-  );
-  if (!match) {
-    return { ok: false, errors: { form: "Those credentials are not recognised in this mock." } };
-  }
-  return { ok: true, staffId: match.staffId };
 }
 
 export function safeAdminPath(

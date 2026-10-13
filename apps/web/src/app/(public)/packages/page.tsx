@@ -1,5 +1,7 @@
-import { getMockAdapter } from "@balanse/mock";
+import { listPublicPackages } from "@balanse/api-client";
 import type { Metadata } from "next";
+import { serverFetcher } from "@/lib/query/fetcher";
+import { getCustomerAccessToken } from "@/modules/session/current-customer";
 import { PackagesPage } from "./_components/packages-page/PackagesPage";
 
 export const metadata: Metadata = {
@@ -8,6 +10,6 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const bundles = await getMockAdapter().getPublicBundles();
-  return <PackagesPage bundles={bundles} />;
+  const packages = await listPublicPackages(serverFetcher(await getCustomerAccessToken()));
+  return <PackagesPage bundles={packages.items} />;
 }

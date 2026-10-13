@@ -9,8 +9,21 @@ model PolicyDocument {
   updatedAt DateTime           @updatedAt
 
   versions PolicyDocumentVersion[]
+  formRequirements PolicyFormRequirement[]
 
   @@map("policy_documents")
+}
+
+/// WIRE-1601 — ordered policy attachments for each customer-facing form.
+model PolicyFormRequirement {
+  form       CustomerPolicyForm
+  documentId String
+  sortOrder  Int                @default(0)
+  document   PolicyDocument     @relation(fields: [documentId], references: [id], onDelete: Restrict)
+
+  @@id([form, documentId])
+  @@index([form, sortOrder])
+  @@map("policy_form_requirements")
 }
 
 model PolicyDocumentVersion {

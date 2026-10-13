@@ -1,0 +1,35 @@
+/// WIRE-2001 — coach requests to change an upcoming class. The original class
+/// details are snapshotted so a reviewed request remains readable after a move.
+model ClassChangeRequest {
+  id                     String            @id @default(cuid())
+  sessionId              String
+  kind                   ClassChangeKind
+  status                 ClassChangeStatus @default(PENDING)
+  reason                 String            @db.VarChar(500)
+  requestedByStaffId     String
+  requestedByCoachId     String
+  sessionClassName       String
+  sessionStartsAt        DateTime          @db.Timestamptz
+  sessionEndsAt          DateTime          @db.Timestamptz
+  sessionCoachName       String
+  proposedStartsAt       DateTime?         @db.Timestamptz
+  proposedEndsAt         DateTime?         @db.Timestamptz
+  substituteCoachId      String?
+  reviewedByStaffId      String?
+  reviewedAt             DateTime?         @db.Timestamptz
+  decisionNote           String?           @db.VarChar(500)
+  createdAt              DateTime          @default(now()) @db.Timestamptz
+  updatedAt              DateTime          @updatedAt @db.Timestamptz
+
+  session           GymSession  @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  requestedByStaff StaffMember @relation("ClassChangeRequesterStaff", fields: [requestedByStaffId], references: [id], onDelete: Restrict)
+  requestedByCoach Coach       @relation("ClassChangeRequesterCoach", fields: [requestedByCoachId], references: [id], onDelete: Restrict)
+  substituteCoach  Coach?      @relation("ClassChangeSubstituteCoach", fields: [substituteCoachId], references: [id], onDelete: SetNull)
+  reviewedByStaff  StaffMember? @relation("ClassChangeReviewerStaff", fields: [reviewedByStaffId], references: [id], onDelete: SetNull)
+
+  @@index([sessionId, status])
+  @@index([requestedByStaffId, createdAt])
+  @@index([requestedByCoachId, createdAt])
+  @@index([status, createdAt])
+  @@map("class_change_requests")
+}

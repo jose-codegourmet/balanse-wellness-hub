@@ -1,6 +1,6 @@
 "use client";
 
-import { isSensitivePermission, type PermissionKey, sensitivePermissionsOf } from "@balanse/domain";
+import type { PermissionDefinition, PermissionKey } from "@balanse/domain";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import {
   AdminForm,
@@ -16,6 +16,7 @@ import { roleFormDefaultValues } from "./RoleForm.defaults";
 import { type RoleFormValues, roleFormSchema } from "./RoleForm.schema";
 
 export type RoleFormProps = {
+  permissions: readonly PermissionDefinition[];
   defaultValues?: RoleFormValues;
   builtIn?: boolean;
   cloneSourceName?: string | null;
@@ -25,6 +26,7 @@ export type RoleFormProps = {
 };
 
 export function RoleForm({
+  permissions,
   defaultValues = roleFormDefaultValues,
   builtIn = false,
   cloneSourceName,
@@ -44,6 +46,7 @@ export function RoleForm({
         builtIn={builtIn}
         cloneSourceName={cloneSourceName}
         canArchive={canArchive}
+        permissions={permissions}
         onArchive={onArchive}
       />
     </AdminForm>
@@ -54,16 +57,20 @@ function RoleFormFields({
   builtIn,
   cloneSourceName,
   canArchive,
+  permissions,
   onArchive,
 }: {
   builtIn: boolean;
   cloneSourceName?: string | null;
   canArchive: boolean;
+  permissions: readonly PermissionDefinition[];
   onArchive?: () => Promise<void>;
 }) {
   const { watch } = useAdminFormContext<RoleFormValues>();
   const permissionKeys = (watch("permissionKeys") ?? []) as PermissionKey[];
-  const sensitive = sensitivePermissionsOf(permissionKeys);
+  const sensitive = permissions.filter(
+    (permission) => permission.sensitive && permissionKeys.includes(permission.key),
+  );
 
   return (
     <>
@@ -104,12 +111,13 @@ function RoleFormFields({
           disabled={builtIn}
           description={
             sensitive.length > 0
-              ? `Sensitive permissions selected: ${sensitive.filter(isSensitivePermission).length}. These unlock rates, refunds, staff, or financial reports.`
+              ? `Sensitive permissions selected: ${sensitive.length}. These unlock rates, refunds, staff, or financial reports.`
               : "Select at least one permission. Sensitive keys are labeled in the list."
           }
         >
           {(field) => (
             <RolePermissionChecklist
+              permissions={permissions}
               name={field.name}
               value={(field.value as PermissionKey[]) ?? []}
               onChange={(next) => field.onChange(next)}

@@ -175,6 +175,7 @@ async function operationalSnapshot(deps: ApiDeps, actor: AdminApiActor) {
         endsAt: session.endsAt.toISOString(),
         capacity: session.capacity,
         customerPrice: money(session.customerPrice),
+        status: session.status,
       })),
   };
 }

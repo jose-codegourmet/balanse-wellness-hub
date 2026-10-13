@@ -1,9 +1,9 @@
-import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
+import { serverFetcher } from "@/lib/query/fetcher";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { adminSessionsQuery, adminVenuesQuery } from "@/lib/query/queries";
+import { getStaffAccessToken, getStaffSession } from "@/modules/session/current-staff";
 import { RecurringScheduleForm } from "../../_components/recurring-schedule-form/RecurringScheduleForm";
 
 export const metadata: Metadata = {
@@ -13,9 +13,12 @@ export const metadata: Metadata = {
 
 export default async function Page({ params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = await params;
-  const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
+  const [{ actor }, token] = await Promise.all([getStaffSession(), getStaffAccessToken()]);
   return prefetchAdmin(
-    [adminSessionsQuery(principal), adminVenuesQuery(principal)],
+    [
+      adminSessionsQuery(actor, serverFetcher(token)),
+      adminVenuesQuery(actor, serverFetcher(token)),
+    ],
     <AdminQuerySuspense>
       <RecurringScheduleForm sessionId={sessionId} />
     </AdminQuerySuspense>,

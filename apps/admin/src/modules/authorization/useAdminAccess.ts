@@ -13,15 +13,15 @@ import {
   classifyStaffActor,
   visibleAdminNavItems,
 } from "@/lib/authorization/admin-access";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useStaffSession } from "@/modules/session/SessionProvider";
 
 export function useStaffActor() {
-  return useMockPrincipal().actor;
+  return useStaffSession().actor;
 }
 
 export function useAdminAccessKind() {
-  const { principal, actor } = useMockPrincipal();
-  return classifyStaffActor(actor, principal);
+  const { role, actor } = useStaffSession();
+  return classifyStaffActor(actor, { role });
 }
 
 export function useHasPermission(key: PermissionKey): boolean {

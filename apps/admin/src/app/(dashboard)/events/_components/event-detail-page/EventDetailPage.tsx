@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
   EVENT_CONFLICT_MESSAGES,
   formatSessionRange,
@@ -23,8 +24,7 @@ import {
   adminEventDetailQuery,
   adminSessionsQuery,
 } from "@/lib/query/queries";
-import { AdminCan, useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { AdminCan, useCanAdminRoute, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import {
   displayedEventStatus,
   displayedEventStatusLabel,
@@ -49,24 +49,24 @@ function statusVariant(status: ReturnType<typeof displayedEventStatus>) {
 
 export function EventDetailPage({ eventId, loading, error, preview }: EventDetailPageProps) {
   const router = useRouter();
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const canReadClasses = useCanAdminRoute("/classes");
   const canReadBookings = useCanAdminRoute("/bookings");
   const canReadSessions = useCanAdminRoute("/schedule");
   const eventQuery = useQuery({
-    ...adminEventDetailQuery(principal, eventId),
+    ...adminEventDetailQuery(actor, eventId, apiFetchBrowser),
     enabled: preview === undefined,
   });
   const classesQuery = useQuery({
-    ...adminClassesQuery(principal),
+    ...adminClassesQuery(actor, apiFetchBrowser),
     enabled: canReadClasses,
   });
   const bookingsQuery = useQuery({
-    ...adminBookingsQuery(principal),
+    ...adminBookingsQuery(actor),
     enabled: canReadBookings,
   });
   const sessionsQuery = useQuery({
-    ...adminSessionsQuery(principal),
+    ...adminSessionsQuery(actor, apiFetchBrowser),
     enabled: canReadSessions,
   });
 
@@ -294,12 +294,12 @@ export function EventDetailPage({ eventId, loading, error, preview }: EventDetai
 }
 
 function Poster({ poster, title }: { poster: string | null; title: string }) {
+  const src = eventImageSrc(poster);
   return (
     <section className="overflow-hidden rounded-xl border border-border bg-card">
       <h2 className="sr-only">Poster</h2>
-      {poster && (poster.startsWith("http") || poster.startsWith("/")) ? (
-        // Object keys are not public URLs; only absolute or site paths render as images.
-        <img src={poster} alt="" className="max-h-72 w-full object-cover" />
+      {src ? (
+        <img src={src} alt="" className="max-h-72 w-full object-cover" />
       ) : (
         <p className="p-4 text-sm text-muted-foreground">
           {poster ? `Poster file: ${poster}` : `No poster for ${title}.`}
@@ -307,6 +307,13 @@ function Poster({ poster, title }: { poster: string | null; title: string }) {
       )}
     </section>
   );
+}
+
+/** Marketing assets are public; seeded site paths remain valid alongside object keys. */
+function eventImageSrc(value: string | null): string | null {
+  if (!value || value.startsWith("/") || /^https?:\/\//.test(value)) return value;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  return url ? `${url}/storage/v1/object/public/marketing-assets/${value}` : null;
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {

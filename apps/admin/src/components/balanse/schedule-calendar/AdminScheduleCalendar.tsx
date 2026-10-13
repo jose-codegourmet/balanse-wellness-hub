@@ -83,6 +83,7 @@ export function AdminScheduleCalendar({
   view = "auto",
   onViewChange,
   onNavigate,
+  onToday,
   onOpenDay,
   onOpenSession,
   venueLabel,
@@ -117,7 +118,7 @@ export function AdminScheduleCalendar({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => onNavigate(todayYmd)}
+                onClick={() => (onToday ? onToday() : onNavigate(todayYmd))}
               >
                 Today
               </Button>

@@ -1,5 +1,6 @@
-import { getMockAdapter } from "@balanse/mock";
+import { listPublicCoaches } from "@balanse/api-client";
 import type { Metadata } from "next";
+import { serverFetcher } from "@/lib/query/fetcher";
 import { loadPublicSchedule } from "@/modules/schedule/load-schedule";
 import { LandingPage } from "./_components/landing-page/LandingPage";
 
@@ -14,8 +15,10 @@ export default async function Page({
   searchParams: Promise<{ coachId?: string; classId?: string }>;
 }) {
   const params = await searchParams;
-  const adapter = getMockAdapter();
-  const [schedule, coaches] = await Promise.all([loadPublicSchedule(), adapter.getPublicCoaches()]);
+  const [schedule, { items: coaches }] = await Promise.all([
+    loadPublicSchedule(),
+    listPublicCoaches(serverFetcher(null)),
+  ]);
   return (
     <LandingPage
       coaches={coaches}

@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
   type AdminSession,
   formatPeso,
@@ -24,8 +25,8 @@ import {
   FormActions,
   useAdminFormContext,
 } from "@/modules/admin/forms/admin-form/AdminForm";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { occurrenceWillBeSkipped, planOccurrences } from "../../_lib/session-occurrences";
 import { OccurrencePreview } from "../occurrence-preview/OccurrencePreview";
 import { RepeatPicker } from "../repeat-picker/RepeatPicker";
@@ -39,9 +40,9 @@ import {
 const FORM_ID = "recurring-schedule-form";
 
 export function RecurringScheduleForm({ sessionId }: RecurringScheduleFormProps) {
-  const { principal } = useMockPrincipal();
-  const sessions = useSuspenseQuery(adminSessionsQuery(principal)).data;
-  const venues = useSuspenseQuery(adminVenuesQuery(principal)).data;
+  const actor = useStaffActor();
+  const sessions = useSuspenseQuery(adminSessionsQuery(actor, apiFetchBrowser)).data;
+  const venues = useSuspenseQuery(adminVenuesQuery(actor, apiFetchBrowser)).data;
   const source = sessions.find((session) => session.id === sessionId);
   const createRecurring = useCreateAdminRecurringSchedule();
   const router = useRouter();
@@ -246,8 +247,8 @@ function PublishChoice() {
 
 function SeriesPreview({ source }: { source: AdminSession }) {
   const form = useAdminFormContext<RecurringScheduleFormValues>();
-  const { principal } = useMockPrincipal();
-  const sessions = useSuspenseQuery(adminSessionsQuery(principal)).data;
+  const actor = useStaffActor();
+  const sessions = useSuspenseQuery(adminSessionsQuery(actor, apiFetchBrowser)).data;
   const weekdays = form.watch("weekdays");
   const endsOn = form.watch("endsOn");
   const occurrences = useMemo(

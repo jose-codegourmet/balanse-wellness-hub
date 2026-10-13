@@ -41,3 +41,9 @@ Rationale:
 5. Optional later: when the org is on a plan that supports Supabase Branches, we can add a preview database per PR. Until then, do not create extra projects.
 
 Local `pnpm dev` talks to this same project once a developer copies `.env.example` → `.env` with their own least-privilege credentials.
+
+## RLS advisories — recorded decisions
+
+**`public._prisma_migrations`** (Supabase linter `0013_rls_disabled_in_public`, critical). Decision (WIRE-0006, 2026-10-02): **enabled**, with no policies. Prisma (`prisma migrate deploy`/`resolve`) runs as the `postgres` role, which bypasses RLS, so this does not affect migrations. It only stops `anon`/`authenticated` (the Data API roles) from reading or writing the migration ledger, which they had no legitimate reason to touch. No further action needed.
+
+Other advisories present as of WIRE-E00 (hosted catch-up) are pre-existing, intentional patterns from the migrations themselves, not regressions from that work: `coaches_public` / `payment_qr_codes_public` are `SECURITY DEFINER` views by design (BE-004/BE-056, so `anon` can read the public projection without table grants on `coaches`/`payment_qr_codes`); the booking/report RPCs are `SECURITY DEFINER` functions intentionally callable by `anon`/`authenticated` (BE-017/BE-022, each does its own permission check inside the function body); a handful of `app_private` trigger functions predate the `SET search_path` convention and are owner-only (not reachable via the Data API). Leave as-is unless a future migration revisits them.

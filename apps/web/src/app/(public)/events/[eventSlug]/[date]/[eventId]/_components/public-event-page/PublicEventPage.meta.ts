@@ -9,8 +9,7 @@ import type { PublicEventPage, PublicRoster } from "@balanse/domain";
  * moved session 301s to the canonical path keeping `ref` / `src` / `via`.
  * DRAFT and ARCHIVED events 404.
  *
- * Leads with the event story — poster (site paths only; object keys fall back
- * to the class hero), title, summary, "About this event", Supporting
+ * Leads with the event story — poster, title, summary, "About this event", Supporting
  * (beneficiary), What to bring, gallery — then reuses the session page blocks:
  * `PublicSessionDetails` (facts + coaches), `PublicRoster`, `PublicBookingBar`.
  *

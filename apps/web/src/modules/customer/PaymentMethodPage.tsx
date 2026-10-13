@@ -2,10 +2,11 @@
 
 import type { CustomerBooking, PaymentMethod } from "@balanse/domain";
 import { formatHoldDeadline, isHoldExpired } from "@balanse/domain";
-import { getMockAdapter, MOCK_NOW_ISO } from "@balanse/mock";
 import { Button, FeedbackState, LocalizedSkeleton } from "@balanse/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useSetPaymentMethod } from "@/lib/query/mutations/payments";
 import { notify } from "@/modules/notifications/notify";
 
 export function PaymentMethodPage({
@@ -18,14 +19,16 @@ export function PaymentMethodPage({
   forcedStatus?: "submitting";
 }) {
   const router = useRouter();
-  const [method, setMethod] = useState<PaymentMethod | "">("");
+  const saveMethod = useSetPaymentMethod(booking.customerId, booking.id);
+  const form = useForm<{ method: PaymentMethod | "" }>({ defaultValues: { method: "" } });
+  const method = form.watch("method");
   const [status, setStatus] = useState<"idle" | "submitting">(
     forcedStatus === "submitting" ? "submitting" : "idle",
   );
   const expired =
     forcedExpired ||
     booking.status === "EXPIRED" ||
-    isHoldExpired(booking.holdExpiresAt, booking.session.startsAt, MOCK_NOW_ISO);
+    isHoldExpired(booking.holdExpiresAt, booking.session.startsAt, new Date());
 
   if (booking.entitlementId) {
     return (
@@ -77,7 +80,7 @@ export function PaymentMethodPage({
             name="payment-method"
             value="GCASH"
             checked={method === "GCASH"}
-            onChange={() => setMethod("GCASH")}
+            onChange={() => form.setValue("method", "GCASH")}
           />
           GCash
         </label>
@@ -87,7 +90,7 @@ export function PaymentMethodPage({
             name="payment-method"
             value="PAY_AT_COUNTER"
             checked={method === "PAY_AT_COUNTER"}
-            onChange={() => setMethod("PAY_AT_COUNTER")}
+            onChange={() => form.setValue("method", "PAY_AT_COUNTER")}
           />
           Pay at Counter
         </label>
@@ -99,17 +102,15 @@ export function PaymentMethodPage({
         onClick={() => {
           if (!method) return;
           setStatus("submitting");
-          void getMockAdapter()
-            .setPaymentMethod(booking.id, method)
-            .then(() => {
-              if (method === "GCASH") {
-                notify.portal("payment.gcash-selected");
-                router.push(`/portal/bookings/${booking.id}/payment/gcash`);
-                return;
-              }
-              notify.portal("payment.counter-selected");
-              router.push(`/portal/bookings/${booking.id}`);
-            });
+          void saveMethod.mutateAsync(method).then(() => {
+            if (method === "GCASH") {
+              notify.portal("payment.gcash-selected");
+              router.push(`/portal/bookings/${booking.id}/payment/gcash`);
+              return;
+            }
+            notify.portal("payment.counter-selected");
+            router.push(`/portal/bookings/${booking.id}`);
+          });
         }}
       >
         Continue

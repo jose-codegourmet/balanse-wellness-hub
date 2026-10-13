@@ -1,6 +1,6 @@
 # Agent Instructions — Balansé Wellness Hub
 
-Read this file first. Product truth lives in OpenSpec (`openspec/specs/`, in-flight work in `openspec/changes/`), then `docs/MVP-ROADMAP.md` and `docs/screen-specs/`. This phase is **mocks only** for screens except the explicitly authorized database-backed class catalogue (2026-09-21). Class routes use server-side Supabase calls and verified admin server actions; other screens remain on MockDataAdapter. Customer auth in `apps/web` is real Supabase Auth (Google + email, 2026-10-01): the session comes from `src/modules/session/current-customer.ts`, and the signed-in profile is mirrored into MockDataAdapter so still-mocked customer data keys off the real user id. No direct Supabase client calls from UI. See `docs/backend/class-catalogue.md`.
+Read this file first. Product truth lives in OpenSpec (`openspec/specs/`, in-flight work in `openspec/changes/`), then `docs/MVP-ROADMAP.md` and `docs/screen-specs/`. Application screens use typed `@balanse/api-client` functions and React Query for `/api/*`; server routes use the in-process client or verified server actions. Customer and staff sessions come from Supabase Auth. `@balanse/mock` supplies Storybook fixtures only. No direct Supabase client calls from UI. See `docs/backend/api-routes.md`.
 
 ## Read order
 
@@ -17,11 +17,12 @@ Phase closeout notes in `docs/metas/` are historical delivery records, not a sub
 - `apps/web` (9000): public + customer
 - `apps/admin` (9001): admin
 - `@balanse/domain`: enums, formatters, labels
-- `@balanse/mock`: `MockDataAdapter` + in-memory fixtures + mock session
+- `@balanse/mock`: Storybook fixtures, in-memory adapter, and mock principals
 - `@balanse/ui`: shared primitives and wrappers
 - `@balanse/config`: brand tokens and breakpoints
 - `@balanse/db`: Prisma schema (`AppMeta` + BE-001–BE-024 business models, RLS, jobs; BE-055/056 amendments)
-- `@balanse/api`: BE-030–BE-043 + BE-050–058 HTTP handlers (mounted on `apps/web` `/api/*`; no FE wiring). BE-058 session packages are contracts + mocks only.
+- `@balanse/api`: HTTP handlers mounted on `apps/web` `/api/*`.
+- `@balanse/api-client`: typed API functions for `/api/*` — `./browser` (Supabase browser session) and `./server` (in-process `dispatch()`) subpaths, plus `ApiError`, `applyFieldErrors`, pagination and `*Php` money helpers.
 
 ## Project Structure & Documentation
 
@@ -40,7 +41,7 @@ Before making structural changes (new folders, moving files, introducing new con
 - Do **not** create a new Supabase project. Use `xydundrayuusqizssgby`.
 - Prisma lives in `packages/db/prisma/schema/*.prisma` (multi-file). Conventions: both relation sides, `@id @default(...)`, `createdAt`/`updatedAt`, `@@index`, `@unique`.
 - Never commit secrets. Service-role keys must not appear in `NEXT_PUBLIC_*`.
-- Previews run mock mode. Full backend docs: `docs/backend/`.
+- Storybook previews use browser-local mock data. Full backend docs: `docs/backend/`.
 
 ## UI components (JabKit)
 
@@ -58,7 +59,7 @@ Wrap each component in its own `kebab-case` folder. Always colocate `Component.m
 
 ## Data
 
-Screens obtain data through `getMockAdapter()` (`MockDataAdapter`), except class catalogue routes in configured database mode. Do not import fixture files from screen components. Coach rates exist only on admin coach types.
+Screens obtain data through typed `@balanse/api-client` functions wrapped by React Query hooks, or server-side client calls for server components. Storybook alone uses `getMockAdapter()` and fixtures. Do not import fixture files from screen components. Coach rates exist only on admin coach types.
 
 ## Tests
 

@@ -118,24 +118,51 @@ export function shapeClassPerformance(actor: AdminApiActor, items: Array<Record<
   });
 }
 
+/**
+ * Mirrors the mock's `apply-admin-authorization.ts` roster shaping exactly
+ * (#361): rates strip via `maybeStripRates`, payment fields strip to
+ * `paymentMethod: null` / `paymentStatus: "NONE"` without `payments.read`,
+ * and onboarding answers null out unless the actor has `customers.read` or
+ * is assigned to the session (`customers.read`, or the assigned coach).
+ */
 export function shapeRoster(
   actor: AdminApiActor,
   payload: Record<string, unknown>,
 ): Record<string, unknown> {
   const next = maybeStripRates(actor, payload) as Record<string, unknown>;
-  if (actorHas(actor, "payments.read")) return next;
-  const stripPayment = (rows: unknown) =>
+  const includePayment = actorHas(actor, "payments.read");
+  const includeOnboarding =
+    actorHas(actor, "customers.read") || sessionOwnedByActor(actor, next.session);
+  const stripBooking = (rows: unknown) =>
     Array.isArray(rows)
       ? rows.map((row) => {
           if (!row || typeof row !== "object") return row;
-          const { payment: _payment, ...rest } = row as Record<string, unknown>;
-          return rest;
+          if (includePayment) return row;
+          return {
+            ...(row as Record<string, unknown>),
+            paymentMethod: null,
+            paymentStatus: "NONE",
+          };
         })
       : rows;
+  const people = next.people;
+  const scopedPeople =
+    people && typeof people === "object"
+      ? Object.fromEntries(
+          Object.entries(people as Record<string, unknown>).map(([id, person]) => [
+            id,
+            includeOnboarding
+              ? person
+              : { ...(person as Record<string, unknown>), onboarding: null },
+          ]),
+        )
+      : people;
   return {
     ...next,
-    confirmed: stripPayment(next.confirmed),
-    held: stripPayment(next.held),
+    confirmed: stripBooking(next.confirmed),
+    held: stripBooking(next.held),
+    waitlisted: stripBooking(next.waitlisted),
+    people: scopedPeople,
   };
 }
 

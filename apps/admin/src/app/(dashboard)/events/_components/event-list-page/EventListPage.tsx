@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
   EVENT_STATUSES,
   type EventStatus,
@@ -25,8 +26,7 @@ import { Suspense, useMemo, useState } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { adminBookingsQuery, adminClassesQuery, adminEventsQuery } from "@/lib/query/queries";
-import { AdminCan, useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { AdminCan, useCanAdminRoute, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import {
   displayedEventStatus,
   displayedEventStatusLabel,
@@ -78,16 +78,16 @@ function EventListPageInner({
   initialSearch = "",
 }: EventListPageProps) {
   const params = useSearchParams();
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const canReadClasses = useCanAdminRoute("/classes");
   const canReadBookings = useCanAdminRoute("/bookings");
-  const eventsQuery = useQuery(adminEventsQuery(principal));
+  const eventsQuery = useQuery(adminEventsQuery(actor, apiFetchBrowser));
   const classesQuery = useQuery({
-    ...adminClassesQuery(principal),
+    ...adminClassesQuery(actor, apiFetchBrowser),
     enabled: canReadClasses,
   });
   const bookingsQuery = useQuery({
-    ...adminBookingsQuery(principal),
+    ...adminBookingsQuery(actor),
     enabled: canReadBookings,
   });
 

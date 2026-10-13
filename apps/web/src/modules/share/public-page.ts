@@ -1,5 +1,6 @@
 import "server-only";
 
+import { getPublicSession, listMyBookings } from "@balanse/api-client";
 import {
   type BookingStatus,
   buildPublicEventPath,
@@ -14,8 +15,8 @@ import {
   toManilaDateSegment,
   withShareParams,
 } from "@balanse/domain";
-import { getMockAdapter } from "@balanse/mock";
-import { getCurrentCustomer } from "@/modules/session/current-customer";
+import { serverFetcher } from "@/lib/query/fetcher";
+import { getCurrentCustomer, getCustomerAccessToken } from "@/modules/session/current-customer";
 import { publicSiteOrigin } from "@/modules/share/site-origin";
 
 /** Bookings that mean "you already have a place (or a pending one) in this session". */
@@ -41,7 +42,7 @@ export type PublicViewerContext = {
 export async function getPublicViewerContext(sessionId: string): Promise<PublicViewerContext> {
   const profile = await getCurrentCustomer();
   if (!profile) return { viewer: null, shareParams: {}, existingBookingId: null };
-  const bookings = await getMockAdapter().getBookings(profile.id);
+  const bookings = await listMyBookings(serverFetcher(await getCustomerAccessToken()), profile.id);
   const existing = bookings.find(
     (booking) => booking.sessionId === sessionId && ACTIVE_BOOKING_STATUSES.has(booking.status),
   );
@@ -92,7 +93,11 @@ export async function buildBookingInvite(
   profile: Pick<CustomerProfile, "referralCode"> | null,
 ) {
   if (!profile || !INVITABLE_STATUSES.has(booking.status)) return null;
-  const page = await getMockAdapter().getPublicSessionPage(booking.sessionId);
+  // 404s for a DRAFT (or now-deleted) session the same way the mock's null return did.
+  const page = await getPublicSession(
+    serverFetcher(await getCustomerAccessToken()),
+    booking.sessionId,
+  ).catch(() => null);
   if (!page || page.availability === "past" || page.availability === "cancelled") return null;
   const params: ShareParams = { ref: profile.referralCode, src: "customer" };
   const event = page.event?.status === "PUBLISHED" ? page.event : null;

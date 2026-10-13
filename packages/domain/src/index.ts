@@ -15,6 +15,7 @@ export * from "./developer-config";
 export * from "./enums";
 export * from "./feedback-states";
 export * from "./format";
+export * from "./http";
 export * from "./marketing-insights";
 export * from "./navigation";
 export * from "./onboarding";

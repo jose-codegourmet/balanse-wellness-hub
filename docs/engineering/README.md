@@ -7,3 +7,4 @@
 - [Timezone](./timezone.md)
 - [API wiring cross-check](./api-wiring-crosscheck.md)
 - [WIRE epics — FE ↔ BE wiring tickets](./wire-epics.md)
+- [WIRE Wave 2 handoff brief](./wire-wave-2-handoff.md)

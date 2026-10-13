@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import { BALANSE_BREAKPOINTS } from "@balanse/config";
 import {
   addCalendarDays,
@@ -44,8 +45,8 @@ import {
   useCanAdminAction,
   useCanAdminRoute,
   useHasPermission,
+  useStaffActor,
 } from "@/modules/authorization/useAdminAccess";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { createSessionHref } from "../../_lib/schedule-href";
 import { SelectedSessionPanel } from "../selected-session-panel/SelectedSessionPanel";
 import type { SessionInventory } from "../selected-session-panel/SelectedSessionPanel.meta";
@@ -64,7 +65,7 @@ export function ScheduleListPage({
   selectedDay?: string;
   view?: AdminScheduleCalendarView;
 }) {
-  const { actor } = useMockPrincipal();
+  const actor = useStaffActor();
   const canReadAllSchedule = useHasPermission("schedule.read.all");
   const hasOwnClasses = Boolean(actor?.coachId);
   const isCoachRole = isCoachAuthorizationRole(actor?.roleKey ?? "");
@@ -95,7 +96,7 @@ function ScheduleViewBridge({
   view?: AdminScheduleCalendarView;
 }) {
   const [urlView, setUrlView] = useTabParam("view", SCHEDULE_VIEWS, "auto");
-  const { actor } = useMockPrincipal();
+  const actor = useStaffActor();
   const canReadAllSchedule = useHasPermission("schedule.read.all");
   const hasOwnClasses = Boolean(actor?.coachId);
   const isCoachRole = isCoachAuthorizationRole(actor?.roleKey ?? "");
@@ -135,12 +136,12 @@ function ScheduleListPageInner({
   showOwnClassesFilter?: boolean;
 }) {
   const router = useRouter();
-  const { principal, actor } = useMockPrincipal();
+  const actor = useStaffActor();
   const canReadBookings = useCanAdminRoute("/bookings");
   const canOpenRoster = useCanAdminAction("roster-read");
-  const sessionsQuery = useSuspenseQuery(adminSessionsQuery(principal));
-  const bookingsQuery = useQuery({ ...adminBookingsQuery(principal), enabled: canReadBookings });
-  const venuesQuery = useQuery(adminVenuesQuery(principal));
+  const sessionsQuery = useSuspenseQuery(adminSessionsQuery(actor, apiFetchBrowser));
+  const bookingsQuery = useQuery({ ...adminBookingsQuery(actor), enabled: canReadBookings });
+  const venuesQuery = useQuery(adminVenuesQuery(actor, apiFetchBrowser));
   const sessions = empty ? [] : sessionsQuery.data;
   const scopedSessions =
     scope === "mine" && actor?.coachId
@@ -171,7 +172,7 @@ function ScheduleListPageInner({
     selected && selected.status !== "CANCELLED" && !selected.recurrenceRuleId,
   );
   const rosterQuery = useQuery({
-    ...adminSessionRosterQuery(principal, selected?.id ?? ""),
+    ...adminSessionRosterQuery(actor, apiFetchBrowser, selected?.id ?? ""),
     enabled: Boolean(selected && !canReadBookings && canOpenRoster),
   });
 
@@ -311,6 +312,7 @@ function ScheduleListPageInner({
         view={view}
         onViewChange={(next) => onViewChange?.(next)}
         onNavigate={setAnchorDay}
+        onToday={() => setAnchorDay(adminTodayYmd())}
         onOpenDay={(ymd) => openDayPanel(ymd)}
         onOpenSession={(session) => openDayPanel(manilaYmd(session.startsAt), session.id)}
         venueLabel={(session) => {

@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { mockClassFetcher } from "../mock-class-fetcher.stories-data";
 import { ClassListPage } from "./ClassListPage";
 
 const meta = {
   title: "Admin/Screens/Classes",
   component: ClassListPage,
   tags: ["autodocs"],
-  args: { empty: false, loading: false, error: false },
+  args: { empty: false, loading: false, error: false, fetcher: mockClassFetcher },
 } satisfies Meta<typeof ClassListPage>;
 
 export default meta;

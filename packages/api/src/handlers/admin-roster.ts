@@ -1,10 +1,26 @@
+import type { BookingStatus } from "@balanse/db";
+import { toPublicSession } from "@balanse/domain";
 import { requireAdmin, requireOwnedSession, resolveActor } from "../auth";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { asString, ok, readJson } from "../http";
-import { paymentStatusLabel } from "../presenters";
 import { shapeRoster } from "../sensitive";
-import { checkInBooking, markNoShow, reportSessionDrilldown } from "../sql";
+import {
+  checkInBooking,
+  markNoShow,
+  reportSessionDrilldown,
+  sessionConsumedCapacity,
+} from "../sql";
+import { presentAdminSession, SESSION_VENUE_SELECT } from "./admin-catalogue";
+
+/** Bucket boundaries mirror the mock's `RosterPage` sub-grouping (#361). */
+const CONFIRMED_STATUSES: BookingStatus[] = ["CONFIRMED", "CHECKED_IN", "COMPLETED", "NO_SHOW"];
+const HELD_STATUSES: BookingStatus[] = [
+  "HELD_AWAITING_PAYMENT",
+  "PAYMENT_SUBMITTED",
+  "CANCELLATION_REQUESTED",
+  "RESCHEDULE_REQUESTED",
+];
 
 export async function getSessionRoster(deps: ApiDeps, req: Request, id: string): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
@@ -13,63 +29,97 @@ export async function getSessionRoster(deps: ApiDeps, req: Request, id: string):
     where: { id },
     include: {
       gymClass: true,
-      coaches: { select: { coach: { select: { id: true, name: true, photoKey: true } } } },
+      venue: { select: SESSION_VENUE_SELECT },
+      coaches: { include: { coach: true } },
     },
   });
   if (!session) throw new ApiError(404, "session_not_found", "Session not found.");
+  const consumed = await sessionConsumedCapacity(deps, id);
+  const presentedSession = await presentAdminSession(deps, session, consumed);
+  const publicSession = toPublicSession(presentedSession);
+
   const bookings = await deps.prisma.booking.findMany({
-    where: { sessionId: id },
-    include: { profile: true, payments: { orderBy: { createdAt: "desc" }, take: 1 } },
+    where: {
+      sessionId: id,
+      status: { in: [...CONFIRMED_STATUSES, ...HELD_STATUSES, "WAITLISTED"] },
+    },
+    orderBy: { reservedAt: "asc" },
+    include: {
+      profile: { include: { onboarding: { include: { interests: true } } } },
+      payments: { orderBy: { createdAt: "desc" }, take: 1 },
+      refunds: { orderBy: { createdAt: "desc" }, take: 1 },
+    },
   });
-  const waitlist = await deps.prisma.waitlistEntry.findMany({
-    where: { sessionId: id, status: "WAITING" },
-    orderBy: [{ sequence: "asc" }, { joinedAt: "asc" }],
-    include: { profile: true },
-  });
+
+  const presentBooking = (row: (typeof bookings)[number]) => {
+    const refund = row.refunds[0];
+    return {
+      id: row.id,
+      customerId: row.profileId,
+      customerName:
+        `${row.profile.firstName} ${row.profile.lastName}`.trim() || row.profile.fullName,
+      sessionId: row.sessionId,
+      status: row.status,
+      paymentMethod: row.paymentMethod,
+      paymentStatus: row.payments[0]?.status ?? "NONE",
+      refundStatus: refund?.status ?? "NOT_APPLICABLE",
+      holdExpiresAt: row.holdExpiresAt?.toISOString() ?? null,
+      createdAt: row.createdAt.toISOString(),
+      session: publicSession,
+    };
+  };
+
+  const confirmed = bookings
+    .filter((row) => CONFIRMED_STATUSES.includes(row.status))
+    .map(presentBooking);
+  const held = bookings.filter((row) => HELD_STATUSES.includes(row.status)).map(presentBooking);
+  const waitlisted = bookings.filter((row) => row.status === "WAITLISTED").map(presentBooking);
+
+  const people: Record<string, unknown> = {};
+  for (const row of bookings) {
+    if (people[row.profileId]) continue;
+    const avatarUrl = row.profile.avatarKey
+      ? await deps.storage.createSignedUrl("avatars", row.profile.avatarKey, 600)
+      : null;
+    people[row.profileId] = {
+      customerId: row.profileId,
+      firstName: row.profile.firstName,
+      lastName: row.profile.lastName,
+      nickname: row.profile.nickname,
+      avatarUrl,
+      showOnPublicRoster: row.profile.showOnPublicRoster,
+      onboarding: row.profile.onboarding
+        ? {
+            goals: row.profile.onboarding.goals,
+            goalsOther: row.profile.onboarding.goalsOther,
+            experienceLevel: row.profile.onboarding.experienceLevel,
+            interestClassIds: row.profile.onboarding.interests.map((interest) => interest.classId),
+            interestsOther: row.profile.onboarding.interestsOther,
+            heardFrom: row.profile.onboarding.heardFrom,
+            heardFromOther: row.profile.onboarding.heardFromOther,
+            updatedAt: row.profile.onboarding.updatedAt.toISOString(),
+          }
+        : null,
+    };
+  }
+
   const metrics = (await reportSessionDrilldown(deps, id))[0];
-  const present = (status: string[]) =>
-    bookings
-      .filter((row) => status.includes(row.status))
-      .map((row) => ({
-        bookingId: row.id,
-        name: row.profile.fullName,
-        payment: row.payments[0]
-          ? {
-              method: row.payments[0].method,
-              status: row.payments[0].status,
-              label: paymentStatusLabel(row.payments[0].status),
-            }
-          : { method: row.paymentMethod, status: null, label: "Not started" },
-        attendance: row.status,
-      }));
   return ok(
     shapeRoster(actor, {
-      session: {
-        id: session.id,
-        className: session.gymClass.name,
-        coachName: session.coaches.map(({ coach }) => coach.name).join(" & "),
-        coaches: session.coaches.map(({ coach }) => coach),
-        startsAt: session.startsAt.toISOString(),
-      },
-      confirmed: present(["CONFIRMED", "CHECKED_IN"]),
-      held: present(["HELD_AWAITING_PAYMENT", "PAYMENT_SUBMITTED"]),
-      waitlist: waitlist.map((entry) => ({
-        id: entry.id,
-        name: entry.profile.fullName,
-        sequence: Number(entry.sequence),
-        joinedAt: entry.joinedAt.toISOString(),
-      })),
-      metrics: {
-        Capacity: metrics?.capacity ?? session.capacity,
-        Confirmed: metrics?.confirmed ?? 0,
-        Held: metrics?.held ?? 0,
-        Available: metrics?.available ?? 0,
-        Waitlisted: metrics?.waitlisted ?? 0,
-        "Checked In": metrics?.checkedIn ?? 0,
-        "No-show": metrics?.noShow ?? 0,
-        Occupancy: Number(metrics?.occupancy ?? 0),
-        "Attendance Utilisation": Number(metrics?.attendanceUtilisation ?? 0),
-      },
+      session: presentedSession,
+      confirmed,
+      held,
+      waitlisted,
+      capacity: metrics?.capacity ?? session.capacity,
+      confirmedCount: metrics?.confirmed ?? confirmed.length,
+      heldCount: metrics?.held ?? held.length,
+      available: metrics?.available ?? Math.max(0, session.capacity - consumed),
+      waitlistedCount: metrics?.waitlisted ?? waitlisted.length,
+      checkedIn: metrics?.checkedIn ?? 0,
+      noShow: metrics?.noShow ?? 0,
+      occupancy: Number(metrics?.occupancy ?? 0),
+      attendanceUtilisation: Number(metrics?.attendanceUtilisation ?? 0),
+      people,
     }),
   );
 }

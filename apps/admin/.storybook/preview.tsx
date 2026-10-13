@@ -1,16 +1,20 @@
 import "../src/app/globals.css";
 import { BALANSE_BREAKPOINT_LABELS, BALANSE_BREAKPOINTS } from "@balanse/config";
 import {
+  bindMockPrincipal,
   DEFAULT_MOCK_PRINCIPAL,
   type MockRole,
   type MockRuntimeOptions,
   normalizeMockPrincipal,
   resetMockRuntime,
+  resolveMockStaffActor,
   setMockRuntime,
 } from "@balanse/mock";
 import { adminAuthScope } from "../src/lib/query/auth-scope";
+import { setPreviewStaffActor } from "../src/app/(dashboard)/staff/_lib/mock-staff-fetcher.stories-data";
 import type { Decorator, Preview } from "@storybook/nextjs-vite";
-import { type ReactNode, useEffect, useLayoutEffect } from "react";
+import { type ReactNode, Suspense, useEffect, useLayoutEffect } from "react";
+import type { ClientStaffSession } from "../src/modules/session/SessionProvider";
 import { Providers } from "../src/modules/providers/Providers";
 
 const balanseViewports = {
@@ -71,6 +75,11 @@ const withAdminProviders: Decorator = (Story, context) => {
     role,
     staffId: role === "admin" ? staffId : null,
   });
+  bindMockPrincipal(initialPrincipal);
+  // Stories have no real Supabase session; fabricate the staff actor the
+  // same way `current-staff.ts` would resolve it from `/api/admin/me`.
+  const session: ClientStaffSession = { role, actor: resolveMockStaffActor(initialPrincipal) };
+  setPreviewStaffActor(session.actor);
   const mockRuntime = context.parameters.mockRuntime as Partial<MockRuntimeOptions> | undefined;
   // Apply knobs during render, before useQuery fires in the story.
   resetMockRuntime();
@@ -82,12 +91,14 @@ const withAdminProviders: Decorator = (Story, context) => {
         className={`min-h-screen bg-background text-foreground${theme === "dark" ? " dark" : ""}`}
       >
         <Providers
-          // Fresh QueryClient per principal / mockRuntime so caches cannot leak.
-          key={`${adminAuthScope(initialPrincipal)}:${JSON.stringify(mockRuntime ?? null)}`}
-          initialPrincipal={initialPrincipal}
+          // Fresh QueryClient per session / mockRuntime so caches cannot leak.
+          key={`${adminAuthScope(session.actor)}:${JSON.stringify(mockRuntime ?? null)}`}
+          session={session}
         >
           <MockRuntimeBridge options={mockRuntime}>
-            <Story />
+            <Suspense fallback={<div className="p-6 text-sm">Loading preview…</div>}>
+              <Story />
+            </Suspense>
           </MockRuntimeBridge>
         </Providers>
       </div>
@@ -130,7 +141,7 @@ const preview: Preview = {
     },
     principal: {
       description:
-        "Mock shell role. Admin stories bind staff-rex; use the harness for Front Desk / Coach / custom / disabled.",
+        "Mock shell role. Admin stories bind staff-rex; use the toolbar for Front Desk / Coach / custom / disabled.",
       defaultValue: "admin",
       toolbar: {
         title: "Principal",

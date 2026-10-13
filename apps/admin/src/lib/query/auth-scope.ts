@@ -1,40 +1,27 @@
-import type { StaffAuthorizationActor } from "@balanse/domain";
-import { mockStaffAuthorizationFingerprint } from "@balanse/mock";
-import {
-  bindMockPrincipal,
-  type MockPrincipal,
-  resolveMockStaffActor,
-} from "@balanse/mock/session";
+import { isInteractiveStaffActor, type StaffAuthorizationActor } from "@balanse/domain";
 import type { QueryClient } from "@tanstack/react-query";
-import { firstImplementedPermittedAdminRoute } from "@/lib/authorization/admin-access";
 
 /** Opaque query-key partition. Never pass a bare `guest|customer|admin` role. */
 export type AdminAuthScope = string;
 
-export function adminAuthScope(principal: MockPrincipal): AdminAuthScope {
-  if (principal.role !== "admin") return `anon:${principal.role}`;
-  if (!principal.staffId) return "staff:unknown:unresolved";
-  return mockStaffAuthorizationFingerprint(principal.staffId);
+/**
+ * Stable, order-independent digest of a permission set. Not cryptographic —
+ * just distinct enough that any permission-set change changes the scope
+ * (WIRE-0205, #357: "Super Admin → Coach must not reuse cached rates,
+ * reports, or other-staff rosters").
+ */
+function permissionsHash(permissions: readonly string[]): string {
+  return [...permissions].sort().join("+");
 }
 
-export function bindAdminQueryPrincipal(principal: MockPrincipal): MockPrincipal {
-  return bindMockPrincipal(principal);
+/** `${staffId}:${roleId}:${permissionsHash}` (WIRE-0205) from the real session's actor. */
+export function adminAuthScope(actor: StaffAuthorizationActor | null | undefined): AdminAuthScope {
+  if (!actor) return "anon:guest";
+  if (!isInteractiveStaffActor(actor)) return "anon:revoked";
+  return `${actor.staffId}:${actor.roleId}:${permissionsHash(actor.permissions)}`;
 }
 
 export function removeAuthorizedAdminCache(queryClient: QueryClient): void {
   queryClient.removeQueries({ queryKey: ["admin"] });
   queryClient.clear();
 }
-
-export function allowedAdminRouteForPrincipal(
-  principal: MockPrincipal,
-  fallback = "/login",
-): string {
-  const actor = resolveMockStaffActor(principal);
-  return firstImplementedPermittedAdminRoute(actor, fallback) ?? fallback;
-}
-
-export type ResolveAllowedAdminRoute = (
-  actor: StaffAuthorizationActor | null,
-  fallback?: string | null,
-) => string | null;

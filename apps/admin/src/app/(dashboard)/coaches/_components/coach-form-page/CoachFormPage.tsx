@@ -1,7 +1,8 @@
 "use client";
 
+import type { AdminCoachResponse, ApiFetcher } from "@balanse/api-client";
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
-  type AdminCoach,
   type AdminSession,
   COACH_DEFAULT_RATE_NOTE,
   COACH_RATE_TYPES,
@@ -50,9 +51,12 @@ import {
   coachFormSchema,
   coachPublicFormSchema,
 } from "@/modules/admin/forms/coach/coach-form.schema";
-import { useCanAdminAction, useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
+import {
+  useCanAdminAction,
+  useCanAdminRoute,
+  useStaffActor,
+} from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import type { CoachFormPageProps, CoachFormTabId } from "./CoachFormPage.meta";
 import { CoachPhotoField } from "./coach-photo-field/CoachPhotoField";
 import "./coach-form-page.css";
@@ -88,7 +92,7 @@ function firstTabWithError(
 }
 
 function valuesFromCoach(
-  coach: AdminCoach,
+  coach: AdminCoachResponse,
   canSeeRates: boolean,
 ): CoachFormValues | CoachPublicFormValues {
   const publicValues: CoachPublicFormValues = {
@@ -101,25 +105,29 @@ function valuesFromCoach(
   if (!canSeeRates) return publicValues;
   return {
     ...publicValues,
-    defaultRatePhp: coach.defaultRatePhp,
-    rateType: coach.rateType,
+    defaultRatePhp: coach.defaultRatePhp ?? 0,
+    rateType: coach.rateType ?? "PER_SESSION",
   };
 }
 
-export function CoachFormPage({ coachId, initialTab }: CoachFormPageProps) {
+export function CoachFormPage({
+  coachId,
+  initialTab,
+  fetcher = apiFetchBrowser,
+}: CoachFormPageProps) {
   const router = useRouter();
   const isNew = coachId === "new";
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const canSeeRates = useCanAdminAction("coach-rates-read");
   const canReadSchedule = useCanAdminRoute("/schedule");
   const canReadStaff = useCanAdminRoute("/staff");
-  const coachesQuery = useQuery(adminCoachesQuery(principal));
+  const coachesQuery = useQuery(adminCoachesQuery(actor, fetcher));
   const staffQuery = useQuery({
-    ...adminStaffQuery(principal),
+    ...adminStaffQuery(actor, fetcher),
     enabled: canReadStaff,
   });
-  const sessionsQuery = useQuery(adminSessionsQuery(principal));
-  const upsert = useUpsertAdminCoach();
+  const sessionsQuery = useQuery(adminSessionsQuery(actor, fetcher));
+  const upsert = useUpsertAdminCoach(fetcher);
   const existing = isNew ? undefined : coachesQuery.data?.find((row) => row.id === coachId);
 
   const tabIds = useMemo(() => {
@@ -244,6 +252,8 @@ export function CoachFormPage({ coachId, initialTab }: CoachFormPageProps) {
           tabIds={tabIds}
           canSeeRates={canSeeRates}
           isNew={isNew}
+          coachId={coachId}
+          fetcher={fetcher}
           upcoming={upcoming}
           sessionsPending={sessionsQuery.isPending && !sessionsQuery.data}
           sessionsError={sessionsQuery.isError}
@@ -276,6 +286,8 @@ function CoachFormFields({
   tabIds,
   canSeeRates,
   isNew,
+  coachId,
+  fetcher,
   upcoming,
   sessionsPending,
   sessionsError,
@@ -288,6 +300,8 @@ function CoachFormFields({
   tabIds: readonly CoachFormTabId[];
   canSeeRates: boolean;
   isNew: boolean;
+  coachId: string;
+  fetcher: ApiFetcher;
   upcoming: AdminSession[];
   sessionsPending: boolean;
   sessionsError: boolean;
@@ -336,6 +350,8 @@ function CoachFormFields({
                 {(field) => (
                   <CoachPhotoField
                     {...field}
+                    coachId={isNew ? null : coachId}
+                    fetcher={fetcher}
                     previewName={previewName}
                     onPreviewChange={setPhotoPreview}
                   />

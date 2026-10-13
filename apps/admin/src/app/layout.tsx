@@ -1,8 +1,7 @@
-import { MOCK_HARNESS_COOKIE, parseMockPrincipal } from "@balanse/mock/session";
 import type { Metadata } from "next";
 import { Fraunces, Manrope } from "next/font/google";
-import { cookies } from "next/headers";
 import { Providers } from "@/modules/providers/Providers";
+import { getStaffSession } from "@/modules/session/current-staff";
 import "./globals.css";
 
 const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin"], display: "swap" });
@@ -15,12 +14,11 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   title: { default: "Balansé Admin", template: "%s · Balansé Admin" },
-  description: "Admin portal for Balansé Wellness Hub. Mocked this phase.",
+  description: "Admin portal for Balansé Wellness Hub.",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const store = await cookies();
-  const principal = parseMockPrincipal(store.get(MOCK_HARNESS_COOKIE)?.value);
+  const session = await getStaffSession();
   return (
     <html
       lang="en"
@@ -28,7 +26,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       suppressHydrationWarning
     >
       <body className="min-h-dvh">
-        <Providers initialPrincipal={principal}>{children}</Providers>
+        <Providers session={session}>{children}</Providers>
       </body>
     </html>
   );

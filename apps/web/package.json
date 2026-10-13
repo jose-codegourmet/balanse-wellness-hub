@@ -13,10 +13,10 @@
   },
   "dependencies": {
     "@balanse/api": "workspace:*",
+    "@balanse/api-client": "workspace:*",
     "@balanse/config": "workspace:*",
     "@balanse/db": "workspace:*",
     "@balanse/domain": "workspace:*",
-    "@balanse/mock": "workspace:*",
     "@balanse/ui": "workspace:*",
     "@base-ui/react": "^1.6.0",
     "@hookform/resolvers": "^5.4.2",
@@ -54,6 +54,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@balanse/mock": "workspace:*",
     "@chromatic-com/storybook": "^5.2.1",
     "@storybook/addon-a11y": "^10.5.0",
     "@storybook/addon-docs": "^10.5.0",

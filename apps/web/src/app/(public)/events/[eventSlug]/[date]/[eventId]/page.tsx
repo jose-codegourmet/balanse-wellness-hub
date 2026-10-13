@@ -1,3 +1,4 @@
+import { getPublicEvent, getPublicRoster } from "@balanse/api-client";
 import {
   buildPublicEventPath,
   formatSessionDate,
@@ -5,9 +6,10 @@ import {
   slugify,
   withShareParams,
 } from "@balanse/domain";
-import { getMockAdapter, MOCK_NOW_ISO } from "@balanse/mock";
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
+import { serverFetcher } from "@/lib/query/fetcher";
+import { getCustomerAccessToken } from "@/modules/session/current-customer";
 import {
   getPublicViewerContext,
   shareUrlFor,
@@ -23,7 +25,10 @@ type Props = {
 };
 
 async function load(eventId: string) {
-  return getMockAdapter().getPublicEventPage(decodeURIComponent(eventId));
+  return getPublicEvent(
+    serverFetcher(await getCustomerAccessToken()),
+    decodeURIComponent(eventId),
+  ).catch(() => null);
 }
 
 function pathFor(event: NonNullable<Awaited<ReturnType<typeof load>>>) {
@@ -69,7 +74,10 @@ export default async function Page({ params, searchParams }: Props) {
   }
 
   const context = await getPublicViewerContext(event.session.id);
-  const roster = await getMockAdapter().getPublicRoster(event.session.id, context.viewer);
+  const roster = await getPublicRoster(
+    serverFetcher(await getCustomerAccessToken()),
+    event.session.id,
+  ).catch(() => null);
   if (!roster) notFound();
 
   const cancelled = event.status === "CANCELLED";
@@ -96,7 +104,7 @@ export default async function Page({ params, searchParams }: Props) {
               fileSlug: `${slugify(event.title, "event")}-${date}`,
             }
       }
-      nowIso={MOCK_NOW_ISO}
+      nowIso={new Date().toISOString()}
     />
   );
 }

@@ -1,25 +1,36 @@
 "use client";
 
-import type { CustomerBooking } from "@balanse/domain";
-import { getMockAdapter } from "@balanse/mock";
+import type { CustomerBooking, PolicyDocumentVersion } from "@balanse/domain";
 import { Alert, AlertDescription, AlertTitle, Button, LocalizedSkeleton } from "@balanse/ui";
 import { CircleAlert, Hourglass, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  PolicyAcceptance,
+  usePolicyAcceptance,
+} from "@/components/balanse/policy-acceptance/PolicyAcceptance";
 import { BookingSummary } from "@/components/balanse/portal/BookingSummary";
 import "@/components/balanse/portal/portal-booking.css";
+import { useCreateCancellationRequest } from "@/lib/query/mutations/requests";
+import { useAcceptPolicies } from "@/lib/query/policies";
 import { notify } from "@/modules/notifications/notify";
 import { CancellationForm } from "./cancellation-form/CancellationForm";
 
 export function CancellationRequest({
   booking,
+  policies = [],
   forcedStatus,
 }: {
   booking: CustomerBooking;
+  /** Current versions of the policies admin attached to the cancellation form. */
+  policies?: PolicyDocumentVersion[];
   forcedStatus?: "submitting" | "success" | "failed";
 }) {
   const router = useRouter();
+  const request = useCreateCancellationRequest(booking.customerId, booking.id);
+  const acceptPolicies = useAcceptPolicies(booking.customerId);
+  const policyAcceptance = usePolicyAcceptance(policies);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "failed">(
     forcedStatus ?? "idle",
   );
@@ -99,24 +110,37 @@ export function CancellationRequest({
           ) : null}
 
           {status !== "success" ? (
-            <CancellationForm
-              backHref={`/portal/bookings/${booking.id}`}
-              submitting={false}
-              onSubmit={(reason) => {
-                setStatus("submitting");
-                void getMockAdapter()
-                  .createCancellationRequest(booking.id, reason || undefined)
-                  .then(() => {
-                    setStatus("success");
-                    notify.portal("cancellation.submitted");
-                    router.push(`/portal/bookings/${booking.id}`);
-                  })
-                  .catch(() => {
-                    setStatus("failed");
-                    notify.portal("cancellation.failed");
-                  });
-              }}
-            />
+            <>
+              <PolicyAcceptance {...policyAcceptance.props} title="Before you submit" />
+              <CancellationForm
+                backHref={`/portal/bookings/${booking.id}`}
+                submitting={false}
+                onSubmit={(reason) => {
+                  if (!policyAcceptance.check()) return;
+                  setStatus("submitting");
+                  void request
+                    .mutateAsync(reason || undefined)
+                    .then(() => {
+                      if (policies.length > 0) {
+                        return acceptPolicies.mutateAsync({
+                          form: "cancellation",
+                          policyVersionIds: policies.map((p) => p.id),
+                          bookingId: booking.id,
+                        });
+                      }
+                    })
+                    .then(() => {
+                      setStatus("success");
+                      notify.portal("cancellation.submitted");
+                      router.push(`/portal/bookings/${booking.id}`);
+                    })
+                    .catch(() => {
+                      setStatus("failed");
+                      notify.portal("cancellation.failed");
+                    });
+                }}
+              />
+            </>
           ) : (
             <Button nativeButton={false} render={<Link href={`/portal/bookings/${booking.id}`} />}>
               Return to booking

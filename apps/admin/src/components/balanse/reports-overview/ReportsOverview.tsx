@@ -1,9 +1,10 @@
 "use client";
 
+import { MAX_DATE_WINDOW_DAYS } from "@balanse/api-client";
 import { type AdminReports, formatPeso, formatRatioPercent, manilaYmd } from "@balanse/domain";
 import { DateRangePicker } from "@balanse/ui";
 import { DollarSignIcon, TrendingDownIcon, TrendingUpIcon, UsersIcon } from "lucide-react";
-import { useId, useMemo } from "react";
+import { useId, useMemo, useState } from "react";
 import { Badge } from "@/components/jabkit/badge";
 import { cn } from "@/components/jabkit/lib/cn";
 import type { ReportsOverviewProps } from "./ReportsOverview.meta";
@@ -73,6 +74,23 @@ export function ReportsOverview({
   const headingId = useId();
   const gradientId = useId();
   const rangeValue = from === ALL_DATES.from && to === ALL_DATES.to ? undefined : { from, to };
+  const [rangeError, setRangeError] = useState<string | null>(null);
+
+  /** Rejects a selection over `MAX_DATE_WINDOW_DAYS` instead of sending it to a server that would (WIRE-1803, #372). */
+  function handleRangeChange(next: { from: string; to: string } | undefined) {
+    if (!next) {
+      setRangeError(null);
+      onRangeChange(ALL_DATES);
+      return;
+    }
+    const days = (Date.parse(next.to) - Date.parse(next.from)) / (1000 * 60 * 60 * 24);
+    if (days > MAX_DATE_WINDOW_DAYS) {
+      setRangeError(`Choose a range of ${MAX_DATE_WINDOW_DAYS} days or fewer.`);
+      return;
+    }
+    setRangeError(null);
+    onRangeChange(next);
+  }
 
   const occupancy = occupancyFromReports(reports);
   const stats = [
@@ -163,13 +181,21 @@ export function ReportsOverview({
             Sales, occupancy, and class mix for the selected range.
           </p>
         </div>
-        <DateRangePicker
-          aria-label="Report date range"
-          placeholder="All dates"
-          className="w-full max-w-72 lg:w-72"
-          value={rangeValue}
-          onValueChange={(next) => onRangeChange(next ?? ALL_DATES)}
-        />
+        <div className="grid gap-1.5">
+          <DateRangePicker
+            aria-label="Report date range"
+            placeholder="All dates"
+            className="w-full max-w-72 lg:w-72"
+            value={rangeValue}
+            onValueChange={handleRangeChange}
+            aria-invalid={rangeError ? true : undefined}
+          />
+          {rangeError ? (
+            <p role="alert" className="text-xs text-destructive!">
+              {rangeError}
+            </p>
+          ) : null}
+        </div>
       </header>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-live="polite">

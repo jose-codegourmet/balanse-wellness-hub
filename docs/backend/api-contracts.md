@@ -1,6 +1,6 @@
 # API contract pack (BE-024)
 
-- Inventory: `packages/db/contracts/routes.ts` (BE-030…BE-043 plus BE-050–BE-058 and #292 role routes).
+- Inventory: `packages/db/contracts/routes.ts` (BE-030…BE-043 plus BE-050–BE-058, #292 role routes, and WIRE routes).
 - Artifact: `packages/db/contracts/openapi.json` (generated).
 - Shared TS types: `@balanse/domain` (`CursorPage`, `ValidationFailedBody`, `FIELD_CONSTRAINTS`, `MetricSeries`, `SignedUploadIntent`).
 - Regenerate: `pnpm --filter @balanse/db db:openapi`
@@ -20,11 +20,11 @@ Amendments:
 | BE-058 | [session-bundles.md](./session-bundles.md) |
 | #292 / BE-289 | [api-routes.md](./api-routes.md), [staff-roles.md](./staff-roles.md) |
 
-HTTP handlers are implemented in `@balanse/api` and mounted on `apps/web` `/api/*`. FE screens still do not call them (no WIRE-*). See [api-routes.md](./api-routes.md).
+HTTP handlers are implemented in `@balanse/api` and mounted on `apps/web` `/api/*`. Wired screens use `@balanse/api-client`. See [api-routes.md](./api-routes.md).
 
-## Future public share contracts (#343 / #345) — not implemented this phase
+## Public share contracts (#343 / #345)
 
-The database read surface exists (`app_public.*`, see [rls-policies.md](./rls-policies.md#public-read-functions-345)). These routes are **not** in `packages/db/contracts/routes.ts` and have no `@balanse/api` handler yet; screens stay on `MockDataAdapter`. Response shapes must match the #346 domain types in `@balanse/domain` (camelCase; the handler maps the snake_case function columns).
+The database read surface is `app_public.*` (see [rls-policies.md](./rls-policies.md#public-read-functions-345)). Responses match the #346 domain types in `@balanse/domain` (camelCase; handlers map snake_case function columns).
 
 | Route | Source | Response (sketch) |
 | --- | --- | --- |

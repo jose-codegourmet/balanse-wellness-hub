@@ -31,7 +31,7 @@ import Link from "next/link";
 import { cn } from "@/components/jabkit/lib/cn";
 import { canAccessAdminHref } from "@/lib/authorization/admin-access";
 import { adminClassChangeRequestsQuery, adminDashboardQuery } from "@/lib/query/queries";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { NAV_GROUPS, NAV_ICONS } from "../sidebar/sidebar-nav";
 import type { AdminNotificationHeaderProps } from "./AdminNotificationHeader.meta";
 
@@ -39,15 +39,15 @@ export function AdminNotificationHeader({
   pathname,
   compact = false,
 }: AdminNotificationHeaderProps) {
-  const { principal, actor } = useMockPrincipal();
+  const actor = useStaffActor();
   const canReadDashboard = hasAnyPermission(actor, DASHBOARD_READ_PERMISSIONS);
   const { data, isPending, isError, refetch } = useQuery({
-    ...adminDashboardQuery(principal),
+    ...adminDashboardQuery(actor),
     enabled: canReadDashboard,
   });
   const canReviewClassChanges = hasAnyPermission(actor, CLASS_CHANGE_REVIEW_PERMISSIONS);
   const classChangesQuery = useQuery({
-    ...adminClassChangeRequestsQuery(principal),
+    ...adminClassChangeRequestsQuery(actor),
     enabled: canReviewClassChanges,
   });
   const pendingClassChanges = canReviewClassChanges

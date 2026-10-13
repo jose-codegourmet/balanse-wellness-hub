@@ -8,7 +8,13 @@ import {
   permittedAdminNavItems,
   type StaffAuthorizationActor,
 } from "@balanse/domain";
-import type { MockPrincipal } from "@balanse/mock/session";
+
+/**
+ * Role discriminator shared with the real session (WIRE-0202, #357) and the
+ * Storybook `MockPrincipal` decorator — both have a `role` field of this
+ * shape, so either can be passed here without a fixture package import.
+ */
+export type AdminSessionPrincipal = { role: "guest" | "customer" | "admin" };
 
 export function adminPathname(href: string): string {
   const [path] = href.split("?");
@@ -58,7 +64,7 @@ export function canPerformAdminAction(
 
 export type AdminShellAccessKind = "ok" | "unauthenticated" | "forbidden" | "revoked" | "denied";
 
-export function classifyAdminPrincipal(principal: MockPrincipal): AdminShellAccessKind {
+export function classifyAdminPrincipal(principal: AdminSessionPrincipal): AdminShellAccessKind {
   if (principal.role === "guest") return "unauthenticated";
   if (principal.role === "customer") return "forbidden";
   return "ok";
@@ -66,7 +72,7 @@ export function classifyAdminPrincipal(principal: MockPrincipal): AdminShellAcce
 
 export function classifyStaffActor(
   actor: StaffAuthorizationActor | null | undefined,
-  principal: MockPrincipal,
+  principal: AdminSessionPrincipal,
 ): AdminShellAccessKind {
   const principalKind = classifyAdminPrincipal(principal);
   if (principalKind !== "ok") return principalKind;
@@ -78,21 +84,11 @@ export function classifyStaffActor(
 
 export function resolveAdminShellDestination(
   actor: StaffAuthorizationActor | null | undefined,
-  principal: MockPrincipal,
+  principal: AdminSessionPrincipal,
   fallback = "/login",
 ): string {
   if (principal.role === "guest") return "/login";
   if (principal.role === "customer") return "/dashboard";
   if (classifyStaffActor(actor, principal) === "revoked") return "/dashboard";
   return firstImplementedPermittedAdminRoute(actor, fallback) ?? fallback;
-}
-
-export function resolvePermittedReturnTo(
-  actor: StaffAuthorizationActor | null | undefined,
-  returnTo: string | null | undefined,
-  fallback: string,
-): string {
-  if (!returnTo) return fallback;
-  if (!returnTo.startsWith("/") || returnTo.startsWith("//")) return fallback;
-  return canAccessAdminHref(actor, returnTo) ? returnTo : fallback;
 }

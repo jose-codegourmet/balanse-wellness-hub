@@ -6,7 +6,15 @@ const meta = {
   title: "Admin/Screens/My profile",
   component: StaffProfilePage,
   tags: ["autodocs"],
-  parameters: { nextjs: { navigation: { pathname: "/my-profile" } } },
+  parameters: {
+    nextjs: { navigation: { pathname: "/my-profile" } },
+    docs: {
+      description: {
+        component:
+          "Self-service photo upload is available to every active staff member, including Coach/custom roles without staff.manage. JPG/PNG/WEBP up to 5 MB; saves immediately and refreshes navigation. Stories do not contact live storage.",
+      },
+    },
+  },
   decorators: [
     (Story) => (
       <AdminGuard>

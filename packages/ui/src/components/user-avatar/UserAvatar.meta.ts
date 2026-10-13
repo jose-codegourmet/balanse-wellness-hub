@@ -63,6 +63,6 @@ export type UserAvatarStackProps = {
 export const userAvatarMeta = {
   purpose: "Member avatar with photo or initials fallback, plus an overlapping stack.",
   whenToUse:
-    "Any customer identity: public roster, portal header/profile, onboarding, admin roster, customers, Coach Students.",
+    "Customer or staff identity: public roster, portal header/profile, onboarding, admin roster, customers, Coach Students, staff directory and admin account navigation. Staff uses its private profile avatar, not the public coach portrait.",
   whenNotToUse: "Coach photos (use the coach photo helpers). Never feed a last name to public UI.",
 } as const;

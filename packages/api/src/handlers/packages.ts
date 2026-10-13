@@ -338,11 +338,21 @@ export async function postAcquisitionPaymentProof(
     if (size !== undefined && size > PAYMENT_PROOF_MAX_BYTES) {
       throw new ApiError(400, "file_too_large", "Proof must be 5 MiB or smaller.");
     }
-    throw new ApiError(
-      400,
-      "object_key_required",
-      "Upload the proof first, then submit objectKey.",
-    );
+    const ext =
+      contentType === "image/png"
+        ? "png"
+        : contentType === "image/webp"
+          ? "webp"
+          : contentType === "image/heic"
+            ? "heic"
+            : "jpg";
+    const path = `package-acquisitions/${acquisition.id}/${crypto.randomUUID()}.${ext}`;
+    const upload = await deps.storage.createSignedUpload("payment-proofs", path, { contentType });
+    return ok({
+      upload,
+      maxBytes: PAYMENT_PROOF_MAX_BYTES,
+      allowedMimeTypes: [...PAYMENT_PROOF_MIME],
+    });
   }
   if (!acquisition.payment) {
     throw new ApiError(400, "payment_method_required", "Choose a payment method first.");

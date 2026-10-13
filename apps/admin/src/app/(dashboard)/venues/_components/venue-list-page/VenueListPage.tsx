@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import { type AdminVenue, venueKindLabel, venueOperationLabel } from "@balanse/domain";
 import { Badge, Button } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -12,19 +13,18 @@ import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/Admin
 import { adminNowIso } from "@/lib/clock";
 import { useUpsertAdminVenue } from "@/lib/query/mutations";
 import { adminSessionsQuery, adminVenuesQuery } from "@/lib/query/queries";
-import { AdminCan, useCanAdminAction } from "@/modules/authorization/useAdminAccess";
+import { AdminCan, useCanAdminAction, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import type { VenueListPageProps } from "./VenueListPage.meta";
 
 type VenueRow = AdminVenue & { upcomingCount: number };
 
 export function VenueListPage({ empty = false }: VenueListPageProps) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const canManage = useCanAdminAction("venues-manage");
-  const venuesQuery = useSuspenseQuery(adminVenuesQuery(principal));
-  const sessionsQuery = useSuspenseQuery(adminSessionsQuery(principal));
-  const upsert = useUpsertAdminVenue();
+  const venuesQuery = useSuspenseQuery(adminVenuesQuery(actor, apiFetchBrowser));
+  const sessionsQuery = useSuspenseQuery(adminSessionsQuery(actor, apiFetchBrowser));
+  const upsert = useUpsertAdminVenue(apiFetchBrowser);
   const nowIso = adminNowIso();
 
   const rows = useMemo<VenueRow[]>(() => {

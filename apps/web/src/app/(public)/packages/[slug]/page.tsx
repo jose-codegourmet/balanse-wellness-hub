@@ -1,7 +1,8 @@
-import { getMockAdapter } from "@balanse/mock";
+import { getPublicPackage } from "@balanse/api-client";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getCurrentCustomer } from "@/modules/session/current-customer";
+import { serverFetcher } from "@/lib/query/fetcher";
+import { getCurrentCustomer, getCustomerAccessToken } from "@/modules/session/current-customer";
 import { PackageDetailPage } from "../_components/package-detail-page/PackageDetailPage";
 
 export const metadata: Metadata = {
@@ -11,18 +12,11 @@ export const metadata: Metadata = {
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const adapter = getMockAdapter();
-  const bundle = await adapter.getPublicBundle(slug);
+  const bundle = await getPublicPackage(serverFetcher(await getCustomerAccessToken()), slug)
+    .then((result) => result.package)
+    .catch(() => null);
   if (!bundle) notFound();
   const profile = await getCurrentCustomer();
   const signedIn = Boolean(profile);
-  const policies = signedIn ? await adapter.getCustomerFormPolicies("package_request") : [];
-  return (
-    <PackageDetailPage
-      bundle={bundle}
-      signedIn={signedIn}
-      customerId={profile?.id}
-      policies={policies}
-    />
-  );
+  return <PackageDetailPage package={bundle} signedIn={signedIn} customerId={profile?.id} />;
 }

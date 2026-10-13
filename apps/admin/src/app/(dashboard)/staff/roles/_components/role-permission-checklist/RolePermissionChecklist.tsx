@@ -1,10 +1,9 @@
 "use client";
 
 import {
-  groupedPermissionRegistry,
-  isSensitivePermission,
   PERMISSION_CATEGORY_LABELS,
   type PermissionCategory,
+  type PermissionDefinition,
   type PermissionKey,
 } from "@balanse/domain";
 import { Button } from "@balanse/ui";
@@ -12,6 +11,7 @@ import type { FormFieldRenderProps } from "@/modules/admin/forms/admin-form/Admi
 import { CheckboxGroupBinding } from "@/modules/admin/forms/bindings";
 
 export type RolePermissionChecklistProps = {
+  permissions: readonly PermissionDefinition[];
   value: readonly PermissionKey[];
   onChange: (next: PermissionKey[]) => void;
   onBlur: () => void;
@@ -21,6 +21,7 @@ export type RolePermissionChecklistProps = {
 };
 
 export function RolePermissionChecklist({
+  permissions,
   value,
   onChange,
   onBlur,
@@ -28,11 +29,19 @@ export function RolePermissionChecklist({
   ref,
   disabled,
 }: RolePermissionChecklistProps) {
-  const grouped = groupedPermissionRegistry();
+  const grouped = permissions.reduce<Partial<Record<PermissionCategory, PermissionDefinition[]>>>(
+    (result, permission) => {
+      const category = result[permission.category] ?? [];
+      category.push(permission);
+      result[permission.category] = category;
+      return result;
+    },
+    {},
+  );
   const selected = new Set(value);
 
   function setGroup(category: PermissionCategory, checked: boolean) {
-    const keys = grouped[category].map((item) => item.key);
+    const keys = (grouped[category] ?? []).map((item) => item.key);
     const next = new Set(selected);
     for (const key of keys) {
       if (checked) next.add(key);
@@ -44,7 +53,7 @@ export function RolePermissionChecklist({
   return (
     <div className="grid gap-4 xl:grid-cols-2">
       {(Object.keys(grouped) as PermissionCategory[]).map((category) => {
-        const items = grouped[category];
+        const items = grouped[category] ?? [];
         const groupKeys = items.map((item) => item.key);
         const selectedInGroup = groupKeys.filter((key) => selected.has(key)).length;
         return (
@@ -90,7 +99,7 @@ export function RolePermissionChecklist({
               options={items.map((item) => ({
                 value: item.key,
                 label: item.label,
-                description: isSensitivePermission(item.key)
+                description: item.sensitive
                   ? `${item.description} Sensitive: this exposes privileged data.`
                   : item.description,
               }))}

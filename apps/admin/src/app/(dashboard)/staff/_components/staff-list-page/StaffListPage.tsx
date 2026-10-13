@@ -1,42 +1,76 @@
 "use client";
 
+import { createStaffInvite, createStaffPasswordReset } from "@balanse/api-client";
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
   ADMIN_ROLE_CAPABILITY_NOTE,
   type AdminStaff,
+  splitFullName,
   staffCapabilityLabel,
   staffCoachFacetLabel,
   staffStatusLabel,
 } from "@balanse/domain";
-import { Badge, Button, FeedbackState } from "@balanse/ui";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { Badge, Button, FeedbackState, UserAvatar } from "@balanse/ui";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
+import { Copy, RotateCcw } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
-import { CoachOption } from "@/components/balanse/coach/coach-option/CoachOption";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { useHasAnyPermission } from "@/lib/auth/use-staff-permissions";
-import { adminCoachesQuery, adminStaffQuery } from "@/lib/query/queries";
-import {
-  AdminCan,
-  useCanAdminAction,
-  useCanAdminRoute,
-} from "@/modules/authorization/useAdminAccess";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { adminStaffQuery } from "@/lib/query/queries";
+import { AdminCan, useCanAdminAction, useStaffActor } from "@/modules/authorization/useAdminAccess";
+import { notify } from "@/modules/notifications/notify";
+import { StaffInviteDialog } from "../staff-invite-dialog/StaffInviteDialog";
 
 export type StaffListPageProps = { empty?: boolean };
 
 export function StaffListPage({ empty }: StaffListPageProps) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
+  const inviting = useRef(false);
+  const [linkPending, setLinkPending] = useState(false);
+  const [invitation, setInvitation] = useState<{
+    staffName: string;
+    inviteUrl: string;
+    kind: "invite" | "reset";
+  } | null>(null);
   const canManageStaff = useCanAdminAction("staff-manage");
   const canOpenRoles = useHasAnyPermission(["roles.read", "roles.manage"]);
-  const query = useSuspenseQuery(adminStaffQuery(principal));
-  const canReadCoaches = useCanAdminRoute("/coaches");
-  const coachesQuery = useQuery({
-    ...adminCoachesQuery(principal),
-    enabled: canReadCoaches,
-  });
+  const query = useSuspenseQuery(adminStaffQuery(actor, apiFetchBrowser));
   const rows = empty ? [] : query.data;
+
+  const copyStaffLink = useCallback(async (row: AdminStaff, kind: "invite" | "reset") => {
+    if (inviting.current) return;
+    inviting.current = true;
+    setLinkPending(true);
+    const label = kind === "reset" ? "Password reset" : "Invite";
+    const toastId = notify.loading({ title: `Creating ${label.toLowerCase()} link…` });
+    try {
+      const inviteUrl =
+        kind === "reset"
+          ? (await createStaffPasswordReset(apiFetchBrowser, row.id)).resetUrl
+          : (await createStaffInvite(apiFetchBrowser, row.id)).inviteUrl;
+      try {
+        await navigator.clipboard.writeText(inviteUrl);
+        notify.success({
+          title: `${label} link copied`,
+          description: `Share it privately with ${row.name}. No email was sent.`,
+        });
+      } catch {
+        setInvitation({ staffName: row.name, inviteUrl, kind });
+      }
+    } catch (error) {
+      notify.error({
+        title: `Could not create ${label.toLowerCase()} link`,
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
+    } finally {
+      inviting.current = false;
+      setLinkPending(false);
+      notify.dismiss(toastId);
+    }
+  }, []);
 
   const columns = useMemo<ColumnDef<AdminStaff, unknown>[]>(
     () => [
@@ -45,12 +79,13 @@ export function StaffListPage({ empty }: StaffListPageProps) {
         header: "Name",
         meta: { primaryLink: (row) => `/staff/${row.id}`, mobile: { role: "title" } },
         cell: ({ row }) => {
-          const coach = row.original.coachId
-            ? coachesQuery.data?.find((item) => item.id === row.original.coachId)
-            : undefined;
           return (
             <span className="flex min-w-0 items-center gap-2">
-              {coach ? <CoachOption coach={coach} /> : null}
+              <UserAvatar
+                name={splitFullName(row.original.name)}
+                avatarUrl={row.original.avatarUrl}
+                seed={row.original.id}
+              />
               <span className="truncate">{row.original.name}</span>
             </span>
           );
@@ -106,8 +141,66 @@ export function StaffListPage({ empty }: StaffListPageProps) {
           </Link>
         ),
       },
+      ...(canManageStaff
+        ? [
+            {
+              id: "invite",
+              header: "Invite",
+              enableSorting: false,
+              enableHiding: false,
+              meta: { mobile: { role: "meta" } },
+              cell: ({ row }) =>
+                row.original.status === "active" ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={linkPending}
+                    title="Copy invite link to clipboard"
+                    aria-label={`Copy invite link to clipboard for ${row.original.name}`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void copyStaffLink(row.original, "invite");
+                    }}
+                  >
+                    <Copy aria-hidden />
+                    Copy link
+                  </Button>
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                ),
+            } satisfies ColumnDef<AdminStaff, unknown>,
+            {
+              id: "reset-password",
+              header: "Reset password",
+              enableSorting: false,
+              enableHiding: false,
+              meta: { mobile: { role: "meta" } },
+              cell: ({ row }) =>
+                row.original.status === "active" ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={linkPending}
+                    title="Copy password reset link. No email is sent."
+                    aria-label={`Copy password reset link to clipboard for ${row.original.name}`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void copyStaffLink(row.original, "reset");
+                    }}
+                  >
+                    <RotateCcw aria-hidden />
+                    Copy link
+                  </Button>
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                ),
+            } satisfies ColumnDef<AdminStaff, unknown>,
+          ]
+        : []),
     ],
-    [canManageStaff, coachesQuery.data],
+    [canManageStaff, copyStaffLink, linkPending],
   );
 
   return (
@@ -142,6 +235,9 @@ export function StaffListPage({ empty }: StaffListPageProps) {
           />
         </div>
       )}
+      {invitation ? (
+        <StaffInviteDialog {...invitation} onClose={() => setInvitation(null)} />
+      ) : null}
     </AdminPageShell>
   );
 }

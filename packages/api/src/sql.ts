@@ -7,7 +7,7 @@ export async function updateSessionCapacity(
   capacity: number,
 ): Promise<number> {
   const rows = await deps.prisma.$queryRawUnsafe<Array<{ v: number }>>(
-    `SELECT public.update_session_capacity($1, $2) AS v`,
+    `SELECT public.update_session_capacity($1::text, $2::integer) AS v`,
     sessionId,
     capacity,
   );
@@ -220,6 +220,7 @@ export async function reportSalesOverview(deps: ApiDeps, filters: ReportFilters)
 export async function reportClassPerformance(deps: ApiDeps, filters: ReportFilters) {
   return deps.prisma.$queryRawUnsafe<
     Array<{
+      classId: string;
       className: string;
       sessions: number;
       revenue: unknown;
@@ -238,7 +239,13 @@ export async function reportClassPerformance(deps: ApiDeps, filters: ReportFilte
 
 export async function reportCoachCosts(deps: ApiDeps, filters: ReportFilters) {
   return deps.prisma.$queryRawUnsafe<
-    Array<{ coachName: string; sessions: number; coachCost: unknown; relatedRevenue: unknown }>
+    Array<{
+      coachId: string;
+      coachName: string;
+      sessions: number;
+      coachCost: unknown;
+      relatedRevenue: unknown;
+    }>
   >(
     `SELECT * FROM public.report_coach_costs($1, $2, $3, $4, $5::session_status)`,
     filters.from,
@@ -252,6 +259,7 @@ export async function reportCoachCosts(deps: ApiDeps, filters: ReportFilters) {
 export async function reportSessionPerformance(deps: ApiDeps, filters: ReportFilters) {
   return deps.prisma.$queryRawUnsafe<
     Array<{
+      sessionId: string;
       startsAt: Date;
       className: string;
       capacity: number;
@@ -419,6 +427,10 @@ export async function assertLastSuperAdminSafe(
 export async function reportSessionDrilldown(deps: ApiDeps, sessionId: string) {
   return deps.prisma.$queryRawUnsafe<
     Array<{
+      sessionId: string;
+      className: string;
+      name: string | null;
+      startsAt: Date;
       capacity: number;
       confirmed: number;
       held: number;

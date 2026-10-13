@@ -51,12 +51,38 @@ enum CoachRateType {
   @@map("coach_rate_type")
 }
 
+/// WIRE-1701, #371
+enum PaymentAccountType {
+  GCASH
+  MAYA
+  QRPH
+
+  @@map("payment_account_type")
+}
+
 enum SessionStatus {
   DRAFT
   PUBLISHED
   CANCELLED
 
   @@map("session_status")
+}
+
+enum ClassChangeKind {
+  RESCHEDULE
+  SUBSTITUTE
+  CANCEL
+
+  @@map("class_change_kind")
+}
+
+enum ClassChangeStatus {
+  PENDING
+  APPROVED
+  DENIED
+  WITHDRAWN
+
+  @@map("class_change_status")
 }
 
 /// #319 — event publication layer. Distinct from SessionStatus.
@@ -133,6 +159,19 @@ enum PolicyDocumentKind {
   CANCELLATION_REFUND
 
   @@map("policy_document_kind")
+}
+
+/// WIRE-1601 — the customer surface on which a policy was required.
+enum CustomerPolicyForm {
+  SIGN_UP         @map("sign_up")
+  BOOKING         @map("booking")
+  PACKAGE_REQUEST @map("package_request")
+  PAYMENT_PROOF   @map("payment_proof")
+  RESCHEDULE      @map("reschedule")
+  CANCELLATION    @map("cancellation")
+  CONTACT         @map("contact")
+
+  @@map("customer_policy_form")
 }
 
 /// BE-058 — session-bundle / package catalogue. Internal; customer chrome says "Package".

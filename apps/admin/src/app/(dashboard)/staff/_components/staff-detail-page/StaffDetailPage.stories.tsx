@@ -10,6 +10,12 @@ const meta = {
   tags: ["autodocs"],
   args: { ...staffDetailPageDefaultValues },
   parameters: {
+    docs: {
+      description: {
+        component:
+          "Staff identity header with photo/initials and an Actions menu for copy-invite and copy-reset links. The private photo card saves independently; no emails are sent. Storybook never changes live accounts or storage.",
+      },
+    },
     staffFormSchema,
     staffFormDefaultValues,
   },

@@ -1,15 +1,13 @@
 import { customers, publicClasses } from "@balanse/mock";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { mockCustomerSelfServiceActions } from "../../../profile/_lib/mock-customer-self-service";
 import { OnboardingWizard } from "./OnboardingWizard";
 
 const ana = customers[0];
 const active = publicClasses.filter((gymClass) => gymClass.active);
 
 /**
- * `/portal/welcome`. Stories run the real step flow against the in-browser
- * mock store (`mockCustomerSelfServiceActions`); the route passes server
- * actions instead. Skip and the Done CTAs navigate away from the canvas.
+ * `/portal/welcome`. Saves use the browser mutation contract. Skip and the
+ * Done CTAs navigate away from the canvas.
  */
 const meta = {
   title: "Portal/Onboarding/Wizard",
@@ -23,7 +21,6 @@ const meta = {
     initialStep: "you",
     returnTo: "/portal",
     returnLabel: null,
-    actions: mockCustomerSelfServiceActions(ana.id),
   },
 } satisfies Meta<typeof OnboardingWizard>;
 

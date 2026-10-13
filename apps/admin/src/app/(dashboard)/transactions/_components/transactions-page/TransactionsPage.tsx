@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import { formatPeso, formatSessionDate, formatSessionTime } from "@balanse/domain";
 import { Badge, Button } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -15,7 +16,7 @@ import {
   adminBundleAcquisitionsQuery,
   adminCustomersQuery,
 } from "@/lib/query/queries";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 import {
   type TransactionRecord,
   transactionRecords,
@@ -106,11 +107,13 @@ const columns: ColumnDef<TransactionRecord, unknown>[] = [
 ];
 
 export function TransactionsPage({ empty = false }: TransactionsPageProps) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const [tab, setTab] = useTabParam("tab", tabs, "all");
-  const { data: bookings } = useSuspenseQuery(adminBookingsQuery(principal));
-  const { data: acquisitions } = useSuspenseQuery(adminBundleAcquisitionsQuery(principal));
-  const { data: customers } = useSuspenseQuery(adminCustomersQuery(principal));
+  const { data: bookings } = useSuspenseQuery(adminBookingsQuery(actor));
+  const { data: acquisitions } = useSuspenseQuery(
+    adminBundleAcquisitionsQuery(actor, apiFetchBrowser),
+  );
+  const { data: customers } = useSuspenseQuery(adminCustomersQuery(actor, apiFetchBrowser));
   const records = useMemo(
     () => (empty ? [] : transactionRecords(bookings, acquisitions, customers)),
     [bookings, acquisitions, customers, empty],

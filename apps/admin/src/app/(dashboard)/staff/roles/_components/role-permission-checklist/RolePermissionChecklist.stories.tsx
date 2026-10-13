@@ -1,4 +1,4 @@
-import { COACH_PERMISSION_KEYS } from "@balanse/domain";
+import { COACH_PERMISSION_KEYS, PERMISSION_REGISTRY } from "@balanse/domain";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { useState } from "react";
 import { RolePermissionChecklist } from "./RolePermissionChecklist";
@@ -14,6 +14,7 @@ type Story = StoryObj<typeof meta>;
 
 export const CoachDefaults: Story = {
   args: {
+    permissions: PERMISSION_REGISTRY,
     value: COACH_PERMISSION_KEYS,
     onChange: () => undefined,
     onBlur: () => undefined,

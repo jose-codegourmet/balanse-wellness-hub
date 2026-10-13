@@ -1,4 +1,5 @@
 "use client";
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import { classPageHref, classPreviewHref, classSlug, type PublicCoach } from "@balanse/domain";
 import { Button, buttonVariants, cn, FormPageSkeleton, Input } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
@@ -7,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ClassImagesInput } from "@/components/balanse/class-images-input/ClassImagesInput";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
+import { useUpsertAdminClass } from "@/lib/query/mutations";
+import { adminClassesQuery, adminCoachesQuery } from "@/lib/query/queries";
 import {
   AdminForm,
   FormActions,
@@ -27,17 +30,19 @@ import {
   classFormSchema,
 } from "@/modules/admin/forms/class/class-form.schema";
 import { useUnsavedChangesGuard } from "@/modules/admin/forms/useUnsavedChangesGuard";
+import { useCanAdminAction, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useClassCatalogue } from "../class-catalogue-provider/ClassCatalogueProvider";
-import { ClassDatabaseAccess } from "../class-database-access/ClassDatabaseAccess";
 import type { ClassFormPageProps } from "./ClassFormPage.schema";
 
-export function ClassFormPage({ classId }: ClassFormPageProps) {
+export function ClassFormPage({ classId, fetcher = apiFetchBrowser }: ClassFormPageProps) {
   const isNew = classId === "new";
-  const catalogue = useClassCatalogue();
-  const query = useQuery(catalogue.query);
+  const actor = useStaffActor();
+  const query = useQuery(adminClassesQuery(actor, fetcher));
+  const coachesQuery = useQuery(adminCoachesQuery(actor, apiFetchBrowser));
+  const upsert = useUpsertAdminClass(fetcher);
+  const canSave = useCanAdminAction("classes-manage");
   const router = useRouter();
-  const existing = query.data?.classes.find((row) => row.id === classId);
+  const existing = query.data?.find((row) => row.id === classId);
   if (query.isLoading)
     return (
       <AdminPageShell title="Class editor">
@@ -65,29 +70,20 @@ export function ClassFormPage({ classId }: ClassFormPageProps) {
         heroImage: existing.heroImage ?? "",
       }
     : classFormDefaultValues;
-  const canSave = query.data?.canSave ?? false;
   return (
     <AdminPageShell title={isNew ? "Create a class" : (existing?.name ?? "Edit class")}>
       <p className="mb-5 max-w-2xl text-sm text-muted-foreground">
         Shape the class page, choose its teaching team, and set the defaults for future sessions.
       </p>
-      <div className="mb-6">
-        <ClassDatabaseAccess
-          canSave={canSave}
-          connect={catalogue.connect}
-          disconnect={catalogue.disconnect}
-          onConnected={() => void query.refetch()}
-        />
-      </div>
       <AdminForm
         key={classId}
         id="class-editor"
         schema={classFormSchema}
         defaultValues={defaults}
         onSubmit={async (values) => {
-          if (!canSave) throw new Error("Sign in with a verified administrator account to save.");
+          if (!canSave) throw new Error("You don't have permission to manage classes.");
           const { pageMode, ...input } = values;
-          await catalogue.mutation.mutateAsync({
+          await upsert.mutateAsync({
             ...input,
             id: isNew ? undefined : classId,
             heroImage: values.heroImage || null,
@@ -101,7 +97,7 @@ export function ClassFormPage({ classId }: ClassFormPageProps) {
         <ClassFields
           classId={classId}
           isNew={isNew}
-          coaches={query.data?.coaches ?? []}
+          coaches={coachesQuery.data ?? []}
           canSave={canSave}
         />
       </AdminForm>

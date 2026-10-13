@@ -19,6 +19,8 @@ export function presentAdminVenue(row: Venue): AdminVenue {
     name: row.name,
     address: row.address,
     kind: row.kind,
+    openingHours: row.openingHours,
+    studioOwned: row.studioOwned ?? undefined,
     active: row.active,
     notes: row.notes,
   };
@@ -43,10 +45,20 @@ function readActive(body: Record<string, unknown>): boolean | undefined {
   return body.active;
 }
 
+/** Omitted leaves the field alone; `null` clears it back to "not set". */
+function readStudioOwned(body: Record<string, unknown>): boolean | null | undefined {
+  if (!("studioOwned" in body)) return undefined;
+  if (body.studioOwned === null) return null;
+  if (typeof body.studioOwned !== "boolean") {
+    throwFields(fieldError("studioOwned", "invalid_type", "studioOwned must be true or false."));
+  }
+  return body.studioOwned;
+}
+
 /** Omitted or null leaves the field alone; send "" to clear it. */
 function readText(
   body: Record<string, unknown>,
-  path: "address" | "notes",
+  path: "address" | "notes" | "openingHours",
   max: number,
 ): string | undefined {
   return optionalString(body, path, max)?.trim();
@@ -100,10 +112,14 @@ export async function postAdminVenue(deps: ApiDeps, req: Request): Promise<Respo
   const kind = readKind(body, true) as VenueKind;
   const address = readText(body, "address", LIMITS.address.max) ?? "";
   const notes = readText(body, "notes", LIMITS.notes.max) ?? "";
+  const openingHours = readText(body, "openingHours", LIMITS.openingHours.max) ?? "";
+  const studioOwned = readStudioOwned(body) ?? null;
   const active = readActive(body) ?? true;
   const created = await deps.prisma.$transaction(async (tx) => {
     await assertNameAvailable(tx, name);
-    return tx.venue.create({ data: { name, kind, address, notes, active } });
+    return tx.venue.create({
+      data: { name, kind, address, notes, openingHours, studioOwned, active },
+    });
   });
   await writeAudit(deps, {
     entityType: "venue",
@@ -122,6 +138,8 @@ export async function patchAdminVenue(deps: ApiDeps, req: Request, id: string): 
   const kind = readKind(body, false);
   const address = readText(body, "address", LIMITS.address.max);
   const notes = readText(body, "notes", LIMITS.notes.max);
+  const openingHours = readText(body, "openingHours", LIMITS.openingHours.max);
+  const studioOwned = readStudioOwned(body);
   const active = readActive(body);
   const updated = await deps.prisma.$transaction(async (tx) => {
     const existing = await tx.venue.findUnique({ where: { id }, select: { id: true } });
@@ -134,6 +152,8 @@ export async function patchAdminVenue(deps: ApiDeps, req: Request, id: string): 
         ...(kind !== undefined ? { kind } : {}),
         ...(address !== undefined ? { address } : {}),
         ...(notes !== undefined ? { notes } : {}),
+        ...(openingHours !== undefined ? { openingHours } : {}),
+        ...(studioOwned !== undefined ? { studioOwned } : {}),
         ...(active !== undefined ? { active } : {}),
       },
     });

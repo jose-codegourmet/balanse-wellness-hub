@@ -1,6 +1,5 @@
 import { customers, publicClasses } from "@balanse/mock";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { mockCustomerSelfServiceActions } from "../../../_lib/mock-customer-self-service";
 import { AboutYouSection } from "./AboutYouSection";
 
 const ana = customers[0];
@@ -16,7 +15,6 @@ const meta = {
     answers: null,
     classes: active,
     referralChannel: null,
-    actions: mockCustomerSelfServiceActions(ana.id),
   },
 } satisfies Meta<typeof AboutYouSection>;
 
@@ -29,7 +27,6 @@ export const NotStarted: Story = {};
 export const Completed: Story = {
   args: {
     profile: ben,
-    actions: mockCustomerSelfServiceActions(ben.id),
     answers: {
       goals: ["STRENGTH", "COMMUNITY"],
       goalsOther: "",

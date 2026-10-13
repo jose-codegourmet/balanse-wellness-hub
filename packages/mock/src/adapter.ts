@@ -16,7 +16,6 @@ import type {
   AdminVenue,
   BookingStatus,
   BundleAcquisition,
-  BundleAuditEvent,
   BundleCreditMetrics,
   BundleDefinition,
   BundleRedemption,
@@ -57,7 +56,6 @@ import type {
   ScheduleGenerationResult,
   SessionReportDrilldown,
   SessionStatus,
-  ShareParams,
   SubstituteCoachOption,
   VenueKind,
 } from "@balanse/domain";
@@ -77,7 +75,7 @@ export type AdminRequestQueueQuery = {
 
 /**
  * Method names mirror §4.3 API route inventory so WIRE-001 is a mechanical swap.
- * Screens must import this interface (or `getMockAdapter()`), never fixture files.
+ * Storybook fetchers and stories use this interface; application screens use the API client.
  */
 export type MockDataAdapter = {
   getPublicSessions: (query?: { from?: string; to?: string }) => Promise<PublicSession[]>;
@@ -102,12 +100,6 @@ export type MockDataAdapter = {
   ) => Promise<PublicRoster | null>;
 
   getMe: (customerId: string) => Promise<CustomerProfile | null>;
-  /**
-   * Registers a customer authenticated outside the mock (Supabase Auth) so the
-   * still-mocked customer features (bookings, onboarding answers, avatar) can
-   * key off the real user id. Returns the stored row; an existing row wins.
-   */
-  ensureCustomer: (profile: CustomerProfile) => Promise<CustomerProfile>;
   patchMe: (customerId: string, patch: CustomerProfilePatch) => Promise<CustomerProfile>;
   /** #343 — data URL (JPG/PNG/WEBP ≤ 5 MB) from the cropper, or null to remove. */
   setMyAvatar: (customerId: string, avatar: { dataUrl: string } | null) => Promise<CustomerProfile>;
@@ -118,23 +110,10 @@ export type MockDataAdapter = {
   ) => Promise<CustomerOnboardingAnswers>;
   completeOnboarding: (customerId: string) => Promise<CustomerProfile>;
   skipOnboarding: (customerId: string) => Promise<CustomerProfile>;
-  /** Referral channel recorded at sign-up (for the onboarding heard-from prefill). */
-  getMyReferralChannel: (
-    customerId: string,
-  ) => Promise<import("@balanse/domain").ReferralChannel | null>;
   getMePolicyAcceptances: (customerId: string) => Promise<PolicyAcceptance[]>;
   /** Current versions of the policies admin attached to a customer form. */
   getCustomerFormPolicies: (form: CustomerPolicyForm) => Promise<PolicyDocumentVersion[]>;
   acceptPolicies: (customerId: string, acceptances: PolicyAcceptance[]) => Promise<void>;
-  createCustomer: (input: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    contactNumber: string;
-    authMethod?: "email" | "google";
-    /** Share attribution from the `balanse_share_attr` cookie. Unknown codes are ignored. */
-    attribution?: ShareParams;
-  }) => Promise<CustomerProfile>;
 
   getMyEntitlements: (customerId: string) => Promise<CustomerEntitlement[]>;
   getMyEntitlement: (
@@ -306,7 +285,6 @@ export type MockDataAdapter = {
   }>;
   checkIn: (bookingId: string) => Promise<CustomerBooking>;
   markNoShow: (bookingId: string) => Promise<CustomerBooking>;
-  getAdminReportsSales: () => Promise<{ grossPhp: number; refundsPhp: number; netPhp: number }>;
   getAdminReports: (filters: AdminReportFilters) => Promise<AdminReports>;
   getAdminSessionReport: (sessionId: string) => Promise<SessionReportDrilldown | null>;
   getAdminStaff: () => Promise<AdminStaff[]>;
@@ -381,7 +359,6 @@ export type MockDataAdapter = {
     search?: string;
   }) => Promise<AdminEvent[]>;
   getAdminEvent: (id: string) => Promise<AdminEvent | null>;
-  getAdminEventForSession: (sessionId: string) => Promise<AdminEvent | null>;
   createAdminEvent: (input: {
     sessionId: string;
     title: string;
@@ -454,14 +431,6 @@ export type MockDataAdapter = {
     reason: string,
     actorId?: string,
   ) => Promise<BundleAcquisition>;
-  getAdminCustomerEntitlements: (customerId: string) => Promise<CustomerEntitlement[]>;
-  getBundleAudit: (query?: {
-    entitlementId?: string;
-    customerId?: string;
-    bundleId?: string;
-  }) => Promise<BundleAuditEvent[]>;
-  expireHeldBooking: (bookingId: string) => Promise<CustomerBooking>;
-  promoteWaitlistedBooking: (bookingId: string) => Promise<CustomerBooking>;
 };
 
 export type MockRuntimeOptions = {

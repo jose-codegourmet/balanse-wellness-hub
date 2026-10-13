@@ -1,6 +1,7 @@
 import { type PrismaClient, prisma } from "@balanse/db";
 import type { PermissionKey, StaffAuthorizationActor, StaffMemberStatus } from "@balanse/domain";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { ApiError } from "./errors";
 
 export type AuthMethod = "google" | "email";
 
@@ -48,6 +49,7 @@ export function staffAuthorizationOf(actor: AdminApiActor): StaffAuthorizationAc
 }
 
 export type StoragePort = {
+  getObjectInfo?: (bucket: string, path: string) => Promise<{ size: number; contentType: string }>;
   createSignedUpload: (
     bucket: string,
     path: string,
@@ -56,7 +58,12 @@ export type StoragePort = {
   createSignedUrl: (bucket: string, path: string, expiresIn: number) => Promise<string>;
   remove: (bucket: string, paths: string[]) => Promise<void>;
   publicUrl: (bucket: string, path: string) => string;
-  inviteUser?: (input: { email: string; name: string }) => Promise<{ userId: string } | null>;
+  generateStaffInvite?: (input: {
+    email: string;
+    name: string;
+    userId?: string;
+  }) => Promise<{ userId: string; inviteUrl: string } | null>;
+  generateStaffPasswordReset?: (input: { userId: string }) => Promise<{ resetUrl: string }>;
 };
 
 export type ApiDeps = {
@@ -79,7 +86,10 @@ function serviceClient(): SupabaseClient | null {
 
 function publishableClient(): SupabaseClient | null {
   const url = supabaseUrl();
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
+  const key =
+    process.env.SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.SUPABASE_ANON_KEY;
   if (!url || !key) return null;
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
@@ -92,8 +102,48 @@ function authMethodFromUser(user: {
   return provider === "google" ? "google" : "email";
 }
 
+function staffPasswordSetupUrl(): URL {
+  const configuredOrigin =
+    process.env.STAFF_INVITE_ORIGIN ??
+    (process.env.NODE_ENV !== "production" ? "http://localhost:9001" : undefined);
+  try {
+    if (!configuredOrigin) throw new Error("missing origin");
+    const origin = new URL(configuredOrigin);
+    if (
+      origin.username ||
+      origin.password ||
+      origin.pathname !== "/" ||
+      origin.search ||
+      origin.hash ||
+      !["http:", "https:"].includes(origin.protocol) ||
+      (process.env.NODE_ENV === "production" && origin.protocol !== "https:")
+    ) {
+      throw new Error("invalid origin");
+    }
+    return new URL("/auth/set-password", origin);
+  } catch {
+    throw new ApiError(
+      503,
+      "invite_not_configured",
+      "Set STAFF_INVITE_ORIGIN to the admin portal origin (HTTPS in production).",
+    );
+  }
+}
+
 export function createDefaultStorage(): StoragePort {
   return {
+    async getObjectInfo(bucket, path) {
+      const client = serviceClient();
+      if (!client)
+        throw new ApiError(503, "storage_not_configured", "Photo uploads are not configured.");
+      const { data, error } = await client.storage.from(bucket).info(path);
+      if (error || !data)
+        throw new ApiError(400, "upload_missing", "Upload the photo before saving it.");
+      return {
+        size: data.size ?? data.metadata?.size ?? 0,
+        contentType: data.contentType ?? data.metadata?.mimetype ?? "",
+      };
+    },
     async createSignedUpload(bucket, path, options) {
       const client = serviceClient() ?? publishableClient();
       if (!client) {
@@ -127,14 +177,95 @@ export function createDefaultStorage(): StoragePort {
       const url = supabaseUrl() ?? "https://xydundrayuusqizssgby.supabase.co";
       return `${url}/storage/v1/object/public/${bucket}/${path}`;
     },
-    async inviteUser(input) {
+    async generateStaffInvite(input) {
       const client = serviceClient();
-      if (!client) return null;
-      const { data, error } = await client.auth.admin.inviteUserByEmail(input.email, {
-        data: { full_name: input.name },
+      if (!client) {
+        throw new ApiError(
+          503,
+          "invite_not_configured",
+          "Configure SUPABASE_SERVICE_ROLE_KEY on the server to create staff invite links.",
+        );
+      }
+      const inviteUrl = staffPasswordSetupUrl();
+      let email = input.email;
+      if (input.userId) {
+        const { data, error } = await client.auth.admin.getUserById(input.userId);
+        if (error || !data.user?.email) {
+          throw new ApiError(
+            400,
+            "auth_user_missing",
+            "The staff Auth account could not be found.",
+          );
+        }
+        // Never turn the invite action into password recovery for an existing account.
+        if (data.user.email_confirmed_at || data.user.last_sign_in_at) return null;
+        email = data.user.email;
+      }
+      // generateLink provisions the Auth user, but does not deliver any email.
+      const { data, error } = await client.auth.admin.generateLink({
+        type: "invite",
+        email,
+        options: { data: { full_name: input.name }, redirectTo: inviteUrl.href },
       });
-      if (error || !data.user) return null;
-      return { userId: data.user.id };
+      if (error || !data.user || !data.properties?.hashed_token) {
+        throw new ApiError(
+          400,
+          "invite_failed",
+          "Could not generate an invitation. Check the Supabase Auth account and try again.",
+        );
+      }
+      if (input.userId && data.user.id !== input.userId) {
+        throw new ApiError(
+          409,
+          "invite_user_mismatch",
+          "The invitation does not match this staff account.",
+        );
+      }
+      // A fragment stays out of HTTP access logs and referrers. The password form
+      // exchanges it only on submission, so link previews cannot consume it.
+      inviteUrl.hash = new URLSearchParams({ token_hash: data.properties.hashed_token }).toString();
+      return { userId: data.user.id, inviteUrl: inviteUrl.href };
+    },
+    async generateStaffPasswordReset({ userId }) {
+      const client = serviceClient();
+      if (!client) {
+        throw new ApiError(
+          503,
+          "reset_not_configured",
+          "Configure SUPABASE_SERVICE_ROLE_KEY on the server to create password reset links.",
+        );
+      }
+      const resetUrl = staffPasswordSetupUrl();
+      const { data: account, error: accountError } = await client.auth.admin.getUserById(userId);
+      if (accountError || !account.user?.email) {
+        throw new ApiError(400, "auth_user_missing", "The staff Auth account could not be found.");
+      }
+      // Use the verified Auth email, never an editable staff contact email.
+      // generateLink does not deliver mail or change the existing password.
+      const { data, error } = await client.auth.admin.generateLink({
+        type: "recovery",
+        email: account.user.email,
+        options: { redirectTo: resetUrl.href },
+      });
+      if (error || !data.user || !data.properties?.hashed_token) {
+        throw new ApiError(
+          400,
+          "reset_link_failed",
+          "Could not create a password reset link. Please try again.",
+        );
+      }
+      if (data.user.id !== userId) {
+        throw new ApiError(
+          409,
+          "reset_user_mismatch",
+          "The reset link does not match this staff account.",
+        );
+      }
+      resetUrl.hash = new URLSearchParams({
+        token_hash: data.properties.hashed_token,
+        type: "recovery",
+      }).toString();
+      return { resetUrl: resetUrl.href };
     },
   };
 }

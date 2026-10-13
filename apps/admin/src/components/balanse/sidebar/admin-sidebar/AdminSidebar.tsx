@@ -6,8 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useId } from "react";
 import { cn } from "@/components/jabkit/lib/cn";
 import { adminDashboardQuery } from "@/lib/query/queries";
-import { usePermittedAdminNavItems } from "@/modules/authorization/useAdminAccess";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { usePermittedAdminNavItems, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { AdminSidebarFooter } from "../admin-sidebar-footer/AdminSidebarFooter";
 import { AdminSidebarMobile } from "../admin-sidebar-mobile/AdminSidebarMobile";
 import { AdminSidebarNav } from "../admin-sidebar-nav/AdminSidebarNav";
@@ -30,10 +29,10 @@ export function AdminSidebar({
   ...props
 }: AdminSidebarProps) {
   const navId = useId();
-  const { principal, actor } = useMockPrincipal();
+  const actor = useStaffActor();
   const navItems = usePermittedAdminNavItems();
   const dashboardQuery = useQuery({
-    ...adminDashboardQuery(principal),
+    ...adminDashboardQuery(actor),
     enabled: snapshotProp === undefined && hasAnyPermission(actor, DASHBOARD_READ_PERMISSIONS),
   });
 

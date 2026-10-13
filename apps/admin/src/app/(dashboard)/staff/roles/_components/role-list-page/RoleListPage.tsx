@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import { type AdminStaffRole, roleLabel } from "@balanse/domain";
 import { Badge, Button, FeedbackState, TablePageSkeleton } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
@@ -11,7 +12,7 @@ import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { useHasPermission } from "@/lib/auth/use-staff-permissions";
 import { adminStaffRolesQuery } from "@/lib/query/queries";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 
 export type RoleListPageProps = {
   empty?: boolean;
@@ -23,8 +24,8 @@ export function RoleListPage({ empty, loading, error }: RoleListPageProps) {
   const router = useRouter();
   const canRead = useHasPermission("roles.read");
   const canManage = useHasPermission("roles.manage");
-  const { principal } = useMockPrincipal();
-  const query = useQuery(adminStaffRolesQuery(principal));
+  const actor = useStaffActor();
+  const query = useQuery(adminStaffRolesQuery(actor, apiFetchBrowser));
 
   const rows = empty ? [] : (query.data ?? []);
 

@@ -12,6 +12,14 @@ import { ArrowLeft, ArrowRight, LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AvatarUploader } from "@/components/balanse/avatar-uploader/AvatarUploader";
+import {
+  useCompleteMyOnboarding,
+  useDeleteMyAvatar,
+  usePatchMe,
+  useSaveMyAvatar,
+  useSaveMyOnboarding,
+  useSkipMyOnboarding,
+} from "@/lib/query/mutations/customers";
 import { notify } from "@/modules/notifications/notify";
 import type { OnboardingWizardProps } from "./OnboardingWizard.meta";
 import { OnboardingStepDone } from "./onboarding-step-done/OnboardingStepDone";
@@ -37,13 +45,18 @@ export function OnboardingWizard({
   initialStep,
   returnTo,
   returnLabel,
-  actions,
 }: OnboardingWizardProps) {
   const router = useRouter();
   const [step, setStep] = useState<OnboardingStepId>(initialStep);
   const [profile, setProfile] = useState(initialProfile);
   const [busy, setBusy] = useState<"saving" | "skipping" | null>(null);
   const [errors, setErrors] = useState<Partial<Record<OnboardingStepId, string>>>({});
+  const saveOnboarding = useSaveMyOnboarding(profile.id);
+  const completeOnboarding = useCompleteMyOnboarding(profile.id);
+  const skipOnboarding = useSkipMyOnboarding(profile.id);
+  const patchProfile = usePatchMe(profile.id);
+  const saveAvatar = useSaveMyAvatar(profile.id);
+  const deleteAvatar = useDeleteMyAvatar(profile.id);
   const youHeading = useRef<HTMLHeadingElement>(null);
   const goalsHeading = useRef<HTMLHeadingElement>(null);
   const interestsHeading = useRef<HTMLHeadingElement>(null);
@@ -108,10 +121,14 @@ export function OnboardingWizard({
 
   async function skip() {
     setBusy("skipping");
-    const result = await actions.skip();
-    if (!result.ok) {
+    try {
+      await skipOnboarding.mutateAsync();
+    } catch (error) {
       setBusy(null);
-      notify.error({ title: "Couldn't skip right now", description: result.error });
+      notify.error({
+        title: "Couldn't skip right now",
+        description: error instanceof Error ? error.message : "Something went wrong. Try again.",
+      });
       return;
     }
     router.push(returnTo);
@@ -207,31 +224,46 @@ export function OnboardingWizard({
                 avatarUrl={profile.avatarUrl}
                 seed={profile.id}
                 onSave={async (dataUrl) => {
-                  const result = await actions.setAvatar({ dataUrl });
-                  if (!result.ok) return result.error;
-                  setProfile(result.value);
-                  router.refresh();
-                  return null;
+                  try {
+                    setProfile(await saveAvatar.mutateAsync(dataUrl));
+                    router.refresh();
+                    return null;
+                  } catch (error) {
+                    return error instanceof Error ? error.message : "We couldn't save that photo.";
+                  }
                 }}
                 onRemove={async () => {
-                  const result = await actions.setAvatar(null);
-                  if (!result.ok) return result.error;
-                  setProfile(result.value);
-                  router.refresh();
-                  return null;
+                  try {
+                    setProfile(await deleteAvatar.mutateAsync());
+                    router.refresh();
+                    return null;
+                  } catch (error) {
+                    return error instanceof Error
+                      ? error.message
+                      : "We couldn't remove that photo.";
+                  }
                 }}
               />
             }
             footer={footer("you")}
             onSubmit={async (values) => {
               const ok = await save("you", async () => {
-                const result = await actions.patchProfile({
-                  firstName: values.firstName,
-                  lastName: values.lastName,
-                  nickname: values.nickname || null,
-                });
-                if (result.ok) setProfile(result.value);
-                return result;
+                try {
+                  setProfile(
+                    await patchProfile.mutateAsync({
+                      firstName: values.firstName,
+                      lastName: values.lastName,
+                      nickname: values.nickname || null,
+                    }),
+                  );
+                  return { ok: true };
+                } catch (error) {
+                  return {
+                    ok: false,
+                    error:
+                      error instanceof Error ? error.message : "Something went wrong. Try again.",
+                  };
+                }
               });
               if (ok) {
                 router.refresh();
@@ -247,7 +279,21 @@ export function OnboardingWizard({
             formError={errors.goals}
             footer={footer("goals")}
             onSubmit={async (values) => {
-              if (await save("goals", () => actions.saveAnswers(values))) next();
+              if (
+                await save("goals", async () => {
+                  try {
+                    await saveOnboarding.mutateAsync(values);
+                    return { ok: true };
+                  } catch (error) {
+                    return {
+                      ok: false,
+                      error:
+                        error instanceof Error ? error.message : "Something went wrong. Try again.",
+                    };
+                  }
+                })
+              )
+                next();
             }}
           />
         </div>
@@ -259,7 +305,21 @@ export function OnboardingWizard({
             formError={errors.interests}
             footer={footer("interests")}
             onSubmit={async (values) => {
-              if (await save("interests", () => actions.saveAnswers(values))) next();
+              if (
+                await save("interests", async () => {
+                  try {
+                    await saveOnboarding.mutateAsync(values);
+                    return { ok: true };
+                  } catch (error) {
+                    return {
+                      ok: false,
+                      error:
+                        error instanceof Error ? error.message : "Something went wrong. Try again.",
+                    };
+                  }
+                })
+              )
+                next();
             }}
           />
         </div>
@@ -272,11 +332,17 @@ export function OnboardingWizard({
             footer={footer("heard-from")}
             onSubmit={async (values) => {
               const ok = await save("heard-from", async () => {
-                const saved = await actions.saveAnswers(values);
-                if (!saved.ok) return saved;
-                const completed = await actions.complete();
-                if (completed.ok) setProfile(completed.value);
-                return completed;
+                try {
+                  await saveOnboarding.mutateAsync(values);
+                  await completeOnboarding.mutateAsync();
+                  return { ok: true };
+                } catch (error) {
+                  return {
+                    ok: false,
+                    error:
+                      error instanceof Error ? error.message : "Something went wrong. Try again.",
+                  };
+                }
               });
               if (ok) goTo("done");
             }}

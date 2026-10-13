@@ -1,7 +1,8 @@
-import { getMockAdapter } from "@balanse/mock";
+import { getMyPackage, listEntitlementRedemptions } from "@balanse/api-client";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getCurrentCustomer } from "@/modules/session/current-customer";
+import { serverFetcher } from "@/lib/query/fetcher";
+import { getCurrentCustomer, getCustomerAccessToken } from "@/modules/session/current-customer";
 import { EntitlementDetailPage } from "../_components/entitlement-detail-page/EntitlementDetailPage";
 
 export const metadata: Metadata = {
@@ -13,10 +14,14 @@ export default async function Page({ params }: { params: Promise<{ entitlementId
   const { entitlementId } = await params;
   const profile = await getCurrentCustomer();
   if (!profile) notFound();
-  const adapter = getMockAdapter();
+  const fetcher = serverFetcher(await getCustomerAccessToken());
   const [entitlement, redemptions] = await Promise.all([
-    adapter.getMyEntitlement(profile.id, entitlementId),
-    adapter.getEntitlementRedemptions(profile.id, entitlementId),
+    getMyPackage(fetcher, entitlementId)
+      .then((result) => result.entitlement)
+      .catch(() => null),
+    listEntitlementRedemptions(fetcher, entitlementId)
+      .then((result) => result.items)
+      .catch(() => []),
   ]);
   if (!entitlement) notFound();
   return <EntitlementDetailPage entitlement={entitlement} redemptions={redemptions} />;

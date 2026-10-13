@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
   type AdminSession,
   addCalendarDays,
@@ -25,8 +26,8 @@ import {
   useAdminFormContext,
 } from "@/modules/admin/forms/admin-form/AdminForm";
 import { BooleanBinding, DateBinding } from "@/modules/admin/forms/bindings";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { duplicateScheduleFormDefaultValues } from "./DuplicateScheduleForm.defaults";
 import type { DuplicateScheduleFormProps } from "./DuplicateScheduleForm.meta";
 import {
@@ -37,8 +38,8 @@ import {
 const FORM_ID = "duplicate-schedule-form";
 
 export function DuplicateScheduleForm({ sourceStart, sourceEnd }: DuplicateScheduleFormProps) {
-  const { principal } = useMockPrincipal();
-  const sessions = useSuspenseQuery(adminSessionsQuery(principal)).data;
+  const actor = useStaffActor();
+  const sessions = useSuspenseQuery(adminSessionsQuery(actor, apiFetchBrowser)).data;
   const duplicate = useDuplicateAdminSchedule();
   const router = useRouter();
   const defaults = duplicateScheduleFormDefaultValues(adminTodayYmd());

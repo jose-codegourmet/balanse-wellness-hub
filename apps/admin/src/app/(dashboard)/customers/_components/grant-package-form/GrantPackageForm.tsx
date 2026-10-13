@@ -1,6 +1,6 @@
 "use client";
 
-import type { BundleDefinition } from "@balanse/domain";
+import type { AdminBundle } from "@balanse/domain";
 import { Button } from "@balanse/ui";
 import { useGrantCustomerBundle } from "@/lib/query/mutations";
 import { AdminForm, FormField } from "@/modules/admin/forms/admin-form/AdminForm";
@@ -14,7 +14,7 @@ export function GrantPackageForm({
   bundles,
 }: {
   customerId: string;
-  bundles: BundleDefinition[];
+  bundles: AdminBundle[];
 }) {
   const grant = useGrantCustomerBundle();
   const published = bundles.filter((row) => row.status === "PUBLISHED");
@@ -30,8 +30,9 @@ export function GrantPackageForm({
           await grant.mutateAsync({
             customerId,
             bundleId: values.bundleId,
-            note: values.note,
+            adminNote: values.note,
             overrideLimit: values.overrideLimit,
+            overrideReason: values.overrideLimit ? values.note : undefined,
           });
           notify.admin("bundle.granted");
         } catch {
@@ -45,7 +46,7 @@ export function GrantPackageForm({
             {...field}
             options={published.map((row) => ({
               value: row.id,
-              label: `${row.name} · ${row.sessionCredits} sessions`,
+              label: `${row.name} · ${row.sessionCreditCount} sessions`,
             }))}
           />
         )}

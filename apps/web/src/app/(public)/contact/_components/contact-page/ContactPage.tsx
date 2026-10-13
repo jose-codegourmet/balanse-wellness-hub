@@ -5,33 +5,42 @@ import { BalanseHero } from "@/components/balanse/marketing/BalanseHero";
 import { ContactForm } from "./contact-form/ContactForm";
 import "./contact-page.css";
 
-const DIRECT_CHANNELS = [
-  {
-    id: "phone",
-    label: "Phone",
-    icon: Phone,
-    value: CONTACT_DETAILS.phone,
-    href: `tel:${CONTACT_DETAILS.phone}`,
-    note: "Studio questions during opening hours.",
-  },
-  {
-    id: "email",
-    label: "Email",
-    icon: Mail,
-    value: CONTACT_DETAILS.email,
-    href: `mailto:${CONTACT_DETAILS.email}`,
-    note: "Workshops, partnerships, and anything longer.",
-  },
-] as const;
+type ContactDetails = { phone: string; email: string; address: string };
 
 /**
  * Contact (FE-PUB-007). The content contract is fixed by
  * `docs/screen-specs/public/03-contact.md`: channels, location, socials,
  * walk-ins, then the optional form. The guardrail — these channels answer
  * questions and never take a reservation — is repeated at every block on
- * purpose, because it is the whole point of the page.
+ * purpose, because it is the whole point of the page. Phone/email/address
+ * come from admin settings (WIRE-1606, #370); the map link and socials have
+ * no admin-editable counterpart yet, so they stay on `CONTACT_DETAILS`.
  */
-export function ContactPage({ policies = [] }: { policies?: PolicyDocumentVersion[] } = {}) {
+export function ContactPage({
+  policies = [],
+  contact = CONTACT_DETAILS,
+}: {
+  policies?: PolicyDocumentVersion[];
+  contact?: ContactDetails;
+} = {}) {
+  const directChannels = [
+    {
+      id: "phone",
+      label: "Phone",
+      icon: Phone,
+      value: contact.phone,
+      href: `tel:${contact.phone}`,
+      note: "Studio questions during opening hours.",
+    },
+    {
+      id: "email",
+      label: "Email",
+      icon: Mail,
+      value: contact.email,
+      href: `mailto:${contact.email}`,
+      note: "Workshops, partnerships, and anything longer.",
+    },
+  ] as const;
   return (
     <article>
       <BalanseHero
@@ -62,7 +71,7 @@ export function ContactPage({ policies = [] }: { policies?: PolicyDocumentVersio
           </ScrollReveal>
           <div className="contact-section-body">
             <ul className="contact-grid">
-              {DIRECT_CHANNELS.map((channel, index) => {
+              {directChannels.map((channel, index) => {
                 const Icon = channel.icon;
                 return (
                   <li key={channel.id}>
@@ -84,7 +93,7 @@ export function ContactPage({ policies = [] }: { policies?: PolicyDocumentVersio
                     <span className="contact-card-label">
                       <MapPin size={14} strokeWidth={1.75} aria-hidden="true" /> Location
                     </span>
-                    <span className="contact-card-value">{CONTACT_DETAILS.address}</span>
+                    <span className="contact-card-value">{contact.address}</span>
                     {/* `CONTACT_DETAILS` carries no opening hours, so the page
                       says so rather than inventing a schedule. */}
                     <span className="contact-card-note">

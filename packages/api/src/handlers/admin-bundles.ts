@@ -19,7 +19,12 @@ import {
 } from "../validation";
 import { issueEntitlement } from "./packages";
 
-const bundleInclude = { classApplicability: true } as const;
+const bundleInclude = {
+  classApplicability: true,
+  entitlements: {
+    select: { snapshotSessionCreditCount: true, redemptions: { select: { status: true } } },
+  },
+} as const;
 
 function readApplicability(body: Record<string, unknown>): {
   mode: BundleApplicabilityMode;

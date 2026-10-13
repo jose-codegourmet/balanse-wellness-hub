@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
   type AdminSession,
   auditConfirmationCopy,
@@ -38,9 +39,12 @@ import {
   adminVenuesQuery,
 } from "@/lib/query/queries";
 import { cn } from "@/lib/utils";
-import { useCanAdminAction, useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
+import {
+  useCanAdminAction,
+  useCanAdminRoute,
+  useStaffActor,
+} from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { createSessionHref, editSessionHref, rosterHref } from "../../_lib/schedule-href";
 import { ClassChangeSessionActions } from "../class-change-session-actions/ClassChangeSessionActions";
 import type { SelectedSessionPanelProps, SessionInventory } from "./SelectedSessionPanel.meta";
@@ -216,11 +220,14 @@ function SessionDetail({
   inventory: SessionInventory | null;
 }) {
   const cancel = useCancelAdminSession();
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const canReadCoaches = useCanAdminRoute("/coaches");
-  const coachesQuery = useQuery({ ...adminCoachesQuery(principal), enabled: canReadCoaches });
-  const venuesQuery = useQuery(adminVenuesQuery(principal));
-  const classesQuery = useQuery(adminClassesQuery(principal));
+  const coachesQuery = useQuery({
+    ...adminCoachesQuery(actor, apiFetchBrowser),
+    enabled: canReadCoaches,
+  });
+  const venuesQuery = useQuery(adminVenuesQuery(actor, apiFetchBrowser));
+  const classesQuery = useQuery(adminClassesQuery(actor, apiFetchBrowser));
   const classSlug = classesQuery.data?.find((row) => row.id === session.classId)?.slug;
   const canCancelSession = useCanAdminAction("schedule-cancel");
   const canUpdateSession = useCanAdminAction("schedule-update");
@@ -229,7 +236,7 @@ function SessionDetail({
   const canReadEvents = useCanAdminRoute("/events");
   const canManageEvents = useCanAdminAction("events-manage");
   const eventQuery = useQuery({
-    ...adminEventForSessionQuery(principal, session.id),
+    ...adminEventForSessionQuery(actor, session.id, apiFetchBrowser),
     enabled: canReadEvents,
   });
   const linkedEvent = eventQuery.data;

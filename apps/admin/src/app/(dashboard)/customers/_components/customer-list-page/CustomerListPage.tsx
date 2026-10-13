@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
   type AdminCustomer,
   formatRelativeTime,
@@ -27,7 +28,7 @@ import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/Admin
 import { adminNowIso } from "@/lib/clock";
 import { adminCustomersQuery } from "@/lib/query/queries";
 import { cn } from "@/lib/utils";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 import {
   activeCustomerRosterFilter,
   CUSTOMER_RECENT_VISIT_WINDOW_DAYS,
@@ -142,7 +143,7 @@ function CustomerStatTile({
 }
 
 function CustomerListPageInner({ empty, loading, error, focusCustomerId }: CustomerListPageProps) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -151,9 +152,9 @@ function CustomerListPageInner({ empty, loading, error, focusCustomerId }: Custo
   const facets = parseCustomerFacets(searchParams.get(`${CUSTOMER_TABLE_ID}_facets`));
   const upcomingOnly = (facets.upcoming ?? []).includes("Has upcoming");
   const listQuery = useSuspenseQuery(
-    adminCustomersQuery(principal, upcomingOnly ? { hasUpcoming: true } : undefined),
+    adminCustomersQuery(actor, apiFetchBrowser, upcomingOnly ? { hasUpcoming: true } : undefined),
   );
-  const rosterQuery = useSuspenseQuery(adminCustomersQuery(principal));
+  const rosterQuery = useSuspenseQuery(adminCustomersQuery(actor, apiFetchBrowser));
 
   const roster = useMemo(() => {
     const next = empty ? [] : rosterQuery.data;

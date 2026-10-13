@@ -6,4 +6,5 @@ export const staffFormDefaultValues: StaffFormValues = {
   roleId: "",
   status: "active",
   isCoach: false,
+  coachId: null,
 };

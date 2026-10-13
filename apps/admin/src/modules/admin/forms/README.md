@@ -6,7 +6,7 @@ Recipe for every admin write form:
 2. Derive every bound from `FIELD_CONSTRAINTS` — do not retype a number that already lives there.
 3. Render `<AdminForm schema defaultValues onSubmit>` — screens do not call `useForm`.
 4. Bind controls with `<FormField>` + a binding from `forms/bindings/`.
-5. Submit through `lib/query/mutations.ts` (`useUpsertAdminClass`, …) → `getMockAdapter()`.
+5. Submit through `lib/query/mutations/` (`useUpsertAdminClass`, …) → `@balanse/api-client`.
 6. Toast through `notify.admin(id)` / `adminToastCopy`.
 
 ## Field-name and money-unit mapping

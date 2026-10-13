@@ -19,6 +19,8 @@ model Coach {
   staffMember StaffMember?   @relation(fields: [staffMemberId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   sessions    SessionCoach[]
   marketingClasses ClassMarketingCoach[]
+  requestedClassChanges ClassChangeRequest[] @relation("ClassChangeRequesterCoach")
+  substituteClassChanges ClassChangeRequest[] @relation("ClassChangeSubstituteCoach")
 
   @@index([active])
   @@index([photoKey])
@@ -55,15 +57,19 @@ model GymClass {
 /// Sessions at different venues may overlap in time. Events inherit their session's venue.
 /// Inactive venues stay on existing sessions but cannot be chosen for new ones.
 model Venue {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  address   String    @default("")
-  kind      VenueKind @default(BRANCH)
-  active    Boolean   @default(true)
+  id          String    @id @default(cuid())
+  name        String    @unique
+  address     String    @default("")
+  kind        VenueKind @default(BRANCH)
+  /// Staff-facing hours, e.g. "Mon–Sat · 6:00 AM–9:00 PM". Blank until set.
+  openingHours String   @default("")
+  /// Whether the studio operates this venue. Null until an admin sets it explicitly.
+  studioOwned Boolean?
+  active      Boolean   @default(true)
   /// Staff-only notes (access, parking, contact). Never public.
-  notes     String    @default("")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  notes       String    @default("")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   sessions GymSession[]
 
@@ -78,10 +84,14 @@ model GymSession {
   classId          String
   /// Required. Overlapping sessions are allowed (across or within venues).
   venueId          String
+  /// Occurrence title shown to staff and customers, e.g. "Charity Capoeira Jam". Blank by default.
+  name             String?       @db.VarChar(120)
   startsAt         DateTime      @db.Timestamptz
   endsAt           DateTime      @db.Timestamptz
   capacity         Int
   status           SessionStatus @default(DRAFT)
+  /// Whether this occurrence can still take new reservations, independent of capacity/status.
+  bookable         Boolean       @default(true)
   customerPrice    Decimal       @db.Decimal(12, 2)
   isPlaceholder    Boolean       @default(false)
   createdAt        DateTime      @default(now())
@@ -99,6 +109,7 @@ model GymSession {
   recurrenceRule      SessionRecurrenceRule?  @relation("RecurrenceOccurrences", fields: [recurrenceRuleId], references: [id], onDelete: SetNull)
   recurrenceTemplates SessionRecurrenceRule[] @relation("RecurrenceTemplate")
   event               SessionEvent?
+  classChangeRequests ClassChangeRequest[]
 
   @@index([startsAt])
   @@index([status, startsAt])

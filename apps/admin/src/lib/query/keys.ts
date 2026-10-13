@@ -1,8 +1,8 @@
-import type { AdminPaymentTab, AdminReportFilters, BookingStatus } from "@balanse/domain";
+import type { AdminPaymentTab, AdminReportFilters } from "@balanse/domain";
 import type { AdminAuthScope } from "./auth-scope";
 
 export type AdminBookingListFilters = {
-  status?: BookingStatus;
+  tab?: string;
   query?: string;
   classId?: string;
   date?: string;
@@ -50,7 +50,8 @@ export const adminKeys = {
   },
   events: {
     all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "events"] as const,
-    list: (scope: AdminAuthScope) => [...adminKeys.events.all(scope), "list"] as const,
+    list: (scope: AdminAuthScope, filters?: import("@balanse/api-client").AdminEventFilters) =>
+      [...adminKeys.events.all(scope), "list", filters ?? null] as const,
     detail: (scope: AdminAuthScope, id: string) =>
       [...adminKeys.events.all(scope), "detail", id] as const,
     forSession: (scope: AdminAuthScope, sessionId: string) =>
@@ -58,6 +59,7 @@ export const adminKeys = {
   },
   staff: {
     all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "staff"] as const,
+    permissions: (scope: AdminAuthScope) => [...adminKeys.staff.all(scope), "permissions"] as const,
     roles: {
       all: (scope: AdminAuthScope) => [...adminKeys.staff.all(scope), "roles"] as const,
       list: (scope: AdminAuthScope) => [...adminKeys.staff.roles.all(scope), "list"] as const,

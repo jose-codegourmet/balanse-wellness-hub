@@ -1,6 +1,7 @@
 "use client";
 
-import { BUNDLE_STATUSES, bundleStatusLabel, EMPTY_BUNDLE_CREDIT_METRICS } from "@balanse/domain";
+import { apiFetchBrowser } from "@balanse/api-client/browser";
+import { BUNDLE_STATUSES, bundleStatusLabel } from "@balanse/domain";
 import { FormPageSkeleton } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -28,17 +29,17 @@ import {
   type BundleFormValues,
   bundleFormSchema,
 } from "@/modules/admin/forms/bundle/bundle-form.schema";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { BundleCreditMetrics } from "../bundle-credit-metrics/BundleCreditMetrics";
 
 export function BundleFormPage({ bundleId }: { bundleId: string }) {
   const isNew = bundleId === "new";
   const router = useRouter();
-  const { principal } = useMockPrincipal();
-  const bundlesQuery = useSuspenseQuery(adminBundlesQuery(principal));
-  const classesQuery = useSuspenseQuery(adminClassesQuery(principal));
-  const metricsQuery = useSuspenseQuery(adminBundleMetricsQuery(principal));
+  const actor = useStaffActor();
+  const bundlesQuery = useSuspenseQuery(adminBundlesQuery(actor, apiFetchBrowser));
+  const classesQuery = useSuspenseQuery(adminClassesQuery(actor, apiFetchBrowser));
+  const metricsQuery = useSuspenseQuery(adminBundleMetricsQuery(actor, apiFetchBrowser));
   const upsert = useUpsertAdminBundle();
   const existing = bundlesQuery.data.find((row) => row.id === bundleId);
 
@@ -48,7 +49,7 @@ export function BundleFormPage({ bundleId }: { bundleId: string }) {
         title="Package unavailable"
         breadcrumb={[{ label: "Bundles", href: "/bundles" }]}
       >
-        <p className="text-sm text-muted-foreground">That package is not in this mock.</p>
+        <p className="text-sm text-muted-foreground">That package is unavailable.</p>
       </AdminPageShell>
     );
   }
@@ -67,9 +68,7 @@ export function BundleFormPage({ bundleId }: { bundleId: string }) {
       ]}
     >
       {existing ? (
-        <BundleCreditMetrics
-          metrics={metricsQuery.data[existing.id] ?? EMPTY_BUNDLE_CREDIT_METRICS}
-        />
+        <BundleCreditMetrics metrics={metricsQuery.data[existing.id] ?? existing.metrics} />
       ) : null}
       {upsert.isPending ? (
         <FormPageSkeleton label="Saving package" sections={3} fields={6} />
@@ -88,13 +87,13 @@ export function BundleFormPage({ bundleId }: { bundleId: string }) {
               slug: values.slug,
               summary: values.summary,
               description: values.description,
-              sessionCredits: Number(values.sessionCredits),
+              sessionCreditCount: Number(values.sessionCredits),
               pricePhp: Number(values.pricePhp),
-              allActiveClasses: values.applicabilityMode === "all",
+              applicabilityMode:
+                values.applicabilityMode === "all" ? "ALL_ACTIVE_CLASSES" : "EXPLICIT_CLASSES",
               classIds: values.classIds,
               validityDays: values.validityDays,
               perCustomerLimit: values.perCustomerLimit,
-              status: values.status,
             });
             notify.admin("bundle.saved");
             router.push("/bundles");

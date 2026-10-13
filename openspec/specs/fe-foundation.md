@@ -3,7 +3,7 @@
 ## Requirements
 
 1. Apps start on ports 9000 and 9001 via `pnpm dev`.
-2. Screens read data only through `MockDataAdapter`.
+2. Screens read and write data through typed `@balanse/api-client` functions and the React Query layer; Storybook uses `MockDataAdapter` fixtures.
 3. Brand tokens are defined once and consumed by both apps.
 4. Public nav matches `docs/screen-specs/shared/01-navigation.md`.
 5. Customer portal is guarded for guests and preserves `returnTo`.

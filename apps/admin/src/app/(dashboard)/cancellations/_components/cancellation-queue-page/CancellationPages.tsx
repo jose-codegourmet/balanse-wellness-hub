@@ -30,9 +30,8 @@ import {
   useRejectAdminCancellation,
 } from "@/lib/query/mutations";
 import { adminCancellationsInfiniteQuery } from "@/lib/query/queries";
-import { AdminCan } from "@/modules/authorization/useAdminAccess";
+import { AdminCan, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 const EXIT_MS = 220;
 
@@ -216,9 +215,9 @@ export function CancellationQueuePage({
   fetchingNextPage,
   nextPageError,
 }: CancellationQueuePageProps) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const [search, setSearch] = useState("");
-  const query = useInfiniteQuery(adminCancellationsInfiniteQuery(principal, search.trim()));
+  const query = useInfiniteQuery(adminCancellationsInfiniteQuery(actor, search.trim()));
   const nowIso = adminNowIso();
   const stamp = auditConfirmationCopy("This cancellation action", "Admin", nowIso);
   const [exiting, setExiting] = useState<Map<string, CustomerBooking>>(new Map());

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { classFormDefaultValues } from "@/modules/admin/forms/class/class-form.defaults";
 import { classFormSchema } from "@/modules/admin/forms/class/class-form.schema";
+import { mockClassFetcher } from "../mock-class-fetcher.stories-data";
 import { ClassFormPage } from "./ClassFormPage";
 import { classFormPageDefaultValues } from "./ClassFormPage.defaults";
 
@@ -8,7 +9,7 @@ const meta = {
   title: "Admin/Screens/ClassForm",
   component: ClassFormPage,
   tags: ["autodocs"],
-  args: { ...classFormPageDefaultValues },
+  args: { ...classFormPageDefaultValues, fetcher: mockClassFetcher },
   parameters: {
     classFormDefaultValues,
     classFormSchema,

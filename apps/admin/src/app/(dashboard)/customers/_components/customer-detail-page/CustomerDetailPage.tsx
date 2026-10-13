@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
   type AdminCustomerDetail,
   type CustomerEntitlement,
@@ -42,8 +43,11 @@ import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/Admin
 import { AdminPageTabs } from "@/components/balanse/page/admin-page-tabs/AdminPageTabs";
 import { useTabParam } from "@/components/balanse/page/useTabParam";
 import { adminBundlesQuery, adminCustomerDetailQuery } from "@/lib/query/queries";
-import { useCanAdminAction, useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import {
+  useCanAdminAction,
+  useCanAdminRoute,
+  useStaffActor,
+} from "@/modules/authorization/useAdminAccess";
 import { CustomerReferralCard } from "../customer-referral-card/CustomerReferralCard";
 import { GrantPackageForm } from "../grant-package-form/GrantPackageForm";
 import type { CustomerDetailPageProps } from "./CustomerDetailPage.meta";
@@ -307,16 +311,16 @@ function PackageItem({ entitlement }: { entitlement: CustomerEntitlement }) {
 }
 
 export function CustomerDetailPage({ customerId }: CustomerDetailPageProps) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const canReadBundles = useCanAdminRoute("/bundles");
   const canManageBundles = useCanAdminAction("bundles-manage");
   const canReadRefunds = useCanAdminAction("refunds-read");
   const canOpenBooking = useCanAdminRoute("/bookings");
   const [tab, setTab] = useTabParam<ActivityTabId>("tab", ACTIVITY_TABS, "upcoming");
   const interestClasses = useInterestClassLookup();
-  const query = useSuspenseQuery(adminCustomerDetailQuery(principal, customerId));
+  const query = useSuspenseQuery(adminCustomerDetailQuery(actor, apiFetchBrowser, customerId));
   const bundlesQuery = useQuery({
-    ...adminBundlesQuery(principal),
+    ...adminBundlesQuery(actor, apiFetchBrowser),
     enabled: canReadBundles,
   });
   const detail = query.data;

@@ -2,7 +2,7 @@
 
 Calendar-first class booking for **Balansé** (Cebu). This repository is a pnpm + Turborepo monorepo based on `fe-multi-web-template`, with demo brand content removed.
 
-This phase ships **mocked screens** plus INF wiring to the existing Supabase project `xydundrayuusqizssgby` (ap-southeast-1). Apps do not call live APIs yet. See `docs/backend/`.
+Application screens use typed API clients backed by the existing Supabase project `xydundrayuusqizssgby` (ap-southeast-1). Storybook retains fixture-backed previews. See `docs/backend/`.
 
 ## Apps
 
@@ -31,7 +31,7 @@ pnpm dev
 - Admin: http://localhost:9001
 - Storybook (web): `pnpm --filter web storybook` → http://localhost:6006
 
-Set `NEXT_PUBLIC_ENABLE_MOCK_HARNESS=true` in app env files to show the mock role switcher.
+Storybook scenarios use their own toolbar and story parameters; app sessions use Supabase Auth.
 
 ## Quality
 
@@ -55,4 +55,4 @@ Conventional Commits are enforced via Husky + commitlint.
 - FE screen checklist: `docs/engineering/fe-screen-ticket-checklist.md`
 - Component authoring guide: `docs/component-guide.md`
 - Jabkit convention: `docs/engineering/jabkit.md`
-- Mock harness removal (WIRE-002): `docs/engineering/mock-harness-removal.md`
+- Mock harness closeout (WIRE-E03): `docs/engineering/mock-harness-removal.md`

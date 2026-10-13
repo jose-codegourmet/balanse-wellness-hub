@@ -8,12 +8,11 @@
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `apps/web`, `apps/admin` | Yes | Dashboard → API → publishable key (`sb_publishable_…`). Legacy anon JWT is compatibility-only. |
 | `NEXT_PUBLIC_SITE_URL` | `apps/web`, `apps/admin` | Yes | Origin used for Auth redirects (`http://localhost:9000` / `:9001`). |
 | `NEXT_PUBLIC_WEB_SITE_URL` | `apps/admin` (`src/lib/web-origin.ts`) | Yes | Public `apps/web` origin admin uses to build share links and QR codes for public session/event pages (#347). Defaults to `http://localhost:9000`; trailing slash trimmed. `apps/web` keeps using `NEXT_PUBLIC_SITE_URL`. |
-| `NEXT_PUBLIC_APP_MODE` | `apps/web`, `apps/admin` | Yes | `mock` for INF-008 previews. Later wiring uses `live`. |
-| `NEXT_PUBLIC_ENABLE_MOCK_HARNESS` | `apps/web`, `apps/admin` | Yes | FE mock role switcher. |
 | `JABKIT_REGISTRY` | `apps/web`, `apps/admin` | Yes | Jabkit component registry URL. |
 | `DATABASE_URL` | `packages/db` (Prisma Client, smoke script) | **No** | Pooled Postgres. Port **6543**, user `postgres.<ref>`, query `?pgbouncer=true`. |
 | `DIRECT_URL` | `packages/db` (Prisma migrate, `db:ensure-buckets`) | **No** | Direct / session Postgres. Port **5432**. Required for migrations. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server-only future API routes; **not** read by the INF app scaffolds | **No** | Never `NEXT_PUBLIC_*`. Leak is a privacy incident (coach rates). See `secrets-and-environments.md`. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server API storage and staff invitation generation; admin invite acceptance proof | **No** | Configure in the app server environment, not only `packages/db/.env`. Never `NEXT_PUBLIC_*`. Staff invitations generate links without sending email. |
+| `STAFF_INVITE_ORIGIN` | Shared API staff invitations | **No** | Admin portal origin, e.g. `http://localhost:9001`. Required HTTPS origin in production; never inferred from request headers. Set on each app server that handles staff provisioning. |
 
 ## Files
 

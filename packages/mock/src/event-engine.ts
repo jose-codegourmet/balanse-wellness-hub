@@ -222,15 +222,6 @@ export function getAdminEvent(
   return row ? present(state, row, liveSessions) : null;
 }
 
-export function getAdminEventForSession(
-  state: EventEngineState,
-  liveSessions: readonly AdminSession[],
-  sessionId: string,
-): AdminEvent | null {
-  const row = state.events.find((event) => event.sessionId === sessionId);
-  return row ? present(state, row, liveSessions) : null;
-}
-
 function readGallery(images: string[] | undefined): string[] {
   if (!images) return [];
   if (images.length > limits.galleryImages.maxItems) {

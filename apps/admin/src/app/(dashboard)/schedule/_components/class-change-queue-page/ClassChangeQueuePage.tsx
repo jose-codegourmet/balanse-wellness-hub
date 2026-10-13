@@ -20,7 +20,6 @@ import { useApproveClassChangeRequest, useDenyClassChangeRequest } from "@/lib/q
 import { adminClassChangeRequestsQuery } from "@/lib/query/queries";
 import { AdminCan, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { ClassChangeRequestCard } from "../class-change-request-card/ClassChangeRequestCard";
 
 const TABS = ["pending", "resolved"] as const;
@@ -35,8 +34,8 @@ function formatWhen(iso: string): string {
  * applies the change (cancel, move, or coach swap); denying keeps the class.
  */
 export function ClassChangeQueuePage({ empty = false }: { empty?: boolean }) {
-  const { principal } = useMockPrincipal();
-  const query = useSuspenseQuery(adminClassChangeRequestsQuery(principal));
+  const actor = useStaffActor();
+  const query = useSuspenseQuery(adminClassChangeRequestsQuery(actor));
   const [tab, setTab] = useTabParam("tab", TABS, "pending");
   const rows = empty ? [] : query.data;
   const pending = rows.filter((row) => row.status === "PENDING");

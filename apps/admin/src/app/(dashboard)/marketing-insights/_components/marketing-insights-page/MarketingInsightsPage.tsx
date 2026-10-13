@@ -1,7 +1,7 @@
 "use client";
 
+import { ApiError } from "@balanse/api-client";
 import { formatRatioPercent, type MarketingInsights } from "@balanse/domain";
-import { isMockAuthorizationError } from "@balanse/mock";
 import {
   Button,
   Collapsible,
@@ -11,6 +11,7 @@ import {
   FeedbackState,
   Skeleton,
 } from "@balanse/ui";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import {
   ChevronDownIcon,
@@ -22,11 +23,13 @@ import {
   UserPlusIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { AccessDenied } from "@/components/balanse/access-denied/AccessDenied";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { adminTodayYmd } from "@/lib/clock";
 import { adminMarketingInsightsQuery } from "@/lib/query/queries";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 import {
   defaultMarketingInsightsRange,
   isAllDatesRange,
@@ -44,6 +47,10 @@ const DESCRIPTION =
 const BREADCRUMB = [{ label: TITLE }];
 const NO_SIGNUPS = "No sign-ups in this range";
 const NO_ANSWERS = "No answers to this question in this range.";
+const marketingInsightsRangeSchema = z.object({
+  from: z.string().min(1),
+  to: z.string().min(1),
+});
 
 type Kpi = {
   id: string;
@@ -299,15 +306,20 @@ export function MarketingInsightsPageSkeleton() {
 }
 
 export function MarketingInsightsPage({ initialRange }: MarketingInsightsPageProps) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const [range, setRange] = useState(() => initialRange ?? defaultMarketingInsightsRange());
+  const rangeForm = useForm({
+    resolver: zodResolver(marketingInsightsRangeSchema),
+    defaultValues: range,
+  });
   const query = useQuery({
-    ...adminMarketingInsightsQuery(principal, range),
+    ...adminMarketingInsightsQuery(actor, range),
     placeholderData: keepPreviousData,
   });
 
   if (query.isError) {
-    if (isMockAuthorizationError(query.error)) return <AccessDenied kind="denied" />;
+    if (query.error instanceof ApiError && query.error.status === 403)
+      return <AccessDenied kind="denied" />;
     return (
       <AdminPageShell title={TITLE} eyebrow="Studio" breadcrumb={BREADCRUMB}>
         <FeedbackState
@@ -332,14 +344,24 @@ export function MarketingInsightsPage({ initialRange }: MarketingInsightsPagePro
       description={DESCRIPTION}
       breadcrumb={BREADCRUMB}
       actions={
-        <DateRangePicker
-          aria-label="Sign-up date range"
-          placeholder="All sign-up dates"
-          className="w-full sm:w-72"
-          today={adminTodayYmd()}
-          value={isAllDatesRange(range) ? undefined : range}
-          onValueChange={(next) => setRange(next ?? { ...MARKETING_INSIGHTS_ALL_DATES })}
-        />
+        <form
+          onSubmit={(event) => event.preventDefault()}
+          aria-label="Marketing insights date range"
+        >
+          <DateRangePicker
+            aria-label="Sign-up date range"
+            placeholder="All sign-up dates"
+            className="w-full sm:w-72"
+            today={adminTodayYmd()}
+            value={isAllDatesRange(range) ? undefined : range}
+            onValueChange={(next) => {
+              const value = next ?? { ...MARKETING_INSIGHTS_ALL_DATES };
+              rangeForm.setValue("from", value.from, { shouldValidate: true });
+              rangeForm.setValue("to", value.to, { shouldValidate: true });
+              setRange(value);
+            }}
+          />
+        </form>
       }
     >
       <div className="@container" aria-busy={query.isFetching}>

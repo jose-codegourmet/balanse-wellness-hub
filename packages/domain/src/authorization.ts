@@ -27,6 +27,9 @@ export type StaffAuthorizationActor = {
   /** Derived from the coach link. Not an authorization role. */
   isCoach: boolean;
   email?: string | null;
+  /** Display-only identity; never used for authorization. */
+  name?: string | null;
+  avatarUrl?: string | null;
   isSystem?: boolean;
 };
 

@@ -13,7 +13,6 @@ import Link from "next/link";
 import { adminNowIso } from "@/lib/clock";
 import { adminClassChangeRequestsQuery } from "@/lib/query/queries";
 import { useStaffActor } from "@/modules/authorization/useAdminAccess";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 const KIND_ICON = {
   RESCHEDULE: CalendarClockIcon,
@@ -34,7 +33,6 @@ export function ClassChangeSessionActions({
   session: AdminSession;
   canCancelDirectly: boolean;
 }) {
-  const { principal } = useMockPrincipal();
   const actor = useStaffActor();
   const assigned = Boolean(
     actor?.coachId && session.coaches.some((coach) => coach.id === actor.coachId),
@@ -44,7 +42,7 @@ export function ClassChangeSessionActions({
     session.status !== "CANCELLED" && Date.parse(session.startsAt) > Date.parse(adminNowIso());
   const showCoach = assigned && !canCancelDirectly && upcoming;
   const requestsQuery = useQuery({
-    ...adminClassChangeRequestsQuery(principal),
+    ...adminClassChangeRequestsQuery(actor),
     enabled: showCoach || canReview,
   });
   const pending = requestsQuery.data?.find(

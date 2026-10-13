@@ -7,7 +7,7 @@ Use this on every `FE-PUB`, `FE-CUS`, `FE-ADM`, and `FE-SHR` ticket.
 - [ ] Keyboard + Storybook a11y — run `pnpm --filter admin test-storybook` before you ship admin work (the static `pnpm build-storybook` does not execute axe; CI enforcement is #240)
 - [ ] No raw enum names in the UI — use `@balanse/domain` labels
 - [ ] No invented fields, tabs, or actions beyond the screen spec
-- [ ] Data only via `getMockAdapter()` — never import fixture files
+- [ ] Data through React Query hooks and typed `@balanse/api-client` functions; fixtures only in stories
 - [ ] Money/dates via `@balanse/domain` formatters — no inline `toLocaleString`
 - [ ] No hardcoded hex in screen code — tokens only
 - [ ] Public/customer views never receive coach rate fields

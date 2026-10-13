@@ -24,6 +24,7 @@ const config: StorybookConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       "@": path.resolve(dirname, "../src"),
+      "@balanse/api-client/browser": path.resolve(dirname, "mock-api-fetch-browser.ts"),
     };
     return config;
   },

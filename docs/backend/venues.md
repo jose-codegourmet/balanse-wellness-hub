@@ -15,6 +15,8 @@ Shared types live in `@balanse/domain`: `VENUE_KINDS` / `VenueKind`, `AdminVenue
 | `name` | Required, trimmed, at most 120 characters, unique. Handlers also reject a case-insensitive duplicate. |
 | `address` | Optional, at most 240 characters. Defaults to `''`. |
 | `kind` | `BRANCH` (default) or `OFFSITE`. |
+| `openingHours` | Staff-facing hours (e.g. "Mon–Sat · 6:00 AM–9:00 PM"). Optional, at most 240 characters. Defaults to `''` (WIRE-0701, #360). |
+| `studioOwned` | Whether the studio operates this venue (`true`) vs. a third-party/rented location (`false`). Nullable until an admin sets it explicitly (WIRE-0701, #360). |
 | `active` | Defaults to true. An inactive venue stays on existing sessions but cannot be chosen for a new or changed session. |
 | `notes` | Staff-only, at most 1000 characters. Not included in the event session snapshot. |
 
@@ -38,7 +40,9 @@ Shared types live in `@balanse/domain`: `VENUE_KINDS` / `VenueKind`, `AdminVenue
 | `POST` | `/api/admin/venues` | `classes.manage` |
 | `PATCH` | `/api/admin/venues/{id}` | `classes.manage` |
 
-`GET` returns `{ items: AdminVenue[] }` with active venues first, then sorted by name. It accepts `active=true|false` and `kind=BRANCH|OFFSITE`. `POST` and `PATCH` return `{ venue: AdminVenue }` and write `venue.create` / `venue.update` audit rows. A duplicate name returns `409 conflict`. No new permission keys were added.
+`GET` returns `{ items: AdminVenue[] }` (now including `openingHours`/`studioOwned`) with active venues first, then sorted by name. It accepts `active=true|false` and `kind=BRANCH|OFFSITE`. `POST` and `PATCH` accept `openingHours` (string) and `studioOwned` (boolean or `null` to clear it) alongside the existing fields, and return `{ venue: AdminVenue }`, writing `venue.create` / `venue.update` audit rows. A duplicate name returns `409 conflict` with a `name` field error. No new permission keys were added.
+
+`@balanse/api-client/venues.ts` (`listVenues`, `createVenue`, `patchVenue`) and `apps/admin/src/lib/query/{queries,mutations}/venues.ts` are real (WIRE-0702/0703, #360) — `VenueListPage`/`VenueFormPage` read and write through them.
 
 Handlers are in `packages/api/src/handlers/admin-venues.ts`. Routes are listed in `packages/db/contracts/routes.ts`, and their request bodies are in `packages/db/contracts/openapi.json`.
 
@@ -56,4 +60,4 @@ RLS is enabled. There is no `anon` access. `authenticated` can select with any `
 4. Adds `sessions."venueId"`, sets it from the event venue where one exists, and backfills every other session to `venue-main-studio`. It then sets `NOT NULL` and adds the FK and index.
 5. Drops `session_events."venueName"` and `"venueAddress"`.
 
-The migration is staged. Do not apply it to the shared project until the Prisma and Supabase histories are reconciled. The seed upserts `venue-main-studio` and sets it on every seeded session.
+This migration has since been applied to the shared project (E00 hosted catch-up, 2026-10-02). A follow-up migration, `20261003090000_venue_operations_fields` (WIRE-0701, #360), adds `openingHours` (text, default `''`) and `studioOwned` (nullable boolean); it has also been applied to hosted and reconciled into `_prisma_migrations`. `packages/db/prisma/seed/venues.ts` upserts all four `venue-fixtures.ts` rows — `venue-main-studio`, `venue-mandani-bay`, `venue-mactan-beach-resort`, and the inactive `venue-it-park-popup` — and sets `venue-main-studio` on every seeded session; all four already exist on hosted with matching ids.

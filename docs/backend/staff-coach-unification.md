@@ -68,8 +68,12 @@ Existing seed (`packages/db/prisma/seed.ts`):
 
 | Row | Notes |
 | --- | --- |
-| `coach_rex` … `coach_francis` | Teaching profiles. `staffMemberId` stays **null**. |
-| `staff_members` | Seed does **not** create staff (that requires `auth.users` + `profiles`). A system job actor may exist from earlier SQL. |
+| `coach-rex` … `coach-francis` | Teaching profiles created before demo staff. The seed links Rex and Ephraim after their accounts exist. |
+| `staff_members` | WIRE-1504 seeds seven demo staff through guarded Auth/profile provisioning. A system job actor may also exist from earlier SQL. |
+
+WIRE-1504 now seeds seven demo staff accounts through `seed/auth.ts` and links
+both `staff-rex` to `coach-rex` and the Coach-role `staff-coach` to
+`coach-ephraim`. The Coach-role assignment happens after its link is present.
 
 Mock (`packages/mock`) already treats Rex as one human in two rows:
 
@@ -83,7 +87,7 @@ Mock (`packages/mock`) already treats Rex as one human in two rows:
 **Operator backfill (hosted / after staff exist):**
 
 1. Provision the staff account (`POST /api/admin/staff`) if missing.
-2. `POST /api/admin/staff/{staffId}/coach` with `{ "coachId": "coach_rex" }` (or the live cuid).
+2. `POST /api/admin/staff/{staffId}/coach` with `{ "coachId": "coach-rex" }` (or the live cuid).
 3. Do **not** auto-match on name/email in SQL — Rex is the only known duplicate, and a silent join would mis-link homonyms.
 
 Coaches with no staff account remain valid teaching profiles.
@@ -144,6 +148,10 @@ Public `GET /api/public/coaches` is unchanged (view columns only).
 | `DELETE` | `/api/admin/staff/{id}/coach` | — | `{ staff }` with `isCoach: false`, `coachId: null` |
 
 Idempotent: linking the same pair again is 200. Unlinking when already clear is 200.
+Linking a different unassigned coach replaces the existing link in one transaction;
+the previous Coach row and its session history remain intact. This lets a staff
+member with the Coach authorization role change teaching profiles without an
+intermediate unlinked state.
 
 | Case | Status | `fieldErrors[0]` |
 | --- | --- | --- |
@@ -151,7 +159,6 @@ Idempotent: linking the same pair again is 200. Unlinking when already clear is 
 | Staff not found / system actor | 404 | `staff_not_found` |
 | Coach not found | 404 | `coach_not_found` |
 | Staff `DISABLED` | 422 | `path: staffId`, `code: inactive_reference` |
-| Staff already linked to another coach | 422 | `path: coachId`, `code: already_linked` |
 | Coach already linked to another staff | 422 | `path: coachId`, `code: already_linked` |
 
 Audit: `staff.coach.link`, `staff.coach.unlink`, `staff.disable` (metadata includes `coachDeactivated`, `sessionsUntouched`).

@@ -1,3 +1,4 @@
+import { getPublicRoster, getPublicSession } from "@balanse/api-client";
 import {
   buildPublicEventPath,
   buildPublicSessionPath,
@@ -7,9 +8,10 @@ import {
   sessionDisplayName,
   withShareParams,
 } from "@balanse/domain";
-import { getMockAdapter, MOCK_NOW_ISO } from "@balanse/mock";
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
+import { serverFetcher } from "@/lib/query/fetcher";
+import { getCustomerAccessToken } from "@/modules/session/current-customer";
 import {
   getPublicViewerContext,
   shareUrlFor,
@@ -24,8 +26,10 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+/** 404 (DRAFT or unknown) the same way the mock's null return did. */
 async function load(sessionId: string) {
-  return getMockAdapter().getPublicSessionPage(decodeURIComponent(sessionId));
+  const fetcher = serverFetcher(await getCustomerAccessToken());
+  return getPublicSession(fetcher, decodeURIComponent(sessionId)).catch(() => null);
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -60,7 +64,10 @@ export default async function Page({ params, searchParams }: Props) {
   }
 
   const context = await getPublicViewerContext(session.id);
-  const roster = await getMockAdapter().getPublicRoster(session.id, context.viewer);
+  const roster = await getPublicRoster(
+    serverFetcher(await getCustomerAccessToken()),
+    session.id,
+  ).catch(() => null);
   if (!roster) notFound();
 
   const shareable = session.availability !== "past";
@@ -95,7 +102,7 @@ export default async function Page({ params, searchParams }: Props) {
             }
           : null
       }
-      nowIso={MOCK_NOW_ISO}
+      nowIso={new Date().toISOString()}
     />
   );
 }

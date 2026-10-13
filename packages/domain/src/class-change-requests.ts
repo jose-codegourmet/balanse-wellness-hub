@@ -5,7 +5,7 @@ import type { PermissionKey } from "./permissions";
  * own: they ask the studio to reschedule it, hand it to a substitute coach, or
  * cancel it. Nothing changes until an Admin / Super Admin approves.
  *
- * Mock-only this phase. No new permission keys: requesting is scoped to the
+ * No new permission keys: requesting is scoped to the
  * coach assigned to the session; approving needs the permission that would
  * make the change directly (`CLASS_CHANGE_APPROVAL_PERMISSION`).
  */

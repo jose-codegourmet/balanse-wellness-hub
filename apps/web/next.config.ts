@@ -4,9 +4,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: [
     "@balanse/api",
+    "@balanse/api-client",
     "@balanse/ui",
     "@balanse/domain",
-    "@balanse/mock",
     "@balanse/config",
     "@balanse/db",
   ],

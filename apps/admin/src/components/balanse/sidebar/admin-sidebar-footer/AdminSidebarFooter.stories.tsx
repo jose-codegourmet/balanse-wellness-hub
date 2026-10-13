@@ -7,6 +7,14 @@ const meta: Meta<typeof AdminSidebarFooter> = {
   title: "Admin/Components/AdminSidebarFooter",
   component: AdminSidebarFooter,
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "Signed-in staff photo or initials, name and role. Email and account destinations are inside the menu. Shared by desktop, collapsed rail and mobile navigation.",
+      },
+    },
+  },
   args: { ...adminSidebarFooterDefaultValues },
   decorators: [
     (Story) => (

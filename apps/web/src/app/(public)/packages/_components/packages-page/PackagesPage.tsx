@@ -1,10 +1,10 @@
-import type { PublicBundle } from "@balanse/domain";
+import type { PublicPackage } from "@balanse/domain";
 import { formatPeso } from "@balanse/domain";
 import { FeedbackState } from "@balanse/ui";
 import { ArrowUpRight, CalendarDays, Sparkles } from "lucide-react";
 import Link from "next/link";
 
-function renderPackageTerms(bundle: PublicBundle) {
+function renderPackageTerms(bundle: PublicPackage) {
   return (
     <div className="mt-7 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border text-sm">
       <div className="bg-card p-4">
@@ -12,7 +12,7 @@ function renderPackageTerms(bundle: PublicBundle) {
           Included
         </span>
         <span className="mt-1 block font-medium">
-          {bundle.sessionCredits} {bundle.sessionCredits === 1 ? "session" : "sessions"}
+          {bundle.sessionCreditCount} {bundle.sessionCreditCount === 1 ? "session" : "sessions"}
         </span>
       </div>
       <div className="bg-card p-4">
@@ -27,7 +27,7 @@ function renderPackageTerms(bundle: PublicBundle) {
   );
 }
 
-export function PackagesPage({ bundles }: { bundles: PublicBundle[] }) {
+export function PackagesPage({ bundles }: { bundles: PublicPackage[] }) {
   return (
     <div className="mx-auto max-w-7xl px-4 pb-16 pt-7 sm:px-6 lg:px-8 lg:pb-24 lg:pt-10">
       <section className="grid overflow-hidden rounded-[2rem] bg-primary text-primary-foreground shadow-[0_24px_65px_color-mix(in_oklab,var(--balanse-navy)_24%,transparent)] lg:grid-cols-[1.08fr_.92fr]">
@@ -90,7 +90,7 @@ export function PackagesPage({ bundles }: { bundles: PublicBundle[] }) {
                   <div className="flex items-start justify-between gap-6">
                     <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.13em] text-muted-foreground">
                       <CalendarDays aria-hidden="true" className="size-4" />
-                      {bundle.applicability.allActiveClasses
+                      {bundle.applicabilityMode === "ALL_ACTIVE_CLASSES"
                         ? "All studio classes"
                         : "Selected classes"}
                     </span>

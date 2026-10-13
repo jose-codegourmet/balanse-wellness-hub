@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { mockCoachFetcher } from "../mock-coach-fetcher.stories-data";
 import { CoachListPage } from "./CoachListPage";
 
 const meta = {
   title: "Admin/Screens/Coaches",
   component: CoachListPage,
   tags: ["autodocs"],
+  args: { fetcher: mockCoachFetcher },
 } satisfies Meta<typeof CoachListPage>;
 
 export default meta;

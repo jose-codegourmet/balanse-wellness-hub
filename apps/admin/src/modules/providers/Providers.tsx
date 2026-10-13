@@ -1,27 +1,29 @@
 "use client";
 
-import type { MockPrincipal } from "@balanse/mock/session";
 import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "next-themes";
 import { type ReactNode, useState } from "react";
 import { AdminToaster } from "@/components/balanse/admin-toaster/AdminToaster";
 import { makeQueryClient } from "@/lib/query/client";
-import { MockSessionHarness } from "@/modules/dev-harness/MockSessionHarness";
-import { MockSessionProvider } from "@/modules/session/MockSessionProvider";
+import {
+  type ClientStaffSession,
+  DEFAULT_STAFF_SESSION,
+  SessionProvider,
+} from "@/modules/session/SessionProvider";
 
 export function Providers({
   children,
-  initialPrincipal,
+  session = DEFAULT_STAFF_SESSION,
   queryClient: injectedClient,
 }: {
   children: ReactNode;
-  initialPrincipal?: MockPrincipal;
+  session?: ClientStaffSession;
   queryClient?: QueryClient;
 }) {
   const [queryClient] = useState(() => injectedClient ?? makeQueryClient());
   return (
-    <MockSessionProvider initialPrincipal={initialPrincipal}>
+    <SessionProvider session={session}>
       <QueryClientProvider client={queryClient}>
         {process.env.NODE_ENV !== "production" ? (
           <ReactQueryDevtools initialIsOpen={false} />
@@ -32,11 +34,10 @@ export function Providers({
           enableSystem={false}
           forcedTheme="light"
         >
-          <MockSessionHarness />
           {children}
           <AdminToaster />
         </ThemeProvider>
       </QueryClientProvider>
-    </MockSessionProvider>
+    </SessionProvider>
   );
 }

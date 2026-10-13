@@ -46,7 +46,7 @@ Changing a coach's default rate later must not rewrite existing assignment snaps
 
 Class definitions do not carry coach associations. Bookings always reference the scheduled class session. Session cost sums each assignment; hourly rates are multiplied by session duration.
 
-## Coach class change requests (#337, mock)
+## Coach class change requests (#337, WIRE-E20)
 
 Coaches cannot cancel a class on their own. Cancelling, rescheduling, or swapping the coach needs Admin / Super Admin approval.
 
@@ -73,3 +73,4 @@ Card: kind · status · class · requested by · Now → Proposed / coach swap �
 - Approval permission: `schedule.cancel` for cancellations, `schedule.update` for reschedule / substitute. Nobody reviews their own request.
 - One pending request per class. Only upcoming, non-cancelled classes.
 - Pending requests also show in the header inbox and as a notice on the session in the schedule panel.
+- Runtime request lists, substitute options, and create/withdraw/review actions use `/api/admin/*` through `@balanse/api-client`. Storybook keeps the mock request fixtures.

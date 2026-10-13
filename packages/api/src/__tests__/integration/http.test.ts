@@ -36,7 +36,7 @@ async function seedSession(capacity = 1, startsInMinutes = 180) {
   const coachId = `coach_${randomUUID().slice(0, 8)}`;
   const sessionId = `sess_${randomUUID().slice(0, 8)}`;
   await prisma.gymClass.create({
-    data: { id: classId, name: classId, shortDescription: "", active: true },
+    data: { id: classId, name: classId, slug: classId, shortDescription: "", active: true },
   });
   await prisma.coach.create({
     data: {
@@ -53,15 +53,15 @@ async function seedSession(capacity = 1, startsInMinutes = 180) {
     data: {
       id: sessionId,
       classId,
-      coachId,
+      // Created by migration 20260928090000_venues_on_sessions on every environment.
+      venueId: "venue-main-studio",
       startsAt,
       endsAt: new Date(startsAt.getTime() + 60 * 60_000),
       capacity,
       status: "PUBLISHED",
       customerPrice: "999",
-      coachRate: "500",
-      coachRateType: "PER_SESSION",
       isPlaceholder: true,
+      coaches: { create: [{ coachId, coachRate: "500", coachRateType: "PER_SESSION" }] },
     },
   });
   return { classId, coachId, sessionId, startsAt };
@@ -308,7 +308,7 @@ describeDb("BE-030–043 HTTP integration", () => {
       resolveUser: async () => ({ id: adminUser, email: "a@a.test", authMethod: "email" }),
       storage: createDefaultStorage(),
     };
-    const before = await prisma.gymSession.findUnique({ where: { id: sessionId } });
+    const before = await prisma.sessionCoach.findFirst({ where: { sessionId, coachId } });
     await dispatch(
       new Request(`http://local/api/admin/coaches/${coachId}`, {
         method: "PATCH",
@@ -317,7 +317,7 @@ describeDb("BE-030–043 HTTP integration", () => {
       }),
       adminDeps,
     );
-    const after = await prisma.gymSession.findUnique({ where: { id: sessionId } });
+    const after = await prisma.sessionCoach.findFirst({ where: { sessionId, coachId } });
     expect(after?.coachRate.toString()).toBe(before?.coachRate.toString());
   });
 });

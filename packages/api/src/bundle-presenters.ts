@@ -1,6 +1,7 @@
 import type { Prisma } from "@balanse/db";
 import {
   type AdminBundle,
+  type BundleCreditMetrics,
   deriveEntitlementBalances,
   type HttpBundleAcquisition,
   type HttpBundleRedemption,
@@ -64,13 +65,47 @@ export function presentAdminBundle(row: {
   createdAt: Date;
   updatedAt: Date;
   classApplicability?: Array<{ classId: string }>;
+  entitlements?: Array<{
+    snapshotSessionCreditCount: number;
+    redemptions: Array<{ status: "HELD" | "CONSUMED" | "RESTORED" }>;
+  }>;
 }): AdminBundle {
   return {
     ...presentPublicPackage({ ...row, classApplicability: row.classApplicability }),
     status: row.status,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+    metrics: presentBundleCreditMetrics(row.entitlements ?? []),
   };
+}
+
+/** Derives aggregate bundle usage directly from the append-only redemption ledger. */
+export function presentBundleCreditMetrics(
+  entitlements: Array<{
+    snapshotSessionCreditCount: number;
+    redemptions: Array<{ status: "HELD" | "CONSUMED" | "RESTORED" }>;
+  }>,
+): BundleCreditMetrics {
+  return entitlements.reduce<BundleCreditMetrics>(
+    (total, entitlement) => {
+      const ledger = entitlement.redemptions.reduce(
+        (credits, redemption) => ({
+          held: credits.held + Number(redemption.status === "HELD"),
+          used: credits.used + Number(redemption.status === "CONSUMED"),
+          restored: credits.restored + Number(redemption.status === "RESTORED"),
+        }),
+        { held: 0, used: 0, restored: 0 },
+      );
+      return {
+        granted: total.granted + entitlement.snapshotSessionCreditCount,
+        held: total.held + ledger.held,
+        used: total.used + ledger.used,
+        restored: total.restored + ledger.restored,
+        owners: total.owners + 1,
+      };
+    },
+    { granted: 0, held: 0, used: 0, restored: 0, owners: 0 },
+  );
 }
 
 export function presentAcquisition(

@@ -15,7 +15,7 @@ export async function mintSignedUpload(
   actor: Extract<ApiActor, { kind: "admin" }>,
   input: {
     bucket: "coach-photos" | "marketing-assets";
-    purpose: "coach_photo" | "gcash_qr";
+    purpose: "coach_photo" | "gcash_qr" | "event_image";
     entityId: string | null;
     contentType: string;
     allowed: ReadonlySet<string>;
@@ -75,5 +75,12 @@ export async function retireAdminObject(
 export function assertOwnedCoachPhotoKey(coachId: string, objectKey: string): void {
   if (!objectKey.startsWith(`coach-photos/${coachId}/`)) {
     throw new ApiError(400, "invalid_object_key", "objectKey is not an upload for this coach.");
+  }
+}
+
+/** Event media belongs to the event being edited, never to an arbitrary upload. */
+export function assertOwnedEventImageKey(eventId: string, objectKey: string): void {
+  if (!objectKey.startsWith(`marketing-assets/events/${eventId}/`)) {
+    throw new ApiError(400, "invalid_object_key", "objectKey is not an upload for this event.");
   }
 }

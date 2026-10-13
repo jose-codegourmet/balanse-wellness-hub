@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
   type AdminReports,
   formatPeso,
@@ -23,12 +24,11 @@ import {
   adminReportsQuery,
   adminSessionReportQuery,
 } from "@/lib/query/queries";
-import { useCanAdminAction } from "@/modules/authorization/useAdminAccess";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useCanAdminAction, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { ReportsFilterForm } from "./reports-filter-form/ReportsFilterForm";
 
 export function ReportsPage({ empty }: { empty?: boolean }) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const canSales = useCanAdminAction("reports-sales");
   const canCapacity = useCanAdminAction("reports-capacity");
   const canCoachCosts = useCanAdminAction("reports-coach-costs");
@@ -38,10 +38,10 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
   const [classId, setClassId] = useState("all");
   const [coachId, setCoachId] = useState("all");
   const [sessionStatus, setSessionStatus] = useState("all");
-  const classesQuery = useSuspenseQuery(adminClassesQuery(principal));
-  const coachesQuery = useSuspenseQuery(adminCoachesQuery(principal));
+  const classesQuery = useSuspenseQuery(adminClassesQuery(actor, apiFetchBrowser));
+  const coachesQuery = useSuspenseQuery(adminCoachesQuery(actor, apiFetchBrowser));
   const reportsQuery = useSuspenseQuery(
-    adminReportsQuery(principal, {
+    adminReportsQuery(actor, {
       from,
       to,
       classId,
@@ -234,10 +234,10 @@ export function ReportsPage({ empty }: { empty?: boolean }) {
 }
 
 export function ReportDrilldownPage({ sessionId }: { sessionId: string }) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const canSales = useCanAdminAction("reports-sales");
   const canCoachCosts = useCanAdminAction("reports-coach-costs");
-  const query = useSuspenseQuery(adminSessionReportQuery(principal, sessionId));
+  const query = useSuspenseQuery(adminSessionReportQuery(actor, sessionId));
   const row = query.data;
   if (!row) return null;
 

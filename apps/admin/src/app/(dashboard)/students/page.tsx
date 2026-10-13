@@ -1,18 +1,14 @@
-import {
-  MOCK_HARNESS_COOKIE,
-  parseMockPrincipal,
-  resolveMockStaffActor,
-} from "@balanse/mock/session";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { AccessDenied } from "@/components/balanse/access-denied/AccessDenied";
 import { AdminQuerySuspense } from "@/components/balanse/page/admin-query-suspense/AdminQuerySuspense";
 import {
   canAccessAdminHref,
   firstImplementedPermittedAdminRoute,
 } from "@/lib/authorization/admin-access";
+import { serverFetcher } from "@/lib/query/fetcher";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import { coachStudentsQuery } from "@/lib/query/queries";
+import { getStaffAccessToken, getStaffSession } from "@/modules/session/current-staff";
 import { CoachStudentsPage } from "./_components/coach-students-page/CoachStudentsPage";
 
 export const metadata: Metadata = {
@@ -21,13 +17,12 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
-  const actor = resolveMockStaffActor(principal);
+  const [{ actor }, token] = await Promise.all([getStaffSession(), getStaffAccessToken()]);
   if (!canAccessAdminHref(actor, "/students")) {
     return <AccessDenied kind="denied" homeHref={firstImplementedPermittedAdminRoute(actor)} />;
   }
   return prefetchAdmin(
-    [coachStudentsQuery(principal)],
+    [coachStudentsQuery(actor, serverFetcher(token))],
     <AdminQuerySuspense>
       <CoachStudentsPage />
     </AdminQuerySuspense>,

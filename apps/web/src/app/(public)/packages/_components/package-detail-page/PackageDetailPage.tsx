@@ -1,19 +1,12 @@
 "use client";
 
-import type { PolicyDocumentVersion, PublicBundle } from "@balanse/domain";
-import { formatPeso, toPolicyAcceptances } from "@balanse/domain";
-import { getMockAdapter, MOCK_NOW_ISO } from "@balanse/mock";
+import type { PublicPackage } from "@balanse/domain";
+import { formatPeso } from "@balanse/domain";
 import { Button } from "@balanse/ui";
 import { ArrowLeft, ArrowUpRight, CalendarDays, Check, Clock3, Ticket } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import type { ComponentType, ReactNode } from "react";
-import { useState } from "react";
-import {
-  PolicyAcceptance,
-  usePolicyAcceptance,
-} from "@/components/balanse/policy-acceptance/PolicyAcceptance";
-import { notify } from "@/modules/notifications/notify";
+import { PackageRequestForm } from "./package-request-form/PackageRequestForm";
 
 function detailTerm({
   icon: Icon,
@@ -38,51 +31,20 @@ function detailTerm({
 }
 
 export function PackageDetailPage({
-  bundle,
+  package: packageDefinition,
   customerId,
   signedIn,
-  policies = [],
 }: {
-  bundle: PublicBundle;
+  package: PublicPackage;
   customerId?: string;
   signedIn: boolean;
-  /** Current versions of the policies admin attached to package requests. */
-  policies?: PolicyDocumentVersion[];
 }) {
-  const router = useRouter();
-  const [status, setStatus] = useState<"idle" | "working">("idle");
-  const policyAcceptance = usePolicyAcceptance(policies);
-  const free = bundle.pricePhp === 0;
+  const free = packageDefinition.pricePhp === 0;
   const actionLabel = signedIn
     ? free
       ? "Claim this package"
       : "Request this package"
     : `Sign in to ${free ? "claim" : "request"}`;
-
-  const claim = () => {
-    if (!customerId || !policyAcceptance.check()) return;
-    setStatus("working");
-    const adapter = getMockAdapter();
-    void adapter
-      .acceptPolicies(customerId, toPolicyAcceptances(policies, MOCK_NOW_ISO, "package_request"))
-      .then(
-        (): Promise<unknown> =>
-          free
-            ? adapter.claimFreeBundle({ customerId, bundleId: bundle.id })
-            : adapter.requestPaidBundle({ customerId, bundleId: bundle.id }),
-      )
-      .then(() => {
-        notify.portal(free ? "package.claimed" : "package.requested");
-        router.push("/portal/packages");
-      })
-      .catch((error: unknown) => {
-        const message = error instanceof Error ? error.message : "";
-        notify.portal(
-          message.includes("already") ? "package.limit-reached" : "package.action-failed",
-        );
-        setStatus("idle");
-      });
-  };
 
   return (
     <div className="pb-16 lg:pb-24">
@@ -101,10 +63,10 @@ export function PackageDetailPage({
                 {free ? "Welcome package" : "Focused practice package"}
               </p>
               <h1 className="font-display mt-5 max-w-3xl text-5xl leading-[0.98] tracking-[-0.055em] sm:text-6xl lg:text-7xl">
-                {bundle.name}
+                {packageDefinition.name}
               </h1>
               <p className="mt-6 max-w-xl text-base leading-7 text-primary-foreground/76 sm:text-lg">
-                {bundle.summary}
+                {packageDefinition.summary}
               </p>
             </div>
             <div className="rounded-[1.5rem] border border-primary-foreground/15 bg-primary-foreground/10 p-6 backdrop-blur-sm">
@@ -112,37 +74,26 @@ export function PackageDetailPage({
                 Your package
               </p>
               <p className="font-display mt-4 text-4xl tracking-[-0.045em]">
-                {bundle.sessionCredits} {bundle.sessionCredits === 1 ? "session" : "sessions"}
+                {packageDefinition.sessionCreditCount}{" "}
+                {packageDefinition.sessionCreditCount === 1 ? "session" : "sessions"}
               </p>
               <p className="mt-1 text-sm text-primary-foreground/72">
-                {free ? "Complimentary" : formatPeso(bundle.pricePhp)}
+                {free ? "Complimentary" : formatPeso(packageDefinition.pricePhp)}
               </p>
               {signedIn ? (
-                <PolicyAcceptance
-                  {...policyAcceptance.props}
-                  tone="inverse"
-                  title="Before you continue"
-                  className="mt-6"
+                <PackageRequestForm
+                  customerId={customerId ?? ""}
+                  bundleId={packageDefinition.id}
+                  free={free}
+                  actionLabel={actionLabel}
                 />
-              ) : null}
-              {signedIn ? (
-                <Button
-                  variant="accent"
-                  size="lg"
-                  className="mt-7 w-full"
-                  disabled={status === "working"}
-                  onClick={claim}
-                >
-                  {status === "working" ? "Preparing your package" : actionLabel}
-                  <ArrowUpRight aria-hidden className="size-4" />
-                </Button>
               ) : (
                 <Button
                   nativeButton={false}
                   variant="accent"
                   size="lg"
                   className="mt-7 w-full"
-                  render={<Link href={`/login?returnTo=/packages/${bundle.slug}`} />}
+                  render={<Link href={`/login?returnTo=/packages/${packageDefinition.slug}`} />}
                 >
                   {actionLabel}
                   <ArrowUpRight aria-hidden className="size-4" />
@@ -157,7 +108,7 @@ export function PackageDetailPage({
         <article className="max-w-2xl">
           <p className="text-sm font-semibold text-muted-foreground">About this package</p>
           <div className="prose prose-sm mt-5 max-w-none text-base leading-8 text-foreground prose-p:leading-8 prose-strong:text-foreground">
-            {bundle.description}
+            {packageDefinition.description}
           </div>
 
           <div className="mt-12 rounded-[1.5rem] bg-secondary/55 p-6 sm:p-8">
@@ -194,27 +145,28 @@ export function PackageDetailPage({
             {detailTerm({
               icon: Ticket,
               label: "Sessions",
-              children: `${bundle.sessionCredits} ${bundle.sessionCredits === 1 ? "session" : "sessions"}`,
+              children: `${packageDefinition.sessionCreditCount} ${packageDefinition.sessionCreditCount === 1 ? "session" : "sessions"}`,
             })}
             {detailTerm({
               icon: CalendarDays,
               label: "Class access",
-              children: bundle.applicability.allActiveClasses
-                ? "Any active studio class"
-                : "Selected studio classes",
+              children:
+                packageDefinition.applicabilityMode === "ALL_ACTIVE_CLASSES"
+                  ? "Any active studio class"
+                  : "Selected studio classes",
             })}
             {detailTerm({
               icon: Clock3,
               label: "Validity",
-              children: bundle.validityDays
-                ? `${bundle.validityDays} days after activation`
+              children: packageDefinition.validityDays
+                ? `${packageDefinition.validityDays} days after activation`
                 : "No expiry",
             })}
           </dl>
           <div className="mt-8 border-t border-border pt-6">
             <p className="text-xs leading-5 text-muted-foreground">
-              {bundle.perCustomerLimit
-                ? `Limited to ${bundle.perCustomerLimit} per customer.`
+              {packageDefinition.perCustomerLimit
+                ? `Limited to ${packageDefinition.perCustomerLimit} per customer.`
                 : "Available while this package is published."}
             </p>
           </div>

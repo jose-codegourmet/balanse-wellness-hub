@@ -1,20 +1,35 @@
 "use client";
 
-import { FAQ_GROUPS, filterFaqs, flattenFaqs } from "@balanse/domain";
+import { FAQ_GROUPS, type FaqGroup } from "@balanse/domain";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, Input, ScrollReveal } from "@balanse/ui";
 import { useMemo, useState } from "react";
 import { BalanseCtaSection } from "@/components/balanse/marketing/BalanseCtaSection";
 import { BalanseFaqSection } from "@/components/balanse/marketing/BalanseFaqSection";
 import { BalanseHero } from "@/components/balanse/marketing/BalanseHero";
 
-export function FaqsPage({ initialQuery = "" }: { initialQuery?: string }) {
+export function FaqsPage({
+  initialQuery = "",
+  faqs,
+}: {
+  initialQuery?: string;
+  faqs?: { id: string; question: string; answer: string }[];
+}) {
   const [query, setQuery] = useState(initialQuery);
-  const items = useMemo(() => filterFaqs(query), [query]);
-  const itemIds = new Set(items.map((item) => item.id));
-  const visibleGroups = FAQ_GROUPS.map((group) => ({
-    ...group,
-    items: group.items.filter((item) => itemIds.has(item.id)),
-  })).filter((group) => group.items.length > 0);
+  const groups = faqs?.length
+    ? ([{ id: "booking", title: "Studio FAQs", items: faqs }] as FaqGroup[])
+    : FAQ_GROUPS;
+  const visibleGroups = useMemo(
+    () =>
+      groups
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) =>
+            `${item.question} ${item.answer}`.toLowerCase().includes(query.trim().toLowerCase()),
+          ),
+        }))
+        .filter((group) => group.items.length > 0),
+    [groups, query],
+  );
 
   return (
     <article>
@@ -69,7 +84,7 @@ export function FaqsPage({ initialQuery = "" }: { initialQuery?: string }) {
         </ScrollReveal>
       )}
 
-      <p className="sr-only">{flattenFaqs().length} canonical questions.</p>
+      <p className="sr-only">{groups.flatMap((group) => group.items).length} questions.</p>
 
       <BalanseCtaSection
         blockId="faqs-final"

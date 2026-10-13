@@ -1,7 +1,8 @@
-import { getMockAdapter } from "@balanse/mock";
+import { getMyBooking } from "@balanse/api-client";
 import type { Metadata } from "next";
+import { serverFetcher } from "@/lib/query/fetcher";
 import { BookingDetail } from "@/modules/customer/BookingDetail";
-import { getCurrentCustomer } from "@/modules/session/current-customer";
+import { getCurrentCustomer, getCustomerAccessToken } from "@/modules/session/current-customer";
 import { buildBookingInvite } from "@/modules/share/public-page";
 
 export const metadata: Metadata = {
@@ -11,10 +12,11 @@ export const metadata: Metadata = {
 
 export default async function Page({ params }: { params: Promise<{ bookingId: string }> }) {
   const { bookingId } = await params;
-  const [booking, profile] = await Promise.all([
-    getMockAdapter().getBooking(bookingId),
-    getCurrentCustomer(),
-  ]);
+  const profile = await getCurrentCustomer();
+  const token = await getCustomerAccessToken();
+  const booking = profile
+    ? await getMyBooking(serverFetcher(token), bookingId, profile.id).catch(() => null)
+    : null;
 
   // Customers only ever see their own bookings.
   if (!booking || booking.customerId !== profile?.id) {

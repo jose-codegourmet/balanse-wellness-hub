@@ -1,16 +1,22 @@
-import { FIELD_CONSTRAINTS, type SettingsSection, SIGNED_UPLOAD } from "@balanse/domain";
+import {
+  FIELD_CONSTRAINTS,
+  type SettingsSection,
+  SIGNED_UPLOAD,
+  validatePaymentAccount,
+} from "@balanse/domain";
 import { requireAdmin, resolveActor, writeAudit } from "../auth";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { asString, ok, readJson, searchParams } from "../http";
 import {
-  activatePaymentQr,
-  createConfirmedPaymentQr,
-  findActivePaymentQr,
+  assertNotLastVisibleAccount,
+  createPaymentAccount,
+  getOwnedPaymentQr,
+  listActivePaymentQrs,
   listPaymentQrs,
   overlayDerivedQr,
   persistDerivedQr,
-  serializePaymentQrs,
+  setPaymentQrActive,
 } from "../payment-qrs";
 import { presentPaymentQr } from "../presenters";
 import { requireSettingsSection, shapeSettingsPayload } from "../sensitive";
@@ -32,6 +38,48 @@ import {
   throwFields,
 } from "../validation";
 
+const POLICY_FORMS = [
+  "sign_up",
+  "booking",
+  "package_request",
+  "payment_proof",
+  "reschedule",
+  "cancellation",
+  "contact",
+] as const;
+type PolicyForm = (typeof POLICY_FORMS)[number];
+const PRISMA_POLICY_FORM: Record<
+  PolicyForm,
+  | "SIGN_UP"
+  | "BOOKING"
+  | "PACKAGE_REQUEST"
+  | "PAYMENT_PROOF"
+  | "RESCHEDULE"
+  | "CANCELLATION"
+  | "CONTACT"
+> = {
+  sign_up: "SIGN_UP",
+  booking: "BOOKING",
+  package_request: "PACKAGE_REQUEST",
+  payment_proof: "PAYMENT_PROOF",
+  reschedule: "RESCHEDULE",
+  cancellation: "CANCELLATION",
+  contact: "CONTACT",
+};
+
+async function policyRequirements(deps: ApiDeps) {
+  const rows = await deps.prisma.policyFormRequirement.findMany({
+    include: { document: true },
+    orderBy: [{ form: "asc" }, { sortOrder: "asc" }],
+  });
+  return Object.fromEntries(
+    POLICY_FORMS.map((form) => [
+      form,
+      rows.filter((row) => row.form === PRISMA_POLICY_FORM[form]).map((row) => row.document.title),
+    ]),
+  );
+}
+
 export async function getAdminSettings(deps: ApiDeps, req: Request): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
   return ok(shapeSettingsPayload(actor, await settingsPayload(deps)));
@@ -45,10 +93,13 @@ async function settingsPayload(deps: ApiDeps) {
     }),
     listPaymentQrs(deps, false),
   ]);
-  const policies = await deps.prisma.policyDocument.findMany({
-    include: { versions: { orderBy: { createdAt: "desc" } } },
-    orderBy: { title: "asc" },
-  });
+  const [policies, policyFormRequirements] = await Promise.all([
+    deps.prisma.policyDocument.findMany({
+      include: { versions: { orderBy: { createdAt: "desc" } } },
+      orderBy: { title: "asc" },
+    }),
+    policyRequirements(deps),
+  ]);
   const body = {
     section: {
       business: ["business.name", "contact.phone", "contact.address"],
@@ -65,7 +116,7 @@ async function settingsPayload(deps: ApiDeps) {
     payment: {
       ...settings.payment,
       qrImageKey: settings.payment.gcashQrObjectKey || null,
-      qrs: serializePaymentQrs(paymentQrs),
+      qrs: paymentQrs.map(presentPaymentQr),
     },
     content: {
       about: settings.content.about,
@@ -87,11 +138,28 @@ async function settingsPayload(deps: ApiDeps) {
       versions: doc.versions.map((version) => ({
         id: version.id,
         version: version.version,
+        title: version.title,
+        body: version.body,
         isCurrent: version.isCurrent,
         isPlaceholder: version.isPlaceholder,
         effectiveFrom: version.effectiveFrom.toISOString(),
       })),
     })),
+    // Compatibility shape for the current Settings composition. The API client
+    // normalizes this into `AdminSettings` while policy routes remain grouped
+    // by document above.
+    policyDocuments: policies.flatMap((doc) =>
+      doc.versions.map((version) => ({
+        id: version.id,
+        documentId: doc.id,
+        documentName: doc.title,
+        version: version.version,
+        promotedAt: version.effectiveFrom.toISOString(),
+        current: version.isCurrent,
+        body: version.body,
+      })),
+    ),
+    policyFormRequirements,
   };
   assertNoDeveloperConfig(body);
   return body;
@@ -226,6 +294,15 @@ export async function patchAdminSettings(deps: ApiDeps, req: Request): Promise<R
   return ok(shapeSettingsPayload(actor, await settingsPayload(deps)));
 }
 
+/**
+ * @deprecated legacy single-slot GCash uploader for the general settings
+ * page's "payment" section. Behaves like it always has (replace the one
+ * shown GCash QR) on top of the WIRE-1701 multi-account table: confirming a
+ * new image here hides every other currently-shown account and shows only
+ * the new one, approximating the old "exactly one active" model for this
+ * one legacy entry point. The full collection (`/payment-qrs`) does not
+ * share this restriction.
+ */
 export async function postSettingsQr(deps: ApiDeps, req: Request): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
   const body = await readJson(req);
@@ -249,31 +326,30 @@ export async function postSettingsQr(deps: ApiDeps, req: Request): Promise<Respo
   await confirmUpload(deps, objectKey);
   const label =
     optionalString(body, "label", FIELD_CONSTRAINTS.settings.paymentQr.label.max) ?? "GCash";
-  const previous = await findActivePaymentQr(deps);
-  const created = await createConfirmedPaymentQr(deps, { label, imageKey: objectKey });
-  const activated = (await activatePaymentQr(deps, created.id)) ?? created;
-  if (previous && previous.id !== activated.id) {
-    await deps.prisma.paymentQrCode.update({
-      where: { id: previous.id },
-      data: { isActive: false, archivedAt: deps.now() },
-    });
-  }
+  const previouslyShown = await listActivePaymentQrs(deps);
+  const created = await createPaymentAccount(deps, {
+    type: "GCASH",
+    label,
+    accountName: "",
+    accountNumber: "",
+    imageKey: objectKey,
+    isActive: true,
+  });
+  await deps.prisma.paymentQrCode.updateMany({
+    where: { isActive: true, archivedAt: null, id: { not: created.id } },
+    data: { isActive: false },
+  });
   const payment = (await persistDerivedQr(deps)).payment;
   await writeAudit(deps, {
     entityType: "settings",
     entityId: "public_settings",
     action: "settings.qr.replace",
     actor,
-    metadata: {
-      previous: previous?.imageKey ?? null,
-      objectKey,
-      qrId: activated.id,
-      previousArchived: previous && previous.id !== activated.id ? previous.id : null,
-    },
+    metadata: { previous: previouslyShown.map((row) => row.imageKey), objectKey, qrId: created.id },
   });
   return ok({
     payment,
-    qr: presentPaymentQr(activated),
+    qr: presentPaymentQr(created),
   });
 }
 
@@ -291,11 +367,12 @@ export async function deleteSettingsQr(deps: ApiDeps, req: Request): Promise<Res
 export async function getPaymentQrs(deps: ApiDeps, req: Request): Promise<Response> {
   requireAdmin(await resolveActor(deps, req));
   const includeArchived = searchParams(req).get("includeArchived") === "true";
-  const items = serializePaymentQrs(await listPaymentQrs(deps, includeArchived));
-  return ok({ items, activeId: items.find((row) => row.isActive)?.id ?? null });
+  const items = (await listPaymentQrs(deps, includeArchived)).map(presentPaymentQr);
+  return ok({ items });
 }
 
-export async function postPaymentQr(deps: ApiDeps, req: Request): Promise<Response> {
+/** Mint (no `objectKey`) or confirm (with `objectKey`) a QR image, decoupled from creating/patching the account row (WIRE-1702/#371). */
+export async function postPaymentQrImage(deps: ApiDeps, req: Request): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
   const body = await readJson(req);
   const contentType = asString(body.contentType);
@@ -303,7 +380,7 @@ export async function postPaymentQr(deps: ApiDeps, req: Request): Promise<Respon
   if (!objectKey) {
     if (!contentType)
       throwFields(fieldError("contentType", "required", "contentType is required."));
-    const path = `marketing-assets/settings/gcash-qr/${crypto.randomUUID()}.${extensionFor(contentType)}`;
+    const path = `marketing-assets/settings/payment-qrs/${crypto.randomUUID()}.${extensionFor(contentType)}`;
     return ok(
       await mintSignedUpload(deps, actor, {
         bucket: "marketing-assets",
@@ -315,34 +392,106 @@ export async function postPaymentQr(deps: ApiDeps, req: Request): Promise<Respon
       }),
     );
   }
-  const label = requireString(body, "label", FIELD_CONSTRAINTS.settings.paymentQr.label.max);
   await confirmUpload(deps, objectKey);
-  const created = await createConfirmedPaymentQr(deps, { label, imageKey: objectKey });
+  return ok({ objectKey });
+}
+
+export async function postPaymentQr(deps: ApiDeps, req: Request): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const body = await readJson(req);
+  const type = asString(body.type);
+  if (type !== "GCASH" && type !== "MAYA" && type !== "QRPH") {
+    throwFields(fieldError("type", "invalid_enum", "type must be GCASH, MAYA, or QRPH."));
+  }
+  const label = requireString(body, "label", FIELD_CONSTRAINTS.settings.paymentQr.label.max);
+  const accountName = requireString(
+    body,
+    "accountName",
+    FIELD_CONSTRAINTS.settings.paymentQr.accountName.max,
+  );
+  const accountNumber =
+    optionalString(body, "accountNumber", FIELD_CONSTRAINTS.settings.paymentQr.accountNumber.max) ??
+    "";
+  const imageKey = asString(body.imageKey) ?? null;
+  const isActive = body.isActive !== false;
+  const invalid = validatePaymentAccount({ type, label, accountName, accountNumber, imageKey });
+  if (Object.keys(invalid).length > 0) {
+    throwFields(
+      ...Object.entries(invalid).map(([path, message]) =>
+        fieldError(path, "invalid_format", message),
+      ),
+    );
+  }
+  const created = await createPaymentAccount(deps, {
+    type,
+    label,
+    accountName,
+    accountNumber,
+    imageKey,
+    isActive,
+  });
   if (created.isActive) await persistDerivedQr(deps);
   await writeAudit(deps, {
     entityType: "payment_qr",
     entityId: created.id,
     action: "payment_qr.create",
     actor,
-    metadata: { objectKey, isActive: created.isActive },
+    metadata: { imageKey, isActive: created.isActive },
   });
   return ok({ qr: presentPaymentQr(created) });
 }
 
 export async function patchPaymentQr(deps: ApiDeps, req: Request, id: string): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
-  const existing = await deps.prisma.paymentQrCode.findUnique({ where: { id } });
-  if (!existing || existing.archivedAt) {
-    throw new ApiError(404, "payment_qr_not_found", "Payment QR not found.");
-  }
+  const existing = await getOwnedPaymentQr(deps, id);
   const body = await readJson(req);
+  const type = asString(body.type);
+  if (type !== undefined && type !== "GCASH" && type !== "MAYA" && type !== "QRPH") {
+    throwFields(fieldError("type", "invalid_enum", "type must be GCASH, MAYA, or QRPH."));
+  }
   const label = optionalString(body, "label", FIELD_CONSTRAINTS.settings.paymentQr.label.max);
+  const accountName = optionalString(
+    body,
+    "accountName",
+    FIELD_CONSTRAINTS.settings.paymentQr.accountName.max,
+  );
+  const accountNumber = optionalString(
+    body,
+    "accountNumber",
+    FIELD_CONSTRAINTS.settings.paymentQr.accountNumber.max,
+  );
+  // `imageKey: null` clears the image explicitly (WIRE-1702/#371); omitting the field keeps it.
+  const clearsImage = "imageKey" in body && body.imageKey === null;
+  const nextImageKey = clearsImage ? null : (asString(body.imageKey) ?? undefined);
+  const invalid = validatePaymentAccount({
+    type: (type as "GCASH" | "MAYA" | "QRPH") ?? existing.type,
+    label: label ?? existing.label,
+    accountName: accountName ?? existing.accountName,
+    accountNumber: accountNumber ?? existing.accountNumber,
+    imageKey: nextImageKey === undefined ? existing.imageKey : nextImageKey,
+  });
+  if (Object.keys(invalid).length > 0) {
+    throwFields(
+      ...Object.entries(invalid).map(([path, message]) =>
+        fieldError(path, "invalid_format", message),
+      ),
+    );
+  }
+  if (body.isActive === false && existing.isActive) {
+    await assertNotLastVisibleAccount(deps, id);
+  }
   const updated = await deps.prisma.paymentQrCode.update({
     where: { id },
     data: {
+      ...(type !== undefined ? { type } : {}),
       ...(label !== undefined ? { label } : {}),
+      ...(accountName !== undefined ? { accountName } : {}),
+      ...(accountNumber !== undefined ? { accountNumber } : {}),
+      ...(nextImageKey !== undefined ? { imageKey: nextImageKey } : {}),
+      ...(typeof body.isActive === "boolean" ? { isActive: body.isActive } : {}),
     },
   });
+  await persistDerivedQr(deps);
   await writeAudit(deps, {
     entityType: "payment_qr",
     entityId: id,
@@ -358,37 +507,28 @@ export async function activatePaymentQrHandler(
   id: string,
 ): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
-  const activated = await activatePaymentQr(deps, id);
-  if (!activated) throw new ApiError(404, "payment_qr_not_found", "Payment QR not found.");
+  const body = await readJson(req);
+  const active = body.active !== false;
+  const updated = await setPaymentQrActive(deps, id, active);
   await persistDerivedQr(deps);
   await writeAudit(deps, {
     entityType: "payment_qr",
     entityId: id,
-    action: "payment_qr.activate",
+    action: active ? "payment_qr.activate" : "payment_qr.hide",
     actor,
   });
-  return ok({ qr: presentPaymentQr(activated) });
+  return ok({ qr: presentPaymentQr(updated) });
 }
 
 export async function archivePaymentQr(deps: ApiDeps, req: Request, id: string): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
-  const existing = await deps.prisma.paymentQrCode.findUnique({ where: { id } });
-  if (!existing || existing.archivedAt) {
-    throw new ApiError(404, "payment_qr_not_found", "Payment QR not found.");
-  }
-  if (existing.isActive) {
-    throwFields(
-      fieldError(
-        "id",
-        "cannot_remove_active",
-        "Activate another QR before archiving the active one.",
-      ),
-    );
-  }
+  const existing = await getOwnedPaymentQr(deps, id);
+  if (existing.isActive) await assertNotLastVisibleAccount(deps, id);
   const archived = await deps.prisma.paymentQrCode.update({
     where: { id },
     data: { isActive: false, archivedAt: deps.now() },
   });
+  await persistDerivedQr(deps);
   await writeAudit(deps, {
     entityType: "payment_qr",
     entityId: id,
@@ -509,6 +649,192 @@ export async function promotePolicy(deps: ApiDeps, req: Request, id: string): Pr
     metadata: { document: document.title, previousVersion: previous, newVersion: version },
   });
   return ok(shapeSettingsPayload(actor, await settingsPayload(deps)));
+}
+
+export async function postPolicyDocument(deps: ApiDeps, req: Request): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const body = await readJson(req);
+  const title = requireString(body, "title", 120);
+  const slug = requireString(body, "slug", 120).toLowerCase();
+  const kind = asString(body.kind);
+  if (
+    !kind ||
+    !["WAIVER", "GYM_POLICY", "PARTICIPATION_RULES", "CANCELLATION_REFUND"].includes(kind)
+  ) {
+    throwFields(fieldError("kind", "invalid_enum", "Provide a valid policy kind."));
+  }
+  const version = requirePolicyVersion(requireString(body, "version", 7));
+  const policyBody = requireString(body, "body", 20_000);
+  const document = await deps.prisma.policyDocument.create({
+    data: {
+      title,
+      slug,
+      kind: kind as "WAIVER" | "GYM_POLICY" | "PARTICIPATION_RULES" | "CANCELLATION_REFUND",
+      required: false,
+      versions: {
+        create: {
+          version,
+          title,
+          body: policyBody,
+          effectiveFrom: deps.now(),
+          isCurrent: true,
+          isPlaceholder: false,
+        },
+      },
+    },
+  });
+  await writeAudit(deps, {
+    entityType: "policy",
+    entityId: document.id,
+    action: "policy.create",
+    actor,
+  });
+  return ok(shapeSettingsPayload(actor, await settingsPayload(deps)));
+}
+
+export async function patchPolicyDocument(
+  deps: ApiDeps,
+  req: Request,
+  id: string,
+): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const body = await readJson(req);
+  const title = optionalString(body, "title", 120);
+  const kind = asString(body.kind);
+  if (
+    kind !== undefined &&
+    !["WAIVER", "GYM_POLICY", "PARTICIPATION_RULES", "CANCELLATION_REFUND"].includes(kind)
+  ) {
+    throwFields(fieldError("kind", "invalid_enum", "Provide a valid policy kind."));
+  }
+  await deps.prisma.policyDocument.update({
+    where: { id },
+    data: {
+      ...(title !== undefined ? { title } : {}),
+      ...(kind
+        ? { kind: kind as "WAIVER" | "GYM_POLICY" | "PARTICIPATION_RULES" | "CANCELLATION_REFUND" }
+        : {}),
+    },
+  });
+  await writeAudit(deps, { entityType: "policy", entityId: id, action: "policy.update", actor });
+  return ok(shapeSettingsPayload(actor, await settingsPayload(deps)));
+}
+
+export async function postPolicyVersion(
+  deps: ApiDeps,
+  req: Request,
+  id: string,
+): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const body = await readJson(req);
+  const version = requirePolicyVersion(requireString(body, "version", 7));
+  const title = requireString(body, "title", 120);
+  const policyBody = requireString(body, "body", 20_000);
+  const document = await deps.prisma.policyDocument.findUnique({ where: { id } });
+  if (!document) throw new ApiError(404, "policy_not_found", "Policy document not found.");
+  await deps.prisma.policyDocumentVersion.create({
+    data: {
+      documentId: id,
+      version,
+      title,
+      body: policyBody,
+      effectiveFrom: deps.now(),
+      isCurrent: false,
+      isPlaceholder: false,
+    },
+  });
+  await writeAudit(deps, {
+    entityType: "policy",
+    entityId: id,
+    action: "policy.version.create",
+    actor,
+  });
+  return ok(shapeSettingsPayload(actor, await settingsPayload(deps)));
+}
+
+export async function deletePolicyDocument(
+  deps: ApiDeps,
+  req: Request,
+  id: string,
+): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const document = await deps.prisma.policyDocument.findFirst({
+    where: { OR: [{ id }, { slug: id }, { title: id }] },
+  });
+  if (!document) throw new ApiError(404, "policy_not_found", "Policy document not found.");
+  const accepted = await deps.prisma.bookingPolicyAcceptance.count({
+    where: { policyVersion: { documentId: document.id } },
+  });
+  if (accepted)
+    throw new ApiError(
+      409,
+      "policy_has_acceptances",
+      "Accepted policy documents cannot be deleted.",
+    );
+  await deps.prisma.policyDocument.delete({ where: { id: document.id } });
+  await writeAudit(deps, {
+    entityType: "policy",
+    entityId: document.id,
+    action: "policy.delete",
+    actor,
+  });
+  return ok({ deleted: document.id });
+}
+
+export async function getPolicyForms(deps: ApiDeps, req: Request): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  return ok(
+    shapeSettingsPayload(actor, { policyFormRequirements: await policyRequirements(deps) }),
+  );
+}
+
+export async function putPolicyForms(deps: ApiDeps, req: Request): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const body = await readJson(req);
+  const requirements = body.requirements;
+  if (!requirements || typeof requirements !== "object" || Array.isArray(requirements)) {
+    throwFields(
+      fieldError("requirements", "invalid_type", "requirements must be a form-to-document-id map."),
+    );
+  }
+  await deps.prisma.$transaction(async (tx) => {
+    await tx.policyFormRequirement.deleteMany();
+    for (const form of POLICY_FORMS) {
+      const ids = (requirements as Record<string, unknown>)[form];
+      if (!Array.isArray(ids) || ids.some((id) => typeof id !== "string")) {
+        throwFields(
+          fieldError(
+            `requirements.${form}`,
+            "invalid_type",
+            "Use an array of policy document ids.",
+          ),
+        );
+      }
+      for (const [sortOrder, requestedDocument] of ids.entries()) {
+        const document = await tx.policyDocument.findFirst({
+          where: { OR: [{ id: requestedDocument }, { title: requestedDocument }] },
+          select: { id: true },
+        });
+        if (!document) {
+          throwFields(
+            fieldError(`requirements.${form}`, "invalid_enum", "Unknown policy document."),
+          );
+        }
+        await tx.policyFormRequirement.create({
+          data: { form: PRISMA_POLICY_FORM[form], documentId: document.id, sortOrder },
+        });
+      }
+    }
+  });
+  await writeAudit(deps, {
+    entityType: "policy",
+    entityId: "policy-forms",
+    action: "policy.forms.update",
+    actor,
+  });
+  return ok(
+    shapeSettingsPayload(actor, { policyFormRequirements: await policyRequirements(deps) }),
+  );
 }
 
 function inferSection(body: Record<string, unknown>): SettingsSection | undefined {

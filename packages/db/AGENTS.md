@@ -120,12 +120,24 @@ The leftover `StaffRole` enum is not dropped in this wave.
 
 ## Venues
 
-`venues` (`Venue`, enum `VenueKind` = `BRANCH` | `OFFSITE`) holds branches and off-site partner venues. `GymSession.venueId` is required (`ON DELETE RESTRICT`); events have no venue columns and show their session's venue. Overlapping session times are allowed, with no overlap constraint. Venues are deactivated, never deleted. The default branch has the stable id `venue-main-studio` (migration and seed). RLS is staff-only: read needs `classes.*`, `schedule.read.*`, or `events.*`; writes need `classes.manage`. The `20260928090000_venues_on_sessions` migration is staged and must not be applied to the shared project until histories are reconciled. See `docs/backend/venues.md`.
+`venues` (`Venue`, enum `VenueKind` = `BRANCH` | `OFFSITE`) holds branches and off-site partner venues, plus `openingHours` (text) and `studioOwned` (nullable boolean, WIRE-0701/#360). `GymSession.venueId` is required (`ON DELETE RESTRICT`); events have no venue columns and show their session's venue. Overlapping session times are allowed, with no overlap constraint. Venues are deactivated, never deleted. The default branch has the stable id `venue-main-studio` (migration and `seed/venues.ts`, which also seeds the three other `venue-fixtures.ts` rows). RLS is staff-only: read needs `classes.*`, `schedule.read.*`, or `events.*`; writes need `classes.manage`. The `20260928090000_venues_on_sessions` and `20261003090000_venue_operations_fields` migrations have been applied to the shared project (2026-10-02/03). See `docs/backend/venues.md`.
 
 ## Session bundles (BE-058)
 
 `bundles`, `bundle_class_applicability`, `bundle_acquisitions`, `bundle_acquisition_payments`, `customer_bundles`, and `bundle_redemptions` implement session packages. Remaining credits are derived from the redemption ledger. The Prisma migration is staged and must not be applied to the shared project until histories are reconciled. See `docs/backend/session-bundles.md`.
 
+## Coach class change requests (WIRE-E20)
+
+`ClassChangeRequest` snapshots the original session and stores reschedule, substitute, or cancellation proposals. One pending row per session is enforced by a partial unique index. RLS permits reviewer reads and coach reads of their own requests; direct client writes are not granted. Status changes write an audit event. The paired migration is staged pending migration-history reconciliation. See `docs/backend/class-change-requests.md`.
+
 ## Profile identity (#344) and public read (#345)
+
+Customer directory membership (2026-10-03): nullable indexed
+`Profile.customerRegisteredAt` is set once by the private Auth registration trigger
+when the customer portal submits `registration_source: "customer_portal"` with its
+validated contact number. Staff-only profiles remain null. It is not an auth role
+or customer-writable timestamp. Customer seeds set it explicitly. Migration
+`20261003025442_customer_registration_marker` is applied to the shared project;
+see `docs/backend/auth.md` for historical backfill and trigger security details.
 
 `Profile` has `firstName` / `lastName` (required on write), optional `nickname` (2–30 chars), `avatarKey` (private `avatars` bucket, `avatars/<profileId>/<cuid>.webp`), `showOnPublicRoster`, DB-generated `referralCode`, and sign-up attribution (`referredById`, `referralChannel`). `fullName` is **deprecated and derived** by trigger `profiles_sync_full_name`; write `firstName` / `lastName`, never `fullName`. Onboarding answers live in `onboarding.prisma` (`ProfileOnboarding`, `ProfileClassInterest`). Customers may update only the identity/preference columns (column grants). Public session/event/roster reads go through `app_public.public_session`, `public_event`, `public_session_roster` (SECURITY DEFINER; anon gets counts only). Neither migration is applied to the shared project yet. See `docs/backend/auth.md`, `docs/backend/rls-policies.md`, and `docs/backend/migrations.md`.

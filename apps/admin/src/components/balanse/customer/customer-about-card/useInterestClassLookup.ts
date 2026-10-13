@@ -1,10 +1,10 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { adminClassesQuery, adminPublicClassesQuery } from "@/lib/query/queries";
-import { useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useCanAdminRoute, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import type { InterestClass } from "./CustomerAboutCard.meta";
 
 /**
@@ -16,11 +16,14 @@ export function useInterestClassLookup(): {
   classes: Record<string, InterestClass>;
   classHref: ((classId: string) => string | null) | null;
 } {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const canReadClasses = useCanAdminRoute("/classes");
-  const adminClasses = useQuery({ ...adminClassesQuery(principal), enabled: canReadClasses });
+  const adminClasses = useQuery({
+    ...adminClassesQuery(actor, apiFetchBrowser),
+    enabled: canReadClasses,
+  });
   const publicClasses = useQuery({
-    ...adminPublicClassesQuery(principal),
+    ...adminPublicClassesQuery(actor, apiFetchBrowser),
     enabled: !canReadClasses,
   });
   const rows = canReadClasses ? adminClasses.data : publicClasses.data;

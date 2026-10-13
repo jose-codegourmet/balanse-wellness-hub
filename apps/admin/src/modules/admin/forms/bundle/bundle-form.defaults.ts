@@ -1,4 +1,4 @@
-import type { BundleDefinition } from "@balanse/domain";
+import type { AdminBundle } from "@balanse/domain";
 import type { BundleFormValues } from "./bundle-form.schema";
 
 export const bundleFormDefaultValues: BundleFormValues = {
@@ -15,16 +15,16 @@ export const bundleFormDefaultValues: BundleFormValues = {
   status: "DRAFT",
 };
 
-export function bundleFormValuesFrom(bundle: BundleDefinition): BundleFormValues {
+export function bundleFormValuesFrom(bundle: AdminBundle): BundleFormValues {
   return {
     name: bundle.name,
     slug: bundle.slug,
     summary: bundle.summary,
     description: bundle.description,
-    sessionCredits: bundle.sessionCredits,
+    sessionCredits: bundle.sessionCreditCount,
     pricePhp: bundle.pricePhp,
-    applicabilityMode: bundle.applicability.allActiveClasses ? "all" : "selected",
-    classIds: bundle.applicability.classIds,
+    applicabilityMode: bundle.applicabilityMode === "ALL_ACTIVE_CLASSES" ? "all" : "selected",
+    classIds: bundle.classIds,
     validityDays: bundle.validityDays,
     perCustomerLimit: bundle.perCustomerLimit,
     status: bundle.status,

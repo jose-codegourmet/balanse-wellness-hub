@@ -1,20 +1,15 @@
 "use client";
 
 import type { CustomerBooking, PaymentInstructions, PolicyDocumentVersion } from "@balanse/domain";
-import {
-  bookingStatusLabel,
-  formatPeso,
-  PAYMENT_ACCOUNT_TYPE_META,
-  toPolicyAcceptances,
-} from "@balanse/domain";
-import { getMockAdapter, MOCK_NOW_ISO } from "@balanse/mock";
+import { bookingStatusLabel, formatPeso, PAYMENT_ACCOUNT_TYPE_META } from "@balanse/domain";
 import { FeedbackState, LocalizedSkeleton } from "@balanse/ui";
 import { useState } from "react";
-import { ImageUpload } from "@/components/balanse/ImageUpload";
+import { useForm } from "react-hook-form";
 import {
   PolicyAcceptance,
   usePolicyAcceptance,
 } from "@/components/balanse/policy-acceptance/PolicyAcceptance";
+import { useSubmitPaymentProof } from "@/lib/query/mutations/payments";
 import { notify } from "@/modules/notifications/notify";
 
 export function GcashProofPage({
@@ -35,6 +30,9 @@ export function GcashProofPage({
     forcedStatus ?? "idle",
   );
   const [current, setCurrent] = useState(booking);
+  const [file, setFile] = useState<File | null>(null);
+  const form = useForm<{ proof: FileList }>({ defaultValues: { proof: undefined } });
+  const submitProof = useSubmitPaymentProof(booking.customerId, booking.id);
   const policyAcceptance = usePolicyAcceptance(policies);
 
   if (status === "submitting") {
@@ -125,30 +123,36 @@ export function GcashProofPage({
               </p>
             )}
             <fieldset disabled={!policyAcceptance.allAccepted} className="contents">
-              <ImageUpload
-                label="Choose Image"
-                fallbackLabel="Preview"
-                chooseLabel="Choose Image"
-                submitLabel="Submit Proof"
-                forceFailure={forceFailure}
-                onMockSubmit={async () => {
-                  setStatus("submitting");
-                  try {
-                    await getMockAdapter().acceptPolicies(
-                      current.customerId,
-                      toPolicyAcceptances(policies, MOCK_NOW_ISO, "payment_proof"),
-                    );
-                    const next = await getMockAdapter().uploadPaymentProof(current.id);
-                    setCurrent(next);
-                    setStatus("submitted");
-                    notify.portal("payment.proof-submitted");
-                  } catch {
-                    setStatus("failed");
-                    notify.portal("payment.proof-failed");
-                    throw new Error("Proof upload failed");
-                  }
-                }}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/heic"
+                aria-label="Choose payment proof"
+                {...form.register("proof", {
+                  onChange: (event) => setFile(event.target.files?.[0] ?? null),
+                })}
               />
+              <button
+                type="button"
+                disabled={!file || forceFailure}
+                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                onClick={() => {
+                  if (!file) return;
+                  setStatus("submitting");
+                  void submitProof
+                    .mutateAsync(file)
+                    .then((result) => {
+                      setCurrent(result.booking);
+                      setStatus("submitted");
+                      notify.portal("payment.proof-submitted");
+                    })
+                    .catch(() => {
+                      setStatus("failed");
+                      notify.portal("payment.proof-failed");
+                    });
+                }}
+              >
+                Submit proof
+              </button>
             </fieldset>
           </div>
         )}

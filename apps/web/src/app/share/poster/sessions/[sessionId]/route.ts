@@ -1,5 +1,6 @@
+import { getPublicSession } from "@balanse/api-client";
 import { parseShareParams } from "@balanse/domain";
-import { getMockAdapter, MOCK_NOW_ISO } from "@balanse/mock";
+import { serverFetcher } from "@/lib/query/fetcher";
 import { renderPosterImage } from "@/modules/share/share-card";
 
 /** Branded 1080×1350 poster PNG for a public session (#347). Node runtime (fs + qrcode). */
@@ -13,13 +14,9 @@ export async function GET(
   { params }: { params: Promise<{ sessionId: string }> },
 ): Promise<Response> {
   const { sessionId } = await params;
-  const page = await getMockAdapter().getPublicSessionPage(sessionId);
+  const page = await getPublicSession(serverFetcher(null), sessionId).catch(() => null);
   // Draft/unknown → null. Past sessions have nothing left to promote.
-  if (
-    !page ||
-    page.availability === "past" ||
-    Date.parse(page.endsAt) <= Date.parse(MOCK_NOW_ISO)
-  ) {
+  if (!page || page.availability === "past" || Date.parse(page.endsAt) <= Date.now()) {
     return new Response("Not found", { status: 404, headers: { "Cache-Control": CACHE_CONTROL } });
   }
   const query = new URL(request.url).searchParams;

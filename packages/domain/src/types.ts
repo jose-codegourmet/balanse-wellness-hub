@@ -138,6 +138,9 @@ export type CustomerBooking = {
   targetSession?: PublicSession | null;
   rejectReason?: string | null;
   proofPreviewUrl?: string | null;
+  /** Admin queue transport identifiers; unavailable on customer booking reads. */
+  paymentId?: string | null;
+  refundId?: string | null;
   /** Held or consumed package redemption, when the booking used a package. */
   entitlementId?: string | null;
   /** Waitlist intent only — does not hold or consume a credit. */
@@ -192,6 +195,8 @@ export type PaymentQrCode = PaymentAccountSummary & {
 export type AdminStaff = {
   id: string;
   name: string;
+  /** Short-lived signed URL for the private profile avatar. */
+  avatarUrl?: string | null;
   email: string;
   /** Legacy enum until the leftover StaffRole column is dropped. Not authorization truth. */
   role: StaffRole;

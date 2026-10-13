@@ -1,6 +1,5 @@
 import "server-only";
 import type { CustomerProfile, OnboardingStatus } from "@balanse/domain";
-import { getMockAdapter } from "@balanse/mock";
 import type { JwtPayload } from "@supabase/supabase-js";
 import { cache } from "react";
 import { signedAvatarUrl } from "./avatar-storage";
@@ -13,9 +12,7 @@ import { createSupabaseServerClient } from "./supabase-server";
  * (`auth.users.id` = `profiles.id`). Identity fields come from the
  * `profiles` row (created by `app_private.handle_new_user`) with the auth
  * claims as fallback. The photo is a signed URL for `profiles.avatarKey` in
- * Supabase Storage (`avatar-storage.ts`). Bookings, packages and onboarding
- * answers are still mocked this phase, so the profile is mirrored into the
- * MockDataAdapter under the same id (`ensureCustomer`).
+ * Supabase Storage (`avatar-storage.ts`). Profile writes go through `/api/me`.
  */
 
 export type SessionUser = { id: string; email: string };
@@ -35,6 +32,17 @@ async function readClaims(): Promise<JwtPayload | null> {
 
 /** Verified JWT claims for this request (cached per render). */
 const getClaims = cache(readClaims);
+
+/** Raw bearer token for server-side API prefetches. `null` for guests. */
+export const getCustomerAccessToken = cache(async (): Promise<string | null> => {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token ?? null;
+  } catch {
+    return null;
+  }
+});
 
 /** The signed-in Supabase user, or null for guests. Cheap: no database read. */
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
@@ -122,15 +130,11 @@ export const getSupabaseCustomerProfile = cache(async (): Promise<CustomerProfil
 });
 
 /**
- * The signed-in customer, or null for guests. Seeds the mock mirror on first
- * use; after that the mirror holds this session's still-mocked edits.
+ * The signed-in customer, or null for guests. This is the sole profile source;
+ * the application no longer maintains an in-memory profile mirror.
  */
 export const getCurrentCustomer = cache(async (): Promise<CustomerProfile | null> => {
-  const profile = await getSupabaseCustomerProfile();
-  if (!profile) return null;
-  const mirror = await getMockAdapter().ensureCustomer(profile);
-  // The photo always comes from Supabase Storage, never the mock mirror.
-  return { ...mirror, avatarUrl: profile.avatarUrl };
+  return getSupabaseCustomerProfile();
 });
 
 /**

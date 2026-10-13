@@ -1,5 +1,6 @@
-import { getMockAdapter } from "@balanse/mock";
+import { getPublicContent, listPublicCoaches } from "@balanse/api-client";
 import type { Metadata } from "next";
+import { serverFetcher } from "@/lib/query/fetcher";
 import { AboutPage } from "./_components/about-page/AboutPage";
 
 export const metadata: Metadata = {
@@ -7,7 +8,12 @@ export const metadata: Metadata = {
   description: "About Balansé Wellness Hub — movement, wellness, and community in Cebu.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
-  const coaches = await getMockAdapter().getPublicCoaches();
-  return <AboutPage coaches={coaches} />;
+  const [{ items: coaches }, content] = await Promise.all([
+    listPublicCoaches(serverFetcher(null)),
+    getPublicContent(serverFetcher(null)),
+  ]);
+  return <AboutPage coaches={coaches} about={content.about} />;
 }

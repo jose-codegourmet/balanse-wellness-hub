@@ -15,6 +15,57 @@ const TAB_STATUSES: Record<string, BookingStatus[]> = {
   history: ["CANCELLED", "REJECTED", "NO_SHOW", "COMPLETED", "EXPIRED"],
 };
 
+function presentAdminBooking(row: {
+  id: string;
+  profileId: string;
+  sessionId: string;
+  status: BookingStatus;
+  paymentMethod: string | null;
+  holdExpiresAt: Date | null;
+  reservedAt: Date;
+  profile: { fullName: string };
+  session: {
+    id: string;
+    classId: string;
+    startsAt: Date;
+    endsAt: Date;
+    capacity: number;
+    status: "DRAFT" | "PUBLISHED" | "CANCELLED";
+    customerPrice: unknown;
+    gymClass: { name: string };
+    coaches: { coach: { id: string; name: string; photoKey: string | null } }[];
+  };
+  payments: { status: string }[];
+  refunds: { status: string }[];
+}) {
+  const payment = row.payments[0] ?? null;
+  const refund = row.refunds[0] ?? null;
+  return {
+    id: row.id,
+    profileId: row.profileId,
+    customerName: row.profile.fullName,
+    sessionId: row.sessionId,
+    paymentMethod: row.paymentMethod,
+    holdExpiresAt: row.holdExpiresAt?.toISOString() ?? null,
+    reservedAt: row.reservedAt.toISOString(),
+    paymentStatus: payment?.status ?? "NONE",
+    refundStatus: refund?.status ?? "NOT_APPLICABLE",
+    session: {
+      id: row.session.id,
+      classId: row.session.classId,
+      className: row.session.gymClass.name,
+      startsAt: row.session.startsAt.toISOString(),
+      endsAt: row.session.endsAt.toISOString(),
+      customerPrice: String(row.session.customerPrice),
+      capacity: row.session.capacity,
+      remainingSlots: 0,
+      status: row.session.status,
+      coaches: row.session.coaches.map(({ coach }) => coach),
+    },
+    ...bookingStatusPayload(row.status, refund?.status as never),
+  };
+}
+
 export async function getAdminBookings(deps: ApiDeps, req: Request): Promise<Response> {
   requireAdmin(await resolveActor(deps, req));
   const params = searchParams(req);
@@ -81,23 +132,19 @@ export async function getAdminBookings(deps: ApiDeps, req: Request): Promise<Res
       take: limit + 1,
       orderBy: [{ reservedAt: "desc" }, { id: "desc" }],
       include: {
-        profile: true,
-        session: { include: { gymClass: true } },
+        profile: { select: { fullName: true } },
+        session: {
+          include: {
+            gymClass: true,
+            coaches: { select: { coach: { select: { id: true, name: true, photoKey: true } } } },
+          },
+        },
         payments: { orderBy: { createdAt: "desc" }, take: 1 },
+        refunds: { orderBy: { createdAt: "desc" }, take: 1 },
       },
     }),
   ]);
-  const mapped = rows.map((row) => ({
-    id: row.id,
-    customerName: row.profile.fullName,
-    className: row.session.gymClass.name,
-    startsAt: row.session.startsAt.toISOString(),
-    reservedAt: row.reservedAt.toISOString(),
-    payment: row.payments[0]
-      ? { method: row.payments[0].method, status: row.payments[0].status }
-      : { method: row.paymentMethod, status: null },
-    ...bookingStatusPayload(row.status),
-  }));
+  const mapped = rows.map(presentAdminBooking);
   return ok({
     tab,
     sort,

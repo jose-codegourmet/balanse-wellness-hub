@@ -1,43 +1,39 @@
 "use client";
 
-import { ADMIN_LOGIN_HELP, MOCK_ADMIN_CREDENTIALS, validateAdminLogin } from "@balanse/domain";
-import { resolveMockStaffActor } from "@balanse/mock/session";
+import { ADMIN_LOGIN_HELP, safeAdminPath } from "@balanse/domain";
 import { BrandLockup, LocalizedSkeleton } from "@balanse/ui";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import {
-  firstImplementedPermittedAdminRoute,
-  resolvePermittedReturnTo,
-} from "@/lib/authorization/admin-access";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { signInWithPassword } from "../../_lib/admin-login-actions";
 import { AdminLoginForm } from "./admin-login-form/AdminLoginForm";
+import type { AdminLoginFormValues } from "./admin-login-form/AdminLoginForm.schema";
 
 export function AdminLogin({
   forcedStatus,
   returnTo: returnToProp,
 }: {
-  forcedStatus?: "submitting" | "invalid" | "not-admin";
+  /** Story-only: renders the loading skeleton without submitting anything. */
+  forcedStatus?: "submitting";
   returnTo?: string;
 }) {
   const router = useRouter();
-  const { setPrincipal } = useMockPrincipal();
-  const requestedReturnTo = returnToProp;
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<Partial<Record<"email" | "password" | "form", string>>>(
-    forcedStatus === "invalid"
-      ? { form: "Those credentials are not recognised in this mock." }
-      : forcedStatus === "not-admin"
-        ? { form: "This account is not an admin. Contact the system administrator." }
-        : {},
-  );
-  const [status, setStatus] = useState<"idle" | "submitting">(
-    forcedStatus === "submitting" ? "submitting" : "idle",
-  );
 
-  if (status === "submitting") {
+  if (forcedStatus === "submitting") {
     return <LocalizedSkeleton lines={5} label="Signing in" />;
+  }
+
+  async function handleSubmit(values: AdminLoginFormValues) {
+    const result = await signInWithPassword(values);
+    if (!result.ok) {
+      throw new Error(
+        result.errors.form ??
+          result.errors.email ??
+          result.errors.password ??
+          "We couldn't sign you in. Try again in a moment.",
+      );
+    }
+    router.push(safeAdminPath(returnToProp));
+    router.refresh();
   }
 
   return (
@@ -50,65 +46,7 @@ export function AdminLogin({
               Balansé Admin
             </p>
             <h1 className="sr-only">Balansé Admin</h1>
-            <AdminLoginForm
-              email={email}
-              password={password}
-              errors={errors}
-              onEmailChange={setEmail}
-              onPasswordChange={setPassword}
-              onSubmit={() => {
-                const result = validateAdminLogin({ email, password });
-                if (!result.ok) {
-                  setErrors(result.errors);
-                  return;
-                }
-                setErrors({});
-                setStatus("submitting");
-                window.setTimeout(() => {
-                  const nextPrincipal = setPrincipal({ role: "admin", staffId: result.staffId });
-                  const actor = resolveMockStaffActor(nextPrincipal);
-                  const landing = firstImplementedPermittedAdminRoute(actor, "/login") ?? "/login";
-                  router.push(resolvePermittedReturnTo(actor, requestedReturnTo, landing));
-                  router.refresh();
-                }, 350);
-              }}
-            />
-            <details className="mt-6 rounded-xl border border-border/70 bg-muted/25 p-3 open:bg-card">
-              <summary className="cursor-pointer text-sm font-semibold">
-                Try a sample staff account
-              </summary>
-              <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                Each account has a different role. Selecting one fills the mock credentials so you
-                can verify hidden navigation, blocked routes, and allowed actions.
-              </p>
-              <div className="mt-3 grid gap-2">
-                {MOCK_ADMIN_CREDENTIALS.map((account) => (
-                  <button
-                    key={account.staffId}
-                    type="button"
-                    className="rounded-lg border border-border/70 bg-background p-3 text-left transition-colors hover:border-primary/30 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    onClick={() => {
-                      setEmail(account.email);
-                      setPassword(account.password);
-                      setErrors({});
-                    }}
-                  >
-                    <span className="flex items-center justify-between gap-3">
-                      <span className="font-medium">{account.name}</span>
-                      <span className="rounded-sm bg-muted px-2 py-0.5 text-[0.6875rem] font-semibold text-muted-foreground">
-                        {account.roleLabel}
-                      </span>
-                    </span>
-                    <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-                      {account.accessSummary}
-                    </span>
-                  </button>
-                ))}
-              </div>
-              <p className="mt-3 text-xs text-muted-foreground">
-                Password for every sample: <code className="font-semibold">welcome</code>
-              </p>
-            </details>
+            <AdminLoginForm onSubmit={handleSubmit} />
             <p className="mt-6 text-center text-sm text-muted-foreground">{ADMIN_LOGIN_HELP}</p>
           </div>
         </div>

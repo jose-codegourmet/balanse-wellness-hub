@@ -137,6 +137,8 @@ export type AdminBundle = Omit<PublicPackage, "status"> & {
   status: BundleStatus;
   createdAt: string;
   updatedAt: string;
+  /** Ledger totals across issued entitlements; pending acquisitions are excluded. */
+  metrics: BundleCreditMetrics;
 };
 
 export type EntitlementSnapshot = {

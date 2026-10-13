@@ -28,8 +28,7 @@ import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/Admin
 import { AdminPageTabs } from "@/components/balanse/page/admin-page-tabs/AdminPageTabs";
 import { useTabParam } from "@/components/balanse/page/useTabParam";
 import { adminSettingsQuery } from "@/lib/query/queries";
-import { useCanSettingsSection } from "@/modules/authorization/useAdminAccess";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useCanSettingsSection, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { SETTINGS_TAB_LABELS, SETTINGS_TABS, type SettingsTab } from "../../_lib/settings-tabs";
 import { BusinessProfileSection } from "../business-profile-section/BusinessProfileSection";
 import { PoliciesSection } from "../policies-section/PoliciesSection";
@@ -120,7 +119,7 @@ export function SettingsPage({
   policyPage: policyPageProp = "library",
   policyId,
 }: SettingsPageProps) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const canBusiness = useCanSettingsSection("business");
   const canContent = useCanSettingsSection("content");
   const canPolicies = useCanSettingsSection("policies");
@@ -129,7 +128,7 @@ export function SettingsPage({
     if (item.id === "content") return canContent;
     return canPolicies;
   });
-  const query = useSuspenseQuery(adminSettingsQuery(principal));
+  const query = useSuspenseQuery(adminSettingsQuery(actor));
   const settings = query.data;
   const defaultTab =
     (initialTab && visibleTabs.some((tab) => tab.id === initialTab)

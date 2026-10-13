@@ -6,7 +6,6 @@ import type {
   ReferralChannel,
 } from "@balanse/domain";
 import type { ReactNode, Ref } from "react";
-import type { CustomerOnboardingActions } from "../../../profile/_lib/customer-self-service.types";
 
 /**
  * # OnboardingWizard (#352)
@@ -17,10 +16,10 @@ import type { CustomerOnboardingActions } from "../../../profile/_lib/customer-s
  * excludes Done.
  *
  * - Starts at `initialStep` (the route passes `firstIncompleteOnboardingStep`).
- * - **Continue** saves the step (`patchProfile` for You, `saveAnswers` for the
- *   rest), so progress persists. **Back** keeps unsaved edits: every step
+ * - **Continue** saves each step through React Query mutations, so progress
+ *   persists. **Back** keeps unsaved edits: every step
  *   form stays mounted (inactive ones are `hidden`).
- * - **Skip for now** (header, every step) → `skip()` → `returnTo`. Saved
+ * - **Skip for now** (header, every step) → onboarding mutation → `returnTo`. Saved
  *   answers are kept.
  * - **Finish** (last input step) → `complete()` → Done: "You're all set,
  *   <display name>!", primary "Back to <returnLabel>" for a public
@@ -42,7 +41,6 @@ export type OnboardingWizardProps = {
   returnTo: string;
   /** Name of the public session/event `returnTo` points at, when resolvable. */
   returnLabel: string | null;
-  actions: CustomerOnboardingActions;
 };
 
 /** Shared contract for the four step forms. */

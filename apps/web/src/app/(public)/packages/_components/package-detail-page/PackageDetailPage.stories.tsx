@@ -1,4 +1,3 @@
-import { getMockAdapter } from "@balanse/mock";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { PackageDetailPage } from "./PackageDetailPage";
 
@@ -12,6 +11,21 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Guest: Story = {
-  loaders: [async () => ({ bundle: await getMockAdapter().getPublicBundle("newbie-package") })],
-  render: (_args, { loaded }) => <PackageDetailPage bundle={loaded.bundle!} signedIn={false} />,
+  args: {
+    package: {
+      id: "bundle-newbie",
+      slug: "newbie-package",
+      name: "Newbie Package",
+      summary: "Twelve sessions to start your Balansé practice.",
+      description: "A studio welcome package with twelve session credits.",
+      sessionCreditCount: 12,
+      pricePhp: 0,
+      applicabilityMode: "ALL_ACTIVE_CLASSES",
+      classIds: [],
+      validityDays: null,
+      perCustomerLimit: 1,
+      status: "PUBLISHED",
+    },
+    signedIn: false,
+  },
 };

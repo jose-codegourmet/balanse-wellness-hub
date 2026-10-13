@@ -34,9 +34,8 @@ import { adminNowIso } from "@/lib/clock";
 import { useApproveAdminReschedule, useRejectAdminReschedule } from "@/lib/query/mutations";
 import { adminBookingsQuery, adminReschedulesInfiniteQuery } from "@/lib/query/queries";
 import { checkCanApproveReschedule } from "@/modules/admin/forms/session/session-form.schema";
-import { AdminCan } from "@/modules/authorization/useAdminAccess";
+import { AdminCan, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 
 const EXIT_MS = 220;
 
@@ -297,10 +296,10 @@ export function RescheduleQueuePage({
   nextPageError,
   focus,
 }: RescheduleQueuePageProps) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const [search, setSearch] = useState("");
-  const query = useInfiniteQuery(adminReschedulesInfiniteQuery(principal, search.trim()));
-  const bookingsQuery = useQuery(adminBookingsQuery(principal));
+  const query = useInfiniteQuery(adminReschedulesInfiniteQuery(actor, search.trim()));
+  const bookingsQuery = useQuery(adminBookingsQuery(actor));
   const nowIso = adminNowIso();
   const stamp = auditConfirmationCopy("This reschedule action", "Admin", nowIso);
   const [exiting, setExiting] = useState<Map<string, CustomerBooking>>(new Map());

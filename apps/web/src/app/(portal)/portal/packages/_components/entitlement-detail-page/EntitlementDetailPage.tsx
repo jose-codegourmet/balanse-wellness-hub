@@ -1,4 +1,4 @@
-import type { BundleRedemption, CustomerEntitlement } from "@balanse/domain";
+import type { HttpBundleRedemption, HttpCustomerEntitlement } from "@balanse/domain";
 import {
   entitlementStatusLabel,
   formatPeso,
@@ -21,10 +21,10 @@ export function EntitlementDetailPage({
   entitlement,
   redemptions,
 }: {
-  entitlement: CustomerEntitlement;
-  redemptions: BundleRedemption[];
+  entitlement: HttpCustomerEntitlement;
+  redemptions: HttpBundleRedemption[];
 }) {
-  const statusIcon = (status: BundleRedemption["status"]) => {
+  const statusIcon = (status: HttpBundleRedemption["status"]) => {
     if (status === "RESTORED") return <RotateCcw aria-hidden className="size-4" />;
     if (status === "HELD") return <Clock3 aria-hidden className="size-4" />;
     return <CircleCheck aria-hidden className="size-4" />;
@@ -50,7 +50,7 @@ export function EntitlementDetailPage({
               <Badge appearance="soft">{entitlementStatusLabel(entitlement.status)}</Badge>
             </div>
             <h1 className="font-display mt-6 text-4xl tracking-[-0.05em] sm:text-5xl">
-              {entitlement.snapshot.name}
+              {entitlement.name}
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-7 text-primary-foreground/74">
               {entitlement.status === "ACTIVE"
@@ -63,10 +63,10 @@ export function EntitlementDetailPage({
               Available now
             </p>
             <p className="font-display mt-3 text-6xl tracking-[-0.06em]">
-              {entitlement.remainingCredits}
+              {entitlement.balances.remaining}
             </p>
             <p className="mt-1 text-sm text-primary-foreground/74">
-              {entitlement.remainingCredits === 1 ? "session remaining" : "sessions remaining"}
+              {entitlement.balances.remaining === 1 ? "session remaining" : "sessions remaining"}
             </p>
             {entitlement.status === "ACTIVE" ? (
               <Link
@@ -86,10 +86,10 @@ export function EntitlementDetailPage({
         aria-label="Package totals"
       >
         {[
-          ["Held", entitlement.heldCredits, "Reserved for a booking"],
-          ["Used", entitlement.consumedCredits, "Completed class sessions"],
-          ["Restored", entitlement.restoredCredits, "Returned to package history"],
-          ["Granted", entitlement.grantedCredits, "Sessions included at acquisition"],
+          ["Held", entitlement.balances.held, "Reserved for a booking"],
+          ["Used", entitlement.balances.consumed, "Completed class sessions"],
+          ["Restored", entitlement.balances.restored, "Returned to package history"],
+          ["Granted", entitlement.balances.granted, "Sessions included at acquisition"],
         ].map(([label, value, detail]) => (
           <div key={label as string} className="rounded-[1.25rem] border border-border bg-card p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
@@ -128,7 +128,7 @@ export function EntitlementDetailPage({
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <span className="font-medium">{redemptionStatusLabel(row.status)}</span>
                       <span className="text-xs text-muted-foreground">
-                        {formatSessionDate(row.createdAt)}
+                        {formatSessionDate(row.heldAt)}
                       </span>
                     </div>
                     <p className="mt-1 text-sm leading-6 text-muted-foreground">
@@ -153,7 +153,7 @@ export function EntitlementDetailPage({
               <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                 Price at acquisition
               </dt>
-              <dd className="mt-1 font-medium">{formatPeso(entitlement.snapshot.pricePhp)}</dd>
+              <dd className="mt-1 font-medium">{formatPeso(entitlement.pricePhp)}</dd>
             </div>
             <div>
               <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">

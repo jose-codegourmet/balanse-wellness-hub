@@ -2,12 +2,14 @@
 import { Button, CoachPhoto, useFieldContext } from "@balanse/ui";
 import { Camera } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { mintPendingPhotoKey } from "@/components/balanse/image-upload/ImageUpload";
+import { useRemoveCoachPhoto, useReplaceCoachPhoto } from "@/lib/query/mutations";
 import type { CoachPhotoFieldProps } from "./CoachPhotoField.meta";
 
 export function CoachPhotoField({
   value,
   onChange,
+  coachId,
+  fetcher,
   previewName,
   onPreviewChange,
 }: CoachPhotoFieldProps) {
@@ -16,12 +18,31 @@ export function CoachPhotoField({
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const photoKey = typeof value === "string" ? value : null;
+  const replace = useReplaceCoachPhoto(coachId ?? "", fetcher);
+  const remove = useRemoveCoachPhoto(coachId ?? "", fetcher);
+  const busy = replace.isPending || remove.isPending;
   useEffect(
     () => () => {
       if (preview) URL.revokeObjectURL(preview);
     },
     [preview],
   );
+
+  if (!coachId) {
+    return (
+      <div className="coach-photo-picker">
+        <div className="coach-photo-picker-image">
+          <CoachPhoto photoKey={null} name={previewName} ratio="4:5" />
+        </div>
+        <div className="coach-photo-picker-controls">
+          <Camera size={24} strokeWidth={1.3} aria-hidden="true" />
+          <h3>Save the coach first</h3>
+          <p>Create the profile, then come back here to add a portrait.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="coach-photo-picker">
       <div className="coach-photo-picker-image">
@@ -50,38 +71,54 @@ export function CoachPhotoField({
           aria-describedby={field?.describedBy}
           onChange={(event) => {
             const file = event.target.files?.[0];
+            event.target.value = "";
             if (!file) return;
             if (!file.type.startsWith("image/")) {
               setError("Choose an image file.");
-              event.target.value = "";
               return;
             }
             if (file.size > 5 * 1024 * 1024) {
               setError("Choose an image smaller than 5 MB.");
-              event.target.value = "";
               return;
             }
             setError(null);
             const nextPreview = URL.createObjectURL(file);
             setPreview(nextPreview);
             onPreviewChange?.(nextPreview);
-            onChange(mintPendingPhotoKey());
-            event.target.value = "";
+            replace.mutate(file, {
+              onSuccess: (result) => onChange(result.coach.photoKey),
+              onError: () => {
+                setError("The upload failed. Try again.");
+                setPreview(null);
+                onPreviewChange?.(null);
+              },
+            });
           }}
         />
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" onClick={() => input.current?.click()}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy}
+            onClick={() => input.current?.click()}
+          >
             {photoKey ? "Replace photo" : "Choose photo"}
           </Button>
           {photoKey && (
             <Button
               type="button"
               variant="ghost"
+              disabled={busy}
               onClick={() => {
-                setPreview(null);
-                onPreviewChange?.(null);
-                setError(null);
-                onChange(null);
+                remove.mutate(undefined, {
+                  onSuccess: () => {
+                    setPreview(null);
+                    onPreviewChange?.(null);
+                    setError(null);
+                    onChange(null);
+                  },
+                  onError: () => setError("Couldn't remove the photo. Try again."),
+                });
               }}
             >
               Remove photo
@@ -91,9 +128,11 @@ export function CoachPhotoField({
         <small>Image files · Up to 5 MB</small>
         <p role="status" className={error ? "text-destructive!" : undefined}>
           {error ??
-            (preview
-              ? "New portrait selected. Save changes to keep it."
-              : "Without a photo, the Balansé crest is shown.")}
+            (busy
+              ? "Saving…"
+              : preview
+                ? "Portrait saved."
+                : "Without a photo, the Balansé crest is shown.")}
         </p>
       </div>
     </div>

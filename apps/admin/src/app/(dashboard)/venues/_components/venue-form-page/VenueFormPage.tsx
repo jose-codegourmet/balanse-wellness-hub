@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import { Button, FormPageSkeleton } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import { MapPinOff } from "lucide-react";
@@ -20,8 +21,8 @@ import {
   TextareaBinding,
   TextBinding,
 } from "@/modules/admin/forms/bindings";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { venueFormDefaultValues, venueFormValuesFromVenue } from "./VenueFormPage.defaults";
 import type { VenueFormPageProps } from "./VenueFormPage.meta";
 import { venueFormSchema } from "./VenueFormPage.schema";
@@ -33,9 +34,9 @@ const VENUES_CRUMB = { label: "Venues", href: "/venues" };
 export function VenueFormPage({ venueId }: VenueFormPageProps) {
   const router = useRouter();
   const isNew = venueId === "new";
-  const { principal } = useMockPrincipal();
-  const venuesQuery = useQuery(adminVenuesQuery(principal));
-  const upsert = useUpsertAdminVenue();
+  const actor = useStaffActor();
+  const venuesQuery = useQuery(adminVenuesQuery(actor, apiFetchBrowser));
+  const upsert = useUpsertAdminVenue(apiFetchBrowser);
   const existing = isNew ? undefined : venuesQuery.data?.find((row) => row.id === venueId);
 
   if (!isNew && venuesQuery.isPending && !venuesQuery.data) {

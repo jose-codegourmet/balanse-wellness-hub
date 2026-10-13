@@ -6,10 +6,10 @@ import {
   type PermissionKey,
   type StaffAuthorizationActor,
 } from "@balanse/domain";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useStaffSession } from "@/modules/session/SessionProvider";
 
 export function useStaffActor(): StaffAuthorizationActor | null {
-  const { actor } = useMockPrincipal();
+  const { actor } = useStaffSession();
   return actor;
 }
 

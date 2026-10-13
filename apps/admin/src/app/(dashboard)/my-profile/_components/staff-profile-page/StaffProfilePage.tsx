@@ -1,26 +1,42 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import { roleLabel } from "@balanse/domain";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@balanse/ui";
+import { useQuery } from "@tanstack/react-query";
 import { BellRing, ShieldCheck, UserRound } from "lucide-react";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { StaffPhotoCard } from "@/components/balanse/staff-photo-card/StaffPhotoCard";
+import { adminStaffIdentityQuery } from "@/lib/query/queries/staff";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { ProfilePreferencesForm } from "../profile-preferences-form/ProfilePreferencesForm";
 
 export function StaffProfilePage() {
-  const { actor } = useMockPrincipal();
-  const email = actor?.email ?? "staff@balanse.example";
-  const role = actor ? roleLabel(actor.roleKey, actor.roleName ?? undefined) : "Staff";
+  const actor = useStaffActor();
+  const identity = useQuery(adminStaffIdentityQuery(actor, apiFetchBrowser));
+  const person = identity.data ?? actor;
+  const email = person?.email ?? "";
+  const role = person ? roleLabel(person.roleKey, person.roleName ?? undefined) : "Staff";
 
   return (
     <AdminPageShell
       breadcrumb={[{ label: "My profile" }]}
-      description="Review your active staff account and choose the updates you want to receive."
+      description="Update your profile photo, review your staff account, and choose the updates you want to receive."
       eyebrow="Account"
       title="My profile"
     >
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="grid gap-6">
+          {actor ? (
+            <StaffPhotoCard
+              key={actor.staffId}
+              staffId={actor.staffId}
+              name={person?.name || email || "Staff"}
+              avatarUrl={person?.avatarUrl}
+              canEdit
+              self
+            />
+          ) : null}
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">

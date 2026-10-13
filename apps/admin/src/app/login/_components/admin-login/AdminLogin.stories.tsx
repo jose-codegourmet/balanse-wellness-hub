@@ -23,5 +23,3 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 export const Submitting: Story = { args: { forcedStatus: "submitting" } };
-export const InvalidCredentials: Story = { args: { forcedStatus: "invalid" } };
-export const NotAdmin: Story = { args: { forcedStatus: "not-admin" } };

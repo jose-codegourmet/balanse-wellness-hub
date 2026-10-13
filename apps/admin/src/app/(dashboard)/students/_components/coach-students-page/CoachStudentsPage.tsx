@@ -14,7 +14,7 @@ import { useMemo, useState } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { coachStudentsQuery } from "@/lib/query/queries";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 import type { CoachStudentsPageProps } from "./CoachStudentsPage.meta";
 
 type StudentScope = "upcoming" | "existing";
@@ -25,8 +25,8 @@ const STUDENT_SCOPES: { id: StudentScope; label: string }[] = [
 ];
 
 export function CoachStudentsPage({ empty = false }: CoachStudentsPageProps) {
-  const { principal } = useMockPrincipal();
-  const studentsQuery = useSuspenseQuery(coachStudentsQuery(principal));
+  const actor = useStaffActor();
+  const studentsQuery = useSuspenseQuery(coachStudentsQuery(actor));
   const [scope, setScope] = useState<StudentScope>("upcoming");
   const students = empty ? [] : studentsQuery.data;
   const rows = useMemo(

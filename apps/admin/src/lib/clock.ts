@@ -1,12 +1,11 @@
 import { manilaYmd } from "@balanse/domain";
-import { MOCK_NOW_ISO } from "@balanse/mock";
 
-/** Frozen admin "now" — wraps the shared mock clock. Do not call `Date.now()`. */
+/** Live admin clock. Storybook substitutes its own frozen fixture clock. */
 export function adminNowIso(): string {
-  return MOCK_NOW_ISO;
+  return new Date().toISOString();
 }
 
-/** Manila calendar day for the shared mock clock (`YYYY-MM-DD`). */
+/** Current studio day in Asia/Manila, regardless of the device timezone. */
 export function adminTodayYmd(): string {
-  return manilaYmd(MOCK_NOW_ISO);
+  return manilaYmd(adminNowIso());
 }

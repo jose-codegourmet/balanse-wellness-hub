@@ -16,7 +16,7 @@ import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { ReportsOverview } from "@/components/balanse/reports-overview/ReportsOverview";
 import { adminReportsQuery } from "@/lib/query/queries";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { DEFAULT_SALES_FILTERS } from "../../_lib/sales-filters";
 import type { SalesPageProps } from "./SalesPage.meta";
 
@@ -64,9 +64,9 @@ const sessionColumns: ColumnDef<SessionPerformanceRow, unknown>[] = [
 ];
 
 export function SalesPage({ initialRange = DEFAULT_SALES_FILTERS }: SalesPageProps) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const [range, setRange] = useState(initialRange);
-  const { data: reports } = useSuspenseQuery(adminReportsQuery(principal, range));
+  const { data: reports } = useSuspenseQuery(adminReportsQuery(actor, range));
 
   return (
     <AdminPageShell

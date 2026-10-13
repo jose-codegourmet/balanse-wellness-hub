@@ -1,87 +1,9 @@
-# Admin React Query layer (FE-ADM-015)
+# Admin React Query layer
 
-Wave 2 pages should be thin. Data goes through this directory only.
+Routes resolve a verified staff actor and prefetch typed API client queries. Client components read through `useQuery` / `useSuspenseQuery` and write through mutation hooks in this directory. Query factories own API calls and keys; components do not import mock fixtures or build API URLs.
 
-## Recipe
+Every key is rooted at `adminKeys` and `adminAuthScope(actor)`, a fingerprint of staff id, role, and permissions. Role or identity changes clear the query client before navigation so another staff member's cached data is inaccessible. Query defaults are a 30-second stale window, 5-minute garbage collection, no retries, and no focus refetch.
 
-1. **Prefetch in the route.** `page.tsx` is a server component. Read the mock principal the same way `app/layout.tsx` does (`cookies()` + `parseMockPrincipal`), then:
+Mutations invalidate affected entity keys and related dashboard or queue keys. Booking, payment, cancellation, reschedule, and roster writes also invalidate the dashboard; credit-changing actions invalidate bundle metrics. Admin permission checks use `ADMIN_*_ACCESS` from `@balanse/domain` through the app authorization helpers.
 
-   ```tsx
-   return prefetchAdmin([adminDashboardQuery(principal)], <DashboardPage />);
-   ```
-
-   Keep the existing `Metadata` export. `prefetchAdmin(options, children)` is the stable signature for FE-ADM-018 (#208).
-
-2. **Read in the module** with `useQuery` / `useSuspenseQuery` and the matching `*Query` factory from `queries.ts`. Pass the full `principal` from `useMockPrincipal()` — factories bind the adapter actor and key by `adminAuthScope(principal)`.
-
-3. **Write through `mutations.ts`.** Each hook invalidates the keys in the table below. Do not hand-roll a `refresh()` that re-fetches the page.
-
-4. **Never call `getMockAdapter()` from a component** once that screen’s Wave 2 ticket lands. This directory is the only place in `apps/admin` that may call it. Coach-role screens prefetch only queries the actor can run (`bookings.read` is not implied by `schedule.read.own`). Roster names come from the roster payload, not the customer directory.
-
-## Query keys
-
-All keys are built by `adminKeys` in `keys.ts`. No string literals at call sites.
-
-Every key is rooted at `["admin", adminAuthScope(principal)]`. The scope is a
-staff authorization fingerprint (staff id + role/permission revision), not the
-coarse `guest | customer | admin` shell role. Super Admin → Coach must not
-reuse cached rates, reports, or other-staff rosters.
-
-Hierarchical prefixes work with `invalidateQueries`:
-
-```ts
-queryClient.invalidateQueries({ queryKey: adminKeys.bookings.all(scope) });
-```
-
-`adminKeys.queues` holds infinite queue keys (`payments(tab)`, `cancellations`, `reschedules`). Factories: `adminPaymentsQueueInfiniteQuery`, `adminCancellationsInfiniteQuery`, `adminReschedulesInfiniteQuery`.
-
-## Invalidation map
-
-| Mutation | Invalidates |
-| --- | --- |
-| `confirmAdminBooking`, `rejectAdminBooking` | `bookings.all`, `payments.all`, `dashboard`, `queues.all` |
-| `recordCash`, `markRefundPending`, `markRefunded` | `payments.all`, `bookings.all`, `dashboard`, `queues.all` |
-| `completeAdminCancellation`, `rejectAdminCancellation` | `cancellations.all`, `bookings.all`, `dashboard`, `queues.all` |
-| `approveAdminReschedule`, `rejectAdminReschedule` | `reschedules.all`, `bookings.all`, `sessions.all`, `dashboard`, `queues.all` |
-| `checkIn`, `markNoShow` | `bookings.all`, `roster` (prefix), `dashboard`, `reports.all` |
-| `upsertAdminClass` | `classes.all` |
-| `upsertAdminBundle`, `setAdminBundleStatus`, grant/revoke/review | `bundles.all`, `customers.all` |
-| Booking confirm/reject, cancellation, reschedule, check-in / no-show | also `bundles.metrics` (credits move) |
-| `upsertAdminCoach` | `coaches.all` |
-| `upsertAdminSession`, `cancelAdminSession` | `sessions.all`, `dashboard`, `reports.all`, `bookings.all`, `roster` (prefix) |
-| `upsertAdminStaff`, `disableAdminStaff` | `staff.all`, `staff.roles.all`, `coaches.all` |
-| `upsertAdminStaffRole`, `archiveAdminStaffRole` | `staff.all`, `staff.roles.all`, `coaches.all` |
-| `updateAdminSettings`, `promotePolicyVersion`, `upsertPolicyDocument`, `deletePolicyDocument`, `deletePolicy`, `setPolicyFormRequirements` | `settings.all` |
-
-`approveAdminReschedule` decrements `remainingSlots` on the target session, which is why it invalidates `sessions.all`.
-
-## QueryClient defaults
-
-`makeQueryClient()` (`client.ts`) is shared by `Providers` and `prefetchAdmin`:
-
-- `staleTime: 30_000` — the mock is in-memory; a non-zero value is what proves caching.
-- `gcTime: 300_000`
-- `retry: 0` — `failNext` is one-shot; retry would swallow the harness failure.
-- `refetchOnWindowFocus: false`
-
-`Providers` accepts an optional `queryClient` so a story can inject a seeded client. `apps/admin/.storybook/preview.tsx` (FE-ADM-021) wraps stories in `Providers` and keys that tree by principal + `mockRuntime` so toolbar / parameter changes get a fresh `makeQueryClient()`.
-
-## Cache + mock principal
-
-Identity switches go through `useSwitchAuthorizedIdentity`, which calls `removeAuthorizedAdminCache` (remove `["admin"]` + `clear`) and navigates to the first implemented permitted route (`firstImplementedPermittedAdminRoute`, wrapping `firstPermittedAdminRoute`). Clear, do not invalidate — another staff principal’s data must not stay reachable even briefly.
-
-Admin UI permission checks live in `apps/admin/src/lib/authorization/admin-access.ts` and `useAdminAccess`. They consume `ADMIN_*_ACCESS` from `@balanse/domain` — do not copy permission lists. Sidebar and mobile share `visibleAdminNavItems`. `AdminGuard` presents login / forbidden / revoked / 403. Screens hide actions with `AdminCan` / `useCanAdminAction`.
-
-`AdminSidebar` still calls `getAdminDashboard()` directly. FE-ADM-016 (#205) should adopt `adminDashboardQuery` so `/dashboard` and the sidebar share one key.
-
-## Server vs browser adapter instances
-
-`getMockAdapter()` is a module singleton. The server’s instance and the browser’s instance are **different objects**. Server prefetch always dehydrates pristine fixtures; client mutations only mutate the browser copy.
-
-`prefetchAdmin` renders `MockHydrationBoundary`, which only hydrates queries the browser cache has no data for. A soft navigation re-runs the route prefetch with a newer `dataUpdatedAt`, so a plain `HydrationBoundary` would overwrite client mutations with pristine fixtures; once a key is cached, the browser adapter is authoritative. `/payments` still calls the adapter directly, so a payment action will not update the dashboard snapshot until that screen adopts the mutation hooks.
-
-Runtime knobs (`latencyMs`, `failNext`, `emptyAdminQueues`, …) live in the **browser** module. After changing a knob the harness clears the cache so mounted client queries refetch against that module. It does **not** `router.refresh()` on runtime changes — a server prefetch would dehydrate pristine fixtures and hide the knob. A later full navigation can still hydrate pristine data if the server module never saw the knob.
-
-## Deferred
-
-Optimistic updates are out of scope. `checkIn` and `markNoShow` are the two writes where optimistic UI would help (roster check-in is a rapid repeated action). Invalidate-on-success is enough for the mock.
+Storybook aliases `@balanse/api-client/browser` to browser-local fetchers backed by `MockDataAdapter`; stories may pass entity-specific fetchers. Application routes and this query layer use the real API client.

@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
   type AdminClass,
   type AdminCoach,
@@ -82,9 +83,8 @@ import {
   toSessionIso,
 } from "@/modules/admin/forms/session/session-form.schema";
 import { useUnsavedChangesGuard } from "@/modules/admin/forms/useUnsavedChangesGuard";
-import { useCanAdminAction } from "@/modules/authorization/useAdminAccess";
+import { useCanAdminAction, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { occurrenceWillBeSkipped, planOccurrences } from "../../_lib/session-occurrences";
 import { RepeatPicker } from "../repeat-picker/RepeatPicker";
 import { ClassTilePicker } from "./class-tile-picker/ClassTilePicker";
@@ -106,15 +106,15 @@ export function SessionFormPage({
   onClose,
 }: SessionFormPageProps) {
   const isNew = sessionId === "new";
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const canSeeRates = useCanAdminAction("coach-rates-read");
   const canCancelSession = useCanAdminAction("schedule-cancel");
-  const classesQuery = useQuery(adminClassesQuery(principal));
-  const coachesQuery = useQuery(adminCoachesQuery(principal));
-  const sessionsQuery = useQuery(adminSessionsQuery(principal));
-  const venuesQuery = useQuery(adminVenuesQuery(principal));
+  const classesQuery = useQuery(adminClassesQuery(actor, apiFetchBrowser));
+  const coachesQuery = useQuery(adminCoachesQuery(actor, apiFetchBrowser));
+  const sessionsQuery = useQuery(adminSessionsQuery(actor, apiFetchBrowser));
+  const venuesQuery = useQuery(adminVenuesQuery(actor, apiFetchBrowser));
   const rosterQuery = useQuery({
-    ...adminSessionRosterQuery(principal, sessionId),
+    ...adminSessionRosterQuery(actor, apiFetchBrowser, sessionId),
     enabled: !isNew,
   });
   const upsert = useUpsertAdminSession();
@@ -244,9 +244,13 @@ export function SessionFormPage({
         isNew={isNew}
         existing={existing}
         classes={classes.filter((row) => row.active || row.id === existing?.classId)}
-        coaches={coaches.filter(
-          (coach) => coach.active || existing?.coaches.some((row) => row.id === coach.id),
-        )}
+        coaches={coaches
+          .filter((coach) => coach.active || existing?.coaches.some((row) => row.id === coach.id))
+          .map((coach) => ({
+            ...coach,
+            defaultRatePhp: coach.defaultRatePhp ?? 0,
+            rateType: coach.rateType ?? "PER_SESSION",
+          }))}
         venues={venues.filter((row) => row.active || row.id === existing?.venueId)}
         sessions={sessions}
         assignments={existing?.coachAssignments ?? []}

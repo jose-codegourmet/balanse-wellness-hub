@@ -1,13 +1,5 @@
-# WIRE-002 — remove the mock session harness
+# Mock harness removal (WIRE-E03)
 
-When real Supabase Auth lands:
+The web calendar scenario switcher and its `MockSessionHarness` were removed in WIRE-0304. Both apps use Supabase Auth for application sessions, and the env examples no longer advertise `NEXT_PUBLIC_ENABLE_MOCK_HARNESS` or `NEXT_PUBLIC_APP_MODE`.
 
-1. Delete `apps/*/src/modules/dev-harness/MockSessionHarness.tsx` and the shared `MockHarnessAffordance` in `@balanse/ui` (`packages/ui/src/balanse/mock-harness-affordance/`).
-2. Replace `MockSessionProvider` with the auth session provider.
-3. Replace cookie `balanse-mock-principal` reads in `apps/admin/middleware.ts` and portal guards.
-4. Drop `NEXT_PUBLIC_ENABLE_MOCK_HARNESS`.
-5. Keep screens talking to a data adapter; swap `@balanse/mock` for the WIRE-001 client.
-
-The harness is imported only from app providers/shells, never from screen-level feature components.
-
-`apps/web` (2026-10-01): steps 2–3 done — `MockSessionProvider` and the portal mock-cookie guard are replaced by Supabase Auth (see `docs/backend/auth.md`). The web harness keeps only the calendar scenario switcher. `apps/admin` is unchanged.
+`@balanse/mock` remains a development dependency for Storybook fixtures, mock principals, and in-browser API fetchers. Application routes and components use typed `@balanse/api-client` functions. Storybook controls scenarios through story parameters and decorators rather than a production shell harness.

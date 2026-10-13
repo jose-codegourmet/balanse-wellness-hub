@@ -1,8 +1,31 @@
 # API routes (BE-030–BE-043 + BE-050–058 + #292 staff auth + #320 events)
 
-HTTP handlers live in `@balanse/api` and are mounted on `apps/web` at `/api/*` (`src/app/api/[[...path]]/route.ts`). Screens stay mock-only this phase — no FE `fetch` to these routes (`WIRE-*` later).
+HTTP handlers live in `@balanse/api` and are mounted on `apps/web` at `/api/*` (`src/app/api/[[...path]]/route.ts`). Screens call typed `@balanse/api-client` functions through React Query or server-side client calls.
 
 Contract inventory: `packages/db/contracts/routes.ts`. OpenAPI: `packages/db/contracts/openapi.json`.
+
+## Customer profile and avatar
+
+`GET /api/me` returns the signed-in customer's editable profile: separate names,
+nickname, roster visibility, referral code/channel, onboarding status, and a
+short-lived avatar URL. `PATCH /api/me` accepts only customer-editable profile
+fields; email remains owned by the authentication provider.
+
+`POST /api/me/avatar` with `{ contentType }` mints a private `avatars` upload.
+After uploading the cropped image bytes to the returned signed URL, repeat the
+same request with `{ objectKey }` to confirm it. `DELETE /api/me/avatar` clears
+the image. All three routes require the customer bearer token and only act on
+that token's profile.
+
+## Customer onboarding
+
+`GET /api/me/onboarding` returns the customer's saved answers or `null` when
+the wizard has not started. `PATCH /api/me/onboarding` accepts a partial set of
+answers, upserts `profile_onboarding`, and replaces class interests when
+`interestClassIds` is supplied. The three `*Other` fields are capped at 120
+characters. `POST /api/me/onboarding/complete` and `/skip` stamp the customer's
+completion or skip timestamp. All four routes are owner-only; referral channel
+is returned with `GET /api/me`.
 
 ## Recurring schedules (BE-057 / #288)
 
@@ -20,37 +43,45 @@ Contract inventory: `packages/db/contracts/routes.ts`. OpenAPI: `packages/db/con
 
 ## Session bundles (BE-058 / #290)
 
-Public catalogue `GET /api/public/packages`. Customer owned packages, free claim, paid acquisition + proof, eligible entitlements, and `POST /api/bookings` with `entitlementId`. Admin bundle CRUD/status, grant/revoke, paid-acquisition review. See [session-bundles.md](./session-bundles.md). Screens do not call these routes yet.
+Public catalogue `GET /api/public/packages`. Customer owned packages, free claim, paid acquisition + proof, eligible entitlements, and `POST /api/bookings` with `entitlementId`. Admin bundle CRUD/status, grant/revoke, paid-acquisition review. See [session-bundles.md](./session-bundles.md).
 
 Authorisation matches RLS (`docs/backend/rls-policies.md`): Prisma uses the service/owner role and **bypasses RLS**, so every handler re-checks the caller.
 
-Screens continue to use `getMockAdapter()` for catalogue and ledger UX.
+Storybook stories use `getMockAdapter()` for fixture-driven catalogue and ledger previews.
 
-## Session events (#320)
+## Session events (#320 / WIRE-E13)
 
-Admin HTTP contracts only. No public or customer event routes, and no screen calls these handlers. Shapes live in `packages/domain/src/contracts.ts` (`AdminEvent`, `AdminEventSessionSnapshot`, `EVENT_STATUS_LABELS`, `EVENT_CONFLICT_CODES`) and are re-exported from `@balanse/api`.
+Admin event authoring and the public event page use the API client. Shapes live in `packages/domain/src/contracts.ts` (`AdminEvent`, `PublicEventPage`, `AdminEventSessionSnapshot`, `EVENT_CONFLICT_CODES`) and are re-exported from `@balanse/api`.
 
 | Method | Path | Permission |
 | --- | --- | --- |
 | `GET` | `/api/admin/events` | `events.read` or `events.manage` |
 | `POST` | `/api/admin/events` | `events.manage` |
+| `POST` | `/api/admin/events/{id}/images` | `events.manage` |
 | `GET` | `/api/admin/events/{id}` | `events.read` or `events.manage` |
 | `PATCH` | `/api/admin/events/{id}` | `events.manage` |
 | `POST` | `/api/admin/events/{id}/publish` | `events.manage` |
 | `POST` | `/api/admin/events/{id}/cancel` | `events.manage` |
 | `POST` | `/api/admin/events/{id}/archive` | `events.manage` |
+| `GET` | `/api/public/events/{id}` | public |
 
 Dispatch maps every route in `ADMIN_API_ACCESS` before the handler runs. Each handler then checks the same permission again before any event or session read. Missing permission, role, or an inactive staff member is denied. Service-role Prisma is not authorization. This matches RLS: select needs `events.read`, `events.manage`, or Super Admin; writes need `events.manage` or Super Admin. Coach has neither key.
 
-`GET /api/admin/events` filters with `status`, `sessionId` (alias `session`), and an optional session-start window `from` / `to` (`dateFrom` / `dateTo` accepted; `to` is exclusive). Ordering is upcoming-first: sessions that have not started yet, soonest first, then past sessions, most recent first.
+`GET /api/admin/events` filters with `status`, `sessionId` (alias `session`), title/summary `search`, and an optional session-start window `from` / `to` (`dateFrom` / `dateTo` accepted; `to` is exclusive). Ordering is upcoming-first: sessions that have not started yet, soonest first, then past sessions, most recent first.
 
 Create always inserts `DRAFT`. A second event for the same session returns `409 event_session_taken`. A `CANCELLED` session returns `409 event_on_cancelled_session`. Publish returns `409 event_publish_requires_published_session` unless the session status is `PUBLISHED` (this blocks a `DRAFT` session). A repeated publish, cancel, or archive of the current status does not write again and does not add an audit row.
 
 `PATCH` changes event copy only. `startsAt`, `endsAt`, `capacity`, `customerPrice`, coach fields, venue fields (`venueId`, `venue`, `venueName`, `venueAddress`), and `sessionId` are `422 read_only`; the same keys are rejected on create. Status changes go through the action routes. Content edits do not write `audit_events`.
 
+`POST /api/admin/events/{id}/images` is the BE-052 mint/confirm lifecycle for JPEG, PNG, and WebP event media. It mints `marketing-assets/events/<eventId>/<uuid>.<ext>`; confirming claims the upload, then the normal event PATCH selects it as the poster or one of at most 12 gallery images. Seeded site paths and uploaded object keys both render on public reads.
+
+`GET /api/public/events/{id}` reads only `app_public.public_event`. It returns published/cancelled event copy plus the nested public session page, returns 404 for draft/archived/unknown data, and never returns `internalNotes` or `isPlaceholder`.
+
 Create and status changes set transaction-local `app.actor_staff_id` and rely on `app_private.audit_session_event_status` for exactly one `audit_events` row (`event.create` or `event.status`). Handlers do not insert a second row.
 
 `POST /api/admin/sessions/{id}/cancel` sets a `DRAFT` or `PUBLISHED` event on that session to `CANCELLED` in the same transaction. Archived and already-cancelled events are left unchanged. Cancelling or archiving an event does not cancel the session or its bookings.
+
+Coach class change requests use `GET /api/admin/class-change-requests`, `GET /api/admin/sessions/{id}/substitute-coaches`, `POST /api/admin/sessions/{id}/class-change-requests`, and `POST /api/admin/class-change-requests/{id}/withdraw|approve|deny`. The API enforces coach ownership, the request kind's approval permission, and the ban on self-review. See [class-change-requests.md](./class-change-requests.md).
 
 Responses use `EventStatus` / `SessionStatus` plus `statusLabel`. The nested session snapshot has schedule, capacity, price, and the session's venue (`venue: { id, name, address, kind }`) — no coach compensation and no venue notes. See [session-events.md](./session-events.md).
 
@@ -112,6 +143,14 @@ Signed upload + confirm on coach photo and GCash QR. See [uploads.md](./uploads.
 ## Dashboard (BE-054)
 
 `GET /api/admin/dashboard` and `/api/admin/dashboard/metrics` — operational scalars + 14-day Manila series. Not a substitute for `/api/admin/reports/*`. See [dashboard-metrics.md](./dashboard-metrics.md).
+
+## Marketing insights (WIRE-1901)
+
+`GET /api/admin/marketing-insights?from&to` — `reports.marketing.read` aggregate-only sign-up, onboarding, interest, and referral counts. The response contains no profile ids, names, emails, or top-referrer data.
+
+## Coach students (WIRE-2101)
+
+`GET /api/admin/coach/students` and `GET /api/admin/coach/students/{customerId}` — built-in Coach-only reads, scoped server-side to the signed-in staff member's linked coach profile. They return only students in that coach's sessions; contribution is verified/cash booking value or consumed-package class value, never sales, payroll, or profit. Detail onboarding omits referral and heard-from attribution.
 
 ## Validation (BE-051)
 

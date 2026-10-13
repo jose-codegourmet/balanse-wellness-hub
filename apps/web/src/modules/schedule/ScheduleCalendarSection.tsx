@@ -1,11 +1,15 @@
 "use client";
 
+import { listPublicClasses, listPublicSessions } from "@balanse/api-client";
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import type { PublicClass, PublicCoach, PublicSession } from "@balanse/domain";
-import { getMockAdapter, getMockRuntime, MOCK_NOW_ISO } from "@balanse/mock";
+import { useQuery } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BalanseBookingCalendar } from "@/components/balanse/calendar/BalanseBookingCalendar";
 import { BalanseQuickBooking } from "@/components/balanse/calendar/BalanseQuickBooking";
+import { myBookingsQuery } from "@/lib/query/bookings";
+import { SHOWCASE_SCHEDULE_RANGE } from "@/modules/schedule/showcase-range";
 import { useSession } from "@/modules/session/SessionProvider";
 import { useViewerShareParams } from "@/modules/share/use-viewer-share-params";
 
@@ -33,42 +37,39 @@ export function ScheduleCalendarSection({
   const customerId = useSession()?.customerId ?? null;
   const [sessions, setSessions] = useState(initialSessions);
   const [classes, setClasses] = useState(initialClasses);
-  const [bookingSessionIds, setBookingSessionIds] = useState<string[]>([]);
+  const bookingsQuery = useQuery({
+    ...myBookingsQuery(customerId ?? "", apiFetchBrowser),
+    enabled: audience === "customer" && Boolean(customerId),
+  });
+  const bookingSessionIds = useMemo(
+    () => bookingsQuery.data?.map((booking) => booking.sessionId) ?? [],
+    [bookingsQuery.data],
+  );
   // Customer schedules depend on the signed-in customer's bookings. Start in
   // a loading state so the public timetable never flashes before that scope loads.
   const [loading, setLoading] = useState(audience === "customer");
   const [loadError, setLoadError] = useState(initialLoadError);
-  const [fullId, setFullId] = useState<string | null>(null);
   const shareParams = useViewerShareParams();
 
   const load = useCallback(async () => {
     setLoading(true);
     setLoadError(false);
     try {
-      const adapter = getMockAdapter();
       const [nextSessions, nextClasses] = await Promise.all([
-        adapter.getPublicSessions(),
-        adapter.getPublicClasses(),
+        listPublicSessions(apiFetchBrowser, SHOWCASE_SCHEDULE_RANGE).then((res) => res.items),
+        listPublicClasses(apiFetchBrowser).then((res) => res.items),
       ]);
       setSessions(nextSessions);
       setClasses(nextClasses);
-      setFullId(getMockRuntime().sessionBecameFullId);
-      if (audience === "customer" && customerId) {
-        const bookings = await adapter.getBookings(customerId);
-        setBookingSessionIds(bookings.map((booking) => booking.sessionId));
-      } else {
-        setBookingSessionIds([]);
-      }
     } catch {
       setLoadError(true);
     } finally {
       setLoading(false);
     }
-  }, [audience, customerId]);
+  }, []);
 
   useEffect(() => {
-    const runtime = getMockRuntime();
-    if (runtime.failPublicSessions || runtime.sessionBecameFullId || audience === "customer") {
+    if (audience === "customer") {
       void load();
     }
   }, [audience, load]);
@@ -97,11 +98,11 @@ export function ScheduleCalendarSection({
       sessions={scopedSessions}
       classes={scopedClasses}
       coaches={initialCoaches}
-      nowIso={MOCK_NOW_ISO}
+      nowIso={new Date().toISOString()}
       audience={audience}
       loading={loading}
       loadError={loadError}
-      sessionBecameFullId={fullId}
+      sessionBecameFullId={null}
       viewerBookingSessionIds={bookingSessionIds}
       shareParams={shareParams}
       onRetry={() => void load()}

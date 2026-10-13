@@ -31,6 +31,26 @@ export function CancellationForm({
         <Label htmlFor="cancel-reason">Reason (optional)</Label>
         <Textarea id="cancel-reason" {...form.register("reason")} disabled={submitting} />
       </div>
+      <div className="grid gap-2">
+        <label className="flex items-start gap-3 text-sm">
+          <input
+            type="checkbox"
+            className="mt-0.5 size-4 shrink-0"
+            disabled={submitting}
+            aria-invalid={form.formState.errors.acknowledgeCancellationPolicy ? true : undefined}
+            {...form.register("acknowledgeCancellationPolicy")}
+          />
+          <span>
+            I understand this is a request for studio review. My place remains held until the studio
+            completes the cancellation, and any refund is handled separately.
+          </span>
+        </label>
+        {form.formState.errors.acknowledgeCancellationPolicy ? (
+          <p role="alert" className="text-sm text-destructive">
+            {form.formState.errors.acknowledgeCancellationPolicy.message}
+          </p>
+        ) : null}
+      </div>
       <div className="cancellation-form-actions">
         <Button
           variant="secondary"

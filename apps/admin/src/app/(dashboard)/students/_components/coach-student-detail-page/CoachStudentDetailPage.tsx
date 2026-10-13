@@ -16,7 +16,7 @@ import {
 } from "@/components/balanse/customer/customer-about-card/CustomerAboutCard";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { coachStudentDetailQuery } from "@/lib/query/queries";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 import type { CoachStudentDetailPageProps } from "./CoachStudentDetailPage.meta";
 
 function SessionRows({ rows, empty }: { rows: readonly CoachStudentSession[]; empty: string }) {
@@ -49,8 +49,8 @@ function SessionRows({ rows, empty }: { rows: readonly CoachStudentSession[]; em
 }
 
 export function CoachStudentDetailPage({ customerId }: CoachStudentDetailPageProps) {
-  const { principal } = useMockPrincipal();
-  const detailQuery = useSuspenseQuery(coachStudentDetailQuery(principal, customerId));
+  const actor = useStaffActor();
+  const detailQuery = useSuspenseQuery(coachStudentDetailQuery(actor, customerId));
   const interestClasses = useInterestClassLookup();
   const student = detailQuery.data;
 

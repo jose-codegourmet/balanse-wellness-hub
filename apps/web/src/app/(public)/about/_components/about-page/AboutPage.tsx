@@ -49,7 +49,7 @@ const bookingCopy = [
   "The studio confirms your reservation after payment.",
 ];
 
-export function AboutPage({ coaches }: AboutPageProps) {
+export function AboutPage({ coaches, about }: AboutPageProps) {
   return (
     <article className="about-page">
       <section data-about-block="about" className="about-intro marketing-container">
@@ -117,6 +117,16 @@ export function AboutPage({ coaches }: AboutPageProps) {
           </div>
         </ScrollReveal>
       </section>
+      {about ? (
+        <section data-about-block="story" className="about-story marketing-container">
+          <ScrollReveal>
+            <div className="about-section-heading">
+              <p className="marketing-eyebrow">Our story</p>
+              <p className="about-body">{about}</p>
+            </div>
+          </ScrollReveal>
+        </section>
+      ) : null}
       <section
         id="our-approach"
         data-about-block="approach"

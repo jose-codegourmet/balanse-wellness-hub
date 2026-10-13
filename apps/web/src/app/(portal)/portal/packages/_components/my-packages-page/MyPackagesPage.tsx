@@ -1,4 +1,8 @@
-import type { BundleAcquisition, CustomerEntitlement, PublicBundle } from "@balanse/domain";
+import type {
+  HttpBundleAcquisition,
+  HttpCustomerEntitlement,
+  PublicPackage,
+} from "@balanse/domain";
 import {
   BUNDLE_ACQUISITION_STATUS_LABELS,
   entitlementStatusLabel,
@@ -14,15 +18,15 @@ export function MyPackagesPage({
   acquisitions,
   catalogue,
 }: {
-  entitlements: CustomerEntitlement[];
-  acquisitions: BundleAcquisition[];
-  catalogue: PublicBundle[];
+  entitlements: HttpCustomerEntitlement[];
+  acquisitions: HttpBundleAcquisition[];
+  catalogue: PublicPackage[];
 }) {
   const pending = acquisitions.filter(
     (row) => row.status === "PENDING_REVIEW" || row.status === "PENDING_PAYMENT",
   );
   const active = entitlements.filter((row) => row.status === "ACTIVE");
-  const remaining = active.reduce((total, row) => total + row.remainingCredits, 0);
+  const remaining = active.reduce((total, row) => total + row.balances.remaining, 0);
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-16 pt-7 sm:px-6 lg:px-8 lg:pb-24 lg:pt-10">
@@ -90,13 +94,15 @@ export function MyPackagesPage({
                 className="rounded-xl border border-border/80 bg-card/80 p-4 text-sm"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-medium">{row.bundleName}</span>
+                  <span className="font-medium">
+                    {catalogue.find((bundle) => bundle.id === row.bundleId)?.name ?? "Package"}
+                  </span>
                   <Badge appearance="soft" size="sm">
                     {BUNDLE_ACQUISITION_STATUS_LABELS[row.status]}
                   </Badge>
                 </div>
                 <p className="mt-1 text-muted-foreground">
-                  {formatPeso(row.pricePhp)}. Credits activate after studio approval.
+                  {formatPeso(row.payment?.amountPhp ?? 0)}. Credits activate after studio approval.
                 </p>
               </li>
             ))}
@@ -139,11 +145,9 @@ export function MyPackagesPage({
                   </div>
                   <div className="mt-9 flex items-end justify-between gap-5">
                     <div>
-                      <h3 className="font-display text-3xl tracking-[-0.04em]">
-                        {row.snapshot.name}
-                      </h3>
+                      <h3 className="font-display text-3xl tracking-[-0.04em]">{row.name}</h3>
                       <p className="mt-2 text-sm text-muted-foreground">
-                        {formatSessionsRemaining(row.remainingCredits)} of {row.grantedCredits}{" "}
+                        {formatSessionsRemaining(row.balances.remaining)} of {row.balances.granted}{" "}
                         granted
                       </p>
                     </div>

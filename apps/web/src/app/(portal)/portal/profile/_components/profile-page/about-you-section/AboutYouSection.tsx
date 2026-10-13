@@ -1,10 +1,12 @@
 "use client";
 
+import type { OnboardingPatch } from "@balanse/api-client";
 import { type CustomerOnboardingAnswers, formatSessionDate } from "@balanse/domain";
 import { Button } from "@balanse/ui";
 import { ArrowUpRight, EyeOff, LoaderCircle, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useState } from "react";
+import { useSaveMyOnboarding } from "@/lib/query/mutations/customers";
 import { notify } from "@/modules/notifications/notify";
 import { OnboardingStepGoals } from "../../../../welcome/_components/onboarding-wizard/onboarding-step-goals/OnboardingStepGoals";
 import { onboardingStepGoalsValuesFrom } from "../../../../welcome/_components/onboarding-wizard/onboarding-step-goals/OnboardingStepGoals.defaults";
@@ -15,7 +17,6 @@ import {
 } from "../../../../welcome/_components/onboarding-wizard/onboarding-step-heard-from/OnboardingStepHeardFrom.defaults";
 import { OnboardingStepInterests } from "../../../../welcome/_components/onboarding-wizard/onboarding-step-interests/OnboardingStepInterests";
 import { onboardingStepInterestsValuesFrom } from "../../../../welcome/_components/onboarding-wizard/onboarding-step-interests/OnboardingStepInterests.defaults";
-import type { OnboardingAnswersPatch } from "../../../_lib/customer-self-service.types";
 import type { AboutYouSectionProps } from "./AboutYouSection.meta";
 
 type PanelId = "goals" | "interests" | "heard-from";
@@ -25,11 +26,11 @@ export function AboutYouSection({
   answers: initialAnswers,
   classes,
   referralChannel,
-  actions,
 }: AboutYouSectionProps) {
   const [answers, setAnswers] = useState<CustomerOnboardingAnswers | null>(initialAnswers);
   const [saving, setSaving] = useState<PanelId | null>(null);
   const [errors, setErrors] = useState<Partial<Record<PanelId, string>>>({});
+  const saveOnboarding = useSaveMyOnboarding(profile.id);
   // Defaults are captured once; each form owns its edits after mount.
   const [initial] = useState(() => ({
     goals: onboardingStepGoalsValuesFrom(initialAnswers),
@@ -40,17 +41,23 @@ export function AboutYouSection({
     heardFrom: onboardingStepHeardFromValuesFrom(initialAnswers, referralChannel),
   }));
 
-  async function save(panel: PanelId, patch: OnboardingAnswersPatch) {
+  async function save(panel: PanelId, patch: OnboardingPatch) {
     setSaving(panel);
     setErrors((current) => ({ ...current, [panel]: undefined }));
-    const result = await actions.saveAnswers(patch);
-    setSaving(null);
-    if (!result.ok) {
-      setErrors((current) => ({ ...current, [panel]: result.error }));
+    try {
+      const result = await saveOnboarding.mutateAsync(patch);
+      if (!result.onboarding) throw new Error("We couldn't save your answers.");
+      setAnswers(result.onboarding);
+    } catch (error) {
+      setErrors((current) => ({
+        ...current,
+        [panel]: error instanceof Error ? error.message : "Something went wrong. Try again.",
+      }));
       notify.portal("profile.save-failed");
+      setSaving(null);
       return;
     }
-    setAnswers(result.value);
+    setSaving(null);
     notify.portal("profile.saved");
   }
 

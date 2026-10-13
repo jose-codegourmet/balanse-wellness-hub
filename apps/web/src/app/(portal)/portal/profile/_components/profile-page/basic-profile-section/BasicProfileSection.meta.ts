@@ -6,10 +6,8 @@
  * single-word names, `BasicProfileForm` (names, nickname + preview, email,
  * contact) and the Privacy sub-section (`RosterVisibilitySetting`).
  *
- * `actions` are the customer self-service server actions passed down from
- * the route (`customerProfileServerActions`); stories pass
- * `mockCustomerSelfServiceActions(customerId)`. Identity changes refresh the
- * route so the portal header avatar and name update.
+ * Profile and avatar writes use the customer React Query mutations backed by
+ * `/api/me`; identity changes refresh the server-rendered portal header.
  */
 export const basicProfileSectionMeta = {
   purpose: "Edit the customer's photo, names, nickname, contact details and roster visibility.",

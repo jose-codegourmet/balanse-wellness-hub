@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { coachFormDefaultValues } from "@/modules/admin/forms/coach/coach-form.defaults";
 import { coachFormSchema } from "@/modules/admin/forms/coach/coach-form.schema";
+import { mockCoachFetcher } from "../mock-coach-fetcher.stories-data";
 import { CoachFormPage } from "./CoachFormPage";
 
 const meta = {
@@ -9,6 +10,7 @@ const meta = {
   tags: ["autodocs"],
   args: {
     coachId: "new",
+    fetcher: mockCoachFetcher,
   },
   parameters: {
     coachFormSchema,

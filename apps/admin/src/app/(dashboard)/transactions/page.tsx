@@ -1,19 +1,15 @@
-import {
-  MOCK_HARNESS_COOKIE,
-  parseMockPrincipal,
-  resolveMockStaffActor,
-} from "@balanse/mock/session";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { Suspense } from "react";
 import { AccessDenied } from "@/components/balanse/access-denied/AccessDenied";
 import { canAccessAdminHref } from "@/lib/authorization/admin-access";
+import { serverFetcher } from "@/lib/query/fetcher";
 import { prefetchAdmin } from "@/lib/query/prefetch";
 import {
   adminBookingsQuery,
   adminBundleAcquisitionsQuery,
   adminCustomersQuery,
 } from "@/lib/query/queries";
+import { getStaffAccessToken, getStaffSession } from "@/modules/session/current-staff";
 import { TransactionsPage } from "./_components/transactions-page/TransactionsPage";
 import Loading from "./loading";
 
@@ -23,15 +19,15 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const principal = parseMockPrincipal((await cookies()).get(MOCK_HARNESS_COOKIE)?.value);
-  if (!canAccessAdminHref(resolveMockStaffActor(principal), "/transactions")) {
+  const [{ actor }, token] = await Promise.all([getStaffSession(), getStaffAccessToken()]);
+  if (!canAccessAdminHref(actor, "/transactions")) {
     return <AccessDenied kind="denied" />;
   }
   return prefetchAdmin(
     [
-      adminBookingsQuery(principal),
-      adminBundleAcquisitionsQuery(principal),
-      adminCustomersQuery(principal),
+      adminBookingsQuery(actor, undefined, serverFetcher(token)),
+      adminBundleAcquisitionsQuery(actor, serverFetcher(token)),
+      adminCustomersQuery(actor, serverFetcher(token)),
     ],
     <Suspense fallback={<Loading />}>
       <TransactionsPage />

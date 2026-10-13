@@ -4,7 +4,6 @@ import type {
   PublicClass,
   ReferralChannel,
 } from "@balanse/domain";
-import type { CustomerOnboardingActions } from "../../../_lib/customer-self-service.types";
 
 /**
  * # AboutYouSection (#352)
@@ -25,7 +24,6 @@ export type AboutYouSectionProps = {
   answers: CustomerOnboardingAnswers | null;
   classes: PublicClass[];
   referralChannel: ReferralChannel | null;
-  actions: Pick<CustomerOnboardingActions, "saveAnswers">;
 };
 
 export const aboutYouSectionMeta = {

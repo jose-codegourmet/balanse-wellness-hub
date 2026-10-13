@@ -1,10 +1,11 @@
 "use server";
 
-import { safeReturnTo, toPolicyAcceptances, toReferralChannel } from "@balanse/domain";
-import { getMockAdapter } from "@balanse/mock";
+import { acceptPolicies, getFormPolicies } from "@balanse/api-client";
+import { safeReturnTo, toReferralChannel } from "@balanse/domain";
 import { headers } from "next/headers";
+import { serverFetcher } from "@/lib/query/fetcher";
 import {
-  getCurrentCustomer,
+  getCustomerAccessToken,
   getSupabaseCustomerProfile,
   saveProfileFields,
 } from "@/modules/session/current-customer";
@@ -53,9 +54,7 @@ export async function createCustomerAccount(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Check your details." };
   }
   const identity = parsed.data;
-  const adapter = getMockAdapter();
-  const policies = await adapter.getCustomerFormPolicies("sign_up");
-  const acceptances = toPolicyAcceptances(policies, new Date().toISOString(), "sign_up");
+  const { items: policies } = await getFormPolicies(serverFetcher(null), "sign_up");
 
   try {
     if (identity.authMethod === "google") {
@@ -76,18 +75,15 @@ export async function createCustomerAccount(
           first_name: identity.firstName,
           last_name: identity.lastName,
           contact_number: identity.contactNumber,
+          registration_source: "customer_portal",
         },
       });
       if (metaError) return { ok: false, error: "We couldn't finish your account. Try again." };
-      const mirror = await getCurrentCustomer();
-      if (mirror) {
-        await adapter.patchMe(mirror.id, {
-          firstName: identity.firstName,
-          lastName: identity.lastName,
-          contactNumber: identity.contactNumber,
-        });
-      }
-      await adapter.acceptPolicies(current.id, acceptances);
+      const token = await getCustomerAccessToken();
+      await acceptPolicies(serverFetcher(token), {
+        form: "sign_up",
+        policyVersionIds: policies.map((policy) => policy.id),
+      });
       await clearShareAttribution();
       return { ok: true, next: "welcome" };
     }
@@ -113,6 +109,7 @@ export async function createCustomerAccount(
           last_name: identity.lastName,
           full_name: `${identity.firstName} ${identity.lastName}`.trim(),
           contact_number: identity.contactNumber,
+          registration_source: "customer_portal",
           ...(attribution?.ref ? { ref: attribution.ref } : {}),
           ...(channel ? { ref_channel: channel } : {}),
         },
@@ -127,7 +124,12 @@ export async function createCustomerAccount(
       }
       return { ok: false, error: "We couldn't create your account. Try again." };
     }
-    if (data.user) await adapter.acceptPolicies(data.user.id, acceptances);
+    if (data.session) {
+      await acceptPolicies(serverFetcher(data.session.access_token), {
+        form: "sign_up",
+        policyVersionIds: policies.map((policy) => policy.id),
+      });
+    }
     await clearShareAttribution();
     // No session means Supabase sent a confirmation email first.
     return data.session

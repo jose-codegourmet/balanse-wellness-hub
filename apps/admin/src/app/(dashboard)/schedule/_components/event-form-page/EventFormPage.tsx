@@ -1,10 +1,14 @@
 "use client";
 
+import { ApiError } from "@balanse/api-client";
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
   type AdminEvent,
   type AdminSession,
   type AdminVenue,
+  EVENT_CONFLICT_CODES,
   EVENT_CONFLICT_MESSAGES,
+  type EventConflictCode,
   formatPeso,
   formatSessionDate,
   formatSessionRange,
@@ -72,7 +76,6 @@ import {
 import { createPortal } from "react-dom";
 import type { Path } from "react-hook-form";
 import { AccessDenied } from "@/components/balanse/access-denied/AccessDenied";
-import { mintPendingPhotoKey } from "@/components/balanse/image-upload/ImageUpload";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import {
   useArchiveAdminEvent,
@@ -80,6 +83,7 @@ import {
   useCreateAdminEvent,
   usePublishAdminEvent,
   useUpdateAdminEvent,
+  useUploadAdminEventImage,
 } from "@/lib/query/mutations";
 import {
   adminClassesQuery,
@@ -102,9 +106,8 @@ import {
   TimeBinding,
 } from "@/modules/admin/forms/bindings";
 import { useUnsavedChangesGuard } from "@/modules/admin/forms/useUnsavedChangesGuard";
-import { useCanAdminAction } from "@/modules/authorization/useAdminAccess";
+import { useCanAdminAction, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { SessionFormPage } from "../session-form-page/SessionFormPage";
 import { eventFormDefaultValues, eventFormValuesFromEvent } from "./EventFormPage.defaults";
 import type { EventFormPageProps, EventFormStepId } from "./EventFormPage.meta";
@@ -189,14 +192,14 @@ function EventFormAuthorized({
   showValidationErrors = false,
   previewValues,
 }: EventFormPageProps) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const bound = Boolean(sessionId);
-  const sessionsQuery = useQuery(adminSessionsQuery(principal));
-  const classesQuery = useQuery(adminClassesQuery(principal));
-  const eventsQuery = useQuery(adminEventsQuery(principal));
-  const venuesQuery = useQuery(adminVenuesQuery(principal));
+  const sessionsQuery = useQuery(adminSessionsQuery(actor, apiFetchBrowser));
+  const classesQuery = useQuery(adminClassesQuery(actor, apiFetchBrowser));
+  const eventsQuery = useQuery(adminEventsQuery(actor, apiFetchBrowser));
+  const venuesQuery = useQuery(adminVenuesQuery(actor, apiFetchBrowser));
   const eventQuery = useQuery({
-    ...adminEventForSessionQuery(principal, sessionId ?? ""),
+    ...adminEventForSessionQuery(actor, sessionId ?? "", apiFetchBrowser),
     enabled: bound,
   });
   const createEvent = useCreateAdminEvent();
@@ -204,8 +207,12 @@ function EventFormAuthorized({
   const publishEvent = usePublishAdminEvent();
   const cancelEvent = useCancelAdminEvent();
   const archiveEvent = useArchiveAdminEvent();
+  const uploadImage = useUploadAdminEventImage();
   const router = useRouter();
   const intentRef = useRef<SubmitIntent>("save");
+  // Files are intentionally transient: RHF carries stable object keys, while
+  // selected bytes remain in memory until this event has an id to own them.
+  const mediaFilesRef = useRef<Record<string, File>>({});
 
   const pending =
     sessionsQuery.isPending ||
@@ -373,13 +380,27 @@ function EventFormAuthorized({
           intentRef.current = "save";
           try {
             let eventId: string;
+            const pendingImages = mediaFilesRef.current;
+            const withoutPending = stripPendingMedia(body, pendingImages);
             if (existing) {
-              const { sessionId: _sessionId, ...patch } = body;
+              const { sessionId: _sessionId, ...patch } = withoutPending;
               await updateEvent.mutateAsync({ id: existing.id, patch });
               eventId = existing.id;
             } else {
-              const created = await createEvent.mutateAsync(body);
+              const created = await createEvent.mutateAsync(withoutPending);
               eventId = created.id;
+            }
+            const media = await resolvePendingMedia(
+              body,
+              pendingImages,
+              eventId,
+              uploadImage.mutateAsync,
+            );
+            if (
+              media.posterImage !== withoutPending.posterImage ||
+              media.galleryImages !== withoutPending.galleryImages
+            ) {
+              await updateEvent.mutateAsync({ id: eventId, patch: media });
             }
             if (publish) {
               try {
@@ -394,7 +415,7 @@ function EventFormAuthorized({
             }
             router.push(`/events/${eventId}`);
           } catch (error) {
-            notify.admin("event.save-failed");
+            if (!notifyEventConflict(error)) notify.admin("event.save-failed");
             throw error;
           }
         }}
@@ -408,6 +429,7 @@ function EventFormAuthorized({
           intentRef={intentRef}
           previewStep={previewStep}
           liveSessionIds={new Set(sessions.map((session) => session.id))}
+          mediaFilesRef={mediaFilesRef}
         />
       </AdminForm>
     </AdminPageShell>
@@ -433,6 +455,7 @@ function EventComposer({
   intentRef,
   previewStep,
   liveSessionIds,
+  mediaFilesRef,
 }: {
   bound: boolean;
   existing: AdminEvent | null;
@@ -442,6 +465,7 @@ function EventComposer({
   previewStep?: EventFormStepId;
   /** Sessions on the schedule. Fixture-only event sessions cannot be edited from here. */
   liveSessionIds: ReadonlySet<string>;
+  mediaFilesRef: MutableRefObject<Record<string, File>>;
 }) {
   const form = useAdminFormContext<EventFormValues>();
   const editing = existing !== null;
@@ -560,7 +584,8 @@ function EventComposer({
   }
 
   function attachImage(file: File): string {
-    const token = mintPendingPhotoKey();
+    const token = `pending-event-image:${crypto.randomUUID()}`;
+    mediaFilesRef.current[token] = file;
     const url = URL.createObjectURL(file);
     setPreviews((prev) => ({ ...prev, [token]: url }));
     return token;
@@ -569,7 +594,9 @@ function EventComposer({
   function imageSrc(value: string): string | null {
     if (!value) return null;
     if (previews[value]) return previews[value];
-    return value.startsWith("/") || value.startsWith("http") ? value : null;
+    if (value.startsWith("/") || value.startsWith("http")) return value;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    return url ? `${url}/storage/v1/object/public/marketing-assets/${value}` : null;
   }
 
   const preview = (
@@ -870,6 +897,30 @@ function EventComposer({
         : null}
     </div>
   );
+}
+
+type EventWriteBody = ReturnType<typeof toWriteBody>;
+
+function stripPendingMedia(body: EventWriteBody, files: Record<string, File>): EventWriteBody {
+  return {
+    ...body,
+    posterImage: body.posterImage && files[body.posterImage] ? null : body.posterImage,
+    galleryImages: body.galleryImages.filter((image) => !files[image]),
+  };
+}
+
+async function resolvePendingMedia(
+  body: EventWriteBody,
+  files: Record<string, File>,
+  eventId: string,
+  upload: (input: { eventId: string; file: File }) => Promise<string>,
+): Promise<Pick<EventWriteBody, "posterImage" | "galleryImages">> {
+  const resolve = async (value: string) =>
+    files[value] ? upload({ eventId, file: files[value] as File }) : value;
+  return {
+    posterImage: body.posterImage ? await resolve(body.posterImage) : null,
+    galleryImages: await Promise.all(body.galleryImages.map(resolve)),
+  };
 }
 
 function SessionVenue({
@@ -1501,11 +1552,28 @@ function toWriteBody(values: EventFormValues) {
 }
 
 function isPublishBlocked(error: unknown): boolean {
-  if (!(error instanceof Error)) return false;
   return (
-    error.message === EVENT_CONFLICT_MESSAGES.event_publish_requires_published_session ||
-    error.message.includes("cannot be published")
+    (error instanceof ApiError && error.code === "event_publish_requires_published_session") ||
+    (error instanceof Error &&
+      (error.message === EVENT_CONFLICT_MESSAGES.event_publish_requires_published_session ||
+        error.message.includes("cannot be published")))
   );
+}
+
+/** Backend conflicts stay specific even when a concurrent change beat this form. */
+function notifyEventConflict(error: unknown): boolean {
+  if (
+    !(error instanceof ApiError) ||
+    !EVENT_CONFLICT_CODES.includes(error.code as EventConflictCode)
+  ) {
+    return false;
+  }
+  notify.warning({
+    id: `event-conflict-${error.code}`,
+    title: "Event not saved",
+    description: EVENT_CONFLICT_MESSAGES[error.code as EventConflictCode],
+  });
+  return true;
 }
 
 function stringValue(value: unknown): string {

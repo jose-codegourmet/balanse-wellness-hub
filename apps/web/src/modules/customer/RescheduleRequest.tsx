@@ -9,7 +9,6 @@ import {
   sessionAvailabilityLabel,
   sessionDisplayName,
 } from "@balanse/domain";
-import { getMockAdapter } from "@balanse/mock";
 import { Alert, AlertDescription, AlertTitle, Button, FeedbackState } from "@balanse/ui";
 import { ArrowRight, Info, LoaderCircle } from "lucide-react";
 import Link from "next/link";
@@ -17,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { useId, useMemo, useState } from "react";
 import { BookingSummary } from "@/components/balanse/portal/BookingSummary";
 import "@/components/balanse/portal/portal-booking.css";
+import { useCreateRescheduleRequest } from "@/lib/query/mutations/requests";
 import { notify } from "@/modules/notifications/notify";
 
 type SessionDay = { ymd: string; label: string; sessions: PublicSession[] };
@@ -76,6 +76,7 @@ export function RescheduleRequest({
   forcedStatus?: "submitting" | "empty";
 }) {
   const router = useRouter();
+  const request = useCreateRescheduleRequest(booking.customerId, booking.id);
   const captionId = useId();
   const [targetId, setTargetId] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting">(
@@ -253,12 +254,10 @@ export function RescheduleRequest({
                 disabled={isEmpty || !targetId || submitting}
                 onClick={() => {
                   setStatus("submitting");
-                  void getMockAdapter()
-                    .createRescheduleRequest(booking.id, targetId)
-                    .then(() => {
-                      notify.portal("reschedule.submitted");
-                      router.push(`/portal/bookings/${booking.id}`);
-                    });
+                  void request.mutateAsync(targetId).then(() => {
+                    notify.portal("reschedule.submitted");
+                    router.push(`/portal/bookings/${booking.id}`);
+                  });
                 }}
               >
                 {submitting ? (

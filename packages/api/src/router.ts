@@ -33,16 +33,28 @@ import {
   postCoachPhoto,
   postDuplicateAdminSessions,
 } from "./handlers/admin-catalogue";
+import {
+  getAdminClassChangeRequests,
+  getAdminSubstituteCoaches,
+  postAdminClassChangeRequest,
+  postApproveClassChangeRequest,
+  postDenyClassChangeRequest,
+  postWithdrawClassChangeRequest,
+} from "./handlers/admin-class-changes";
+import { getCoachStudent, getCoachStudents } from "./handlers/admin-coach-students";
 import { getAdminDashboard, getAdminDashboardMetrics } from "./handlers/admin-dashboard";
 import {
   getAdminEvent,
   getAdminEvents,
   patchAdminEvent,
   postAdminEvent,
+  postAdminEventImage,
   postArchiveEvent,
   postCancelEvent,
   postPublishEvent,
 } from "./handlers/admin-events";
+import { getAdminMarketingInsights } from "./handlers/admin-marketing-insights";
+import { getAdminMe } from "./handlers/admin-me";
 import {
   getAdminPayments,
   getPaymentProofSignedUrl,
@@ -52,13 +64,19 @@ import {
 } from "./handlers/admin-payments";
 import {
   assignStaffRole,
+  deleteMyStaffPhoto,
+  deleteStaffPhoto,
   disableStaff,
   getCustomer,
   getCustomers,
   getStaff,
   linkStaffCoach,
   patchStaff,
+  postMyStaffPhoto,
   postStaff,
+  postStaffInvite,
+  postStaffPasswordReset,
+  postStaffPhoto,
   unlinkStaffCoach,
 } from "./handlers/admin-people";
 import {
@@ -90,16 +108,23 @@ import {
   activatePaymentQrHandler,
   archivePaymentQr,
   deleteFaq,
+  deletePolicyDocument,
   deleteSettingsQr,
   getAdminSettings,
   getPaymentQrs,
+  getPolicyForms,
   patchAdminSettings,
   patchFaq,
   patchPaymentQr,
+  patchPolicyDocument,
   postFaq,
   postPaymentQr,
+  postPaymentQrImage,
+  postPolicyDocument,
+  postPolicyVersion,
   postSettingsQr,
   promotePolicy,
+  putPolicyForms,
   reorderFaqs,
 } from "./handlers/admin-settings";
 import { getAdminVenues, patchAdminVenue, postAdminVenue } from "./handlers/admin-venues";
@@ -114,7 +139,20 @@ import {
   postRescheduleRequest,
   postWaitlist,
 } from "./handlers/bookings";
-import { getMe, getPolicyAcceptances, patchMe } from "./handlers/me";
+import {
+  deleteMyAvatar,
+  getMe,
+  getPolicyAcceptances,
+  patchMe,
+  postMyAvatar,
+  postPolicyAcceptances,
+} from "./handlers/me";
+import {
+  completeMyOnboarding,
+  getMyOnboarding,
+  patchMyOnboarding,
+  skipMyOnboarding,
+} from "./handlers/onboarding";
 import {
   getEligiblePackages,
   getMyPackage,
@@ -131,7 +169,10 @@ import {
   getPublicClasses,
   getPublicCoaches,
   getPublicContent,
+  getPublicEvent,
+  getPublicFormPolicies,
   getPublicSession,
+  getPublicSessionRoster,
   getPublicSessions,
 } from "./handlers/public";
 
@@ -167,10 +208,15 @@ function compile(path: string): { pattern: RegExp; keys: string[] } {
 
 const handlers: Record<string, RouteHandler> = {
   "GET /api/public/sessions": (deps, req) => getPublicSessions(deps, req),
+  "GET /api/public/events/{id}": (deps, req, params) => getPublicEvent(deps, req, params.id),
   "GET /api/public/sessions/{id}": (deps, req, params) => getPublicSession(deps, req, params.id),
+  "GET /api/public/sessions/{id}/roster": (deps, req, params) =>
+    getPublicSessionRoster(deps, req, params.id),
   "GET /api/public/coaches": (deps) => getPublicCoaches(deps),
   "GET /api/public/classes": (deps) => getPublicClasses(deps),
   "GET /api/public/content": (deps) => getPublicContent(deps),
+  "GET /api/public/policy-forms/{form}": (deps, req, params) =>
+    getPublicFormPolicies(deps, req, params.form),
   "GET /api/public/packages": (deps) => getPublicPackages(deps),
   "GET /api/public/packages/{slug}": (deps, _req, params) => getPublicPackage(deps, params.slug),
   "GET /api/me/packages": (deps, req) => getMyPackages(deps, req),
@@ -211,7 +257,14 @@ const handlers: Record<string, RouteHandler> = {
     getAdminEntitlementRedemptions(deps, req, params.id),
   "GET /api/me": (deps, req) => getMe(deps, req),
   "PATCH /api/me": (deps, req) => patchMe(deps, req),
+  "POST /api/me/avatar": (deps, req) => postMyAvatar(deps, req),
+  "DELETE /api/me/avatar": (deps, req) => deleteMyAvatar(deps, req),
   "GET /api/me/policy-acceptances": (deps, req) => getPolicyAcceptances(deps, req),
+  "POST /api/me/policy-acceptances": (deps, req) => postPolicyAcceptances(deps, req),
+  "GET /api/me/onboarding": (deps, req) => getMyOnboarding(deps, req),
+  "PATCH /api/me/onboarding": (deps, req) => patchMyOnboarding(deps, req),
+  "POST /api/me/onboarding/complete": (deps, req) => completeMyOnboarding(deps, req),
+  "POST /api/me/onboarding/skip": (deps, req) => skipMyOnboarding(deps, req),
   "POST /api/bookings": (deps, req) => postBookings(deps, req),
   "POST /api/bookings/{id}/waitlist": (deps, req, params) => postWaitlist(deps, req, params.id),
   "GET /api/bookings": (deps, req) => getBookings(deps, req),
@@ -259,6 +312,17 @@ const handlers: Record<string, RouteHandler> = {
     postAdminSessionRecurrence(deps, req, params.id),
   "POST /api/admin/sessions/{id}/cancel": (deps, req, params) =>
     postCancelSession(deps, req, params.id),
+  "GET /api/admin/class-change-requests": (deps, req) => getAdminClassChangeRequests(deps, req),
+  "GET /api/admin/sessions/{id}/substitute-coaches": (deps, req, params) =>
+    getAdminSubstituteCoaches(deps, req, params.id),
+  "POST /api/admin/sessions/{id}/class-change-requests": (deps, req, params) =>
+    postAdminClassChangeRequest(deps, req, params.id),
+  "POST /api/admin/class-change-requests/{id}/withdraw": (deps, req, params) =>
+    postWithdrawClassChangeRequest(deps, req, params.id),
+  "POST /api/admin/class-change-requests/{id}/approve": (deps, req, params) =>
+    postApproveClassChangeRequest(deps, req, params.id),
+  "POST /api/admin/class-change-requests/{id}/deny": (deps, req, params) =>
+    postDenyClassChangeRequest(deps, req, params.id),
   "GET /api/admin/cancellation-requests": (deps, req) => getCancellationRequests(deps, req),
   "POST /api/admin/cancellation-requests/{id}/complete": (deps, req, params) =>
     completeCancellation(deps, req, params.id),
@@ -282,6 +346,12 @@ const handlers: Record<string, RouteHandler> = {
     getSessionReport(deps, req, params.id),
   "GET /api/admin/staff": (deps, req) => getStaff(deps, req),
   "POST /api/admin/staff": (deps, req) => postStaff(deps, req),
+  "POST /api/admin/staff/{id}/invite": (deps, req, params) => postStaffInvite(deps, req, params.id),
+  "POST /api/admin/staff/{id}/reset-password": (deps, req, params) =>
+    postStaffPasswordReset(deps, req, params.id),
+  "POST /api/admin/staff/{id}/photo": (deps, req, params) => postStaffPhoto(deps, req, params.id),
+  "DELETE /api/admin/staff/{id}/photo": (deps, req, params) =>
+    deleteStaffPhoto(deps, req, params.id),
   "PATCH /api/admin/staff/{id}": (deps, req, params) => patchStaff(deps, req, params.id),
   "POST /api/admin/staff/{id}/disable": (deps, req, params) => disableStaff(deps, req, params.id),
   "POST /api/admin/staff/{id}/coach": (deps, req, params) => linkStaffCoach(deps, req, params.id),
@@ -297,11 +367,15 @@ const handlers: Record<string, RouteHandler> = {
   "POST /api/admin/roles/{id}/archive": (deps, req, params) => archiveRole(deps, req, params.id),
   "GET /api/admin/customers": (deps, req) => getCustomers(deps, req),
   "GET /api/admin/customers/{id}": (deps, req, params) => getCustomer(deps, req, params.id),
+  "GET /api/admin/coach/students": (deps, req) => getCoachStudents(deps, req),
+  "GET /api/admin/coach/students/{customerId}": (deps, req, params) =>
+    getCoachStudent(deps, req, params.customerId),
   "GET /api/admin/settings": (deps, req) => getAdminSettings(deps, req),
   "PATCH /api/admin/settings": (deps, req) => patchAdminSettings(deps, req),
   "POST /api/admin/settings/qr": (deps, req) => postSettingsQr(deps, req),
   "DELETE /api/admin/settings/qr": (deps, req) => deleteSettingsQr(deps, req),
   "GET /api/admin/settings/payment-qrs": (deps, req) => getPaymentQrs(deps, req),
+  "POST /api/admin/settings/payment-qrs/image": (deps, req) => postPaymentQrImage(deps, req),
   "POST /api/admin/settings/payment-qrs": (deps, req) => postPaymentQr(deps, req),
   "PATCH /api/admin/settings/payment-qrs/{id}": (deps, req, params) =>
     patchPaymentQr(deps, req, params.id),
@@ -315,8 +389,19 @@ const handlers: Record<string, RouteHandler> = {
   "POST /api/admin/settings/faqs/reorder": (deps, req) => reorderFaqs(deps, req),
   "POST /api/admin/settings/policies/{id}/promote": (deps, req, params) =>
     promotePolicy(deps, req, params.id),
+  "POST /api/admin/settings/policies": (deps, req) => postPolicyDocument(deps, req),
+  "PATCH /api/admin/settings/policies/{id}": (deps, req, params) =>
+    patchPolicyDocument(deps, req, params.id),
+  "DELETE /api/admin/settings/policies/{id}": (deps, req, params) =>
+    deletePolicyDocument(deps, req, params.id),
+  "POST /api/admin/settings/policies/{id}/versions": (deps, req, params) =>
+    postPolicyVersion(deps, req, params.id),
+  "GET /api/admin/settings/policy-forms": (deps, req) => getPolicyForms(deps, req),
+  "PUT /api/admin/settings/policy-forms": (deps, req) => putPolicyForms(deps, req),
   "GET /api/admin/events": (deps, req) => getAdminEvents(deps, req),
   "POST /api/admin/events": (deps, req) => postAdminEvent(deps, req),
+  "POST /api/admin/events/{id}/images": (deps, req, params) =>
+    postAdminEventImage(deps, req, params.id),
   "GET /api/admin/events/{id}": (deps, req, params) => getAdminEvent(deps, req, params.id),
   "PATCH /api/admin/events/{id}": (deps, req, params) => patchAdminEvent(deps, req, params.id),
   "POST /api/admin/events/{id}/publish": (deps, req, params) =>
@@ -327,6 +412,10 @@ const handlers: Record<string, RouteHandler> = {
     postArchiveEvent(deps, req, params.id),
   "GET /api/admin/dashboard": (deps, req) => getAdminDashboard(deps, req),
   "GET /api/admin/dashboard/metrics": (deps, req) => getAdminDashboardMetrics(deps, req),
+  "GET /api/admin/marketing-insights": (deps, req) => getAdminMarketingInsights(deps, req),
+  "GET /api/admin/me": (deps, req) => getAdminMe(deps, req),
+  "POST /api/admin/me/photo": (deps, req) => postMyStaffPhoto(deps, req),
+  "DELETE /api/admin/me/photo": (deps, req) => deleteMyStaffPhoto(deps, req),
 };
 
 export function compiledRoutes(): CompiledRoute[] {

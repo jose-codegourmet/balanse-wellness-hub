@@ -1,5 +1,6 @@
+import { getPublicEvent } from "@balanse/api-client";
 import { parseShareParams } from "@balanse/domain";
-import { getMockAdapter, MOCK_NOW_ISO } from "@balanse/mock";
+import { serverFetcher } from "@/lib/query/fetcher";
 import { renderPosterImage } from "@/modules/share/share-card";
 
 /** Branded 1080×1350 poster PNG for a public event (#347). Node runtime (fs + qrcode). */
@@ -13,14 +14,14 @@ export async function GET(
   { params }: { params: Promise<{ eventId: string }> },
 ): Promise<Response> {
   const { eventId } = await params;
-  const page = await getMockAdapter().getPublicEventPage(eventId);
+  const page = await getPublicEvent(serverFetcher(null), eventId).catch(() => null);
   // Draft/archived/unknown → null. Past events have nothing left to promote.
   const session = page?.session;
   if (
     !page ||
     !session ||
     session.availability === "past" ||
-    Date.parse(session.endsAt) <= Date.parse(MOCK_NOW_ISO)
+    Date.parse(session.endsAt) <= Date.now()
   ) {
     return new Response("Not found", { status: 404, headers: { "Cache-Control": CACHE_CONTROL } });
   }

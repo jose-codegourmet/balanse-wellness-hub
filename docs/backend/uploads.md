@@ -24,14 +24,40 @@ Payment proofs stay private (`getAdminPaymentProofSignedUrl`).
 
 ## Customer avatar (`profile_avatar`, #344)
 
-Same BE-052 mint / confirm / reap lifecycle. No new upload mechanism and **no handler this phase** (`PATCH /api/me` and avatar endpoints are not authorized yet).
+Customer avatars use the BE-052 mint / confirm / reap lifecycle at
+`POST` / `DELETE /api/me/avatar`. The direct browser Storage path is retired
+from profile editing; the API is the sole lifecycle owner.
 
 - Bucket `avatars` (private), 5 MiB, `image/jpeg` / `image/png` / `image/webp`. FE crops to a 512×512 circle and uploads WEBP.
-- Key: `avatars/<profileId>/<cuid>.webp`. `profiles.avatarKey` must match `^avatars/<id>/[A-Za-z0-9_-]+\.(webp|jpg|jpeg|png)$` (DB check).
+- Key: `avatars/<profileId>/<generated-id>.webp`. `profiles.avatarKey` must match `^avatars/<id>/[A-Za-z0-9_-]+\.(webp|jpg|jpeg|png)$` (DB check).
 - `pending_uploads` row: `bucket = 'avatars'`, `purpose = 'profile_avatar'`, `entityId = profileId`, **`profileId`** = the customer (new nullable actor column; `actorId` stays the staff actor). At most one of `actorId` / `profileId` is set (`pending_uploads_single_actor`).
 - Confirm sets `profiles.avatarKey` and deletes the previous avatar object. Remove sets it to `null` (initials fallback) and deletes the object.
 - Reads are always signed URLs (≈10 minutes). No public URL, no image transformations on a public path.
 - Customer avatar changes are self-edits and do not write `audit_events`.
+
+## Staff profile photo
+
+`POST` / `DELETE /api/admin/staff/{id}/photo` uses the existing private `avatars`
+bucket and `profiles.avatarKey`; no schema migration. This is the same personal
+avatar used by that account as a customer, not its public coach headshot.
+Requires `staff.manage`, active target/role, a non-system target, and target-role
+permissions within the manager's own authority. Mint accepts `{ contentType }`;
+confirm accepts `{ objectKey }`. JPG/PNG/WEBP only, up to 5 MiB, unique keys with
+upsert disabled. `pending_uploads` uses `purpose = staff_avatar`, target user id
+in `entityId`, manager staff id in `actorId`, and null `profileId`.
+Confirmation checks the uploaded object's type/size and atomically consumes a
+manager/target-bound intent within ten minutes. Replacement/removal retires the
+old private object and audits `staff.photo.replace` / `staff.photo.remove`.
+The staff list and `/api/admin/me` provide ten-minute signed read URLs, refreshed
+by the UI every four minutes while visible. Failed image reads fall back to initials.
+Photo controls save immediately, independently of the staff account form.
+
+My profile uses `POST` / `DELETE /api/admin/me/photo` with the same mint/confirm
+payloads and safeguards. Every active interactive staff actor can edit their own
+photo without `staff.manage`. Both the staff id and profile id come exclusively
+from the verified session; supplied IDs are ignored. Management endpoints remain
+permission-gated. Successful self-edits refresh the shared identity query and the
+navigation photo immediately.
 
 ## Derivatives
 

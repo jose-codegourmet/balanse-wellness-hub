@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
   type AdminSession,
   CLASS_CHANGE_KIND_META,
@@ -41,8 +42,8 @@ import {
   classChangeFormSchema,
 } from "@/modules/admin/forms/class-change/class-change-form.schema";
 import { toSessionIso } from "@/modules/admin/forms/session/session-form.schema";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { ClassChangeRequestCard } from "../class-change-request-card/ClassChangeRequestCard";
 
 const BREADCRUMB = (label: string) => [{ label: "Schedule", href: "/schedule" }, { label }];
@@ -62,9 +63,9 @@ export function ClassChangeRequestPage({
   sessionId: string;
   initialKind?: string;
 }) {
-  const { principal } = useMockPrincipal();
-  const sessionsQuery = useSuspenseQuery(adminSessionsQuery(principal));
-  const requestsQuery = useQuery(adminClassChangeRequestsQuery(principal));
+  const actor = useStaffActor();
+  const sessionsQuery = useSuspenseQuery(adminSessionsQuery(actor, apiFetchBrowser));
+  const requestsQuery = useQuery(adminClassChangeRequestsQuery(actor));
   const withdraw = useWithdrawClassChangeRequest();
   const session = sessionsQuery.data.find((row) => row.id === sessionId);
 
@@ -272,8 +273,8 @@ function KindFields({ session }: { session: AdminSession }) {
 }
 
 function SubstituteField({ sessionId }: { sessionId: string }) {
-  const { principal } = useMockPrincipal();
-  const optionsQuery = useQuery(adminSubstituteCoachOptionsQuery(principal, sessionId));
+  const actor = useStaffActor();
+  const optionsQuery = useQuery(adminSubstituteCoachOptionsQuery(actor, sessionId));
   const options = (optionsQuery.data ?? []).map((coach) => ({
     value: coach.id,
     label: coach.name,

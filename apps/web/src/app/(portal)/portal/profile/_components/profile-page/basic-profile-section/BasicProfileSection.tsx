@@ -5,6 +5,7 @@ import { PROFILE_FIELDS_NOTE } from "@balanse/domain";
 import { CircleAlert, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AvatarUploader } from "@/components/balanse/avatar-uploader/AvatarUploader";
+import { useDeleteMyAvatar, usePatchMe, useSaveMyAvatar } from "@/lib/query/mutations/customers";
 import type { CustomerProfileActions } from "../../../_lib/customer-self-service.types";
 import { BasicProfileForm } from "./basic-profile-form/BasicProfileForm";
 import { RosterVisibilitySetting } from "./roster-visibility-setting/RosterVisibilitySetting";
@@ -23,6 +24,9 @@ export function BasicProfileSection({
   forcedStatus,
 }: BasicProfileSectionProps) {
   const router = useRouter();
+  const patchProfile = usePatchMe(profile.id);
+  const saveAvatar = useSaveMyAvatar(profile.id);
+  const deleteAvatar = useDeleteMyAvatar(profile.id);
 
   /** Saved identity also lives in the server-rendered portal header. */
   function saved(next: CustomerProfile) {
@@ -56,23 +60,36 @@ export function BasicProfileSection({
           avatarUrl={profile.avatarUrl}
           seed={profile.id}
           onSave={async (dataUrl) => {
-            const result = await actions.setAvatar({ dataUrl });
-            if (!result.ok) return result.error;
-            saved(result.value);
-            return null;
+            try {
+              saved(await saveAvatar.mutateAsync(dataUrl));
+              return null;
+            } catch (error) {
+              return error instanceof Error ? error.message : "We couldn't save that photo.";
+            }
           }}
           onRemove={async () => {
-            const result = await actions.setAvatar(null);
-            if (!result.ok) return result.error;
-            saved(result.value);
-            return null;
+            try {
+              saved(await deleteAvatar.mutateAsync());
+              return null;
+            } catch (error) {
+              return error instanceof Error ? error.message : "We couldn't remove that photo.";
+            }
           }}
         />
       </div>
 
       <BasicProfileForm
         profile={profile}
-        onSave={actions.patchProfile}
+        onSave={async (patch) => {
+          try {
+            return { ok: true, value: await patchProfile.mutateAsync(patch) };
+          } catch (error) {
+            return {
+              ok: false as const,
+              error: error instanceof Error ? error.message : "We couldn't save your profile.",
+            };
+          }
+        }}
         onSaved={saved}
         forcedStatus={forcedStatus}
       />
@@ -80,10 +97,12 @@ export function BasicProfileSection({
       <RosterVisibilitySetting
         checked={profile.showOnPublicRoster}
         onChange={async (showOnPublicRoster) => {
-          const result = await actions.patchProfile({ showOnPublicRoster });
-          if (!result.ok) return result.error;
-          onSaved(result.value);
-          return null;
+          try {
+            onSaved(await patchProfile.mutateAsync({ showOnPublicRoster }));
+            return null;
+          } catch (error) {
+            return error instanceof Error ? error.message : "We couldn't save your roster setting.";
+          }
         }}
       />
     </section>

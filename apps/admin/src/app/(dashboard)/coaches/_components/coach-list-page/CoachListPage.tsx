@@ -1,11 +1,8 @@
 "use client";
 
-import {
-  type AdminCoach,
-  type AdminSession,
-  coachRateTypeLabel,
-  formatPeso,
-} from "@balanse/domain";
+import type { AdminCoachResponse, ApiFetcher } from "@balanse/api-client";
+import { apiFetchBrowser } from "@balanse/api-client/browser";
+import { type AdminSession, coachRateTypeLabel, formatPeso } from "@balanse/domain";
 import { Badge, Button, CoachPhoto, FeedbackState, TablePageSkeleton } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef, FilterFn } from "@tanstack/react-table";
@@ -16,8 +13,7 @@ import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/Admin
 import { adminNowIso } from "@/lib/clock";
 import { useUpsertAdminCoach } from "@/lib/query/mutations";
 import { adminCoachesQuery, adminSessionsQuery } from "@/lib/query/queries";
-import { AdminCan, useCanAdminAction } from "@/modules/authorization/useAdminAccess";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { AdminCan, useCanAdminAction, useStaffActor } from "@/modules/authorization/useAdminAccess";
 
 export type CoachListPageProps = {
   empty?: boolean;
@@ -26,9 +22,11 @@ export type CoachListPageProps = {
   focusCoachId?: string;
   forceInactive?: boolean;
   extraSpecialties?: string[];
+  /** Defaults to the real browser client; stories pass `mockCoachFetcher`. */
+  fetcher?: ApiFetcher;
 };
 
-type CoachListRow = AdminCoach & { upcomingCount: number };
+type CoachListRow = AdminCoachResponse & { upcomingCount: number };
 
 const specialtyFacetFilter: FilterFn<CoachListRow> = (row, _columnId, filterValue) => {
   if (!Array.isArray(filterValue) || filterValue.length === 0) return true;
@@ -49,13 +47,14 @@ export function CoachListPage({
   focusCoachId,
   forceInactive,
   extraSpecialties,
+  fetcher = apiFetchBrowser,
 }: CoachListPageProps) {
-  const { principal } = useMockPrincipal();
+  const actor = useStaffActor();
   const canSeeRates = useCanAdminAction("coach-rates-read");
   const canManageCoaches = useCanAdminAction("coaches-manage");
-  const coachesQuery = useSuspenseQuery(adminCoachesQuery(principal));
-  const sessionsQuery = useSuspenseQuery(adminSessionsQuery(principal));
-  const upsertCoach = useUpsertAdminCoach();
+  const coachesQuery = useSuspenseQuery(adminCoachesQuery(actor, fetcher));
+  const sessionsQuery = useSuspenseQuery(adminSessionsQuery(actor, fetcher));
+  const upsertCoach = useUpsertAdminCoach(fetcher);
   const nowIso = adminNowIso();
 
   const rows = useMemo<CoachListRow[]>(() => {
@@ -156,10 +155,12 @@ export function CoachListPage({
       header: "Rate",
       enableGlobalFilter: false,
       meta: { mobile: { role: "meta" } },
-      accessorFn: (row) => `${formatPeso(row.defaultRatePhp)} ${coachRateTypeLabel(row.rateType)}`,
+      accessorFn: (row) =>
+        `${formatPeso(row.defaultRatePhp ?? 0)} ${coachRateTypeLabel(row.rateType ?? "PER_SESSION")}`,
       cell: ({ row }) => (
         <span>
-          {formatPeso(row.original.defaultRatePhp)} · {coachRateTypeLabel(row.original.rateType)}
+          {formatPeso(row.original.defaultRatePhp ?? 0)} ·{" "}
+          {coachRateTypeLabel(row.original.rateType ?? "PER_SESSION")}
         </span>
       ),
     };

@@ -14,6 +14,8 @@ model Profile {
   fullName      String   @default("")
   email         String
   contactNumber String   @default("")
+  /// Customer portal registration, independent of staff access. Null for staff-only accounts.
+  customerRegisteredAt DateTime? @db.Timestamptz
   /// #344 — optional public display name. 2–30 chars after trim (DB check).
   nickname      String?
   /// #344 — object key in the private `avatars` bucket: `avatars/<profileId>/<cuid>.webp`
@@ -47,6 +49,7 @@ model Profile {
   pendingUploads          PendingUpload[]
 
   @@index([email])
+  @@index([customerRegisteredAt])
   @@index([referredById])
   @@index([onboardingCompletedAt])
   @@map("profiles")
@@ -89,6 +92,8 @@ model StaffMember {
   reviewedAcquisitions  BundleAcquisition[]      @relation("BundleAcquisitionReviewedBy")
   reviewedBundlePayments BundleAcquisitionPayment[] @relation("BundlePaymentReviewedBy")
   revokedBundles        CustomerBundle[]         @relation("CustomerBundleRevokedBy")
+  requestedClassChanges ClassChangeRequest[]     @relation("ClassChangeRequesterStaff")
+  reviewedClassChanges  ClassChangeRequest[]     @relation("ClassChangeReviewerStaff")
 
   @@index([status])
   @@index([email])

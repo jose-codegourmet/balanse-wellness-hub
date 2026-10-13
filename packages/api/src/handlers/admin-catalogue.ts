@@ -1,20 +1,22 @@
 import type { Prisma } from "@balanse/db";
+import type { PublicClass } from "@balanse/domain";
 import {
   addCalendarDays,
   calendarDayDistance,
-  classSlug,
   datesForWeeklyRecurrence,
   FIELD_CONSTRAINTS,
   isManilaYmd,
   manilaYmd,
   SIGNED_UPLOAD,
+  sessionCoachCost,
   type Weekday,
 } from "@balanse/domain";
 import { requireAdmin, requireAnyPermission, resolveActor, writeAudit } from "../auth";
+import { readClassCatalogue, writeClassCatalogue } from "../class-catalogue";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
-import { asString, ok, pagination, readJson, searchParams } from "../http";
-import { presentCoach } from "../presenters";
+import { asString, bearerToken, ok, pagination, readJson, searchParams } from "../http";
+import { presentCoach, sessionAvailability } from "../presenters";
 import {
   actorHas,
   canManageRates,
@@ -22,6 +24,7 @@ import {
   maybeStripRates,
   sessionOwnedByActor,
 } from "../sensitive";
+import { sessionConsumedCapacity, sessionPastCutoff, sessionsConsumedCapacity } from "../sql";
 import {
   assertOwnedCoachPhotoKey,
   confirmUpload,
@@ -33,14 +36,74 @@ import {
   fieldError,
   intValue,
   moneyValue,
+  optionalNullableString,
   optionalString,
   requireString,
   throwFields,
 } from "../validation";
 import { cancelLiveSessionEvent } from "./admin-events";
 
+/**
+ * `writeClassCatalogue` throws plain `Error`s with user-facing copy
+ * (WIRE-0501, #358). Map them onto the shapes the admin form / API client
+ * already know how to surface.
+ */
+function mapClassCatalogueError(error: unknown): ApiError {
+  const message = error instanceof Error ? error.message : "Class could not be saved.";
+  if (message.includes("already in use")) {
+    return new ApiError(409, "conflict", message, {
+      fieldErrors: [{ path: "name", code: "duplicate_value", message }],
+    });
+  }
+  if (message.includes("Sign in with")) {
+    return new ApiError(403, "forbidden", message);
+  }
+  return new ApiError(422, "validation_failed", message, {
+    fieldErrors: [],
+    formErrors: [{ code: "invalid_format", message }],
+  });
+}
+
+function parseClassInput(body: Record<string, unknown>): Omit<PublicClass, "id"> {
+  return {
+    name: requireString(body, "name", FIELD_CONSTRAINTS.class.name.max),
+    slug: requireString(body, "slug", 100),
+    customPageUrl: optionalNullableString(body, "customPageUrl") ?? null,
+    shortDescription: requireString(
+      body,
+      "shortDescription",
+      FIELD_CONSTRAINTS.class.shortDescription.max,
+    ),
+    description: optionalString(body, "description", 4000) ?? "",
+    coachIds: parseClassCoachIds(body.coachIds),
+    heroImage: optionalNullableString(body, "heroImage") ?? null,
+    galleryImages: parseGalleryImages(body.galleryImages),
+    defaultDurationMinutes: intValue(body, "defaultDurationMinutes", 1, 240, false) ?? null,
+    defaultPricePhp: intValue(body, "defaultPricePhp", 0, 1_000_000, false) ?? null,
+    active: body.active !== false,
+  };
+}
+
+function parseClassCoachIds(value: unknown): string[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value) || value.some((id) => typeof id !== "string")) {
+    throwFields(fieldError("coachIds", "invalid_type", "coachIds must be a list of strings."));
+  }
+  return value as string[];
+}
+
+function parseGalleryImages(value: unknown): string[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value) || value.some((src) => typeof src !== "string")) {
+    throwFields(
+      fieldError("galleryImages", "invalid_type", "galleryImages must be a list of strings."),
+    );
+  }
+  return value as string[];
+}
+
 /** Venue fields attached to admin session payloads. Staff notes stay on the venue resource. */
-const SESSION_VENUE_SELECT = {
+export const SESSION_VENUE_SELECT = {
   id: true,
   name: true,
   address: true,
@@ -48,63 +111,135 @@ const SESSION_VENUE_SELECT = {
   active: true,
 } satisfies Prisma.VenueSelect;
 
-export async function getAdminClasses(deps: ApiDeps, req: Request): Promise<Response> {
-  requireAdmin(await resolveActor(deps, req));
-  const items = await deps.prisma.gymClass.findMany({ orderBy: { name: "asc" } });
-  return ok({ items });
+export type AdminSessionRow = {
+  id: string;
+  classId: string;
+  venueId: string;
+  name: string | null;
+  startsAt: Date;
+  endsAt: Date;
+  capacity: number;
+  status: "DRAFT" | "PUBLISHED" | "CANCELLED";
+  bookable: boolean;
+  customerPrice: Prisma.Decimal;
+  recurrenceRuleId: string | null;
+  gymClass: { name: string };
+  venue: { id: string; name: string; address: string; kind: string; active: boolean };
+  coaches: {
+    coachId: string;
+    coachRate: Prisma.Decimal;
+    coachRateType: "PER_SESSION" | "PER_HOUR";
+    coach: { id: string; name: string; photoKey: string | null; staffMemberId?: string | null };
+  }[];
+};
+
+/** Full `AdminSession` shape (WIRE-0401/0402, #361), shared by every session-returning handler. */
+export async function presentAdminSession(
+  deps: ApiDeps,
+  session: AdminSessionRow,
+  consumed: number,
+) {
+  const remainingSlots = Math.max(0, session.capacity - consumed);
+  const now = deps.now();
+  const pastStart = now >= session.startsAt;
+  const pastCutoff = await sessionPastCutoff(deps, session.id);
+  const availability = sessionAvailability({
+    status: session.status,
+    remainingSlots,
+    pastStart,
+    pastCutoff,
+  });
+  const coaches = session.coaches.map((assignment) => presentCoach(assignment.coach));
+  const coachAssignments = session.coaches.map((assignment) => ({
+    coachId: assignment.coachId,
+    coachRatePhp: Number(assignment.coachRate),
+    coachRateType: assignment.coachRateType,
+  }));
+  const window = { startsAt: session.startsAt.toISOString(), endsAt: session.endsAt.toISOString() };
+  return {
+    id: session.id,
+    name: session.name,
+    classId: session.classId,
+    className: session.gymClass.name,
+    coaches: coaches.map(({ id, name, photoKey }) => ({ id, name, photoKey })),
+    coachName: coaches.map((coach) => coach.name).join(" & "),
+    startsAt: window.startsAt,
+    endsAt: window.endsAt,
+    pricePhp: Number(session.customerPrice),
+    capacity: session.capacity,
+    remainingSlots,
+    reservable:
+      session.status === "PUBLISHED" &&
+      session.bookable &&
+      availability !== "past" &&
+      availability !== "cancelled" &&
+      availability !== "past_cutoff" &&
+      remainingSlots > 0,
+    availability,
+    status: session.status,
+    venueId: session.venueId,
+    bookable: session.bookable,
+    coachRatePhp: coachAssignments.reduce(
+      (sum, assignment) => sum + sessionCoachCost(assignment, window),
+      0,
+    ),
+    coachAssignments,
+    recurrenceRuleId: session.recurrenceRuleId,
+  };
 }
 
+/** Full `PublicClass` shape (WIRE-0502, #358), including `coachIds` from `class_marketing_coaches`. */
+export async function getAdminClasses(deps: ApiDeps, req: Request): Promise<Response> {
+  requireAdmin(await resolveActor(deps, req));
+  const { classes } = await readClassCatalogue(bearerToken(req) ?? undefined);
+  return ok({ items: classes });
+}
+
+/**
+ * Full `PublicClass` writer (WIRE-0501, #358): routes through the same
+ * SECURITY INVOKER `save_class_catalogue` RPC as the class editor's direct
+ * Supabase calls, using the caller's own bearer token so RLS applies as the
+ * signed-in staff member (decision 7 — replaces the separate catalogue
+ * cookie now that E02 (#357) resolves a real staff actor on every request).
+ */
 export async function postAdminClass(deps: ApiDeps, req: Request): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
+  const token = bearerToken(req);
+  if (!token) throw new ApiError(401, "unauthorized", "Sign in required.");
   const body = await readJson(req);
-  const name = requireString(body, "name", FIELD_CONSTRAINTS.class.name.max);
-  const shortDescription = requireString(
-    body,
-    "shortDescription",
-    FIELD_CONSTRAINTS.class.shortDescription.max,
-  );
-  const defaultDurationMinutes = intValue(body, "defaultDurationMinutes", 1, 240, false);
-  const defaultCustomerPrice = moneyValue(body, "defaultCustomerPrice", false);
-  const created = await deps.prisma.gymClass.create({
-    data: {
-      name,
-      slug: classSlug(name),
-      shortDescription,
-      defaultDurationMinutes: defaultDurationMinutes === undefined ? null : defaultDurationMinutes,
-      defaultCustomerPrice: defaultCustomerPrice ?? null,
-      active: body.active !== false,
-    },
-  });
+  const input = parseClassInput(body);
+  let saved: PublicClass;
+  try {
+    saved = await writeClassCatalogue(input, token);
+  } catch (error) {
+    throw mapClassCatalogueError(error);
+  }
   await writeAudit(deps, {
     entityType: "class",
-    entityId: created.id,
+    entityId: saved.id,
     action: "class.create",
     actor,
   });
-  return ok({ class: created });
+  return ok({ class: saved });
 }
 
 export async function patchAdminClass(deps: ApiDeps, req: Request, id: string): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
+  const token = bearerToken(req);
+  if (!token) throw new ApiError(401, "unauthorized", "Sign in required.");
   const body = await readJson(req);
-  const name = optionalString(body, "name", FIELD_CONSTRAINTS.class.name.max);
-  const shortDescription = optionalString(
-    body,
-    "shortDescription",
-    FIELD_CONSTRAINTS.class.shortDescription.max,
-  );
-  const defaultDurationMinutes = intValue(body, "defaultDurationMinutes", 1, 240, false);
-  const updated = await deps.prisma.gymClass.update({
-    where: { id },
-    data: {
-      ...(name !== undefined ? { name } : {}),
-      ...(shortDescription !== undefined ? { shortDescription } : {}),
-      ...(typeof body.active === "boolean" ? { active: body.active } : {}),
-      ...(defaultDurationMinutes !== undefined ? { defaultDurationMinutes } : {}),
-    },
-  });
+  const { classes } = await readClassCatalogue(token);
+  const existing = classes.find((row) => row.id === id);
+  if (!existing) throw new ApiError(404, "class_not_found", "Class not found.");
+  const input = parseClassInput({ ...existing, ...body });
+  let saved: PublicClass;
+  try {
+    saved = await writeClassCatalogue({ ...input, id }, token);
+  } catch (error) {
+    throw mapClassCatalogueError(error);
+  }
   await writeAudit(deps, { entityType: "class", entityId: id, action: "class.update", actor });
-  return ok({ class: updated });
+  return ok({ class: saved });
 }
 
 export async function getAdminCoaches(deps: ApiDeps, req: Request): Promise<Response> {
@@ -266,14 +401,31 @@ export async function getAdminSessions(deps: ApiDeps, req: Request): Promise<Res
   const params = searchParams(req);
   const { page, pageSize, skip } = pagination(params);
   const ownOnly = !actorHas(actor, "schedule.read.all");
+  const from = params.get("from");
+  const to = params.get("to");
+  const coachId = params.get("coachId");
   const where = {
     ...(params.get("classId") ? { classId: params.get("classId") as string } : {}),
     ...(params.get("venueId") ? { venueId: params.get("venueId") as string } : {}),
     ...(params.get("status")
       ? { status: params.get("status") as "DRAFT" | "PUBLISHED" | "CANCELLED" }
       : {}),
-    ...(ownOnly && actor.coachId ? { coaches: { some: { coachId: actor.coachId } } } : {}),
-    ...(ownOnly && !actor.coachId ? { id: { in: [] } } : {}),
+    ...(from || to
+      ? {
+          startsAt: {
+            ...(from ? { gte: new Date(from) } : {}),
+            ...(to ? { lte: new Date(to) } : {}),
+          },
+        }
+      : {}),
+    // ownOnly pins the coach filter to the actor's own id regardless of the query param.
+    ...(ownOnly
+      ? actor.coachId
+        ? { coaches: { some: { coachId: actor.coachId } } }
+        : { id: { in: [] } }
+      : coachId
+        ? { coaches: { some: { coachId } } }
+        : {}),
   };
   const [total, items] = await Promise.all([
     deps.prisma.gymSession.count({ where }),
@@ -305,20 +457,19 @@ export async function getAdminSessions(deps: ApiDeps, req: Request): Promise<Res
       },
     }),
   ]);
-  const mapped = items
-    .filter((item) => !ownOnly || sessionOwnedByActor(actor, item))
-    .map((item) => ({
-      ...item,
-      coaches: item.coaches.map((assignment) => ({
-        ...assignment,
-        coach: presentCoach(assignment.coach),
-      })),
-    }));
+  const scoped = items.filter((item) => !ownOnly || sessionOwnedByActor(actor, item));
+  const consumed = await sessionsConsumedCapacity(
+    deps,
+    scoped.map((item) => item.id),
+  );
+  const presented = await Promise.all(
+    scoped.map((item) => presentAdminSession(deps, item, consumed.get(item.id) ?? 0)),
+  );
   return ok({
     page,
     pageSize,
     total,
-    items: maybeStripRates(actor, mapped),
+    items: maybeStripRates(actor, presented),
   });
 }
 
@@ -333,6 +484,8 @@ export async function postAdminSession(deps: ApiDeps, req: Request): Promise<Res
   const capacity = intValue(body, "capacity", 1, 200, true) as number;
   const customerPrice = moneyValue(body, "customerPrice", true) as string;
   const coachIds = parseCoachIds(body.coachIds);
+  const name = optionalNullableString(body, "name", FIELD_CONSTRAINTS.session.name.max) ?? null;
+  const bookable = typeof body.bookable === "boolean" ? body.bookable : true;
   assertSessionWindow(startsAt, endsAt);
   const created = await deps.prisma.$transaction(async (tx) => {
     await assertActiveClass(tx, classId);
@@ -342,6 +495,8 @@ export async function postAdminSession(deps: ApiDeps, req: Request): Promise<Res
       data: {
         classId,
         venueId,
+        name,
+        bookable,
         startsAt: new Date(startsAt),
         endsAt: new Date(endsAt),
         capacity,
@@ -356,6 +511,7 @@ export async function postAdminSession(deps: ApiDeps, req: Request): Promise<Res
         },
       },
       include: {
+        gymClass: true,
         coaches: { include: { coach: true } },
         venue: { select: SESSION_VENUE_SELECT },
       },
@@ -368,7 +524,8 @@ export async function postAdminSession(deps: ApiDeps, req: Request): Promise<Res
     actor,
     metadata: { coachIds, venueId },
   });
-  return ok({ session: maybeStripRates(actor, created) });
+  const presented = await presentAdminSession(deps, created, 0);
+  return ok({ session: maybeStripRates(actor, presented) });
 }
 
 export async function postDuplicateAdminSessions(deps: ApiDeps, req: Request): Promise<Response> {
@@ -559,6 +716,7 @@ function generatedSessionData(
     venueId: string;
     capacity: number;
     customerPrice: Prisma.Decimal;
+    bookable: boolean;
   },
   coaches: Awaited<ReturnType<typeof resolveSessionCoaches>>,
   startsAt: Date,
@@ -568,6 +726,9 @@ function generatedSessionData(
   return {
     classId: template.classId,
     venueId: template.venueId,
+    // Each generated occurrence is a new instance; a one-off title does not
+    // carry forward, but bookability (e.g. a staff-only series) does.
+    bookable: template.bookable,
     startsAt,
     endsAt,
     capacity: template.capacity,
@@ -620,6 +781,8 @@ export async function patchAdminSession(
   const venueId = "venueId" in body ? requireString(body, "venueId", 64) : undefined;
   const capacity = intValue(body, "capacity", 1, 200, false);
   const customerPrice = moneyValue(body, "customerPrice", false);
+  const name = optionalNullableString(body, "name", FIELD_CONSTRAINTS.session.name.max);
+  const bookable = typeof body.bookable === "boolean" ? body.bookable : undefined;
   const updated = await deps.prisma.$transaction(async (tx) => {
     // Serialize assignment replacement and capacity changes on the same session.
     await tx.$queryRawUnsafe("SELECT id FROM public.sessions WHERE id = $1 FOR UPDATE", id);
@@ -650,7 +813,13 @@ export async function patchAdminSession(
       }
     }
     if (typeof capacity === "number") {
-      await tx.$queryRawUnsafe("SELECT public.update_session_capacity($1, $2)", id, capacity);
+      // Prisma binds JS integers as bigint; the capacity RPC takes integer.
+      // Without this cast the whole edit rolls back, including the session name.
+      await tx.$queryRawUnsafe(
+        "SELECT public.update_session_capacity($1::text, $2::integer)",
+        id,
+        capacity,
+      );
     }
     return tx.gymSession.update({
       where: { id },
@@ -660,18 +829,23 @@ export async function patchAdminSession(
         ...(startsAt ? { startsAt: new Date(startsAt) } : {}),
         ...(endsAt ? { endsAt: new Date(endsAt) } : {}),
         ...(customerPrice != null ? { customerPrice } : {}),
+        ...(name !== undefined ? { name } : {}),
+        ...(bookable !== undefined ? { bookable } : {}),
         ...(asString(body.status) === "DRAFT" || asString(body.status) === "PUBLISHED"
           ? { status: asString(body.status) as "DRAFT" | "PUBLISHED" }
           : {}),
       },
       include: {
+        gymClass: true,
         coaches: { include: { coach: true } },
         venue: { select: SESSION_VENUE_SELECT },
       },
     });
   });
   await writeAudit(deps, { entityType: "session", entityId: id, action: "session.update", actor });
-  return ok({ session: maybeStripRates(actor, updated) });
+  const consumed = await sessionConsumedCapacity(deps, id);
+  const presented = await presentAdminSession(deps, updated, consumed);
+  return ok({ session: maybeStripRates(actor, presented) });
 }
 
 function assertAssignmentFields(body: Record<string, unknown>): void {
@@ -737,6 +911,17 @@ async function assertActiveVenue(tx: Prisma.TransactionClient, id: string) {
     throwFields(fieldError("venueId", "inactive_reference", "Venue must be active."));
 }
 
+/** Shared cancellation effect for direct staff actions and approved coach requests. */
+export async function cancelSessionInTransaction(
+  tx: Prisma.TransactionClient,
+  actorStaffId: string,
+  id: string,
+) {
+  const row = await tx.gymSession.update({ where: { id }, data: { status: "CANCELLED" } });
+  await cancelLiveSessionEvent(tx, actorStaffId, id);
+  return row;
+}
+
 export async function postCancelSession(
   deps: ApiDeps,
   req: Request,
@@ -745,14 +930,9 @@ export async function postCancelSession(
   const actor = requireAdmin(await resolveActor(deps, req));
   const session = await deps.prisma.gymSession.findUnique({ where: { id } });
   if (!session) throw new ApiError(404, "session_not_found", "Session not found.");
-  const updated = await deps.prisma.$transaction(async (tx) => {
-    const row = await tx.gymSession.update({
-      where: { id },
-      data: { status: "CANCELLED" },
-    });
-    await cancelLiveSessionEvent(tx, actor.staffId, id);
-    return row;
-  });
+  const updated = await deps.prisma.$transaction((tx) =>
+    cancelSessionInTransaction(tx, actor.staffId, id),
+  );
   const affected = await deps.prisma.booking.findMany({
     where: {
       sessionId: id,

@@ -8,10 +8,10 @@ import {
   firstImplementedPermittedAdminRoute,
 } from "@/lib/authorization/admin-access";
 import { useAdminAccessKind, useStaffActor } from "@/modules/authorization/useAdminAccess";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
+import { useStaffSession } from "@/modules/session/SessionProvider";
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-  const { principal } = useMockPrincipal();
+  const { role } = useStaffSession();
   const actor = useStaffActor();
   const kind = useAdminAccessKind();
   const pathname = usePathname();
@@ -37,7 +37,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     return <AccessDenied kind="revoked" />;
   }
 
-  if (principal.role === "admin" && !routeAllowed) {
+  if (role === "admin" && !routeAllowed) {
     return <AccessDenied kind="denied" homeHref={homeHref} />;
   }
 

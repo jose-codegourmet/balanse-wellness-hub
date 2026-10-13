@@ -1,14 +1,19 @@
 "use client";
 
+import { apiFetchBrowser } from "@balanse/api-client/browser";
 import { FeedbackState, FormPageSkeleton } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { useHasPermission } from "@/lib/auth/use-staff-permissions";
 import { useArchiveAdminStaffRole, useUpsertAdminStaffRole } from "@/lib/query/mutations";
-import { adminStaffRoleQuery, adminStaffRolesQuery } from "@/lib/query/queries";
+import {
+  adminPermissionsQuery,
+  adminStaffRoleQuery,
+  adminStaffRolesQuery,
+} from "@/lib/query/queries";
+import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { useMockPrincipal } from "@/modules/session/MockSessionProvider";
 import { RoleForm } from "../role-form/RoleForm";
 import { roleFormDefaultValues, roleFormValuesFrom } from "../role-form/RoleForm.defaults";
 
@@ -22,10 +27,11 @@ export function RoleFormPage({ roleId, cloneSourceId }: RoleFormPageProps) {
   const isNew = roleId === "new";
   const canRead = useHasPermission("roles.read");
   const canManage = useHasPermission("roles.manage");
-  const { principal } = useMockPrincipal();
-  const rolesQuery = useQuery(adminStaffRolesQuery(principal));
+  const actor = useStaffActor();
+  const rolesQuery = useQuery(adminStaffRolesQuery(actor, apiFetchBrowser));
+  const permissionsQuery = useQuery(adminPermissionsQuery(actor, apiFetchBrowser));
   const roleQuery = useQuery({
-    ...adminStaffRoleQuery(principal, isNew ? (cloneSourceId ?? "") : roleId),
+    ...adminStaffRoleQuery(actor, isNew ? (cloneSourceId ?? "") : roleId, apiFetchBrowser),
     enabled: Boolean(!isNew || cloneSourceId),
   });
   const upsert = useUpsertAdminStaffRole();
@@ -42,7 +48,11 @@ export function RoleFormPage({ roleId, cloneSourceId }: RoleFormPageProps) {
     );
   }
 
-  if ((isNew && cloneSourceId && roleQuery.isPending) || (!isNew && roleQuery.isPending)) {
+  if (
+    (isNew && cloneSourceId && roleQuery.isPending) ||
+    (!isNew && roleQuery.isPending) ||
+    permissionsQuery.isPending
+  ) {
     return (
       <AdminPageShell
         title={isNew ? "Create role" : "Role"}
@@ -57,7 +67,7 @@ export function RoleFormPage({ roleId, cloneSourceId }: RoleFormPageProps) {
     );
   }
 
-  if (rolesQuery.isError || roleQuery.isError) {
+  if (rolesQuery.isError || roleQuery.isError || permissionsQuery.isError) {
     return (
       <AdminPageShell
         title="Role"
@@ -72,6 +82,7 @@ export function RoleFormPage({ roleId, cloneSourceId }: RoleFormPageProps) {
           onAction={() => {
             void rolesQuery.refetch();
             void roleQuery.refetch();
+            void permissionsQuery.refetch();
           }}
         />
       </AdminPageShell>
@@ -135,6 +146,7 @@ export function RoleFormPage({ roleId, cloneSourceId }: RoleFormPageProps) {
       <RoleForm
         key={`${existing?.id ?? cloneSource?.id ?? "new"}:${existing?.permissionCount ?? 0}`}
         defaultValues={defaultValues}
+        permissions={permissionsQuery.data ?? []}
         builtIn={Boolean(existing?.builtIn) || (!canManage && !isNew)}
         cloneSourceName={cloneSource?.name ?? existing?.cloneSourceName}
         canArchive={Boolean(
@@ -148,11 +160,13 @@ export function RoleFormPage({ roleId, cloneSourceId }: RoleFormPageProps) {
               description: values.description,
               permissionKeys: values.permissionKeys,
               cloneSourceId: values.cloneSourceId,
+              cloneSourcePermissionKeys: cloneSource?.permissionKeys,
             });
             notify.admin("role.saved");
             router.push(`/staff/roles/${saved.id}`);
-          } catch {
+          } catch (error) {
             notify.admin("role.save-failed");
+            throw error;
           }
         }}
         onArchive={

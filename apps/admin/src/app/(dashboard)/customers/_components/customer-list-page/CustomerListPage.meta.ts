@@ -11,7 +11,10 @@
  * Skipped / Not started), Last Visit. Search matches name, nickname, email
  * and phone (#353).
  *
- * Data: `adminCustomersQuery` through the admin query layer. Staff cannot
+ * Data: `adminCustomersQuery` through the admin query layer. The API includes
+ * only profiles with customer portal registration (`customerRegisteredAt`),
+ * excluding staff-only accounts before filtering/counting/pagination. A customer
+ * who also has staff access remains a customer. Staff cannot
  * edit a customer's nickname, avatar, or answers here.
  *
  * ## When not to use
