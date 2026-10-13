@@ -33,7 +33,7 @@ import {
   Input,
   StatusBadge,
 } from "@balanse/ui";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { InfoIcon, TimerIcon, ZoomInIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
@@ -48,14 +48,13 @@ import { AdminQueueCount } from "@/components/balanse/queue/admin-queue-count/Ad
 import { AdminQueueList } from "@/components/balanse/queue/admin-queue-list/AdminQueueList";
 import { adminNowIso } from "@/lib/clock";
 import {
-  useCheckIn,
   useConfirmAdminBooking,
   useMarkRefunded,
   useMarkRefundPending,
-  useRecordCash,
-  useRejectAdminBooking,
+  useReceiveCashAndConfirm,
+  useRejectPaymentProof,
 } from "@/lib/query/mutations";
-import { adminPaymentsQueueInfiniteQuery } from "@/lib/query/queries";
+import { adminPaymentProofUrlQuery, adminPaymentsQueueInfiniteQuery } from "@/lib/query/queries";
 import { AdminCan, useHasPermission, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
 
@@ -148,11 +147,10 @@ function PaymentProofDialog({
 }
 
 const COUNTER_STEPS = [
-  "Find the held booking in this list.",
-  "Receive cash at the counter.",
-  "Record payment on the card.",
-  "Confirm payment and booking.",
-  "Check the guest in when they arrive.",
+  "Find the guest's booking in this list.",
+  "Take the amount shown in cash.",
+  "Press Cash received. This records the payment and confirms the booking.",
+  "Check the guest in from the class roster.",
 ];
 
 function CounterHelpNote() {
@@ -172,7 +170,7 @@ function CounterHelpNote() {
         </CollapsibleTrigger>
       </div>
       <CollapsibleContent>
-        <ol className="mt-4 grid gap-3 text-sm sm:grid-cols-5">
+        <ol className="mt-4 grid gap-3 text-sm sm:grid-cols-4">
           {COUNTER_STEPS.map((step, index) => (
             <li key={step} className="flex items-start gap-2.5 sm:flex-col sm:gap-2">
               <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground tabular-nums">
@@ -205,16 +203,22 @@ function PaymentQueueCard({
   onLeaving: (row: CustomerBooking) => void;
 }) {
   const confirm = useConfirmAdminBooking();
-  const reject = useRejectAdminBooking();
-  const recordCash = useRecordCash();
-  const checkIn = useCheckIn(row.sessionId);
+  const rejectProof = useRejectPaymentProof();
+  const receiveCash = useReceiveCashAndConfirm();
   const markPending = useMarkRefundPending();
   const markRefunded = useMarkRefunded();
+  const actor = useStaffActor();
+  // Receipts live in a private bucket: fetch a short-lived signed URL (audited per view).
+  const proofUrl = useQuery({
+    ...adminPaymentProofUrlQuery(actor, row.paymentId ?? ""),
+    enabled: tab === "gcash" && !row.proofPreviewUrl && Boolean(row.hasProof && row.paymentId),
+    staleTime: 4 * 60_000,
+  });
+  const proofSrc = row.proofPreviewUrl ?? proofUrl.data?.signedUrl ?? null;
   const busy =
     confirm.isPending ||
-    reject.isPending ||
-    recordCash.isPending ||
-    checkIn.isPending ||
+    rejectProof.isPending ||
+    receiveCash.isPending ||
     markPending.isPending ||
     markRefunded.isPending;
 
@@ -233,6 +237,7 @@ function PaymentQueueCard({
     }
   }
 
+  const amount = formatPeso(row.session.pricePhp);
   const hold = row.holdExpiresAt
     ? formatHoldDeadline(row.holdExpiresAt, row.session.startsAt)
     : "No hold deadline";
@@ -256,7 +261,7 @@ function PaymentQueueCard({
             <AdminQueueFacts
               items={[
                 { label: "Class time", value: formatSessionTime(row.session.startsAt) },
-                { label: "Amount", value: formatPeso(row.session.pricePhp) },
+                { label: "Amount", value: amount },
                 {
                   label: "Method",
                   value: (
@@ -287,15 +292,19 @@ function PaymentQueueCard({
           </div>
         }
         media={
-          row.proofPreviewUrl ? (
+          proofSrc ? (
             <PaymentProofDialog
-              url={row.proofPreviewUrl}
+              url={proofSrc}
               customerName={row.customerName}
               defaultOpen={proofOpen}
             />
           ) : tab === "gcash" ? (
             <p className="rounded-xl border border-dashed border-border px-3 py-6 text-center text-xs text-muted-foreground">
-              No screenshot for this GCash item.
+              {row.hasProof
+                ? proofUrl.isError
+                  ? "Couldn't load the screenshot. Refresh to try again."
+                  : "Loading screenshot…"
+                : "No screenshot for this GCash item."}
             </p>
           ) : null
         }
@@ -305,33 +314,45 @@ function PaymentQueueCard({
               <div className="flex flex-wrap gap-2">
                 <AdminCan action="bookings-confirm">
                   <ConfirmAction
-                    triggerLabel="Confirm Payment & Booking"
-                    title="Confirm payment and booking?"
-                    description={stamp}
+                    triggerLabel="Approve payment"
+                    title="Approve this GCash payment?"
+                    description="The payment is marked verified and the booking is confirmed."
+                    details={[
+                      { label: "Amount", value: amount },
+                      { label: "Customer", value: row.customerName },
+                      { label: "Reference", value: bookingReference(row.id) },
+                    ]}
+                    note={stamp}
                     disabled={busy || leaving}
                     onConfirm={() =>
                       run(
                         () => confirm.mutateAsync(row.id),
                         "payment.confirmed",
                         "payment.action-failed",
+                        true,
                       )
                     }
                   />
                 </AdminCan>
-                <AdminCan action="bookings-reject">
+                <AdminCan action="payments-review">
                   <ConfirmAction
-                    triggerLabel="Reject"
-                    title="Reject this payment?"
-                    description={stamp}
+                    triggerLabel="Reject receipt"
+                    title="Reject this receipt?"
+                    description={`${row.customerName}'s booking goes back to Payment Needed and they can send a new receipt until their hold ends. ${stamp}`}
                     variant="outline"
                     requireReason
-                    reasonLabel="Reject reason"
-                    reasonPlaceholder="Tell the customer why this payment is rejected."
-                    disabled={busy || leaving}
+                    reasonLabel="Reason for the customer"
+                    reasonPlaceholder="For example: the amount doesn't match, or the screenshot is unreadable."
+                    confirmLabel="Reject receipt"
+                    disabled={busy || leaving || !row.paymentId}
                     onConfirm={(reason) =>
                       run(
-                        () => reject.mutateAsync({ id: row.id, reason: reason ?? "" }),
-                        "payment.rejected",
+                        () =>
+                          rejectProof.mutateAsync({
+                            paymentId: row.paymentId ?? "",
+                            reason: reason ?? "",
+                          }),
+                        "payment.proof-rejected",
                         "payment.action-failed",
                         true,
                       )
@@ -341,54 +362,25 @@ function PaymentQueueCard({
               </div>
             ) : null}
             {tab === "counter" ? (
-              <div className="flex flex-wrap gap-2">
-                <AdminCan action="payments-record-cash">
-                  <ConfirmAction
-                    triggerLabel="Record payment"
-                    title="Record cash received?"
-                    description={stamp}
-                    disabled={busy || leaving}
-                    onConfirm={() =>
-                      run(
-                        () => recordCash.mutateAsync(row.paymentId ?? row.id),
-                        "payment.cash-recorded",
-                        "payment.action-failed",
-                      )
-                    }
-                  />
-                </AdminCan>
+              <AdminCan action="payments-record-cash">
                 <AdminCan action="bookings-confirm">
                   <ConfirmAction
-                    triggerLabel="Confirm Payment & Booking"
-                    title="Confirm payment and booking?"
-                    description={stamp}
-                    disabled={busy || leaving}
+                    triggerLabel="Cash received"
+                    title={`Received ${amount} from ${row.customerName}?`}
+                    description={`This records the cash payment and confirms the booking. ${stamp}`}
+                    confirmLabel="Confirm booking"
+                    disabled={busy || leaving || !row.paymentId}
                     onConfirm={() =>
                       run(
-                        () => confirm.mutateAsync(row.id),
-                        "payment.confirmed",
+                        () => receiveCash.mutateAsync(row.paymentId ?? ""),
+                        "payment.cash-confirmed",
                         "payment.action-failed",
+                        true,
                       )
                     }
                   />
                 </AdminCan>
-                <AdminCan action="attendance">
-                  <ConfirmAction
-                    triggerLabel="Check in"
-                    title="Check this guest in?"
-                    description={stamp}
-                    variant="outline"
-                    disabled={busy || leaving}
-                    onConfirm={() =>
-                      run(
-                        () => checkIn.mutateAsync(row.id),
-                        "booking.checked-in",
-                        "booking.check-in-failed",
-                      )
-                    }
-                  />
-                </AdminCan>
-              </div>
+              </AdminCan>
             ) : null}
             {tab === "refunds" ? (
               <AdminCan action="refunds-manage">

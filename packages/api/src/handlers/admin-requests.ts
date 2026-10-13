@@ -15,7 +15,20 @@ export async function getCancellationRequests(deps: ApiDeps, req: Request): Prom
   const params = searchParams(req);
   const limit = parseLimit(params.get("limit"));
   const cursor = decodeCursor(params.get("cursor"), sort);
-  const filters = { resolution: "OPEN" as const };
+  const search = params.get("q")?.trim();
+  const filters = {
+    resolution: "OPEN" as const,
+    ...(search
+      ? {
+          booking: {
+            OR: [
+              { bookingReference: { contains: search, mode: "insensitive" as const } },
+              { profile: { fullName: { contains: search, mode: "insensitive" as const } } },
+            ],
+          },
+        }
+      : {}),
+  };
   const where = {
     ...filters,
     ...(cursor
@@ -39,7 +52,12 @@ export async function getCancellationRequests(deps: ApiDeps, req: Request): Prom
       orderBy: [{ requestedAt: "desc" }, { id: "desc" }],
       include: {
         booking: {
-          include: { profile: true, session: { include: { gymClass: true } }, refunds: true },
+          include: {
+            profile: true,
+            session: { include: { gymClass: true } },
+            payments: { orderBy: { createdAt: "desc" }, take: 1 },
+            refunds: { orderBy: { createdAt: "desc" }, take: 1 },
+          },
         },
       },
     }),
@@ -47,12 +65,19 @@ export async function getCancellationRequests(deps: ApiDeps, req: Request): Prom
   const items = rows.map((row) => ({
     id: row.id,
     bookingId: row.bookingId,
+    bookingReference: row.booking.bookingReference,
     customerName: row.booking.profile.fullName,
     className: row.booking.session.gymClass.name,
+    sessionName: row.booking.session.name,
+    sessionStartsAt: row.booking.session.startsAt.toISOString(),
     reason: row.reason,
     requestedAt: row.requestedAt.toISOString(),
     resolution: row.resolution,
     bookingStatus: row.booking.status,
+    paymentStatus: row.booking.payments[0]?.status ?? "NONE",
+    refundStatus: row.booking.refunds[0]?.status ?? "NOT_APPLICABLE",
+    paymentId: row.booking.payments[0]?.id ?? null,
+    refundId: row.booking.refunds[0]?.id ?? null,
   }));
   return ok({ sort, ...cursorPage(items, limit, totalCount, sort, (row) => row.requestedAt) });
 }
@@ -92,7 +117,7 @@ export async function rejectCancellation(
     id,
     actor.staffId,
     "REJECTED",
-    asString(body.note) ?? null,
+    asString(body.reason) ?? asString(body.note) ?? null,
   );
   const request = await deps.prisma.cancellationRequest.findUnique({
     where: { id },

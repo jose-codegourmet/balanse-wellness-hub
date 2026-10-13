@@ -8,7 +8,7 @@ import type {
 import type { ApiFetcher } from "./classes";
 import { phpToNumber } from "./money";
 
-type BookingWire = {
+export type BookingWire = {
   id: string;
   profileId?: string;
   customerName?: string;

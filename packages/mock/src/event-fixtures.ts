@@ -9,9 +9,6 @@ import { MAIN_STUDIO_VENUE_ID } from "./venue-fixtures";
 export const EVENT_FIXTURE_PRICE_NOTE =
   "OQ-PRICE: session prices on event fixtures are non-authoritative placeholders.";
 
-/** Timetable session that deliberately has no event (1:0..1). */
-export const EVENT_FIXTURE_SESSION_WITHOUT_EVENT = "session-wed-open";
-
 export type EventFixtureSession = {
   id: string;
   classId: string;

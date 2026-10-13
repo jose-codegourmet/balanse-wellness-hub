@@ -614,14 +614,6 @@ export function createMemoryAdapter(): MockDataAdapter {
         },
         { publicSessions: true },
       ),
-    getPublicSession: (id) =>
-      applyMockEffects(
-        () => {
-          const session = sessions.find((s) => s.id === id);
-          return session ? withFullOverlay(asPublic(session)) : null;
-        },
-        { publicSessions: true },
-      ),
     getPublicCoaches: () =>
       applyMockEffects(() => coaches.filter((c) => c.active).map(toPublicCoach)),
     getPublicClasses: () =>
@@ -864,17 +856,6 @@ export function createMemoryAdapter(): MockDataAdapter {
         booking.paymentMethod = method;
         return clone(booking);
       }),
-    uploadPaymentProof: (bookingId) =>
-      applyMockEffects(
-        () => {
-          const booking = findBooking(bookingId);
-          if (!booking) throw new Error("Booking not found");
-          booking.status = "PAYMENT_SUBMITTED";
-          booking.paymentStatus = "PROOF_SUBMITTED";
-          return clone(booking);
-        },
-        { proofUpload: true },
-      ),
     getPaymentInstructions: () =>
       applyMockEffects(() => {
         syncDerivedQr(settings);

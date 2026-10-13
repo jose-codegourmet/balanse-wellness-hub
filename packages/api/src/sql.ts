@@ -139,8 +139,10 @@ export async function rejectBooking(
   bookingId: string,
   actorId: string,
   reason: string,
+  /** Pass a transaction client to reject inside a caller's transaction. */
+  db: Pick<ApiDeps["prisma"], "$executeRawUnsafe"> = deps.prisma,
 ): Promise<void> {
-  await deps.prisma.$executeRawUnsafe(
+  await db.$executeRawUnsafe(
     `SELECT public.reject_booking($1, $2, $3)`,
     bookingId,
     actorId,
@@ -148,12 +150,16 @@ export async function rejectBooking(
   );
 }
 
+type RawExecutor = Pick<ApiDeps["prisma"], "$executeRawUnsafe">;
+
 export async function confirmBooking(
   deps: ApiDeps,
   bookingId: string,
   actorId: string,
+  /** Pass a transaction client to confirm inside a caller's transaction. */
+  db: RawExecutor = deps.prisma,
 ): Promise<void> {
-  await deps.prisma.$executeRawUnsafe(
+  await db.$executeRawUnsafe(
     `SELECT public.transition_booking($1, 'CONFIRMED'::booking_status, 'STAFF'::audit_actor_type, $2, 'booking.confirm', '{}'::jsonb)`,
     bookingId,
     actorId,

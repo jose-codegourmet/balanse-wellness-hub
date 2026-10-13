@@ -61,6 +61,7 @@ import {
   postMarkRefunded,
   postMarkRefundPending,
   postRecordCash,
+  postRejectPaymentProof,
 } from "./handlers/admin-payments";
 import {
   assignStaffRole,
@@ -288,6 +289,8 @@ const handlers: Record<string, RouteHandler> = {
     getPaymentProofSignedUrl(deps, req, params.id),
   "POST /api/admin/payments/{id}/record-cash": (deps, req, params) =>
     postRecordCash(deps, req, params.id),
+  "POST /api/admin/payments/{id}/reject-proof": (deps, req, params) =>
+    postRejectPaymentProof(deps, req, params.id),
   "POST /api/admin/refunds/{id}/mark-pending": (deps, req, params) =>
     postMarkRefundPending(deps, req, params.id),
   "POST /api/admin/refunds/{id}/mark-refunded": (deps, req, params) =>

@@ -1,10 +1,10 @@
-import { requireAdmin, resolveActor, writeAudit } from "../auth";
+import { requireAdmin, requirePermission, resolveActor, writeAudit } from "../auth";
 import { cursorPage, decodeCursor, parseLimit } from "../cursor";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { asString, ok, readJson, searchParams } from "../http";
 import { money } from "../presenters";
-import { transitionRefund } from "../sql";
+import { confirmBooking, transitionRefund } from "../sql";
 
 const TAB_ALIASES: Record<string, "gcash" | "counter" | "refunds"> = {
   gcash: "gcash",
@@ -111,15 +111,20 @@ export async function getAdminPayments(deps: ApiDeps, req: Request): Promise<Res
 
   const filters =
     tab === "gcash"
-      ? { method: "GCASH" as const, status: "PROOF_SUBMITTED" as const }
-      : {
-          OR: [
-            { method: "PAY_AT_COUNTER" as const },
-            {
-              booking: { status: "HELD_AWAITING_PAYMENT" as const },
-              NOT: { method: "GCASH" as const },
-            },
-          ],
+      ? // Proofs still awaiting review on a live booking. A confirmed or rejected
+        // booking's payment is resolved with it, but never list a closed booking.
+        {
+          method: "GCASH" as const,
+          status: "PROOF_SUBMITTED" as const,
+          booking: {
+            status: { in: ["PAYMENT_SUBMITTED" as const, "HELD_AWAITING_PAYMENT" as const] },
+          },
+        }
+      : // Counter work still to do: held bookings not paying by GCash. Once cash is
+        // received the booking is confirmed and leaves this queue.
+        {
+          booking: { status: "HELD_AWAITING_PAYMENT" as const },
+          NOT: { method: "GCASH" as const },
         };
 
   const [totalCount, rows] = await Promise.all([
@@ -155,6 +160,8 @@ export async function getAdminPayments(deps: ApiDeps, req: Request): Promise<Res
       status: row.booking.session.status,
     },
     paymentStatus: row.status,
+    /** The card loads the image through `/api/admin/payment-proofs/{id}/signed-url`. */
+    hasProof: Boolean(row.proofObjectKey),
     refundStatus: "NOT_APPLICABLE",
     reservedAt: row.booking.reservedAt.toISOString(),
     createdAt: row.booking.reservedAt.toISOString(),
@@ -193,22 +200,51 @@ export async function getPaymentProofSignedUrl(
   return ok({ signedUrl, expiresIn });
 }
 
+const CONFIRMABLE_ON_CASH = new Set(["HELD_AWAITING_PAYMENT", "PAYMENT_SUBMITTED"]);
+
+/**
+ * Record cash received at the counter. With `{ "confirm": true }` the booking is
+ * confirmed in the same transaction, so a paid booking can never be left held
+ * (and expired by the hold job) or confirmed with no payment on record.
+ */
 export async function postRecordCash(deps: ApiDeps, req: Request, id: string): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
+  const body = await readJson(req);
+  const confirm = body.confirm === true;
+  // Confirming is its own permission; record-cash access alone must not confirm.
+  if (confirm) requirePermission(actor, "bookings.confirm");
   const payment = await deps.prisma.payment.findUnique({
     where: { id },
     include: { booking: true },
   });
   if (!payment) throw new ApiError(404, "payment_not_found", "Payment not found.");
-  const updated = await deps.prisma.payment.update({
-    where: { id },
-    data: {
-      method: "PAY_AT_COUNTER",
-      status: "CASH_RECEIVED",
-      reviewedById: actor.staffId,
-      reviewedAt: deps.now(),
-    },
+  if (confirm && !CONFIRMABLE_ON_CASH.has(payment.booking.status)) {
+    throw new ApiError(
+      409,
+      "booking_not_confirmable",
+      "This booking is no longer waiting for payment. Refresh the queue.",
+    );
+  }
+  const updated = await deps.prisma.$transaction(async (tx) => {
+    const row = await tx.payment.update({
+      where: { id },
+      data: {
+        method: "PAY_AT_COUNTER",
+        status: "CASH_RECEIVED",
+        reviewedById: actor.staffId,
+        reviewedAt: deps.now(),
+      },
+    });
+    if (confirm) {
+      await tx.booking.update({
+        where: { id: payment.bookingId },
+        data: { paymentMethod: "PAY_AT_COUNTER" },
+      });
+      await confirmBooking(deps, payment.bookingId, actor.staffId, tx);
+    }
+    return row;
   });
+  const booking = await deps.prisma.booking.findUnique({ where: { id: payment.bookingId } });
   await writeAudit(deps, {
     entityType: "payment",
     entityId: payment.id,
@@ -216,12 +252,76 @@ export async function postRecordCash(deps: ApiDeps, req: Request, id: string): P
     actor,
     beforeStatus: payment.status,
     afterStatus: updated.status,
-    metadata: { bookingId: payment.bookingId, bookingStill: payment.booking.status },
+    metadata: {
+      bookingId: payment.bookingId,
+      bookingBefore: payment.booking.status,
+      bookingAfter: booking?.status ?? payment.booking.status,
+      confirmed: confirm,
+    },
   });
   return ok({
     payment: { id: updated.id, status: updated.status, method: updated.method },
-    booking: { id: payment.bookingId, status: payment.booking.status },
-    confirmed: false,
+    booking: { id: payment.bookingId, status: booking?.status ?? payment.booking.status },
+    confirmed: confirm,
+  });
+}
+
+/**
+ * Reject a GCash receipt without rejecting the booking. The payment becomes
+ * REJECTED (reason kept on the `payment.reject` audit row, which the customer's
+ * booking read returns), and a booking under review goes back to
+ * HELD_AWAITING_PAYMENT with its original hold, so the customer can pay again.
+ * Rejecting the whole booking stays `POST /api/admin/bookings/{id}/reject`.
+ */
+export async function postRejectPaymentProof(
+  deps: ApiDeps,
+  req: Request,
+  id: string,
+): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  requirePermission(actor, "payments.review");
+  const body = await readJson(req);
+  const reason = asString(body.reason)?.trim() ?? "";
+  if (!reason) {
+    throw new ApiError(400, "validation_error", "Tell the customer why the receipt was rejected.", {
+      fields: { reason: "Required." },
+    });
+  }
+  const payment = await deps.prisma.payment.findUnique({
+    where: { id },
+    include: { booking: true },
+  });
+  if (!payment) throw new ApiError(404, "payment_not_found", "Payment not found.");
+  if (payment.status !== "PROOF_SUBMITTED") {
+    throw new ApiError(409, "proof_not_pending", "This receipt is no longer waiting for review.");
+  }
+  await deps.prisma.$transaction(async (tx) => {
+    await tx.payment.update({
+      where: { id },
+      data: { status: "REJECTED", reviewedById: actor.staffId, reviewedAt: deps.now() },
+    });
+    if (payment.booking.status === "PAYMENT_SUBMITTED") {
+      await tx.$executeRawUnsafe(
+        `SELECT public.transition_booking($1, 'HELD_AWAITING_PAYMENT'::booking_status, 'STAFF'::audit_actor_type, $2, 'payment.reject', $3::jsonb)`,
+        payment.bookingId,
+        actor.staffId,
+        JSON.stringify({ reason }),
+      );
+    }
+  });
+  await writeAudit(deps, {
+    entityType: "payment",
+    entityId: payment.id,
+    action: "payment.reject",
+    actor,
+    beforeStatus: "PROOF_SUBMITTED",
+    afterStatus: "REJECTED",
+    metadata: { bookingId: payment.bookingId, reason },
+  });
+  const booking = await deps.prisma.booking.findUnique({ where: { id: payment.bookingId } });
+  return ok({
+    payment: { id: payment.id, status: "REJECTED" },
+    booking: { id: payment.bookingId, status: booking?.status ?? payment.booking.status },
   });
 }
 

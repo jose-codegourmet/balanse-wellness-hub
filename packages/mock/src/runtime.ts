@@ -17,9 +17,9 @@ export function resetMockRuntime(): void {
 
 export async function applyMockEffects<T>(
   work: () => T | Promise<T>,
-  options?: { publicSessions?: boolean; proofUpload?: boolean },
+  options?: { publicSessions?: boolean },
 ): Promise<T> {
-  const { latencyMs, failNext, failPublicSessions, failProofUpload } = runtime;
+  const { latencyMs, failNext, failPublicSessions } = runtime;
   if (latencyMs > 0) {
     await new Promise((resolve) => setTimeout(resolve, latencyMs));
   }
@@ -29,9 +29,6 @@ export async function applyMockEffects<T>(
   }
   if (options?.publicSessions && failPublicSessions) {
     throw new Error("Mocked request failed. Toggle simulated failure off to continue.");
-  }
-  if (options?.proofUpload && failProofUpload) {
-    throw new Error("Proof upload failed. Check the file and try again.");
   }
   return work();
 }

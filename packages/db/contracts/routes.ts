@@ -42,6 +42,7 @@ export const API_CONTRACT_ROUTES: ContractRoute[] = [
   { ticket: "BE-037", method: "get", path: "/api/admin/payments" },
   { ticket: "BE-037", method: "get", path: "/api/admin/payment-proofs/{id}/signed-url" },
   { ticket: "BE-037", method: "post", path: "/api/admin/payments/{id}/record-cash" },
+  { ticket: "BE-037", method: "post", path: "/api/admin/payments/{id}/reject-proof" },
   { ticket: "BE-037", method: "post", path: "/api/admin/refunds/{id}/mark-pending" },
   { ticket: "BE-037", method: "post", path: "/api/admin/refunds/{id}/mark-refunded" },
   { ticket: "BE-038", method: "get", path: "/api/admin/classes" },

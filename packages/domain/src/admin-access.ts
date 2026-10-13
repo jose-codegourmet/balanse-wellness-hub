@@ -483,6 +483,7 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
   }),
   api("GET", "/api/admin/payment-proofs/:id/signed-url", "Payment proof", ["payments.review"]),
   api("POST", "/api/admin/payments/:id/record-cash", "Record cash", ["payments.record_cash"]),
+  api("POST", "/api/admin/payments/:id/reject-proof", "Reject payment proof", ["payments.review"]),
   api("POST", "/api/admin/refunds/:id/mark-pending", "Mark refund pending", ["refunds.manage"]),
   api("POST", "/api/admin/refunds/:id/mark-refunded", "Mark refunded", ["refunds.manage"]),
   api("GET", "/api/admin/cancellation-requests", "Cancellation queue", ["cancellations.read"]),
@@ -608,6 +609,9 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
     "settings.payment_qr.manage",
   ]),
   api("GET", "/api/admin/settings/payment-qrs", "List payment QRs", ["settings.payment_qr.manage"]),
+  api("POST", "/api/admin/settings/payment-qrs/image", "Upload payment QR image", [
+    "settings.payment_qr.manage",
+  ]),
   api("POST", "/api/admin/settings/payment-qrs", "Create payment QR", [
     "settings.payment_qr.manage",
   ]),

@@ -121,6 +121,17 @@ export function mapUnknownError(error: unknown): ApiError {
     if (target.includes("sessionId")) {
       return new ApiError(409, "event_session_taken", EVENT_CONFLICT_MESSAGES.event_session_taken);
     }
+    if (target.toLowerCase().includes("slug")) {
+      return new ApiError(422, "validation_failed", "Validation failed.", {
+        fieldErrors: [
+          {
+            path: "slug",
+            code: "duplicate_value",
+            message: "This URL is already in use.",
+          },
+        ],
+      });
+    }
     return new ApiError(409, "conflict", "A unique value is already in use.", {
       fieldErrors: [
         { path: "name", code: "duplicate_value", message: "This name is already used." },

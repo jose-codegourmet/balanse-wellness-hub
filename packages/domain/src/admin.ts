@@ -8,7 +8,7 @@ import {
 import { bookingReference, HOLD_DURATION_HOURS } from "./customer-portal";
 import type { CoachRateType, PaymentStatus, SessionStatus, VenueKind } from "./enums";
 import { BOOKING_STATUSES } from "./enums";
-import { manilaYmd } from "./format";
+import { formatSessionDate, formatSessionTime, manilaYmd } from "./format";
 import type { CustomerOnboardingAnswers } from "./onboarding";
 import type { PolicyFormRequirements } from "./policy-forms";
 import { roleLabel } from "./roles";
@@ -770,9 +770,10 @@ export function staffCoachFacetLabel(isCoach: boolean): string {
   return isCoach ? "Coach" : "Not a coach";
 }
 
+/** Confirm-dialog footnote, e.g. "This payment action is logged under Admin at 10:50 AM, Wed, Sep 16, 2026." */
 export function auditConfirmationCopy(action: string, actor = "Admin", atIso?: string): string {
-  const when = atIso ?? new Date().toISOString();
-  return `${action} will be audited as ${actor} at ${when}.`;
+  const when = atIso ? new Date(atIso) : new Date();
+  return `${action} is logged under ${actor} at ${formatSessionTime(when)}, ${formatSessionDate(when)}.`;
 }
 
 export function paymentQueueKind(booking: CustomerBooking): "gcash" | "counter" | "refund" | null {
@@ -782,10 +783,9 @@ export function paymentQueueKind(booking: CustomerBooking): "gcash" | "counter" 
   if (booking.paymentMethod === "GCASH" && booking.paymentStatus === "PROOF_SUBMITTED") {
     return "gcash";
   }
-  if (
-    booking.paymentMethod === "PAY_AT_COUNTER" ||
-    (booking.status === "HELD_AWAITING_PAYMENT" && booking.paymentMethod !== "GCASH")
-  ) {
+  // Same rule as `GET /api/admin/payments?tab=counter`: held bookings still waiting
+  // for cash. Once cash is received the booking is confirmed and leaves the queue.
+  if (booking.status === "HELD_AWAITING_PAYMENT" && booking.paymentMethod !== "GCASH") {
     return "counter";
   }
   return null;

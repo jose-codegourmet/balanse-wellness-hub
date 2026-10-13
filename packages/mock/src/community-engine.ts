@@ -18,7 +18,6 @@ import type {
   PublicRosterAttendee,
   PublicSession,
   PublicSessionPage,
-  ShareParams,
 } from "@balanse/domain";
 import {
   AVATAR_MAX_BYTES,
@@ -35,11 +34,9 @@ import {
   ONBOARDING_OTHER_MAX,
   PERSON_NAME_MAX,
   PUBLIC_ROSTER_STATUSES,
-  parseShareParams,
   REFERRAL_CHANNEL_LABELS,
   REFERRAL_CHANNELS,
   splitFullName,
-  toReferralChannel,
 } from "@balanse/domain";
 import type { ReferralFixture } from "./community-fixtures";
 import type { StoredSessionEvent } from "./event-fixtures";
@@ -303,45 +300,6 @@ export function validateAvatarDataUrl(dataUrl: string): void {
   if (bytes > AVATAR_MAX_BYTES) {
     throw new CommunityMockError("Photo must be 5 MB or smaller.", "invalid_avatar");
   }
-}
-
-const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
-export function generateReferralCode(taken: ReadonlySet<string>, seed: string): string {
-  let state = 0;
-  for (const char of seed) state = (state * 33 + char.charCodeAt(0)) >>> 0;
-  for (;;) {
-    let code = "";
-    for (let index = 0; index < 8; index += 1) {
-      state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
-      code += CODE_ALPHABET[state % CODE_ALPHABET.length];
-    }
-    if (!taken.has(code)) return code;
-  }
-}
-
-/** Resolves sign-up attribution. Unknown or self codes are ignored; never throws. */
-export function resolveSignupAttribution(
-  attribution: ShareParams | undefined,
-  profiles: readonly CustomerProfile[],
-  selfEmail: string,
-): ReferralFixture | null {
-  const params = parseShareParams({
-    ref: attribution?.ref ?? null,
-    src: attribution?.src ?? null,
-    via: attribution?.via ?? null,
-  });
-  let referredById: string | null = null;
-  if (params.ref) {
-    const referrer = profiles.find((row) => row.referralCode === params.ref);
-    if (referrer && referrer.email.toLowerCase() !== selfEmail.toLowerCase()) {
-      referredById = referrer.id;
-    } else {
-      delete params.ref;
-    }
-  }
-  const channel = toReferralChannel(params);
-  return channel ? { referredById, channel } : null;
 }
 
 /* ------------------------------------------------------------------ */

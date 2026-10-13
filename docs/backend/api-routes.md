@@ -108,6 +108,13 @@ Approve still re-checks **capacity** (`target_session_full`).
 
 OQ-1: customer cancellation has **no** eligibility window and no placeholder deadline.
 
+## Counter cash and payment approval (2026-10-13)
+
+- `POST /api/admin/payments/{id}/record-cash` with `{ "confirm": true }` records the cash (`CASH_RECEIVED`) and confirms the booking in one transaction. It requires `bookings.confirm` in addition to the route's record-cash access, and returns `409 booking_not_confirmable` unless the booking is `HELD_AWAITING_PAYMENT` or `PAYMENT_SUBMITTED`. Without the flag it only records the cash, as before.
+- `POST /api/admin/bookings/{id}/confirm` marks the booking's latest payment `VERIFIED` in the same transaction when it is `PROOF_SUBMITTED` (GCash approval), and audits `payment.verify`.
+- `POST /api/admin/payments/{id}/reject-proof` `{ "reason" }` (`payments.review`) rejects a GCash receipt only: the payment becomes `REJECTED`, a `PAYMENT_SUBMITTED` booking returns to `HELD_AWAITING_PAYMENT` with its original hold, and the reason is kept on the `payment.reject` audit row. The customer's `GET /api/bookings/{id}` returns it as `rejectReason`, and they can upload a new receipt. `POST /api/admin/bookings/{id}/reject` still rejects the whole booking (and a submitted proof with it).
+- `GET /api/admin/payments?tab=counter` lists only held bookings not paying by GCash. Confirmed counter bookings leave the queue; check-in happens on the session roster.
+
 ## Payment proof re-upload
 
 `POST /api/bookings/{id}/payment-proof` without `objectKey` issues a signed upload (jpeg/png/webp/heic, 5 MiB). With `objectKey` it replaces `payments.proofObjectKey`, sets payment `PROOF_SUBMITTED` and booking `PAYMENT_SUBMITTED`, and **never** `CONFIRMED`. Prior keys are written to `audit_events` (`payment.proof` / `payment.proof.replace`). History is retained; proofs are not appended as extra payment rows.

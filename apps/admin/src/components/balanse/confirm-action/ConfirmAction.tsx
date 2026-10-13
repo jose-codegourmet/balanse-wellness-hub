@@ -20,6 +20,8 @@ export function ConfirmAction({
   triggerLabel,
   title,
   description,
+  details,
+  note,
   confirmLabel = "Confirm",
   onConfirm,
   variant = "default",
@@ -49,6 +51,17 @@ export function ConfirmAction({
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
+        {details?.length ? (
+          <dl className="grid min-w-0 gap-2 rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm">
+            {details.map((detail) => (
+              <div key={detail.label} className="flex min-w-0 items-start justify-between gap-4">
+                <dt className="shrink-0 text-muted-foreground">{detail.label}</dt>
+                <dd className="min-w-0 break-all text-right font-medium">{detail.value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
+        {note ? <p className="text-xs text-muted-foreground">{note}</p> : null}
         {requireReason ? (
           <div className="grid gap-1.5">
             <Label htmlFor={reasonId}>{reasonLabel}</Label>

@@ -1,4 +1,4 @@
-import type { ApiFetcher } from "@balanse/api-client";
+import type { AdminCancellationRequest, ApiFetcher } from "@balanse/api-client";
 import type {
   AdminBundle,
   AdminPaymentTab,
@@ -7,7 +7,7 @@ import type {
   BundleDefinition,
   CustomerBooking,
 } from "@balanse/domain";
-import { EMPTY_BUNDLE_CREDIT_METRICS } from "@balanse/domain";
+import { bookingReference, EMPTY_BUNDLE_CREDIT_METRICS } from "@balanse/domain";
 import { getMockAdapter } from "@balanse/mock";
 
 const money = (value: number) => value.toFixed(2);
@@ -173,18 +173,46 @@ export const mockEntityFetcher: ApiFetcher = async (path, init) => {
     return { items: items.map(bookingWire), total: items.length, nextCursor: null } as never;
   }
   if (route === "/api/admin/payments" && method === "GET") {
-    return (await adapter.getAdminPayments({
+    const page = await adapter.getAdminPayments({
       tab: (params.get("tab") ?? "gcash") as AdminPaymentTab,
       search: params.get("q") ?? undefined,
       cursor: params.get("cursor") ?? undefined,
       limit: Number(params.get("limit") ?? 20),
-    })) as never;
+    });
+    // Same wire shape as the API (php_decimal price), so the client mapping is exercised.
+    return {
+      ...page,
+      items: page.items.map((booking) => ({
+        ...bookingWire(booking),
+        paymentId: booking.paymentId ?? booking.id,
+        refundId: booking.refundId ?? null,
+      })),
+    } as never;
   }
   if (route === "/api/admin/cancellation-requests" && method === "GET") {
-    return (await adapter.getAdminCancellationRequests({
+    const page = await adapter.getAdminCancellationRequests({
       search: params.get("q") ?? undefined,
       cursor: params.get("cursor") ?? undefined,
-    })) as never;
+    });
+    const items: AdminCancellationRequest[] = page.items.map((booking) => ({
+      id: booking.id,
+      bookingId: booking.id,
+      bookingReference: bookingReference(booking.id),
+      customerName: booking.customerName,
+      className: booking.session.className,
+      sessionName: booking.session.name ?? null,
+      sessionStartsAt: booking.session.startsAt,
+      reason: booking.cancellationReason ?? null,
+      requestedAt: booking.requestCreatedAt ?? booking.createdAt,
+      bookingStatus: booking.status,
+      paymentStatus: booking.paymentStatus,
+      refundStatus: booking.refundStatus,
+      // The mock adapter's refund mutations address bookings; the live API
+      // uses separate payment and refund ids.
+      paymentId: booking.paymentStatus === "NONE" ? null : booking.id,
+      refundId: booking.refundStatus === "NOT_APPLICABLE" ? null : booking.id,
+    }));
+    return { ...page, items } as never;
   }
   if (route === "/api/admin/reschedule-requests" && method === "GET") {
     return (await adapter.getAdminRescheduleRequests({
@@ -509,9 +537,18 @@ export const mockEntityFetcher: ApiFetcher = async (path, init) => {
           );
     return { booking: bookingWire(result) } as never;
   }
+  const proofReject = /^\/api\/admin\/payments\/([^/]+)\/reject-proof$/.exec(route);
+  if (proofReject && method === "POST") {
+    // The in-memory adapter has no proof-only reject; remove it from the queue the same way.
+    const reason = (init?.body as { reason?: string } | undefined)?.reason ?? "Not accepted";
+    return { booking: bookingWire(await adapter.rejectAdminBooking(proofReject[1], reason)) } as never;
+  }
   const paymentAction = /^\/api\/admin\/payments\/([^/]+)\/record-cash$/.exec(route);
   if (paymentAction && method === "POST") {
-    return { booking: await adapter.recordCash(paymentAction[1]) } as never;
+    const confirm = (init?.body as { confirm?: boolean } | undefined)?.confirm === true;
+    const recorded = await adapter.recordCash(paymentAction[1]);
+    const booking = confirm ? await adapter.confirmAdminBooking(recorded.id) : recorded;
+    return { booking: bookingWire(booking), confirmed: confirm } as never;
   }
   const paymentProof = /^\/api\/admin\/payment-proofs\/([^/]+)\/signed-url$/.exec(route);
   if (paymentProof && method === "GET") {

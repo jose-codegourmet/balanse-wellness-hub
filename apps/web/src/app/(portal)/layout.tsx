@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { PortalNav } from "@/modules/layout/PortalNav";
+import { PortalRealtimeSync } from "@/modules/realtime/PortalRealtimeSync";
 import { getCurrentCustomer } from "@/modules/session/current-customer";
 import "@/components/balanse/portal/portal.css";
 
@@ -12,6 +13,8 @@ export default async function PortalLayout({ children }: { children: React.React
   }
   return (
     <div className="portal-shell">
+      {/* Live updates when the front desk confirms, verifies, or resolves a request. */}
+      <PortalRealtimeSync customerId={profile.id} />
       {/* Identifies whose session the sidebar logout ends (FE-CUS-018). */}
       <PortalNav
         account={{

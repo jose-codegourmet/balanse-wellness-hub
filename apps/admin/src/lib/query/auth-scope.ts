@@ -5,13 +5,21 @@ import type { QueryClient } from "@tanstack/react-query";
 export type AdminAuthScope = string;
 
 /**
- * Stable, order-independent digest of a permission set. Not cryptographic —
- * just distinct enough that any permission-set change changes the scope
- * (WIRE-0205, #357: "Super Admin → Coach must not reuse cached rates,
- * reports, or other-staff rosters").
+ * Short, stable, order-independent fingerprint of a permission set (32-bit
+ * FNV-1a, base 36). Any permission change produces a new scope, so cached
+ * rates, reports, or other-staff rosters are never reused after a role change
+ * (WIRE-0205, #357). Not a security boundary: the API re-checks every request.
+ * Pure and synchronous so the server prefetch and the browser compute the
+ * same key.
  */
 function permissionsHash(permissions: readonly string[]): string {
-  return [...permissions].sort().join("+");
+  const input = [...permissions].sort().join("+");
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < input.length; index += 1) {
+    hash ^= input.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(36);
 }
 
 /** `${staffId}:${roleId}:${permissionsHash}` (WIRE-0205) from the real session's actor. */

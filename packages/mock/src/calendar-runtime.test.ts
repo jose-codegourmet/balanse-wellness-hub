@@ -14,7 +14,9 @@ describe("calendar mock runtime", () => {
 
   it("can mark a viewed session as newly full", async () => {
     setMockRuntime({ sessionBecameFullId: "session-wed-open" });
-    const session = await getMockAdapter().getPublicSession("session-wed-open");
+    const session = (await getMockAdapter().getPublicSessions()).find(
+      (row) => row.id === "session-wed-open",
+    );
     expect(session?.remainingSlots).toBe(0);
     expect(session?.availability).toBe("full_with_waitlist");
   });

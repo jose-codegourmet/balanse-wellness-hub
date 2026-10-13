@@ -43,3 +43,17 @@ export const Disabled: Story = {
     disabled: true,
   },
 };
+
+export const WithDetails: Story = {
+  args: {
+    triggerLabel: "Approve payment",
+    title: "Approve this GCash payment?",
+    description: "The payment is marked verified and the booking is confirmed.",
+    details: [
+      { label: "Amount", value: "₱550.00" },
+      { label: "Customer", value: "Jose Adrian Buctuanon" },
+      { label: "Reference", value: "BAL-10234" },
+    ],
+    note: "This payment action is logged under Admin at 3:54 PM, Tue, Oct 13, 2026.",
+  },
+};

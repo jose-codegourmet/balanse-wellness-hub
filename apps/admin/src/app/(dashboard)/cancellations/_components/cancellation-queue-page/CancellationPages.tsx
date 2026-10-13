@@ -1,15 +1,13 @@
 "use client";
 
+import type { AdminCancellationRequest } from "@balanse/api-client";
 import {
   auditConfirmationCopy,
-  bookingReference,
-  type CustomerBooking,
   formatRelativeTime,
   formatSessionDate,
   MANUAL_REFUND_NOTE,
   paymentStatusLabel,
   SLOT_LOCKED_UNTIL_CANCEL_NOTE,
-  sessionDisplayName,
 } from "@balanse/domain";
 import { Badge, cn, FeedbackState, Input, StatusBadge } from "@balanse/ui";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -43,9 +41,8 @@ export type CancellationQueuePageProps = {
   nextPageError?: boolean;
 };
 
-function requestAge(row: CustomerBooking, nowIso: string): string {
-  const iso = row.requestCreatedAt ?? row.createdAt;
-  return formatRelativeTime(iso, nowIso) || "—";
+function requestAge(row: AdminCancellationRequest, nowIso: string): string {
+  return formatRelativeTime(row.requestedAt, nowIso) || "—";
 }
 
 function CancellationRequestCard({
@@ -55,11 +52,11 @@ function CancellationRequestCard({
   leaving,
   onLeaving,
 }: {
-  row: CustomerBooking;
+  row: AdminCancellationRequest;
   stamp: string;
   nowIso: string;
   leaving: boolean;
-  onLeaving: (row: CustomerBooking) => void;
+  onLeaving: (row: AdminCancellationRequest) => void;
 }) {
   const complete = useCompleteAdminCancellation();
   const reject = useRejectAdminCancellation();
@@ -67,7 +64,7 @@ function CancellationRequestCard({
   const markRefunded = useMarkRefunded();
   const busy =
     complete.isPending || reject.isPending || markPending.isPending || markRefunded.isPending;
-  const reason = row.cancellationReason?.trim() ?? "";
+  const reason = row.reason?.trim() ?? "";
   async function runResolution(
     action: () => Promise<unknown>,
     success: "cancellation.completed" | "cancellation.rejected",
@@ -99,10 +96,10 @@ function CancellationRequestCard({
     >
       <AdminQueueCard
         who={row.customerName}
-        reference={bookingReference(row.id)}
-        what={`${sessionDisplayName(row.session)} · ${formatSessionDate(row.session.startsAt)}`}
+        reference={row.bookingReference}
+        what={`${row.sessionName?.trim() || row.className} · ${formatSessionDate(row.sessionStartsAt)}`}
         when={requestAge(row, nowIso)}
-        status={row.status}
+        status={row.bookingStatus}
         emphasis
         body={
           <div className="grid gap-4">
@@ -166,7 +163,7 @@ function CancellationRequestCard({
                     runResolution(
                       () =>
                         reject.mutateAsync({
-                          bookingId: row.id,
+                          requestId: row.id,
                           reason: adminReason ?? "",
                         }),
                       "cancellation.rejected",
@@ -187,16 +184,23 @@ function CancellationRequestCard({
                     title="Mark refund pending?"
                     description={`${stamp} Refund status is separate from cancellation. ${MANUAL_REFUND_NOTE}`}
                     variant="outline"
-                    disabled={busy || leaving || row.refundStatus === "REFUND_PENDING"}
-                    onConfirm={() => runRefund(() => markPending.mutateAsync(row.id))}
+                    disabled={
+                      busy ||
+                      leaving ||
+                      (!row.paymentId && !row.refundId) ||
+                      row.refundStatus !== "NOT_APPLICABLE"
+                    }
+                    onConfirm={() =>
+                      runRefund(() => markPending.mutateAsync(row.refundId ?? row.paymentId ?? ""))
+                    }
                   />
                   <ConfirmAction
                     triggerLabel="Mark Refunded"
                     title="Mark refunded?"
                     description={`${stamp} ${MANUAL_REFUND_NOTE}`}
                     variant="outline"
-                    disabled={busy || leaving || row.refundStatus === "REFUNDED"}
-                    onConfirm={() => runRefund(() => markRefunded.mutateAsync(row.id))}
+                    disabled={busy || leaving || !row.refundId || row.refundStatus === "REFUNDED"}
+                    onConfirm={() => runRefund(() => markRefunded.mutateAsync(row.refundId ?? ""))}
                   />
                 </div>
               </div>
@@ -220,14 +224,14 @@ export function CancellationQueuePage({
   const query = useInfiniteQuery(adminCancellationsInfiniteQuery(actor, search.trim()));
   const nowIso = adminNowIso();
   const stamp = auditConfirmationCopy("This cancellation action", "Admin", nowIso);
-  const [exiting, setExiting] = useState<Map<string, CustomerBooking>>(new Map());
+  const [exiting, setExiting] = useState<Map<string, AdminCancellationRequest>>(new Map());
 
   const queried = useMemo(
     () => query.data?.pages.flatMap((page) => page.items) ?? [],
     [query.data],
   );
 
-  const onLeaving = useCallback((row: CustomerBooking) => {
+  const onLeaving = useCallback((row: AdminCancellationRequest) => {
     setExiting((current) => {
       const next = new Map(current);
       next.set(row.id, row);

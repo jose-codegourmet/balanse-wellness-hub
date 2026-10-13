@@ -37,10 +37,6 @@ export class MockAuthorizationError extends Error {
   }
 }
 
-export function isMockAuthorizationError(error: unknown): error is MockAuthorizationError {
-  return error instanceof MockAuthorizationError;
-}
-
 function denyBoundPrincipal(): never {
   const principal = getBoundMockPrincipal();
   if (principal.role === "guest") {

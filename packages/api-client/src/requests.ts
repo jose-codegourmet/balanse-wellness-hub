@@ -1,5 +1,23 @@
-import type { CustomerBooking } from "@balanse/domain";
+import type { BookingStatus, CustomerBooking, PaymentStatus, RefundStatus } from "@balanse/domain";
 import type { ApiFetcher } from "./classes";
+
+export type AdminCancellationRequest = {
+  /** Cancellation request id, used by the complete/reject endpoints. */
+  id: string;
+  bookingId: string;
+  bookingReference: string;
+  customerName: string;
+  className: string;
+  sessionName: string | null;
+  sessionStartsAt: string;
+  reason: string | null;
+  requestedAt: string;
+  bookingStatus: BookingStatus;
+  paymentStatus: PaymentStatus;
+  refundStatus: RefundStatus;
+  paymentId: string | null;
+  refundId: string | null;
+};
 
 const query = (values: Record<string, string | undefined>) => {
   const params = new URLSearchParams();
@@ -25,7 +43,7 @@ export const listCancellations = (
   fetcher: ApiFetcher,
   input: { cursor?: string; search?: string } = {},
 ) =>
-  fetcher<{ items: CustomerBooking[]; nextCursor: string | null; totalCount: number }>(
+  fetcher<{ items: AdminCancellationRequest[]; nextCursor: string | null; totalCount: number }>(
     `/api/admin/cancellation-requests?${query({ cursor: input.cursor, q: input.search })}`,
   );
 export const completeCancellation = (fetcher: ApiFetcher, id: string) =>

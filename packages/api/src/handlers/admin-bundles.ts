@@ -86,6 +86,9 @@ export async function postAdminBundle(deps: ApiDeps, req: Request): Promise<Resp
   const sessionCreditCount = intValue(body, "sessionCreditCount", 1, 500, true);
   const pricePhp = moneyValue(body, "pricePhp", true);
   const slug = optionalString(body, "slug", FIELD_CONSTRAINTS.bundle.slug.max) ?? bundleSlug(name);
+  if (await deps.prisma.bundle.findUnique({ where: { slug }, select: { id: true } })) {
+    throwFields(fieldError("slug", "duplicate_value", "This package URL is already in use."));
+  }
   const validityDays = intValue(body, "validityDays", 1, 3650, false);
   const perCustomerLimit = intValue(body, "perCustomerLimit", 1, 20, false);
   const { mode, classIds } = readApplicability(body);
@@ -126,6 +129,13 @@ export async function patchAdminBundle(deps: ApiDeps, req: Request, id: string):
   const sessionCreditCount = intValue(body, "sessionCreditCount", 1, 500, false);
   const pricePhp = moneyValue(body, "pricePhp", false);
   const slug = optionalString(body, "slug", FIELD_CONSTRAINTS.bundle.slug.max);
+  if (
+    slug !== undefined &&
+    slug !== existing.slug &&
+    (await deps.prisma.bundle.findUnique({ where: { slug }, select: { id: true } }))
+  ) {
+    throwFields(fieldError("slug", "duplicate_value", "This package URL is already in use."));
+  }
   const validityDays = intValue(body, "validityDays", 1, 3650, false);
   const perCustomerLimit = intValue(body, "perCustomerLimit", 1, 20, false);
   const applicability = "applicabilityMode" in body ? readApplicability(body) : null;

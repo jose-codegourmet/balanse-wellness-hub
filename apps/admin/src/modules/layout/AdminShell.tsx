@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { AdminNotificationHeader } from "@/components/balanse/admin-notification-header/AdminNotificationHeader";
 import { AdminSidebar } from "@/components/balanse/sidebar/admin-sidebar/AdminSidebar";
 import { useCanAdminRoute } from "@/modules/authorization/useAdminAccess";
+import { AdminRealtimeSync } from "@/modules/realtime/AdminRealtimeSync";
 
 export function AdminShell({
   children,
@@ -21,6 +22,7 @@ export function AdminShell({
 
   return (
     <div className="flex min-h-dvh flex-col lg:flex-row">
+      <AdminRealtimeSync />
       <AdminSidebar
         defaultCollapsed={defaultCollapsed}
         onLogout={async () => {

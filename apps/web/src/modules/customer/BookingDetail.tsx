@@ -37,6 +37,16 @@ type Advisory = {
  */
 function advisoriesFor(booking: CustomerBooking): Advisory[] {
   const advisories: Advisory[] = [];
+  if (booking.status === "HELD_AWAITING_PAYMENT" && booking.paymentStatus === "REJECTED") {
+    advisories.push({
+      kind: "instruction",
+      icon: Wallet,
+      title: "Your payment wasn't accepted",
+      body: booking.rejectReason
+        ? `The front desk said: "${booking.rejectReason}" Your spot is still held, so you can pay again before the hold ends.`
+        : "The front desk couldn't verify your payment. Your spot is still held, so you can pay again before the hold ends.",
+    });
+  }
   if (
     booking.status === "HELD_AWAITING_PAYMENT" &&
     booking.paymentMethod === "PAY_AT_COUNTER" &&
@@ -113,6 +123,16 @@ export function BookingDetail({
     }
   }, [expiresAt, now, router]);
   const remainingMinutes = expiresAt ? Math.max(0, Math.ceil((expiresAt - now) / 60_000)) : null;
+  // "Pay now" while the hold is still running. GCash already chosen goes straight
+  // to the proof upload; otherwise the payment page, where GCash or cash can be picked.
+  const payNowHref =
+    booking.status === "HELD_AWAITING_PAYMENT" &&
+    !booking.entitlementId &&
+    !(expiresAt !== null && expiresAt <= now)
+      ? booking.paymentMethod === "GCASH"
+        ? `/portal/bookings/${booking.id}/payment/gcash`
+        : `/portal/bookings/${booking.id}/payment`
+      : null;
 
   return (
     <div className="portal-page portal-booking-detail">
@@ -166,7 +186,7 @@ export function BookingDetail({
       <section data-section="payment" className="portal-section">
         <div className="portal-section-title">
           <h2>Payment</h2>
-          <p>Handled by the studio, never on this page.</p>
+          <p>Pay by GCash or at the front desk. The front desk confirms your spot.</p>
         </div>
         <dl className="booking-facts">
           <div>
@@ -206,8 +226,14 @@ export function BookingDetail({
       </section>
 
       <section data-section="actions" className="booking-actions">
+        {payNowHref ? (
+          <Button nativeButton={false} render={<Link href={payNowHref} />}>
+            {booking.paymentStatus === "REJECTED" ? "Pay Again" : "Pay Now"}
+          </Button>
+        ) : null}
         {actions.reschedule ? (
           <Button
+            variant={payNowHref ? "secondary" : "default"}
             nativeButton={false}
             render={<Link href={`/portal/bookings/${booking.id}/reschedule`} />}
           >
@@ -223,7 +249,7 @@ export function BookingDetail({
             Request Cancellation
           </Button>
         ) : null}
-        {!actions.reschedule && !actions.cancel ? (
+        {!payNowHref && !actions.reschedule && !actions.cancel ? (
           <p className="booking-actions-note">
             No customer requests are available for this booking. The studio handles any further
             changes or pending requests.

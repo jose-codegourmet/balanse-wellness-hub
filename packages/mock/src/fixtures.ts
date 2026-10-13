@@ -31,8 +31,6 @@ import { MAIN_STUDIO_VENUE_ID } from "./venue-fixtures";
 /** Frozen "now" so Storybook and screenshots stay deterministic. Wed 10:50 Asia/Manila. */
 export const MOCK_NOW_ISO = "2026-09-16T02:50:00.000Z";
 
-export const MOCK_SEED = 20260916;
-
 export const publicClasses: PublicClass[] = [
   {
     id: "class-yoga",

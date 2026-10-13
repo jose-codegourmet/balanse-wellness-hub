@@ -79,7 +79,6 @@ export type AdminRequestQueueQuery = {
  */
 export type MockDataAdapter = {
   getPublicSessions: (query?: { from?: string; to?: string }) => Promise<PublicSession[]>;
-  getPublicSession: (id: string) => Promise<PublicSession | null>;
   getPublicCoaches: () => Promise<PublicCoach[]>;
   getPublicClasses: () => Promise<PublicClass[]>;
   getPublicContent: () => Promise<PublicContent>;
@@ -150,7 +149,6 @@ export type MockDataAdapter = {
   getBooking: (id: string) => Promise<CustomerBooking | null>;
   joinWaitlist: (bookingId: string) => Promise<CustomerBooking>;
   setPaymentMethod: (bookingId: string, method: PaymentMethod) => Promise<CustomerBooking>;
-  uploadPaymentProof: (bookingId: string) => Promise<CustomerBooking>;
   getPaymentInstructions: () => Promise<PaymentInstructions>;
   createCancellationRequest: (bookingId: string, reason?: string) => Promise<CustomerBooking>;
   createRescheduleRequest: (bookingId: string, targetSessionId: string) => Promise<CustomerBooking>;
@@ -440,8 +438,6 @@ export type MockRuntimeOptions = {
   failPublicSessions: boolean;
   /** When set, that session reports as full (session-became-full demo). */
   sessionBecameFullId: string | null;
-  /** Sticky GCash proof upload failure for FE-CUS-010. */
-  failProofUpload: boolean;
   /** Empty admin queues for FE-ADM empty-state demos. */
   emptyAdminQueues: boolean;
 };
@@ -451,6 +447,5 @@ export const defaultMockRuntime: MockRuntimeOptions = {
   failNext: false,
   failPublicSessions: false,
   sessionBecameFullId: null,
-  failProofUpload: false,
   emptyAdminQueues: false,
 };

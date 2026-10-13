@@ -1,0 +1,66 @@
+html:has(.payment-qr-lightbox[data-slot="dialog-content"]) {
+  scrollbar-gutter: auto !important;
+}
+
+.payment-qr-lightbox[data-slot="dialog-content"] {
+  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  transform: none;
+  translate: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-radius: 0;
+  padding: calc(1rem + env(safe-area-inset-top)) 1rem calc(1rem + env(safe-area-inset-bottom));
+  background: #142028;
+  color: #fff;
+  animation: none;
+}
+
+.payment-qr-lightbox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.payment-qr-lightbox-close {
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 0.5rem 0.875rem;
+  cursor: pointer;
+}
+
+.payment-qr-lightbox-close:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.payment-qr-lightbox-viewport {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.payment-qr-lightbox-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}

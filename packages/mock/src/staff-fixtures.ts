@@ -5,7 +5,6 @@ import type {
   StaffRoleDefinition,
 } from "@balanse/domain";
 import {
-  actorAuthorizationFingerprint,
   builtInRoleDefinition,
   COACH_ROLE_KEY,
   FRONT_DESK_PERMISSION_KEYS,
@@ -262,12 +261,7 @@ const seedAssignments: Record<string, string> = Object.fromEntries(
 );
 
 let liveRoles: MockStaffRoleRecord[] = mockStaffRoles.map((role) => structuredClone(role));
-let liveAssignments: Record<string, string> = { ...seedAssignments };
-
-export function resetMockStaffRoleStore(): void {
-  liveRoles = mockStaffRoles.map((role) => structuredClone(role));
-  liveAssignments = { ...seedAssignments };
-}
+const liveAssignments: Record<string, string> = { ...seedAssignments };
 
 export function listLiveMockStaffRoles(): MockStaffRoleRecord[] {
   return liveRoles.map((role) => structuredClone(role));
@@ -276,10 +270,6 @@ export function listLiveMockStaffRoles(): MockStaffRoleRecord[] {
 export function liveMockStaffRoleById(roleId: string): MockStaffRoleRecord | undefined {
   const role = liveRoles.find((item) => item.id === roleId);
   return role ? structuredClone(role) : undefined;
-}
-
-export function mockStaffRoleById(roleId: string): MockStaffRoleRecord | undefined {
-  return liveMockStaffRoleById(roleId) ?? mockStaffRoles.find((role) => role.id === roleId);
 }
 
 export function assignedMockStaffCount(roleId: string, staffRows: readonly AdminStaff[]): number {
@@ -344,11 +334,4 @@ export function resolveMockStaffActorFromStaffId(
     email: staff.email,
     isSystem: false,
   };
-}
-
-export function mockStaffAuthorizationFingerprint(staffId: string): string {
-  const actor = resolveMockStaffActorFromStaffId(staffId);
-  if (!actor) return `staff:${staffId}:unresolved`;
-  const role = liveRoles.find((item) => item.id === actor.roleId);
-  return `${actorAuthorizationFingerprint(actor)}:r${role?.revision ?? 0}`;
 }

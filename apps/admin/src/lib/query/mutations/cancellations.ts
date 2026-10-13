@@ -30,8 +30,8 @@ export function useRejectAdminCancellation() {
   const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ bookingId, reason }: { bookingId: string; reason: string }) =>
-      rejectCancellation(apiFetchBrowser, bookingId, reason),
+    mutationFn: ({ requestId, reason }: { requestId: string; reason: string }) =>
+      rejectCancellation(apiFetchBrowser, requestId, reason),
     onSuccess: () => invalidateForRole(queryClient, cancellationKeys(role)),
   });
 }

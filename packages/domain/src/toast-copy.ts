@@ -26,6 +26,7 @@ export const PORTAL_TOAST_IDS = [
   "booking.reserve-failed",
   "payment.gcash-selected",
   "payment.counter-selected",
+  "payment.method-failed",
   "payment.proof-submitted",
   "payment.proof-failed",
   "reschedule.submitted",
@@ -100,13 +101,19 @@ export const PORTAL_TOAST_COPY = {
     id: "payment.gcash-selected",
     tone: "info",
     title: "GCash selected",
-    description: "Send the session amount, then upload your screenshot as proof.",
+    description: "Send the payment, then upload a screenshot of the receipt as proof.",
   },
   "payment.counter-selected": {
     id: "payment.counter-selected",
     tone: "info",
     title: "Pay at Counter selected",
-    description: "Settle at the front desk. Your spot stays held until the studio marks it paid.",
+    description: "Pay at the front desk before your hold ends. The front desk confirms your spot.",
+  },
+  "payment.method-failed": {
+    id: "payment.method-failed",
+    tone: "error",
+    title: "Payment method not saved",
+    description: "We could not save your choice. Try again.",
   },
   "payment.proof-submitted": {
     id: "payment.proof-submitted",
@@ -234,6 +241,8 @@ export const ADMIN_TOAST_IDS = [
   "payment.confirmed",
   "payment.rejected",
   "payment.cash-recorded",
+  "payment.cash-confirmed",
+  "payment.proof-rejected",
   "payment.action-failed",
   "booking.checked-in",
   "booking.check-in-failed",
@@ -425,6 +434,20 @@ export const ADMIN_TOAST_COPY = {
     tone: "success",
     title: "Payment rejected",
     description: "The hold is released. The customer can see your reason.",
+  },
+  "payment.proof-rejected": {
+    id: "payment.proof-rejected",
+    tone: "success",
+    title: "Receipt rejected",
+    description:
+      "The booking is back to Payment Needed. The customer sees your reason and can pay again.",
+  },
+  "payment.cash-confirmed": {
+    id: "payment.cash-confirmed",
+    tone: "success",
+    title: "Cash received, booking confirmed",
+    description:
+      "The payment is recorded and the spot is confirmed. Check the guest in from the class roster.",
   },
   "payment.cash-recorded": {
     id: "payment.cash-recorded",

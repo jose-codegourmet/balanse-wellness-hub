@@ -77,10 +77,20 @@ function supabaseUrl(): string | undefined {
   return process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
 }
 
+let warnedMissingServiceKey = false;
+
 function serviceClient(): SupabaseClient | null {
   const url = supabaseUrl();
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return null;
+  if (!url || !key) {
+    if (!warnedMissingServiceKey && process.env.NODE_ENV !== "test") {
+      warnedMissingServiceKey = true;
+      console.warn(
+        "[balanse/api] SUPABASE_SERVICE_ROLE_KEY or the Supabase URL is not set in this app's server environment. Storage signed URLs and uploads fall back to placeholder links, so avatars and payment proofs will not load.",
+      );
+    }
+    return null;
+  }
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 

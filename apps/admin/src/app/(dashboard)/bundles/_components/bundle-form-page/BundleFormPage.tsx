@@ -5,6 +5,7 @@ import { BUNDLE_STATUSES, bundleStatusLabel } from "@balanse/domain";
 import { FormPageSkeleton } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { useUpsertAdminBundle } from "@/lib/query/mutations";
 import { adminBundleMetricsQuery, adminBundlesQuery, adminClassesQuery } from "@/lib/query/queries";
@@ -42,6 +43,27 @@ export function BundleFormPage({ bundleId }: { bundleId: string }) {
   const metricsQuery = useSuspenseQuery(adminBundleMetricsQuery(actor, apiFetchBrowser));
   const upsert = useUpsertAdminBundle();
   const existing = bundlesQuery.data.find((row) => row.id === bundleId);
+  const usedSlugs = useMemo(
+    () => new Set(bundlesQuery.data.filter((row) => row.id !== bundleId).map((row) => row.slug)),
+    [bundleId, bundlesQuery.data],
+  );
+  const schema = useMemo(
+    () =>
+      bundleFormSchema.superRefine((values, context) => {
+        if (usedSlugs.has(values.slug)) {
+          context.addIssue({
+            code: "custom",
+            path: ["slug"],
+            message: "This package URL is already in use.",
+          });
+        }
+      }),
+    [usedSlugs],
+  );
+  const publicSite = (process.env.NEXT_PUBLIC_MARKETING_URL ?? "http://localhost:9000").replace(
+    /\/$/,
+    "",
+  );
 
   if (!isNew && !existing) {
     return (
@@ -77,7 +99,7 @@ export function BundleFormPage({ bundleId }: { bundleId: string }) {
         key={existing?.id ?? "new"}
         id="bundle-form"
         className="mt-6"
-        schema={bundleFormSchema}
+        schema={schema}
         defaultValues={defaultValues}
         onSubmit={async (values: BundleFormValues) => {
           try {
@@ -107,13 +129,24 @@ export function BundleFormPage({ bundleId }: { bundleId: string }) {
           <FormField name="name" label="Name" required>
             {(field) => <TextBinding {...field} />}
           </FormField>
-          <FormField
-            name="slug"
-            label="Unique URL"
-            required
-            description="Used on /packages/[slug]."
-          >
-            {(field) => <TextBinding {...field} />}
+          <FormField name="slug" label="Unique URL" required>
+            {(field) => {
+              const slug = String(field.value ?? "").trim();
+              const duplicate = usedSlugs.has(slug);
+              return (
+                <>
+                  <TextBinding {...field} />
+                  <p className="break-all text-sm text-muted-foreground" aria-live="polite">
+                    Preview: {publicSite}/packages/{slug || "your-unique-url"}
+                  </p>
+                  {duplicate ? (
+                    <p className="text-sm text-destructive" role="alert">
+                      This package URL is already in use.
+                    </p>
+                  ) : null}
+                </>
+              );
+            }}
           </FormField>
           <FormField name="summary" label="Short summary" required>
             {(field) => <TextareaBinding {...field} rows={2} />}

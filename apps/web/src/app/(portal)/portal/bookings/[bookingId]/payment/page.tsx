@@ -1,8 +1,8 @@
 import { getMyBooking } from "@balanse/api-client";
 import type { Metadata } from "next";
 import { serverFetcher } from "@/lib/query/fetcher";
-import { PaymentMethodPage } from "@/modules/customer/PaymentMethodPage";
 import { getCurrentCustomer, getCustomerAccessToken } from "@/modules/session/current-customer";
+import { PaymentMethodPage } from "./_components/payment-method-page/PaymentMethodPage";
 
 export const metadata: Metadata = {
   title: "Payment",

@@ -27,6 +27,15 @@
         "export PATH=$HOME/.nvm/versions/node/v24.15.0/bin:$PATH && cd $HOME/Documents/web_work/balanse-wellness-hub && pnpm --filter admin storybook"
       ],
       "port": 6007
+    },
+    {
+      "name": "web-storybook",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "export PATH=$HOME/.nvm/versions/node/v24.15.0/bin:$PATH && cd $HOME/Documents/web_work/balanse-wellness-hub && pnpm --filter web storybook --no-open"
+      ],
+      "port": 6006
     }
   ]
 }

@@ -77,6 +77,37 @@ Expired / rejected / cancelled / refunded / no-show rows stay in the database [R
 4. If the SQL committed partially (rare with a single transaction): write a follow-up migration that completes or repairs the schema. Never rewrite an already-applied file on the shared project.
 5. Record the incident in the PR.
 
+## Class-change requests and their Realtime feed (2026-10-13)
+
+`20261013022042_wire_e20_class_changes` (WIRE-2001, #374) was applied to
+`xydundrayuusqizssgby` through the connector using the transaction-free Supabase
+copy; the Prisma copy only adds `BEGIN`/`COMMIT`. Its checksum
+`e01fa26e606130e59c4ff4643a6215a7ba77c109533dad51f49548bdcc0a0dfd` is recorded in
+`_prisma_migrations`. Verified: table present with RLS on, policy
+`class_change_requests_staff_read`, trigger `class_change_status_audit`.
+
+`20261013170000_realtime_class_change_requests` then adds the table to the
+`supabase_realtime` publication (checksum
+`4adc3a4570f3cfd60da942fdaa0c1d22cf64ec06248a9bc0881b3ee3486c0229`, both
+histories). The publication now lists `bookings`, `payments`,
+`cancellation_requests`, `reschedule_requests`, and `class_change_requests`.
+
+Still not applied to the shared project: `20261005090000_wire1701_payment_account_fields`
+and `20261005100000_wire1801_report_row_ids`. `20261008114619_wire_e16_policy_forms`
+is applied but missing from `_prisma_migrations`.
+
+## Realtime admin queues (2026-10-13)
+
+`20261013160000_realtime_admin_queues` adds `bookings`, `payments`,
+`cancellation_requests`, and `reschedule_requests` to the `supabase_realtime`
+publication so the admin inbox and queues update without a refresh
+(`apps/admin/src/modules/realtime/AdminRealtimeSync.tsx`). Realtime applies each
+table's existing RLS SELECT policies per subscriber, so no grants or policies
+change. Idempotent; a no-op on plain Postgres. Applied to `xydundrayuusqizssgby`
+through the connector on 2026-10-13 and recorded in both histories (Prisma
+checksum `7cea12eb748a1e3599a91568076c198c179356e6f3cd568461ba5109ff2b97d8`).
+Verified: the publication listed these four tables; `class_change_requests` was added by the follow-up below.
+
 ## Catalogue grant repair (2026-10-03)
 
 `20261003031452_restore_class_catalogue_grants` is a forward-only, idempotent ACL

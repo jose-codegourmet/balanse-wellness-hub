@@ -165,7 +165,30 @@ export async function getBookings(deps: ApiDeps, req: Request): Promise<Response
 export async function getBooking(deps: ApiDeps, req: Request, id: string): Promise<Response> {
   const actor = requireCustomer(await resolveActor(deps, req));
   const booking = await loadOwnBooking(deps, id, actor.userId);
-  return ok({ booking: presentBooking(booking) });
+  // The studio's reason lives on the `booking.reject` audit row (reject_booking).
+  // A rejected GCash receipt's reason lives on the `payment.reject` audit row.
+  let rejectReason: string | null = null;
+  const latestPayment = await deps.prisma.payment.findFirst({
+    where: { bookingId: booking.id },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, status: true },
+  });
+  const rejectAudit =
+    booking.status === "REJECTED"
+      ? { entityType: "booking", entityId: booking.id, action: "booking.reject" }
+      : latestPayment?.status === "REJECTED"
+        ? { entityType: "payment", entityId: latestPayment.id, action: "payment.reject" }
+        : null;
+  if (rejectAudit) {
+    const audit = await deps.prisma.auditEvent.findFirst({
+      where: rejectAudit,
+      orderBy: { occurredAt: "desc" },
+      select: { metadata: true },
+    });
+    const reason = (audit?.metadata as { reason?: unknown } | null)?.reason;
+    rejectReason = typeof reason === "string" && reason.trim() ? reason.trim() : null;
+  }
+  return ok({ booking: { ...presentBooking(booking), rejectReason } });
 }
 
 export async function postPaymentMethod(

@@ -9,6 +9,8 @@
 
 Name, unique slug, short summary, rich-text description, session credits (>0), PHP price (zero allowed), all classes vs selected classes, optional validity days, optional per-customer limit, status draft/published/archived.
 
+The Unique URL field shows the full `/packages/<slug>` address as it is edited. A slug already assigned to another package is flagged on the form and rejected by the API on save; editing a package may keep its own slug.
+
 ## Rules
 
 - Drafts are admin-only.

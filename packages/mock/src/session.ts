@@ -52,14 +52,6 @@ export function normalizeMockPrincipal(
   };
 }
 
-export function mockPrincipalForStaff(staffId: MockStaffIdentityId): MockPrincipal {
-  return normalizeMockPrincipal({
-    ...DEFAULT_MOCK_PRINCIPAL,
-    role: "admin",
-    staffId,
-  });
-}
-
 export function resolveMockStaffActor(
   principal: MockPrincipal | null | undefined,
 ): StaffAuthorizationActor | null {
@@ -80,13 +72,6 @@ export function bindMockPrincipal(principal: MockPrincipal): MockPrincipal {
 
 export function getBoundMockPrincipal(): MockPrincipal {
   return boundPrincipal;
-}
-
-export function resetBoundMockPrincipal(): void {
-  boundPrincipal = normalizeMockPrincipal({
-    role: "admin",
-    staffId: DEFAULT_ADMIN_STAFF_ID,
-  });
 }
 
 export function getBoundMockStaffActor(): StaffAuthorizationActor | null {

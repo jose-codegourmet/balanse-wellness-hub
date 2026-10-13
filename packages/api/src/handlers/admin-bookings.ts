@@ -1,5 +1,5 @@
 import type { BookingStatus } from "@balanse/db";
-import { requireAdmin, resolveActor } from "../auth";
+import { requireAdmin, resolveActor, writeAudit } from "../auth";
 import { bookingsLimit, cursorPage, decodeCursor } from "../cursor";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
@@ -152,9 +152,38 @@ export async function getAdminBookings(deps: ApiDeps, req: Request): Promise<Res
   });
 }
 
+/**
+ * Confirm a booking. When its latest payment is a submitted GCash proof, that
+ * payment is marked VERIFIED in the same transaction, so the confirmed booking
+ * leaves the GCash queue and the payment record matches what staff checked.
+ */
 export async function postAdminConfirm(deps: ApiDeps, req: Request, id: string): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
-  await confirmBooking(deps, id, actor.staffId);
+  const latest = await deps.prisma.payment.findFirst({
+    where: { bookingId: id },
+    orderBy: { createdAt: "desc" },
+  });
+  const verify = latest?.status === "PROOF_SUBMITTED" ? latest : null;
+  await deps.prisma.$transaction(async (tx) => {
+    await confirmBooking(deps, id, actor.staffId, tx);
+    if (verify) {
+      await tx.payment.update({
+        where: { id: verify.id },
+        data: { status: "VERIFIED", reviewedById: actor.staffId, reviewedAt: deps.now() },
+      });
+    }
+  });
+  if (verify) {
+    await writeAudit(deps, {
+      entityType: "payment",
+      entityId: verify.id,
+      action: "payment.verify",
+      actor,
+      beforeStatus: verify.status,
+      afterStatus: "VERIFIED",
+      metadata: { bookingId: id },
+    });
+  }
   const booking = await deps.prisma.booking.findUnique({ where: { id } });
   if (!booking) throw new ApiError(404, "booking_not_found", "Booking not found.");
   return ok({ booking: { id: booking.id, ...bookingStatusPayload(booking.status) } });
@@ -179,7 +208,29 @@ export async function postAdminReject(deps: ApiDeps, req: Request, id: string): 
     include: { refunds: true, payments: true },
   });
   if (!before) throw new ApiError(404, "booking_not_found", "Booking not found.");
-  await rejectBooking(deps, id, actor.staffId, reason);
+  // Rejecting the booking also rejects a submitted GCash proof, so the payment
+  // record matches and the item leaves the GCash queue.
+  const pendingProof = before.payments.find((payment) => payment.status === "PROOF_SUBMITTED");
+  await deps.prisma.$transaction(async (tx) => {
+    await rejectBooking(deps, id, actor.staffId, reason, tx);
+    if (pendingProof) {
+      await tx.payment.update({
+        where: { id: pendingProof.id },
+        data: { status: "REJECTED", reviewedById: actor.staffId, reviewedAt: deps.now() },
+      });
+    }
+  });
+  if (pendingProof) {
+    await writeAudit(deps, {
+      entityType: "payment",
+      entityId: pendingProof.id,
+      action: "payment.reject",
+      actor,
+      beforeStatus: "PROOF_SUBMITTED",
+      afterStatus: "REJECTED",
+      metadata: { bookingId: id, reason },
+    });
+  }
   const consumed = await sessionConsumedCapacity(deps, before.sessionId);
   const refunds = await deps.prisma.refund.findMany({ where: { bookingId: id } });
   return ok({

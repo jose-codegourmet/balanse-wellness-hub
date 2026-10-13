@@ -141,6 +141,8 @@ export type CustomerBooking = {
   /** Admin queue transport identifiers; unavailable on customer booking reads. */
   paymentId?: string | null;
   refundId?: string | null;
+  /** Admin GCash queue: a receipt was uploaded; load it through the proof signed-URL route. */
+  hasProof?: boolean;
   /** Held or consumed package redemption, when the booking used a package. */
   entitlementId?: string | null;
   /** Waitlist intent only — does not hold or consume a credit. */
