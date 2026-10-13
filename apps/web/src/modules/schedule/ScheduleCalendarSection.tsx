@@ -5,7 +5,7 @@ import { apiFetchBrowser } from "@balanse/api-client/browser";
 import type { PublicClass, PublicCoach, PublicSession } from "@balanse/domain";
 import { useQuery } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { BalanseBookingCalendar } from "@/components/balanse/calendar/BalanseBookingCalendar";
 import { BalanseQuickBooking } from "@/components/balanse/calendar/BalanseQuickBooking";
 import { myBookingsQuery } from "@/lib/query/bookings";
@@ -45,9 +45,7 @@ export function ScheduleCalendarSection({
     () => bookingsQuery.data?.map((booking) => booking.sessionId) ?? [],
     [bookingsQuery.data],
   );
-  // Customer schedules depend on the signed-in customer's bookings. Start in
-  // a loading state so the public timetable never flashes before that scope loads.
-  const [loading, setLoading] = useState(audience === "customer");
+  const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(initialLoadError);
   const shareParams = useViewerShareParams();
 
@@ -68,35 +66,14 @@ export function ScheduleCalendarSection({
     }
   }, []);
 
-  useEffect(() => {
-    if (audience === "customer") {
-      void load();
-    }
-  }, [audience, load]);
-
-  const scopedSessions = useMemo(
-    () =>
-      audience === "customer"
-        ? sessions.filter((session) => bookingSessionIds.includes(session.id))
-        : sessions,
-    [audience, bookingSessionIds, sessions],
-  );
-  const scopedClasses = useMemo(
-    () =>
-      audience === "customer"
-        ? classes.filter((item) => scopedSessions.some((session) => session.classId === item.id))
-        : classes,
-    [audience, classes, scopedSessions],
-  );
-
-  // The portal reuses the marketing calendar's responsive layout, with customer
-  // sessions scoped to the authenticated customer's booking records.
+  // The portal shows the full bookable timetable, like the marketing calendar;
+  // the signed-in customer's own sessions are marked via `viewerBookingSessionIds`.
   const Calendar = presentation === "quick" ? BalanseQuickBooking : BalanseBookingCalendar;
 
   return (
     <Calendar
-      sessions={scopedSessions}
-      classes={scopedClasses}
+      sessions={sessions}
+      classes={classes}
       coaches={initialCoaches}
       nowIso={new Date().toISOString()}
       audience={audience}

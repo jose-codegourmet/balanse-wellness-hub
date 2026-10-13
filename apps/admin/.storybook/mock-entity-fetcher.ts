@@ -368,23 +368,41 @@ export const mockEntityFetcher: ApiFetcher = async (path, init) => {
     return { bundle: bundleWire(updated) } as never;
   }
   if (route === "/api/admin/package-acquisitions" && method === "GET") {
-    const rows = await adapter.getAdminBundleAcquisitions();
+    const [rows, customers] = await Promise.all([
+      adapter.getAdminBundleAcquisitions(),
+      adapter.getAdminCustomers({}),
+    ]);
     return {
-      items: rows.map((row) => ({
-        ...row,
-        profileId: row.customerId,
-        kind:
-          row.channel === "ADMIN_GRANT"
-            ? "ADMIN_GRANT"
-            : row.channel === "SELF_CLAIM"
-              ? "CUSTOMER_CLAIM"
-              : "CUSTOMER_PAID",
-        payment:
-          row.channel === "SELF_PURCHASE"
-            ? { amountPhp: row.pricePhp, method: "GCASH", status: "SUBMITTED" }
-            : null,
-      })),
+      items: rows.map((row) => {
+        const customer = customers.find((item) => item.id === row.customerId);
+        return {
+          ...row,
+          profileId: row.customerId,
+          customerName: customer?.fullName ?? "Story customer",
+          customerEmail: customer?.email ?? "customer@example.com",
+          kind:
+            row.channel === "ADMIN_GRANT"
+              ? "ADMIN_GRANT"
+              : row.channel === "SELF_CLAIM"
+                ? "CUSTOMER_CLAIM"
+                : "CUSTOMER_PAID",
+          payment:
+            row.channel === "SELF_PURCHASE"
+              ? {
+                  id: `payment-${row.id}`,
+                  amountPhp: row.pricePhp,
+                  method: "GCASH",
+                  status: row.status === "PENDING_REVIEW" ? "PROOF_SUBMITTED" : "NONE",
+                  proofObjectKey: row.status === "PENDING_REVIEW" ? `story/${row.id}.png` : null,
+                  submittedAt: row.status === "PENDING_REVIEW" ? row.createdAt : null,
+                }
+              : null,
+        };
+      }),
     } as never;
+  }
+  if (/^\/api\/admin\/package-acquisitions\/[^/]+\/proof-signed-url$/.test(route)) {
+    return { signedUrl: "/assets/placeholders/coach-placeholder-1x1.svg", expiresIn: 120 } as never;
   }
 
   if (route === "/api/admin/settings" && method === "GET") {

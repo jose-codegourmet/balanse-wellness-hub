@@ -224,6 +224,8 @@ export function ClassListPage({
           data={rows}
           columns={columns}
           getRowId={(row) => row.id}
+          // The catalogue is small; one page keeps a newly added class in view.
+          pageSize={50}
           searchPlaceholder="Search classes"
           emptyStateId="admin.no-classes"
           persistUrl

@@ -4,7 +4,7 @@ import { ScheduleCalendarSection } from "@/modules/schedule/ScheduleCalendarSect
 
 export const metadata: Metadata = {
   title: "Schedule",
-  description: "Customer schedule calendar.",
+  description: "Browse and book Balansé classes.",
 };
 
 export default async function Page() {
@@ -13,6 +13,9 @@ export default async function Page() {
     <section className="w-full pt-12 pb-12 px-0">
       <div className="max-w-6xl px-4">
         <h1 className="font-display text-3xl">Schedule</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Pick a class to reserve a spot. Your bookings show on the calendar too.
+        </p>
       </div>
       <div className="mt-6">
         <ScheduleCalendarSection

@@ -11,7 +11,7 @@
 7. Weekly rules are stored in `session_recurrence_rules` with `Asia/Manila` timezone and linked to generated sessions. The source session is marked as part of the rule.
 8. A new session can repeat weekly straight from the session form: the form creates the first session, then a weekly rule from it (days, end date, at most one year). An existing one-off session repeats from `/schedule/[sessionId]/recurrence`. Both show every planned date before saving, mark dates that will be skipped as duplicates, and warn (never block) when a chosen coach already teaches at that time. Sessions may share a time and a venue.
 9. Holiday calendars, per-occurrence exceptions, series-wide editing/deletion, and coach self-service remain out of scope.
-10. UI reads and writes through `MockDataAdapter` during the mock phase. Backend schema and HTTP contracts are implemented independently without wiring the UI to `/api/*`.
+10. Runtime UI reads and writes through typed `@balanse/api-client` functions and React Query. Storybook uses `MockDataAdapter` fixtures for the same states. Backend schema and HTTP contracts remain the source for persistence and authorization.
 
 ## Routes
 

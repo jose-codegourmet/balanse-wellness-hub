@@ -116,6 +116,7 @@ export function BundleFormPage({ bundleId }: { bundleId: string }) {
               classIds: values.classIds,
               validityDays: values.validityDays,
               perCustomerLimit: values.perCustomerLimit,
+              status: values.status,
             });
             notify.admin("bundle.saved");
             router.push("/bundles");

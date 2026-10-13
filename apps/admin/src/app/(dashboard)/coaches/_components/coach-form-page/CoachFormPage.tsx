@@ -1,6 +1,6 @@
 "use client";
 
-import type { AdminCoachResponse, ApiFetcher } from "@balanse/api-client";
+import { type AdminCoachResponse, ApiError, type ApiFetcher } from "@balanse/api-client";
 import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
   type AdminSession,
@@ -18,15 +18,22 @@ import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, Camera, LockKeyhole, Sparkles, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import type { FieldErrors } from "react-hook-form";
 import { CoachStaffLink } from "@/components/balanse/coach/coach-staff-link/CoachStaffLink";
+import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { AdminPageTabs } from "@/components/balanse/page/admin-page-tabs/AdminPageTabs";
 import { useTabParam } from "@/components/balanse/page/useTabParam";
+import { StaffInviteDialog } from "@/components/balanse/staff-invite-dialog/StaffInviteDialog";
 import { adminNowIso } from "@/lib/clock";
-import { useUpsertAdminCoach } from "@/lib/query/mutations";
-import { adminCoachesQuery, adminSessionsQuery, adminStaffQuery } from "@/lib/query/queries";
+import { useDeleteAdminCoach, useInviteCoach, useUpsertAdminCoach } from "@/lib/query/mutations";
+import {
+  adminCoachesQuery,
+  adminSessionsQuery,
+  adminStaffQuery,
+  adminStaffRolesQuery,
+} from "@/lib/query/queries";
 import {
   AdminForm,
   FormActions,
@@ -44,21 +51,28 @@ import {
 import {
   coachFormDefaultValues,
   coachPublicFormDefaultValues,
+  coachStaffSourceDefaultValues,
 } from "@/modules/admin/forms/coach/coach-form.defaults";
 import {
   type CoachFormValues,
   type CoachPublicFormValues,
+  type CoachStaffSourceValues,
   coachFormSchema,
+  coachNewFormSchema,
+  coachNewPublicFormSchema,
   coachPublicFormSchema,
 } from "@/modules/admin/forms/coach/coach-form.schema";
 import {
   useCanAdminAction,
   useCanAdminRoute,
+  useHasPermission,
   useStaffActor,
 } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
 import type { CoachFormPageProps, CoachFormTabId } from "./CoachFormPage.meta";
+import { CoachLinkStaff } from "./coach-link-staff/CoachLinkStaff";
 import { CoachPhotoField } from "./coach-photo-field/CoachPhotoField";
+import { CoachStaffSource } from "./coach-staff-source/CoachStaffSource";
 import "./coach-form-page.css";
 
 export type { CoachFormPageProps, CoachFormTabId } from "./CoachFormPage.meta";
@@ -72,7 +86,17 @@ const TAB_LABELS: Record<CoachFormTabId, string> = {
 
 const TAB_FIELDS: Record<CoachFormTabId, readonly string[]> = {
   photo: ["photoKey"],
-  profile: ["name", "specialties", "shortBio", "active"],
+  profile: [
+    "staffSource",
+    "staffId",
+    "inviteName",
+    "inviteEmail",
+    "inviteRoleId",
+    "name",
+    "specialties",
+    "shortBio",
+    "active",
+  ],
   financials: ["defaultRatePhp", "rateType"],
   sessions: [],
 };
@@ -119,15 +143,31 @@ export function CoachFormPage({
   const isNew = coachId === "new";
   const actor = useStaffActor();
   const canSeeRates = useCanAdminAction("coach-rates-read");
+  const canManageRates = useCanAdminAction("coach-rates-manage");
+  const canManageCoaches = useCanAdminAction("coaches-manage");
+  const canManageStaff = useHasPermission("staff.manage");
+  const canInvite = canManageStaff && canManageCoaches;
   const canReadSchedule = useCanAdminRoute("/schedule");
   const canReadStaff = useCanAdminRoute("/staff");
+  const canLinkStaff = canManageStaff && canReadStaff;
   const coachesQuery = useQuery(adminCoachesQuery(actor, fetcher));
   const staffQuery = useQuery({
     ...adminStaffQuery(actor, fetcher),
     enabled: canReadStaff,
   });
   const sessionsQuery = useQuery(adminSessionsQuery(actor, fetcher));
+  const rolesQuery = useQuery({
+    ...adminStaffRolesQuery(actor, fetcher),
+    enabled: isNew && canInvite,
+  });
+  const inviteCoach = useInviteCoach();
+  const [invitation, setInvitation] = useState<{
+    staffName: string;
+    inviteUrl: string | null;
+    coachId: string | null;
+  } | null>(null);
   const upsert = useUpsertAdminCoach(fetcher);
+  const remove = useDeleteAdminCoach(fetcher);
   const existing = isNew ? undefined : coachesQuery.data?.find((row) => row.id === coachId);
 
   const tabIds = useMemo(() => {
@@ -193,9 +233,17 @@ export function CoachFormPage({
 
   const defaultValues = existing
     ? valuesFromCoach(existing, canSeeRates)
+    : {
+        ...(canSeeRates ? coachFormDefaultValues : coachPublicFormDefaultValues),
+        ...coachStaffSourceDefaultValues,
+      };
+  const schema = isNew
+    ? canSeeRates
+      ? coachNewFormSchema
+      : coachNewPublicFormSchema
     : canSeeRates
-      ? coachFormDefaultValues
-      : coachPublicFormDefaultValues;
+      ? coachFormSchema
+      : coachPublicFormSchema;
 
   return (
     <AdminPageShell
@@ -212,26 +260,57 @@ export function CoachFormPage({
         key={`${existing?.id ?? (isNew ? "new" : `pending-${coachId}`)}:${canSeeRates ? "admin" : "public"}`}
         id="coach-form"
         className="coach-editor-form"
-        schema={canSeeRates ? coachFormSchema : coachPublicFormSchema}
+        schema={schema}
         defaultValues={defaultValues}
         onSubmit={async (values) => {
           try {
             const publicValues = values as CoachPublicFormValues;
-            const rateValues = canSeeRates
-              ? (values as CoachFormValues)
-              : {
-                  defaultRatePhp: existing?.defaultRatePhp ?? 0,
-                  rateType: existing?.rateType ?? "PER_SESSION",
-                };
-            await upsert.mutateAsync({
-              id: isNew ? undefined : coachId,
+            // Rates are only sent by staff who may change them; the API rejects them otherwise.
+            const rateValues = canManageRates
+              ? {
+                  defaultRatePhp: Number((values as CoachFormValues).defaultRatePhp) || 0,
+                  rateType: (values as CoachFormValues).rateType,
+                }
+              : {};
+            const profile = {
               name: publicValues.name,
               specialties: publicValues.specialties,
-              shortBio: publicValues.shortBio,
-              photoKey: publicValues.photoKey,
+              shortBio: publicValues.shortBio ?? "",
               active: publicValues.active,
-              defaultRatePhp: rateValues.defaultRatePhp,
-              rateType: rateValues.rateType,
+              ...rateValues,
+            };
+            if (isNew) {
+              const source = values as unknown as CoachStaffSourceValues;
+              if (source.staffSource === "invite") {
+                // New person: staff account and coach profile are created together.
+                const result = await inviteCoach.mutateAsync({
+                  name: source.inviteName,
+                  email: source.inviteEmail,
+                  roleId: source.inviteRoleId,
+                  coach: profile,
+                });
+                notify.admin("coach.saved");
+                setInvitation({
+                  staffName: result.staff.name,
+                  inviteUrl: result.inviteUrl,
+                  coachId: result.staff.coachId,
+                });
+                return;
+              }
+              const created = await upsert.mutateAsync({
+                ...profile,
+                staffId: source.staffId ?? undefined,
+                photoKey: null,
+              });
+              notify.admin("coach.saved");
+              // Photos need a saved coach, so continue on the new profile.
+              router.push(`/coaches/${created.id}?tab=photo`);
+              return;
+            }
+            await upsert.mutateAsync({
+              id: coachId,
+              ...profile,
+              photoKey: publicValues.photoKey,
             });
             notify.admin("coach.saved");
             router.push("/coaches");
@@ -258,6 +337,25 @@ export function CoachFormPage({
           sessionsPending={sessionsQuery.isPending && !sessionsQuery.data}
           sessionsError={sessionsQuery.isError}
           retrySessions={() => void sessionsQuery.refetch()}
+          linkStaff={
+            existing && !existing.staffId && canLinkStaff ? (
+              <CoachLinkStaff
+                coachId={existing.id}
+                coachName={existing.name}
+                staff={staffQuery.data ?? []}
+              />
+            ) : null
+          }
+          staffSource={
+            isNew ? (
+              <CoachStaffSource
+                staff={staffQuery.data ?? []}
+                roles={rolesQuery.data ?? []}
+                canInvite={canInvite}
+                canPickStaff={canReadStaff}
+              />
+            ) : null
+          }
           canReadSchedule={canReadSchedule}
           linkedStaff={
             existing?.staffId
@@ -274,8 +372,44 @@ export function CoachFormPage({
           className="coach-editor-actions"
         >
           <p>Changes across all sections are saved together.</p>
+          {!isNew && existing && canManageCoaches ? (
+            <ConfirmAction
+              triggerLabel="Delete coach"
+              title={`Delete ${existing.name}?`}
+              description="Only coaches who were never scheduled and aren't linked to a staff account can be deleted. Otherwise, deactivate them so past sessions keep their coach."
+              confirmLabel="Delete coach"
+              variant="destructive"
+              disabled={remove.isPending || upsert.isPending}
+              onConfirm={async () => {
+                try {
+                  await remove.mutateAsync(existing.id);
+                  notify.admin("coach.deleted");
+                  router.push("/coaches");
+                } catch (error) {
+                  notify.admin(
+                    error instanceof ApiError && error.code === "coach_in_use"
+                      ? "coach.delete-blocked"
+                      : "coach.delete-failed",
+                  );
+                }
+              }}
+            />
+          ) : null}
         </FormActions>
       </AdminForm>
+      {invitation ? (
+        <StaffInviteDialog
+          staffName={invitation.staffName}
+          inviteUrl={invitation.inviteUrl}
+          onClose={() => {
+            const next = invitation.coachId
+              ? `/coaches/${invitation.coachId}?tab=photo`
+              : "/coaches";
+            setInvitation(null);
+            router.push(next);
+          }}
+        />
+      ) : null}
     </AdminPageShell>
   );
 }
@@ -294,6 +428,8 @@ function CoachFormFields({
   retrySessions,
   canReadSchedule,
   linkedStaff,
+  staffSource,
+  linkStaff,
 }: {
   tab: CoachFormTabId;
   setTab: (next: CoachFormTabId) => void;
@@ -308,6 +444,10 @@ function CoachFormFields({
   retrySessions: () => void;
   canReadSchedule: boolean;
   linkedStaff: { id: string; name: string } | null;
+  /** New coaches only: the "Who is this coach?" section. */
+  staffSource: ReactNode;
+  /** Unlinked existing coaches: the "Link to staff" action, when allowed. */
+  linkStaff: ReactNode;
 }) {
   const { formState, watch } = useAdminFormContext<CoachFormValues>();
   const previewName = watch("name") || "Coach";
@@ -371,6 +511,7 @@ function CoachFormFields({
           </section>
 
           <section data-slot="coach-profile" className={tab === "profile" ? undefined : "hidden"}>
+            {staffSource}
             <div className="coach-section-kicker">
               <UserRound size={15} aria-hidden="true" /> Visible to members
             </div>
@@ -560,9 +701,12 @@ function CoachFormFields({
                 {linkedStaff ? (
                   <CoachStaffLink staff={linkedStaff} />
                 ) : (
-                  <span>
-                    No staff account linked. This coach can still be assigned to sessions.
-                  </span>
+                  <>
+                    <span>
+                      No staff account linked. This coach can still be assigned to sessions.
+                    </span>
+                    {linkStaff}
+                  </>
                 )}
               </div>
             )}

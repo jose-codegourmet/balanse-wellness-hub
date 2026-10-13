@@ -1,7 +1,6 @@
-import { dehydrate, type QueryClient } from "@tanstack/react-query";
+import { dehydrate, HydrationBoundary, type QueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { makeQueryClient } from "./client";
-import { MockHydrationBoundary } from "./mock-hydration-boundary";
 
 type Prefetchable = Parameters<QueryClient["prefetchQuery"]>[0];
 type PrefetchInfinite = Parameters<QueryClient["prefetchInfiniteQuery"]>[0];
@@ -27,5 +26,7 @@ export async function prefetchAdmin(options: readonly object[], children: ReactN
         : client.prefetchQuery(option as Prefetchable),
     ),
   );
-  return <MockHydrationBoundary state={dehydrate(client)}>{children}</MockHydrationBoundary>;
+  // Plain hydration: the server read is newer than the browser cache after a
+  // soft navigation, so it must win (the old mock-only filter kept stale rows).
+  return <HydrationBoundary state={dehydrate(client)}>{children}</HydrationBoundary>;
 }

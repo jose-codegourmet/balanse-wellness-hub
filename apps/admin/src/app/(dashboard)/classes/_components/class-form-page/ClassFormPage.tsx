@@ -1,14 +1,16 @@
 "use client";
+import { ApiError, type ApiFetcher } from "@balanse/api-client";
 import { apiFetchBrowser } from "@balanse/api-client/browser";
 import { classPageHref, classPreviewHref, classSlug, type PublicCoach } from "@balanse/domain";
 import { Button, buttonVariants, cn, FormPageSkeleton, Input } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ClassImagesInput } from "@/components/balanse/class-images-input/ClassImagesInput";
+import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
-import { useUpsertAdminClass } from "@/lib/query/mutations";
+import { useDeleteAdminClass, useUpsertAdminClass } from "@/lib/query/mutations";
 import { adminClassesQuery, adminCoachesQuery } from "@/lib/query/queries";
 import {
   AdminForm,
@@ -91,14 +93,15 @@ export function ClassFormPage({ classId, fetcher = apiFetchBrowser }: ClassFormP
           });
           notify.admin("class.saved");
           router.push("/classes");
-          router.refresh();
         }}
       >
         <ClassFields
           classId={classId}
           isNew={isNew}
+          className={existing?.name ?? ""}
           coaches={coachesQuery.data ?? []}
           canSave={canSave}
+          fetcher={fetcher}
         />
       </AdminForm>
     </AdminPageShell>
@@ -107,17 +110,26 @@ export function ClassFormPage({ classId, fetcher = apiFetchBrowser }: ClassFormP
 function ClassFields({
   classId,
   isNew,
+  className,
   coaches,
   canSave,
+  fetcher,
 }: {
   classId: string;
   isNew: boolean;
+  className: string;
   coaches: PublicCoach[];
   canSave: boolean;
+  fetcher: ApiFetcher;
 }) {
+  const router = useRouter();
+  const remove = useDeleteAdminClass(fetcher);
+  const canDelete = useCanAdminAction("classes-delete");
   const form = useAdminFormContext<ClassFormValues>();
   const guard = useUnsavedChangesGuard(form.formState.isDirty);
   const [search, setSearch] = useState("");
+  // One-way sync: the slug follows the name until someone types in the slug field.
+  const slugEdited = useRef(false);
   const values = form.watch();
   const site = process.env.NEXT_PUBLIC_MARKETING_URL ?? "http://localhost:9000";
   return (
@@ -161,8 +173,11 @@ function ClassFields({
                   placeholder="e.g. Mat Pilates"
                   onChange={(value) => {
                     field.onChange(value);
-                    if (isNew && !form.formState.dirtyFields.slug)
-                      form.setValue("slug", classSlug(String(value)));
+                    if (!slugEdited.current)
+                      form.setValue("slug", classSlug(String(value)), {
+                        shouldDirty: true,
+                        shouldValidate: form.formState.isSubmitted,
+                      });
                   }}
                 />
               )}
@@ -187,7 +202,7 @@ function ClassFields({
           <FormSection
             title="Images"
             surface="card"
-            description="Choose from your generated Higgsfield artwork."
+            description="Upload your own photos. Landscape 16:9 images fit the class page best."
           >
             <FormField name="heroImage" label="Cover image" optional>
               {(field) => (
@@ -249,9 +264,22 @@ function ClassFields({
             <FormField
               name="slug"
               label="URL slug"
-              description="Generated from the class name. Keep it stable after publishing."
+              description={
+                isNew
+                  ? "Follows the class name until you edit it."
+                  : "Follows the class name until you edit it. Changing it breaks links to the old address."
+              }
             >
-              {(field) => <TextBinding {...field} placeholder="mat-pilates" />}
+              {(field) => (
+                <TextBinding
+                  {...field}
+                  placeholder="mat-pilates"
+                  onChange={(value) => {
+                    slugEdited.current = true;
+                    field.onChange(value);
+                  }}
+                />
+              )}
             </FormField>
             <p className="break-all text-xs text-muted-foreground">
               {site + classPageHref({ slug: values.slug || "your-class" })}
@@ -323,6 +351,29 @@ function ClassFields({
           <span className="text-sm text-muted-foreground">
             Sign in above to save to the database.
           </span>
+        ) : null}
+        {!isNew && canDelete ? (
+          <ConfirmAction
+            triggerLabel="Delete class"
+            title={`Delete ${className || "this class"}?`}
+            description="This permanently removes the class and its page. Classes with sessions or in a bundle can't be deleted; deactivate them instead so history stays intact."
+            confirmLabel="Delete class"
+            variant="destructive"
+            disabled={remove.isPending || form.formState.isSubmitting}
+            onConfirm={async () => {
+              try {
+                await remove.mutateAsync(classId);
+                notify.admin("class.deleted");
+                router.push("/classes");
+              } catch (error) {
+                notify.admin(
+                  error instanceof ApiError && error.code === "class_in_use"
+                    ? "class.delete-blocked"
+                    : "class.delete-failed",
+                );
+              }
+            }}
+          />
         ) : null}
       </FormActions>
     </>

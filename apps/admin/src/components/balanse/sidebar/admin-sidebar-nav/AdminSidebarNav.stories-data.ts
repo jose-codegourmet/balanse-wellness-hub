@@ -7,7 +7,7 @@ export const sidebarSnapshotWithCounts: AdminDashboardSnapshot = {
   cancellations: 2,
   reschedules: 1,
   waitlisted: 5,
-  attention: { payments: 3, cancellations: 2, reschedules: 1 },
+  attention: { payments: 3, cancellations: 2, reschedules: 1, packagePayments: 1 },
   todaysSchedule: [],
   todaysSalesPhp: 0,
   pendingRefundsPhp: 0,
@@ -21,7 +21,7 @@ export const sidebarSnapshotEmpty: AdminDashboardSnapshot = {
   cancellations: 0,
   reschedules: 0,
   waitlisted: 0,
-  attention: { payments: 0, cancellations: 0, reschedules: 0 },
+  attention: { payments: 0, cancellations: 0, reschedules: 0, packagePayments: 0 },
 };
 
 export const sidebarSnapshotOverflow: AdminDashboardSnapshot = {

@@ -110,7 +110,7 @@ export function createClassChangeRequest(
   }
   if (input.kind === "SUBSTITUTE") {
     substitute = context.coaches.find((coach) => coach.id === input.substituteCoachId) ?? null;
-    if (!substitute || !substitute.active) throw new Error("Choose an active substitute coach.");
+    if (!substitute?.active) throw new Error("Choose an active substitute coach.");
     if (session.coaches.some((coach) => coach.id === substitute?.id))
       throw new Error("That coach already teaches this class.");
   }

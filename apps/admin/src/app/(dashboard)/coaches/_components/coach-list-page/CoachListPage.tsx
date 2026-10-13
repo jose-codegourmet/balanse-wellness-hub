@@ -11,9 +11,10 @@ import { useMemo } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { adminNowIso } from "@/lib/clock";
-import { useUpsertAdminCoach } from "@/lib/query/mutations";
+import { useSetCoachActive } from "@/lib/query/mutations";
 import { adminCoachesQuery, adminSessionsQuery } from "@/lib/query/queries";
 import { AdminCan, useCanAdminAction, useStaffActor } from "@/modules/authorization/useAdminAccess";
+import { notify } from "@/modules/notifications/notify";
 
 export type CoachListPageProps = {
   empty?: boolean;
@@ -54,7 +55,7 @@ export function CoachListPage({
   const canManageCoaches = useCanAdminAction("coaches-manage");
   const coachesQuery = useSuspenseQuery(adminCoachesQuery(actor, fetcher));
   const sessionsQuery = useSuspenseQuery(adminSessionsQuery(actor, fetcher));
-  const upsertCoach = useUpsertAdminCoach(fetcher);
+  const setActive = useSetCoachActive(fetcher);
   const nowIso = adminNowIso();
 
   const rows = useMemo<CoachListRow[]>(() => {
@@ -238,16 +239,10 @@ export function CoachListPage({
                     id: row.active ? "deactivate" : "activate",
                     label: row.active ? "Deactivate" : "Activate",
                     onClick: (current) => {
-                      void upsertCoach.mutateAsync({
-                        id: current.id,
-                        name: current.name,
-                        specialties: current.specialties,
-                        shortBio: current.shortBio,
-                        photoKey: current.photoKey,
-                        active: !current.active,
-                        defaultRatePhp: current.defaultRatePhp,
-                        rateType: current.rateType,
-                      });
+                      void setActive
+                        .mutateAsync({ id: current.id, active: !current.active })
+                        .then(() => notify.admin("coach.status-updated"))
+                        .catch(() => notify.admin("coach.save-failed"));
                     },
                   },
                 ]

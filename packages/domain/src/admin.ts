@@ -188,6 +188,8 @@ export type AdminDashboardSnapshot = {
     payments: number;
     cancellations: number;
     reschedules: number;
+    /** Paid package requests with a submitted proof (`bundle_acquisitions` PENDING_REVIEW). */
+    packagePayments: number;
   };
   todaysSchedule: AdminSession[];
   todaysSalesPhp: number;
@@ -867,6 +869,8 @@ export function buildAdminDashboard(
       payments: pendingPayments,
       cancellations,
       reschedules,
+      // Booking fixtures carry no package acquisitions.
+      packagePayments: 0,
     },
     todaysSchedule,
     todaysSalesPhp,

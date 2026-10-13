@@ -301,9 +301,11 @@ rooted at `["web", customerId ?? "guest"]`, where `customerId` comes from the
 Supabase session (`getCurrentCustomer()` / `getSessionUser()`), never a mock
 principal. Sign-out must `clear()` the query client, not merely invalidate —
 a guest must never see the previous customer's cached data. `prefetchWeb`
-(`lib/query/prefetch.tsx`) mirrors admin's `prefetchAdmin` signature and
-`MockHydrationBoundary` for historical compatibility; its name does not imply
-runtime mock data. See
+(`lib/query/prefetch.tsx`) mirrors admin's `prefetchAdmin` signature. Admin
+`prefetchAdmin` hydrates with a plain `HydrationBoundary`, so a newer server
+read replaces stale browser cache on soft navigation; web still uses the
+mock-era `MockHydrationBoundary`, which skips any query the browser already
+holds. See
 `apps/web/src/lib/query/README.md`.
 
 ## Customer self-service writes and the web proxy (#343)

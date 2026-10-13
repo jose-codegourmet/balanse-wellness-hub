@@ -38,7 +38,7 @@ export const EditWithoutPhoto: Story = {
 
 /** Teaching-only fixture — no staff account, still a valid coach. */
 export const CoachWithNoStaffAccount: Story = {
-  args: { coachId: "coach-ephraim", initialTab: "profile" },
+  args: { coachId: "coach-rachelle", initialTab: "profile" },
 };
 
 export const PhotoTab: Story = {

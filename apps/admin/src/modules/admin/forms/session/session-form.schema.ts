@@ -32,6 +32,17 @@ export function fromSessionIso(iso: string): { ymd: string; hhmm: string } {
 }
 
 /**
+ * Adds a duration to a session instant, rolling the calendar date forward when
+ * the session runs past midnight (e.g. 11:45 PM + 4 h → 3:45 AM the next day).
+ * Manila has no DST, so instant arithmetic is exact.
+ */
+export function addMinutesToSessionIso(iso: string, minutes: number): string {
+  const shifted = new Date(Date.parse(iso) + minutes * 60_000).toISOString();
+  const { ymd, hhmm } = fromSessionIso(shifted);
+  return toSessionIso(ymd, hhmm);
+}
+
+/**
  * Reschedule approval is about a *target* session, not this form's values.
  * #215 (`/reschedules`) is the consumer — do not fold it into a refine.
  */

@@ -6,8 +6,9 @@ import {
   auditConfirmationCopy,
   eventStatusLabel,
   formatPeso,
-  formatSessionTime,
+  formatSessionDate,
   formatSessionTimeRange,
+  manilaYmd,
   sessionDisplayName,
   sessionStatusLabel,
   venueKindLabel,
@@ -15,7 +16,10 @@ import {
 import { Badge, Button, Skeleton } from "@balanse/ui";
 import { useQuery } from "@tanstack/react-query";
 import {
+  ArrowLeftIcon,
   CalendarPlusIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   ClipboardListIcon,
   MapPinIcon,
   PencilIcon,
@@ -24,6 +28,7 @@ import {
   XIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { CoachOption } from "@/components/balanse/coach/coach-option/CoachOption";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import {
@@ -47,6 +52,9 @@ import {
 import { notify } from "@/modules/notifications/notify";
 import { createSessionHref, editSessionHref, rosterHref } from "../../_lib/schedule-href";
 import { ClassChangeSessionActions } from "../class-change-session-actions/ClassChangeSessionActions";
+import { DaySessionTimeline } from "../day-session-timeline/DaySessionTimeline";
+import type { SessionTimeMove } from "../day-session-timeline/DaySessionTimeline.meta";
+import { SessionMoveReview } from "../session-move-review/SessionMoveReview";
 import type { SelectedSessionPanelProps, SessionInventory } from "./SelectedSessionPanel.meta";
 
 function dayLabel(ymd: string, options: Intl.DateTimeFormatOptions): string {
@@ -58,166 +66,176 @@ function dayLabel(ymd: string, options: Intl.DateTimeFormatOptions): string {
 export function SelectedSessionPanel({
   ymd,
   daySessions,
+  allSessions,
   selectedSessionId,
   onSelectSession,
   onClose,
   inventory,
   hideClose = false,
 }: SelectedSessionPanelProps) {
+  const [move, setMove] = useState<SessionTimeMove | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const detailHeading = useRef<HTMLHeadingElement>(null);
+  const canMove = useCanAdminAction("schedule-update");
+  useEffect(() => {
+    if (selectedSessionId) detailHeading.current?.focus();
+  }, [selectedSessionId]);
   const canCreate = useCanAdminAction("schedule-create");
-  const selected =
-    daySessions.find((session) => session.id === selectedSessionId) ?? daySessions[0] ?? null;
+  const selected = daySessions.find((session) => session.id === selectedSessionId) ?? null;
   const live = daySessions.filter((session) => session.status !== "CANCELLED");
   const openSpots = live.reduce((total, session) => total + session.remainingSlots, 0);
   const totalSpots = live.reduce((total, session) => total + session.capacity, 0);
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-card" data-slot="schedule-day-panel">
-      <header className="shrink-0 border-b border-border px-5 pt-4 pb-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-[0.625rem] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
-              {dayLabel(ymd, { weekday: "long" })}
-            </p>
-            <h2 className="font-display text-3xl leading-tight">
-              {dayLabel(ymd, { month: "long", day: "numeric" })}
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {daySessions.length === 0
-                ? "Nothing scheduled"
-                : `${daySessions.length} ${daySessions.length === 1 ? "session" : "sessions"} · ${openSpots} of ${totalSpots} spots open`}
-            </p>
-          </div>
-          {hideClose ? null : (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Close day"
-              onClick={onClose}
-            >
-              <XIcon />
-            </Button>
-          )}
-        </div>
-        {canCreate ? (
-          <Button
-            nativeButton={false}
-            variant="outline"
-            size="sm"
-            className="mt-3"
-            render={<Link href={createSessionHref(ymd)} />}
-          >
-            <CalendarPlusIcon aria-hidden />
-            New session on this day
-          </Button>
-        ) : null}
-      </header>
-
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        {daySessions.length === 0 ? (
-          <div className="grid gap-2 px-5 py-10 text-center">
-            <p className="font-display text-xl">A quiet day</p>
-            <p className="text-sm text-muted-foreground">
-              {canCreate
-                ? "Add a session and it will show up here."
-                : "No sessions are scheduled on this day."}
-            </p>
-          </div>
-        ) : (
-          <>
-            <ul className="grid gap-1.5 px-3 py-3" aria-label="Sessions on this day">
-              {daySessions.map((session) => (
-                <li key={session.id}>
-                  <SessionRow
-                    session={session}
-                    selected={session.id === selected?.id}
-                    onSelect={() => onSelectSession(session.id)}
-                  />
-                </li>
-              ))}
-            </ul>
-            {selected ? <SessionDetail session={selected} inventory={inventory} /> : null}
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function SessionRow({
-  session,
-  selected,
-  onSelect,
-}: {
-  session: AdminSession;
-  selected: boolean;
-  onSelect: () => void;
-}) {
-  const booked = session.capacity - session.remainingSlots;
-  const fill = session.capacity > 0 ? Math.min(100, (booked / session.capacity) * 100) : 0;
-  const cancelled = session.status === "CANCELLED";
-  return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      onClick={onSelect}
-      className={cn(
-        "grid w-full grid-cols-[3.5rem_minmax(0,1fr)] gap-3 rounded-md border px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-        selected
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-background hover:border-foreground/40",
-      )}
+    <div
+      ref={panelRef}
+      className="relative flex h-full min-h-0 flex-col bg-card"
+      data-slot="schedule-day-panel"
     >
-      <span className="grid content-start text-xs font-semibold tabular-nums">
-        {formatSessionTime(session.startsAt)}
-      </span>
-      <span className="grid min-w-0 gap-1">
-        <span className="flex min-w-0 items-center gap-2">
-          <span className={cn("truncate text-sm font-semibold", cancelled && "line-through")}>
-            {sessionDisplayName(session)}
-          </span>
-          {session.status !== "PUBLISHED" ? (
-            <Badge variant={cancelled ? "danger" : "warning"} size="sm">
-              {sessionStatusLabel(session.status)}
-            </Badge>
-          ) : null}
-        </span>
-        <span
-          className={cn(
-            "truncate text-xs",
-            selected ? "text-primary-foreground/75" : "text-muted-foreground",
-          )}
-        >
-          {session.coachName}
-        </span>
-        <span className="flex items-center gap-2">
-          <span
-            className={cn(
-              "h-1 flex-1 overflow-hidden rounded-full",
-              selected ? "bg-primary-foreground/25" : "bg-muted",
+      <div className={cn("min-h-0 flex-1 flex-col", selected ? "hidden" : "flex")}>
+        <header className="shrink-0 border-b border-border px-5 pt-4 pb-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[0.625rem] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+                {dayLabel(ymd, { weekday: "long" })}
+              </p>
+              <h2 className="font-display text-3xl leading-tight">
+                {dayLabel(ymd, { month: "long", day: "numeric" })}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {daySessions.length === 0
+                  ? "Nothing scheduled"
+                  : `${daySessions.length} ${daySessions.length === 1 ? "session" : "sessions"} · ${openSpots} of ${totalSpots} spots open`}
+              </p>
+            </div>
+            {hideClose ? null : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Close day"
+                onClick={onClose}
+              >
+                <XIcon />
+              </Button>
             )}
-          >
-            <span
-              className={cn("block h-full", selected ? "bg-primary-foreground" : "bg-primary")}
-              style={{ width: `${fill}%` }}
-            />
-          </span>
-          <span className="text-[0.6875rem] tabular-nums">
-            {booked}/{session.capacity}
-          </span>
-        </span>
-      </span>
-    </button>
+          </div>
+          {canCreate ? (
+            <Button
+              nativeButton={false}
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              render={<Link href={createSessionHref(ymd)} />}
+            >
+              <CalendarPlusIcon aria-hidden />
+              New session on this day
+            </Button>
+          ) : null}
+        </header>
+
+        <p className="shrink-0 border-b border-border px-5 py-2 text-[0.6875rem] text-muted-foreground">
+          Philippine time ·{" "}
+          {canMove ? "Drag a grip to change time, then review." : "Select a session for details."}
+        </p>
+        <DaySessionTimeline
+          key={ymd}
+          ymd={ymd}
+          sessions={daySessions}
+          canMove={canMove}
+          onSelect={onSelectSession}
+          onReviewMove={setMove}
+        />
+      </div>
+      {selected ? (
+        <div
+          className="absolute inset-0 flex min-h-0 flex-col bg-card"
+          data-slot="session-details-overlay"
+        >
+          <header className="shrink-0 border-b border-border px-4 py-3">
+            <div className="flex items-center justify-between gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  onSelectSession(null);
+                  requestAnimationFrame(() => {
+                    const button = Array.from(
+                      panelRef.current?.querySelectorAll<HTMLButtonElement>(
+                        "[data-timeline-session-id]",
+                      ) ?? [],
+                    ).find((element) => element.dataset.timelineSessionId === selected.id);
+                    button?.focus({ preventScroll: true });
+                  });
+                }}
+              >
+                <ArrowLeftIcon aria-hidden />
+                Back to day
+              </Button>
+              {!hideClose ? (
+                <Button variant="ghost" size="icon-sm" aria-label="Close day" onClick={onClose}>
+                  <XIcon />
+                </Button>
+              ) : null}
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <h2 ref={detailHeading} tabIndex={-1} className="text-sm font-semibold outline-none">
+                {dayLabel(ymd, { month: "long", day: "numeric" })}
+              </h2>
+              <div className="flex items-center gap-1">
+                <span className="mr-1 text-xs text-muted-foreground">
+                  {daySessions.findIndex((row) => row.id === selected.id) + 1} /{" "}
+                  {daySessions.length}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  aria-label="Previous session"
+                  disabled={selected.id === daySessions[0]?.id}
+                  onClick={() =>
+                    onSelectSession(
+                      daySessions[daySessions.findIndex((row) => row.id === selected.id) - 1].id,
+                    )
+                  }
+                >
+                  <ChevronLeftIcon />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  aria-label="Next session"
+                  disabled={selected.id === daySessions.at(-1)?.id}
+                  onClick={() =>
+                    onSelectSession(
+                      daySessions[daySessions.findIndex((row) => row.id === selected.id) + 1].id,
+                    )
+                  }
+                >
+                  <ChevronRightIcon />
+                </Button>
+              </div>
+            </div>
+          </header>
+          <div key={selected.id} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+            <SessionDetail session={selected} inventory={inventory} ymd={ymd} />
+          </div>
+        </div>
+      ) : null}
+      {move ? (
+        <SessionMoveReview move={move} sessions={allSessions} onClose={() => setMove(null)} />
+      ) : null}
+    </div>
   );
 }
 
 function SessionDetail({
   session,
   inventory,
+  ymd,
 }: {
   session: AdminSession;
   inventory: SessionInventory | null;
+  ymd: string;
 }) {
   const cancel = useCancelAdminSession();
   const actor = useStaffActor();
@@ -245,16 +263,16 @@ function SessionDetail({
     (coach) => coachesQuery.data?.find((row) => row.id === coach.id) ?? coach,
   );
   const cancelled = session.status === "CANCELLED";
+  // A session already under way (or over) cannot get a new event; only show an existing one.
+  const started = Date.parse(session.startsAt) <= Date.now();
+  const showEvent = canReadEvents && (!started || Boolean(linkedEvent));
   const eventReadsCancelled = cancelled || linkedEvent?.status === "CANCELLED";
   const taken = inventory ? inventory.confirmed + inventory.held : 0;
   const fill =
     inventory && session.capacity > 0 ? Math.min(100, (taken / session.capacity) * 100) : 0;
 
   return (
-    <section
-      aria-label={`${sessionDisplayName(session)} details`}
-      className="grid gap-5 border-t border-border px-5 py-5"
-    >
+    <section aria-label={`${sessionDisplayName(session)} details`} className="grid gap-5 px-5 py-5">
       <div className="grid gap-1.5">
         <div className="flex flex-wrap items-center gap-2">
           <Badge
@@ -273,6 +291,9 @@ function SessionDetail({
           {sessionDisplayName(session)}
         </h3>
         <p className="text-sm text-muted-foreground">
+          {manilaYmd(session.startsAt) < ymd
+            ? `Started ${formatSessionDate(session.startsAt)} · `
+            : null}
           {formatSessionTimeRange(session.startsAt, session.endsAt)} ·{" "}
           {formatPeso(session.pricePhp)}
         </p>
@@ -322,7 +343,7 @@ function SessionDetail({
         )}
       </div>
 
-      {canReadEvents ? (
+      {showEvent ? (
         <div className="grid gap-2">
           <SectionLabel>Event</SectionLabel>
           <div className="rounded-md border border-border bg-background px-3 py-3 text-sm">

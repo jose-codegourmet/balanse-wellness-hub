@@ -81,3 +81,7 @@ export const Desktop1280: Story = {
     viewport: { defaultViewport: "desktop" },
   },
 };
+
+export const PackagesQueue: Story = {
+  args: { tab: "packages" },
+};

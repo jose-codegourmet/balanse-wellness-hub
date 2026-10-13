@@ -17,6 +17,7 @@ export function AdminQueueCard({
   what,
   when,
   status,
+  badge,
   reference,
   body,
   media,
@@ -46,7 +47,7 @@ export function AdminQueueCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
             <h2 className="min-w-0 font-display text-lg leading-tight wrap-break-word">{who}</h2>
-            <StatusBadge status={status} surface="admin" />
+            {badge ?? (status ? <StatusBadge status={status} surface="admin" /> : null)}
           </div>
           {reference ? (
             <p className="mt-1 break-all font-mono text-xs font-medium tracking-wide text-foreground">

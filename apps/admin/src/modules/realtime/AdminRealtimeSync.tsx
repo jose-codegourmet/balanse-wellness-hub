@@ -10,13 +10,18 @@ import { adminKeys } from "@/lib/query/keys";
 import { invalidateForRole, useAdminAuthScope } from "@/lib/query/mutations/shared";
 import { useStaffActor } from "@/modules/authorization/useAdminAccess";
 
-/** Tables in the `supabase_realtime` publication (`realtime_admin_queues`, `realtime_class_change_requests`). */
+/**
+ * Tables in the `supabase_realtime` publication (`realtime_admin_queues`,
+ * `realtime_class_change_requests`, `realtime_bundle_acquisitions`).
+ */
 const WATCHED_TABLES = [
   "bookings",
   "payments",
   "cancellation_requests",
   "reschedule_requests",
   "class_change_requests",
+  "bundle_acquisitions",
+  "bundle_acquisition_payments",
 ] as const;
 type WatchedTable = (typeof WATCHED_TABLES)[number];
 
@@ -50,6 +55,10 @@ function keysFor(table: WatchedTable, scope: AdminAuthScope): QueryKey[] {
         adminKeys.sessions.all(scope),
         adminKeys.rosterAll(scope),
       ];
+    case "bundle_acquisitions":
+    case "bundle_acquisition_payments":
+      // Package payment review on /bundles and /transactions, plus the customer's packages.
+      return [...shared, adminKeys.bundles.all(scope), adminKeys.customers.all(scope)];
   }
 }
 

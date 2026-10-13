@@ -20,6 +20,10 @@ GCash QR: `POST` / `DELETE /api/admin/settings/qr` — same mint/confirm lifecyc
 
 BE-056: prefer `POST /api/admin/settings/payment-qrs` (collection). Legacy `POST /settings/qr` confirm creates/activates a collection row and archives the previous active row; it **does not** delete the previous object (payments may snapshot it). Legacy `DELETE /settings/qr` is 422 `cannot_remove_active`. See [payment-qr-collection.md](./payment-qr-collection.md).
 
+## Class cover and gallery images
+
+`POST /api/admin/class-images` (`classes.manage`) uses the same mint/confirm lifecycle: `{ contentType }` mints `marketing-assets/classes/<uuid>.<ext>` (jpeg/png/webp, 5 MiB, `purpose = 'class_image'`, no `entityId` because a new class has no id yet); `{ objectKey }` confirms and returns `{ objectKey, url }`. The class editor uploads on pick and stores the public HTTPS `url` in `heroImage` / `galleryImages`, so public reads need no key resolution. The admin UI recommends 16:9 landscape (≥1920×1080) but does not enforce a ratio. Removing an image from a class does not delete the object.
+
 Payment proofs stay private (`getAdminPaymentProofSignedUrl`).
 
 ## Customer avatar (`profile_avatar`, #344)

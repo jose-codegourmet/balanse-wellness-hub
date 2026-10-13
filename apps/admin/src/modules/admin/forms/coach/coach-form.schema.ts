@@ -1,4 +1,4 @@
-import { COACH_RATE_TYPES, FIELD_CONSTRAINTS } from "@balanse/domain";
+import { COACH_RATE_TYPES, EMAIL_FORMAT_RE, FIELD_CONSTRAINTS } from "@balanse/domain";
 import { z } from "zod";
 
 const specialtiesRule = z
@@ -26,11 +26,8 @@ function refineActiveSpecialties(
 const coachPublicFields = {
   name: z.string().trim().min(1, "Enter a coach name.").max(FIELD_CONSTRAINTS.coach.name.max),
   specialties: specialtiesRule,
-  shortBio: z
-    .string()
-    .trim()
-    .min(1, "Enter a short bio.")
-    .max(FIELD_CONSTRAINTS.coach.shortBio.max),
+  // Optional in the editor; the API stores "" when empty.
+  shortBio: z.string().trim().max(FIELD_CONSTRAINTS.coach.shortBio.max).default(""),
   photoKey: z.string().nullable().default(null),
   active: z.boolean(),
 };
@@ -51,3 +48,43 @@ export const coachFormSchema = z
 
 export type CoachPublicFormValues = z.infer<typeof coachPublicFormSchema>;
 export type CoachFormValues = z.infer<typeof coachFormSchema>;
+
+/**
+ * New coaches only: a coach is always one staff member. Pick an existing staff
+ * member without a coach profile, or invite a new one (Coach role pre-selected).
+ */
+export const coachStaffSourceSchema = z
+  .object({
+    staffSource: z.enum(["existing", "invite"]),
+    staffId: z.string().trim().nullable(),
+    inviteName: z.string().trim().max(FIELD_CONSTRAINTS.staff.name.max),
+    inviteEmail: z.string().trim().max(120),
+    inviteRoleId: z.string().trim(),
+  })
+  .superRefine((values, ctx) => {
+    if (values.staffSource === "existing") {
+      if (!values.staffId) {
+        ctx.addIssue({ code: "custom", path: ["staffId"], message: "Choose a staff member." });
+      }
+      return;
+    }
+    if (!values.inviteName) {
+      ctx.addIssue({ code: "custom", path: ["inviteName"], message: "Enter their name." });
+    }
+    if (!EMAIL_FORMAT_RE.test(values.inviteEmail)) {
+      ctx.addIssue({ code: "custom", path: ["inviteEmail"], message: "Enter a valid email." });
+    }
+    if (!values.inviteRoleId) {
+      ctx.addIssue({ code: "custom", path: ["inviteRoleId"], message: "Select a role." });
+    }
+  });
+
+export const coachNewFormSchema = z.intersection(coachFormSchema, coachStaffSourceSchema);
+export const coachNewPublicFormSchema = z.intersection(
+  coachPublicFormSchema,
+  coachStaffSourceSchema,
+);
+
+export type CoachStaffSourceValues = z.infer<typeof coachStaffSourceSchema>;
+export type CoachNewFormValues = z.infer<typeof coachNewFormSchema>;
+export type CoachNewPublicFormValues = z.infer<typeof coachNewPublicFormSchema>;

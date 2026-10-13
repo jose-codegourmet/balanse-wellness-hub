@@ -1,5 +1,6 @@
 import type {
   AdminBundle,
+  AdminBundleAcquisition,
   BundleStatus,
   HttpBundleAcquisition,
   HttpBundleRedemption,
@@ -142,8 +143,13 @@ export const revokeCustomerPackage = (fetcher: ApiFetcher, entitlementId: string
   });
 
 export const listAdminPackageAcquisitions = (fetcher: ApiFetcher, status?: string) =>
-  fetcher<{ items: HttpBundleAcquisition[] }>(
+  fetcher<{ items: AdminBundleAcquisition[] }>(
     `/api/admin/package-acquisitions${status ? `?status=${encodeURIComponent(status)}` : ""}`,
+  );
+
+export const getPackageProofSignedUrl = (fetcher: ApiFetcher, acquisitionId: string) =>
+  fetcher<{ signedUrl: string; expiresIn: number }>(
+    `/api/admin/package-acquisitions/${acquisitionId}/proof-signed-url`,
   );
 
 export const approvePackageAcquisition = (fetcher: ApiFetcher, id: string) =>

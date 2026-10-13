@@ -34,6 +34,7 @@ Enforced by `app_private.assert_session_event_invariants` (`BEFORE INSERT OR UPD
 
 - One event per session: unique `sessionId`.
 - Insert, or a change of `sessionId`, fails with `event_on_cancelled_session` when the session status is `CANCELLED`.
+- Insert fails with `event_on_started_session` when the session has already started (`startsAt <= now`). The API enforces this; the admin hides "Create event" for started sessions and only shows an existing event.
 - Setting status to `PUBLISHED` fails with `event_publish_requires_published_session` unless the session status is `PUBLISHED` (blocks publish over `DRAFT` and over `CANCELLED`).
 
 Cancelling a session does not rewrite the event inside this trigger. `POST /api/admin/sessions/{id}/cancel` (#320) sets a `DRAFT` or `PUBLISHED` event to `CANCELLED` in the same transaction, with one `event.status` audit row. Archived and already-cancelled events stay as they are, so a retry does not add another audit row.

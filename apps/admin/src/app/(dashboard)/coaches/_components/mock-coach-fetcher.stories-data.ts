@@ -1,4 +1,4 @@
-import type { ApiFetcher } from "@balanse/api-client";
+import { ApiError, type ApiFetcher } from "@balanse/api-client";
 import { getMockAdapter } from "@balanse/mock";
 
 /**
@@ -17,13 +17,37 @@ export const mockCoachFetcher: ApiFetcher = async (path, init) => {
     return { items: await adapter.getAdminCoaches() } as never;
   }
   if (path === "/api/admin/coaches" && method === "POST") {
-    const input = init?.body as Parameters<typeof adapter.upsertAdminCoach>[0];
-    return { coach: await adapter.upsertAdminCoach(input) } as never;
+    // Rates are omitted by staff without `coach_rates.manage`; the API defaults them.
+    const input = init?.body as Partial<Parameters<typeof adapter.upsertAdminCoach>[0]>;
+    return {
+      coach: await adapter.upsertAdminCoach({
+        name: "",
+        specialties: [],
+        shortBio: "",
+        photoKey: null,
+        active: true,
+        defaultRatePhp: 0,
+        rateType: "PER_SESSION",
+        ...input,
+      }),
+    } as never;
   }
   const patchMatch = /^\/api\/admin\/coaches\/([^/]+)$/.exec(path);
   if (patchMatch && method === "PATCH") {
-    const input = init?.body as Parameters<typeof adapter.upsertAdminCoach>[0];
-    return { coach: await adapter.upsertAdminCoach({ ...input, id: patchMatch[1] }) } as never;
+    // The real PATCH is partial (e.g. `{ active }` from the list's Activate/Deactivate).
+    const input = init?.body as Partial<Parameters<typeof adapter.upsertAdminCoach>[0]>;
+    const existing = (await adapter.getAdminCoaches()).find((row) => row.id === patchMatch[1]);
+    if (!existing) throw new Error(`mockCoachFetcher: coach ${patchMatch[1]} not found`);
+    return {
+      coach: await adapter.upsertAdminCoach({ ...existing, ...input, id: patchMatch[1] }),
+    } as never;
+  }
+  if (patchMatch && method === "DELETE") {
+    // Fixture coaches are all scheduled, so mirror the API's 409 for an in-use coach.
+    throw new ApiError(409, {
+      code: "coach_in_use",
+      message: "This coach is on the schedule. Deactivate them instead.",
+    });
   }
   const photoMatch = /^\/api\/admin\/coaches\/([^/]+)\/photo$/.exec(path);
   if (photoMatch && method === "POST") {

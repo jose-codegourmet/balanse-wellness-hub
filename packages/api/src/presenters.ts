@@ -34,10 +34,14 @@ export function presentStaff<
   };
 }
 
-export function presentCoach<T extends { staffMemberId?: string | null }>(coach: T) {
+export function presentCoach<T extends { staffMemberId?: string | null; defaultRate?: unknown }>(
+  coach: T,
+) {
   const { staffMemberId, ...rest } = coach;
   return {
     ...rest,
+    // The admin client reads whole pesos as `defaultRatePhp`; `defaultRate` stays for older callers.
+    ...(coach.defaultRate != null ? { defaultRatePhp: Number(String(coach.defaultRate)) } : {}),
     staffId: staffMemberId ?? null,
   };
 }

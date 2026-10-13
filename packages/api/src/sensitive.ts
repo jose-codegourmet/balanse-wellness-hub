@@ -10,6 +10,7 @@ import { ApiError } from "./errors";
 
 const RATE_KEYS = new Set([
   "defaultRate",
+  "defaultRatePhp",
   "rateType",
   "coachRate",
   "coachRateType",
@@ -75,6 +76,10 @@ export function shapeDashboard(actor: AdminApiActor, body: Record<string, unknow
       reschedules: actorHas(actor, "reschedules.read")
         ? ((body.attention as { reschedules?: number } | undefined)?.reschedules ?? 0)
         : 0,
+      packagePayments:
+        actorHas(actor, "bundles.read") || actorHas(actor, "bundles.manage")
+          ? ((body.attention as { packagePayments?: number } | undefined)?.packagePayments ?? 0)
+          : 0,
     },
   };
   if (!financial) {

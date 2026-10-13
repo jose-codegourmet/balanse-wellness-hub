@@ -18,6 +18,16 @@ export const Cancelled: Story = {
 export const CancellationRequested: Story = {
   args: { booking: { ...confirmed, status: "CANCELLATION_REQUESTED" } },
 };
+export const PackageApplied: Story = {
+  args: {
+    booking: {
+      ...confirmed,
+      status: "HELD_AWAITING_PAYMENT",
+      entitlementId: "entitlement-1",
+      packageName: "SUMMER PACKAGE",
+    },
+  },
+};
 export const Compact: Story = { args: { compact: true } };
 export const AllStatuses: Story = {
   render: () => (

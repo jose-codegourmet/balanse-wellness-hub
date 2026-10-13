@@ -6,7 +6,6 @@ export * from "./authorization";
 export * from "./bundles";
 export * from "./calendar-layout";
 export * from "./class-change-requests";
-export * from "./class-images";
 export * from "./classes";
 export * from "./coach-students";
 export * from "./contracts";

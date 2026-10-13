@@ -1,4 +1,9 @@
-import { type BookingStatus, bookingStatusLabel, refundStatusLabel } from "@balanse/domain";
+import {
+  type BookingStatus,
+  bookingStatusLabel,
+  PACKAGE_HELD_STATUS_LABEL,
+  refundStatusLabel,
+} from "@balanse/domain";
 import {
   Ban,
   Check,
@@ -6,6 +11,7 @@ import {
   Clock3,
   Hourglass,
   RefreshCw,
+  Ticket,
   Undo2,
   UserCheck,
   Wallet,
@@ -74,7 +80,15 @@ const PRESENTATION = {
 } satisfies Record<BookingStatus, { tone: string; icon: typeof Check; message: string }>;
 
 export function BookingStatusBanner({ booking, compact = false }: BookingStatusBannerProps) {
-  const state = PRESENTATION[booking.status];
+  // A package credit covers a held booking: still unconfirmed, but nothing to pay.
+  const packageHeld = booking.status === "HELD_AWAITING_PAYMENT" && Boolean(booking.entitlementId);
+  const state = packageHeld
+    ? {
+        tone: "pending",
+        icon: Ticket,
+        message: `Your place is reserved with one session from ${booking.packageName ?? "your package"}. No payment is needed. The front desk confirms your spot.`,
+      }
+    : PRESENTATION[booking.status];
   const Icon = state.icon;
   const refund = booking.refundStatus ? refundStatusLabel(booking.refundStatus) : "";
   return (
@@ -88,7 +102,9 @@ export function BookingStatusBanner({ booking, compact = false }: BookingStatusB
       </span>
       <div className="booking-status-copy">
         {!compact && <p className="booking-status-eyebrow">Booking status</p>}
-        <p className="booking-status-label">{bookingStatusLabel(booking.status)}</p>
+        <p className="booking-status-label">
+          {packageHeld ? PACKAGE_HELD_STATUS_LABEL : bookingStatusLabel(booking.status)}
+        </p>
         <p className="booking-status-message">{state.message}</p>
         {refund && <p className="booking-status-refund">{refund}</p>}
       </div>

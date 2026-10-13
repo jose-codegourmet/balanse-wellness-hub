@@ -69,3 +69,22 @@ export function useCancelAdminSession(fetcher: ApiFetcher = apiFetchBrowser) {
     onSuccess: () => invalidateForRole(queryClient, sessionKeys(role)),
   });
 }
+
+/** Guarded time-only update; never re-submit coach/rate/capacity snapshots. */
+export function useMoveAdminSession(fetcher: ApiFetcher = apiFetchBrowser) {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...input
+    }: {
+      id: string;
+      startsAt: string;
+      endsAt: string;
+      expectedStartsAt: string;
+      expectedEndsAt: string;
+    }) => patchSession(fetcher, id, input).then((res) => res.session),
+    onSuccess: () => invalidateForRole(queryClient, sessionKeys(role)),
+  });
+}

@@ -11,25 +11,31 @@ import {
   setAdminBundleStatus,
 } from "@balanse/api-client";
 import { apiFetchBrowser } from "@balanse/api-client/browser";
+import type { BundleStatus } from "@balanse/domain";
 import { type QueryKey, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AdminAuthScope } from "../auth-scope";
 import { adminKeys } from "../keys";
 import { invalidateForRole, useAdminAuthScope } from "./shared";
 
 function bundleKeys(role: AdminAuthScope): QueryKey[] {
-  return [adminKeys.bundles.all(role), adminKeys.customers.all(role)];
+  // Dashboard carries the inbox's package-payment count.
+  return [adminKeys.bundles.all(role), adminKeys.customers.all(role), adminKeys.dashboard(role)];
 }
 
-type UpsertBundleInput = PackageInput & { id?: string };
+type UpsertBundleInput = PackageInput & { id?: string; status?: BundleStatus };
 
 export function useUpsertAdminBundle() {
   const role = useAdminAuthScope();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...input }: UpsertBundleInput) =>
-      id
-        ? patchAdminBundle(apiFetchBrowser, id, input).then((result) => result.bundle)
-        : createAdminBundle(apiFetchBrowser, input).then((result) => result.bundle),
+    // Create/patch never change status; publication goes through the audited status endpoints.
+    mutationFn: async ({ id, status, ...input }: UpsertBundleInput) => {
+      const { bundle } = id
+        ? await patchAdminBundle(apiFetchBrowser, id, input)
+        : await createAdminBundle(apiFetchBrowser, input);
+      if (!status || bundle.status === status) return bundle;
+      return (await setAdminBundleStatus(apiFetchBrowser, bundle.id, status)).bundle;
+    },
     onSuccess: () => invalidateForRole(queryClient, bundleKeys(role)),
   });
 }

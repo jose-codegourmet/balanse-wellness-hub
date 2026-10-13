@@ -215,6 +215,11 @@ function SessionOption({
           {EVENT_CONFLICT_MESSAGES.event_on_cancelled_session}
         </p>
       ) : null}
+      {choice.blocked === "started" ? (
+        <p className="border-t border-border px-3 py-2 text-sm">
+          {EVENT_CONFLICT_MESSAGES.event_on_started_session}
+        </p>
+      ) : null}
     </div>
   );
 }

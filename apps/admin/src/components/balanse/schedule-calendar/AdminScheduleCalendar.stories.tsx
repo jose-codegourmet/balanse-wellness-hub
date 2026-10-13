@@ -38,8 +38,8 @@ function StatefulCalendar({
           setOpenDay(ymd);
           setSelectedSessionId(null);
         }}
-        onOpenSession={(session) => {
-          setOpenDay(session.startsAt.slice(0, 10));
+        onOpenSession={(session, ymd) => {
+          setOpenDay(ymd);
           setSelectedSessionId(session.id);
         }}
       />
@@ -95,4 +95,20 @@ export const DenseDay: Story = {
 
 export const Auto: Story = {
   args: { view: "auto" },
+};
+
+const overnightSessions = [
+  {
+    ...adminSessions[0],
+    id: "overnight-calendar",
+    name: "Poker Bluffing",
+    startsAt: "2026-10-13T21:45:00+08:00",
+    endsAt: "2026-10-14T01:45:00+08:00",
+  },
+];
+
+export const OvernightContinuation: Story = {
+  render: () => (
+    <StatefulCalendar view="month" selectedDay="2026-10-14" sessions={overnightSessions} />
+  ),
 };

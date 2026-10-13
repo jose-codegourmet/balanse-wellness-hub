@@ -394,6 +394,7 @@ export const ADMIN_ACTION_ACCESS: readonly AdminAccessRequirement[] = [
   action("cancellations-manage", "Complete or reject cancellation", ["cancellations.manage"]),
   action("reschedules-manage", "Approve or reject reschedule", ["reschedules.manage"]),
   action("classes-manage", "Create or edit class", ["classes.manage"]),
+  action("classes-delete", "Delete class", ["classes.manage"], { superAdminOnly: true }),
   action("venues-manage", "Create or edit venue", ["classes.manage"]),
   action("coaches-manage", "Create or edit coach", ["coaches.manage"]),
   action("coach-rates-read", "View coach rates", ["coach_rates.read"]),
@@ -511,6 +512,10 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
   api("GET", "/api/admin/classes", "List classes", CLASS_READ),
   api("POST", "/api/admin/classes", "Create class", ["classes.manage"]),
   api("PATCH", "/api/admin/classes/:id", "Update class", ["classes.manage"]),
+  api("POST", "/api/admin/class-images", "Upload class image", ["classes.manage"]),
+  api("DELETE", "/api/admin/classes/:id", "Delete class", ["classes.manage"], {
+    superAdminOnly: true,
+  }),
   api("GET", "/api/admin/venues", "List venues", VENUE_READ_PERMISSIONS),
   api("POST", "/api/admin/venues", "Create venue", ["classes.manage"]),
   api("PATCH", "/api/admin/venues/:id", "Update venue", ["classes.manage"]),
@@ -523,6 +528,7 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
   api("PATCH", "/api/admin/coaches/:id", "Update coach", ["coaches.manage"], {
     includeFieldsIf: ["coach_rates.manage"],
   }),
+  api("DELETE", "/api/admin/coaches/:id", "Delete coach", ["coaches.manage"]),
   api("POST", "/api/admin/coaches/:id/photo", "Upload coach photo", ["coaches.manage"]),
   api("DELETE", "/api/admin/coaches/:id/photo", "Remove coach photo", ["coaches.manage"]),
   api("GET", "/api/admin/events", "List events", EVENT_READ),
@@ -548,6 +554,10 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
     "bundles.manage",
   ]),
   api("POST", "/api/admin/package-acquisitions/:id/reject", "Reject acquisition", [
+    "bundles.manage",
+  ]),
+  // Receipts are reviewer-only, like booking payment proofs (`payments.review`).
+  api("GET", "/api/admin/package-acquisitions/:id/proof-signed-url", "Package payment proof", [
     "bundles.manage",
   ]),
   api("GET", "/api/admin/packages/:id/redemptions", "Package redemptions", BUNDLE_READ),

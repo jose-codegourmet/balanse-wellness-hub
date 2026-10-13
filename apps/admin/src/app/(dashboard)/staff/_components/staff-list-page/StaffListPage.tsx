@@ -18,11 +18,11 @@ import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
+import { StaffInviteDialog } from "@/components/balanse/staff-invite-dialog/StaffInviteDialog";
 import { useHasAnyPermission } from "@/lib/auth/use-staff-permissions";
 import { adminStaffQuery } from "@/lib/query/queries";
 import { AdminCan, useCanAdminAction, useStaffActor } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
-import { StaffInviteDialog } from "../staff-invite-dialog/StaffInviteDialog";
 
 export type StaffListPageProps = { empty?: boolean };
 

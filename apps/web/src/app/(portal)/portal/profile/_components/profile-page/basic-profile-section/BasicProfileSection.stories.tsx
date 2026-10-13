@@ -1,6 +1,5 @@
 import { customers } from "@balanse/mock";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { mockCustomerSelfServiceActions } from "../../../_lib/mock-customer-self-service.stories-data";
 import { BasicProfileSection } from "./BasicProfileSection";
 
 const ana = customers[0];
@@ -13,7 +12,6 @@ const meta = {
   args: {
     profile: ana,
     onSaved: () => undefined,
-    actions: mockCustomerSelfServiceActions(ana.id),
   },
 } satisfies Meta<typeof BasicProfileSection>;
 
@@ -27,7 +25,6 @@ export const Default: Story = {};
 export const PhotoNicknameHidden: Story = {
   args: {
     profile: { ...ben, showOnPublicRoster: false },
-    actions: mockCustomerSelfServiceActions(ben.id),
   },
 };
 

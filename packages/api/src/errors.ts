@@ -109,6 +109,24 @@ function uniqueTargets(error: object): string {
   return typeof target === "string" ? target : "";
 }
 
+const RULE_MESSAGES: Partial<Record<string, string>> = {
+  coach_role_requires_link: "The Coach role requires a linked coach profile.",
+  archived_role: "That role is archived and can't be assigned.",
+};
+
+/**
+ * Database rule errors arrive wrapped in Prisma's driver error, which includes
+ * server file paths and query text. Only a plain one-line message is passed through.
+ */
+function ruleMessage(code: string, raw: string): string {
+  const known = RULE_MESSAGES[code];
+  if (known) return known;
+  const plain = raw.length <= 200 && !/[\n\r]|invocation|ConnectorError|prisma/i.test(raw);
+  if (plain) return raw;
+  const words = code.replace(/_/g, " ");
+  return `${words.charAt(0).toUpperCase()}${words.slice(1)}.`;
+}
+
 export function mapUnknownError(error: unknown): ApiError {
   if (error instanceof ApiError) return error;
   if (
@@ -183,7 +201,7 @@ export function mapUnknownError(error: unknown): ApiError {
             code === "privilege_escalation"
           ? 403
           : 400;
-      return new ApiError(status, code, message);
+      return new ApiError(status, code, ruleMessage(code, message));
     }
   }
   return new ApiError(500, "internal_error", "Unexpected server error.");

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 
 export const adminScheduleCalendarMeta = {
   purpose:
-    "Full-height admin schedule calendar (month, week, day). Every day box and every session in it is clickable, so the page can open its day sidebar.",
+    "Full-height admin schedule calendar (month, week, day). Sessions appear on every Manila day they overlap, with next-day continuations marked. Every day box and session is clickable to open that day's sidebar.",
   whenToUse:
     "The /schedule page. The page owns which day/session is open and renders the sidebar; the calendar only reports clicks and navigation.",
   whenNotToUse:
@@ -31,8 +31,8 @@ export type AdminScheduleCalendarProps = {
   onToday?: () => void;
   /** A day box (or its "+N more") was clicked. */
   onOpenDay: (ymd: string) => void;
-  /** A session in the grid was clicked. */
-  onOpenSession: (session: AdminSession) => void;
+  /** A session in the grid was clicked; ymd is the displayed day, including continuations. */
+  onOpenSession: (session: AdminSession, ymd: string) => void;
   /**
    * Venue name to show on a session, or null to hide it. The schedule shows it for
    * off-site sessions (and every session once there is more than one branch).

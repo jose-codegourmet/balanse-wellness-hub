@@ -7,6 +7,6 @@
 3. Brand tokens are defined once and consumed by both apps.
 4. Public nav matches `docs/screen-specs/shared/01-navigation.md`.
 5. Customer portal is guarded for guests and preserves `returnTo`.
-6. Admin sidebar order includes Reports between Classes and Staff.
+6. Admin sidebar follows the permission-filtered `ADMIN_NAV_ITEMS` order; Reports appears after Transactions and before Marketing insights and Staff.
 7. Admin login has no sign-up or forgot-password affordance.
 8. Formatters always display Cebu time (`Asia/Manila`) and peso amounts.

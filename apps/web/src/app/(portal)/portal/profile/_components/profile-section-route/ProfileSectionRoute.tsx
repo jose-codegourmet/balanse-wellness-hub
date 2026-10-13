@@ -10,7 +10,6 @@ import { myPolicyAcceptancesQuery, myProfileQuery } from "@/lib/query/customers"
 import { serverFetcher } from "@/lib/query/fetcher";
 import { prefetchWeb } from "@/lib/query/prefetch";
 import { getCustomerAccessToken, getSessionUser } from "@/modules/session/current-customer";
-import { customerProfileServerActions } from "../../_lib/customer-self-service-routes";
 import { ProfilePage } from "../profile-page/ProfilePage";
 
 export type ProfileSectionRouteProps = {
@@ -51,7 +50,6 @@ export async function ProfileSectionRoute({ section }: ProfileSectionRouteProps)
       initialAcceptances={acceptances}
       section={section}
       about={about}
-      actions={customerProfileServerActions}
     />,
   );
 }

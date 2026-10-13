@@ -5,10 +5,12 @@ import {
   archiveRole,
   assignRole,
   cloneRole,
+  createCoach,
   createRole,
   createStaff,
   disableStaff,
   linkCoach,
+  type NewCoachProfileInput,
   patchRole,
   patchStaff,
   unlinkCoach,
@@ -19,6 +21,9 @@ import { type QueryKey, useMutation, useQueryClient } from "@tanstack/react-quer
 import type { AdminAuthScope } from "../auth-scope";
 import { adminKeys } from "../keys";
 import { invalidateForRole, useAdminAuthScope } from "./shared";
+
+/** Staff form `coachId` value meaning "create a new coach profile for this person". */
+export const NEW_COACH_PROFILE = "__new_coach_profile__";
 
 function staffCoachKeys(role: AdminAuthScope): QueryKey[] {
   return [
@@ -44,7 +49,14 @@ export function useUpsertAdminStaff() {
       previousCoachId?: string | null;
     }) => {
       const { id, coachId, previousCoachId, previousRoleId, ...staffInput } = input;
-      if (!id) return createStaff(apiFetchBrowser, { ...staffInput, coachId });
+      const createsCoach = coachId === NEW_COACH_PROFILE;
+      if (!id) {
+        return createStaff(apiFetchBrowser, {
+          ...staffInput,
+          coachId: createsCoach ? null : coachId,
+          newCoach: createsCoach ? { name: staffInput.name } : null,
+        });
+      }
 
       let staff = (await patchStaff(apiFetchBrowser, id, staffInput)).staff;
       // A Coach role needs the teaching link before assignment. When removing
@@ -54,6 +66,18 @@ export function useUpsertAdminStaff() {
       }
       if (!coachId && previousCoachId) {
         staff = (await unlinkCoach(apiFetchBrowser, id)).staff;
+      } else if (createsCoach) {
+        // The coach profile is created already linked; refresh the staff row afterwards.
+        if (previousCoachId) staff = (await unlinkCoach(apiFetchBrowser, id)).staff;
+        const { coach } = await createCoach(apiFetchBrowser, {
+          staffId: id,
+          name: staffInput.name,
+          specialties: [],
+          shortBio: "",
+          photoKey: null,
+          active: true,
+        });
+        staff = { ...staff, coachId: coach.id, isCoach: true };
       } else if (coachId && coachId !== previousCoachId) {
         staff = (await linkCoach(apiFetchBrowser, id, coachId)).staff;
       }
@@ -118,5 +142,41 @@ export function useDisableAdminStaff(fetcher: ApiFetcher = apiFetchBrowser) {
   return useMutation({
     mutationFn: (id: string) => disableStaff(fetcher, id).then((response) => response.staff),
     onSuccess: () => invalidateForRole(queryClient, staffCoachKeys(role)),
+  });
+}
+
+/**
+ * Invite a new person as staff and create their coach profile in one request
+ * (a coach is always one staff member). Returns the private invite link.
+ */
+export function useInviteCoach() {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    gcTime: 0,
+    mutationFn: (input: {
+      name: string;
+      email: string;
+      roleId: string;
+      coach: NewCoachProfileInput;
+    }) =>
+      createStaff(apiFetchBrowser, {
+        name: input.name,
+        email: input.email,
+        roleId: input.roleId,
+        newCoach: input.coach,
+      }),
+    onSettled: () => invalidateForRole(queryClient, staffCoachKeys(role)),
+  });
+}
+
+/** Link an existing (legacy, unlinked) coach profile to a staff member without one. */
+export function useLinkCoachToStaff(fetcher: ApiFetcher = apiFetchBrowser) {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ staffId, coachId }: { staffId: string; coachId: string }) =>
+      linkCoach(fetcher, staffId, coachId),
+    onSettled: () => invalidateForRole(queryClient, staffCoachKeys(role)),
   });
 }

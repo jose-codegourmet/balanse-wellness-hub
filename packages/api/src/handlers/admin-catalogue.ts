@@ -6,13 +6,27 @@ import {
   datesForWeeklyRecurrence,
   FIELD_CONSTRAINTS,
   isManilaYmd,
+  isSuperAdminRoleKey,
   manilaYmd,
   SIGNED_UPLOAD,
   sessionCoachCost,
   type Weekday,
 } from "@balanse/domain";
-import { requireAdmin, requireAnyPermission, resolveActor, writeAudit } from "../auth";
+import {
+  requireAdmin,
+  requireAnyPermission,
+  requirePermission,
+  resolveActor,
+  writeAudit,
+} from "../auth";
 import { readClassCatalogue, writeClassCatalogue } from "../class-catalogue";
+import {
+  assertStaffCanCoach,
+  coachRateValue,
+  parseNewCoachProfile,
+  parseSpecialties,
+  sendsRate,
+} from "../coach-profile";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
 import { asString, bearerToken, ok, pagination, readJson, searchParams } from "../http";
@@ -26,6 +40,7 @@ import {
 } from "../sensitive";
 import { sessionConsumedCapacity, sessionPastCutoff, sessionsConsumedCapacity } from "../sql";
 import {
+  assertClassImageKey,
   assertOwnedCoachPhotoKey,
   confirmUpload,
   extensionFor,
@@ -242,6 +257,84 @@ export async function patchAdminClass(deps: ApiDeps, req: Request, id: string): 
   return ok({ class: saved });
 }
 
+/**
+ * Super Admin hard delete. Classes with sessions (FK RESTRICT) or bundle
+ * applicability are refused with 409 `class_in_use` so booking history and
+ * bundle scope never change silently; deactivate those instead. Marketing
+ * coach links and customer interests cascade in the database.
+ */
+export async function deleteAdminClass(deps: ApiDeps, req: Request, id: string): Promise<Response> {
+  const actor = requirePermission(requireAdmin(await resolveActor(deps, req)), "classes.manage");
+  if (!isSuperAdminRoleKey(actor.roleKey)) {
+    throw new ApiError(403, "forbidden", "Only a Super Admin can delete classes.");
+  }
+  const gymClass = await deps.prisma.gymClass.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      _count: { select: { sessions: true, bundleApplicability: true } },
+    },
+  });
+  if (!gymClass) throw new ApiError(404, "class_not_found", "Class not found.");
+  if (gymClass._count.sessions > 0 || gymClass._count.bundleApplicability > 0) {
+    throw new ApiError(
+      409,
+      "class_in_use",
+      gymClass._count.sessions > 0
+        ? "This class has sessions. Deactivate it instead so past bookings keep their class."
+        : "This class is part of a bundle. Remove it from the bundle or deactivate it instead.",
+      {
+        details: {
+          sessions: gymClass._count.sessions,
+          bundles: gymClass._count.bundleApplicability,
+        },
+      },
+    );
+  }
+  await deps.prisma.gymClass.delete({ where: { id } });
+  await writeAudit(deps, {
+    entityType: "class",
+    entityId: id,
+    action: "class.delete",
+    actor,
+    metadata: { name: gymClass.name },
+  });
+  return ok({ deleted: true, id });
+}
+
+/**
+ * BE-052 mint/confirm for class cover and gallery images. Keys are not scoped
+ * to a class id because a new class has no id until it is saved; confirm
+ * returns the public HTTPS URL, which the class form stores in `heroImage` /
+ * `galleryImages`. Unconfirmed mints are reaped with other pending uploads.
+ */
+export async function postAdminClassImage(deps: ApiDeps, req: Request): Promise<Response> {
+  const actor = requirePermission(requireAdmin(await resolveActor(deps, req)), "classes.manage");
+  const body = await readJson(req);
+  const contentType = asString(body.contentType);
+  const objectKey = asString(body.objectKey);
+  if (!objectKey) {
+    if (!contentType) {
+      throwFields(fieldError("contentType", "required", "contentType is required."));
+    }
+    const key = `marketing-assets/classes/${crypto.randomUUID()}.${extensionFor(contentType)}`;
+    return ok(
+      await mintSignedUpload(deps, actor, {
+        bucket: "marketing-assets",
+        purpose: "class_image",
+        entityId: null,
+        contentType,
+        allowed: new Set(SIGNED_UPLOAD.classImageTypes),
+        objectKey: key,
+      }),
+    );
+  }
+  assertClassImageKey(objectKey);
+  await confirmUpload(deps, objectKey);
+  return ok({ objectKey, url: deps.storage.publicUrl("marketing-assets", objectKey) });
+}
+
 export async function getAdminCoaches(deps: ApiDeps, req: Request): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
   const items = await deps.prisma.coach.findMany({
@@ -265,39 +358,32 @@ export async function getAdminCoaches(deps: ApiDeps, req: Request): Promise<Resp
   return ok({ items: maybeStripRates(actor, items.map(presentCoach)) });
 }
 
+/**
+ * Creates a coach profile for an existing staff member. A coach is always one staff
+ * member; new people are invited through `POST /api/admin/staff` with `newCoach`.
+ */
 export async function postAdminCoach(deps: ApiDeps, req: Request): Promise<Response> {
   const actor = requireAdmin(await resolveActor(deps, req));
   const body = await readJson(req);
-  const name = requireString(body, "name", FIELD_CONSTRAINTS.coach.name.max);
-  const shortBio = requireString(body, "shortBio", FIELD_CONSTRAINTS.coach.shortBio.max);
-  const mayManageRates = canManageRates(actor);
-  const defaultRate = mayManageRates ? moneyValue(body, "defaultRate", true) : "0";
-  const rateType = mayManageRates ? asString(body.rateType) : "PER_SESSION";
-  if (rateType !== "PER_SESSION" && rateType !== "PER_HOUR") {
-    throwFields(
-      fieldError("rateType", "invalid_enum", "rateType must be PER_SESSION or PER_HOUR."),
-    );
+  const staffId = asString(body.staffId)?.trim();
+  if (!staffId) {
+    throwFields(fieldError("staffId", "required", "Choose the staff member who is this coach."));
   }
-  if (!mayManageRates && (body.defaultRate != null || body.rateType != null)) {
-    throw new ApiError(403, "forbidden", "Missing permission.", {
-      details: { permission: "coach_rates.manage" },
-    });
-  }
+  const staff = await deps.prisma.staffMember.findUnique({
+    where: { id: staffId },
+    select: { id: true, name: true, isSystem: true, status: true, coach: { select: { id: true } } },
+  });
+  assertStaffCanCoach(staff);
+  const data = parseNewCoachProfile(actor, body, (staff as { name: string }).name);
   const created = await deps.prisma.coach.create({
-    data: {
-      name,
-      specialties: parseSpecialties(body.specialties),
-      shortBio,
-      defaultRate: defaultRate as string,
-      rateType,
-      active: body.active !== false,
-    },
+    data: { ...data, staffMemberId: staffId },
   });
   await writeAudit(deps, {
     entityType: "coach",
     entityId: created.id,
     action: "coach.create",
     actor,
+    metadata: { staffId },
   });
   return ok({ coach: maybeStripRates(actor, presentCoach(created)) });
 }
@@ -307,12 +393,12 @@ export async function patchAdminCoach(deps: ApiDeps, req: Request, id: string): 
   const body = await readJson(req);
   const name = optionalString(body, "name", FIELD_CONSTRAINTS.coach.name.max);
   const shortBio = optionalString(body, "shortBio", FIELD_CONSTRAINTS.coach.shortBio.max);
-  if (!canManageRates(actor) && (body.defaultRate != null || body.rateType != null)) {
+  if (!canManageRates(actor) && sendsRate(body)) {
     throw new ApiError(403, "forbidden", "Missing permission.", {
       details: { permission: "coach_rates.manage" },
     });
   }
-  const defaultRate = canManageRates(actor) ? moneyValue(body, "defaultRate", false) : undefined;
+  const defaultRate = canManageRates(actor) ? coachRateValue(body) : undefined;
   const rateType = canManageRates(actor) ? asString(body.rateType) : undefined;
   if (rateType && rateType !== "PER_SESSION" && rateType !== "PER_HOUR") {
     throwFields(
@@ -334,6 +420,50 @@ export async function patchAdminCoach(deps: ApiDeps, req: Request, id: string): 
   });
   await writeAudit(deps, { entityType: "coach", entityId: id, action: "coach.update", actor });
   return ok({ coach: maybeStripRates(actor, presentCoach(updated)) });
+}
+
+/**
+ * Hard delete for a coach nobody depends on yet (for example one created by mistake).
+ * Coaches on any session or class-change request, or linked to a staff account, must be
+ * deactivated instead so rosters, payroll, and history keep their coach.
+ */
+export async function deleteAdminCoach(deps: ApiDeps, req: Request, id: string): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const coach = await deps.prisma.coach.findUnique({
+    where: { id },
+    include: {
+      _count: {
+        select: { sessions: true, requestedClassChanges: true, substituteClassChanges: true },
+      },
+    },
+  });
+  if (!coach) throw new ApiError(404, "coach_not_found", "Coach not found.");
+  const usage =
+    coach._count.sessions +
+    coach._count.requestedClassChanges +
+    coach._count.substituteClassChanges;
+  if (usage > 0 || coach.staffMemberId) {
+    throw new ApiError(
+      409,
+      "coach_in_use",
+      coach.staffMemberId
+        ? "This coach is linked to a staff account. Unlink it or deactivate the coach instead."
+        : "This coach is on the schedule. Deactivate them instead so past sessions keep their coach.",
+    );
+  }
+  await deps.prisma.$transaction([
+    deps.prisma.classMarketingCoach.deleteMany({ where: { coachId: id } }),
+    deps.prisma.coach.delete({ where: { id } }),
+  ]);
+  await retireAdminObject(deps, "coach-photos", coach.photoKey);
+  await writeAudit(deps, {
+    entityType: "coach",
+    entityId: id,
+    action: "coach.delete",
+    actor,
+    metadata: { name: coach.name },
+  });
+  return ok({ deleted: true, id });
 }
 
 export async function postCoachPhoto(deps: ApiDeps, req: Request, id: string): Promise<Response> {
@@ -788,6 +918,31 @@ export async function patchAdminSession(
     await tx.$queryRawUnsafe("SELECT id FROM public.sessions WHERE id = $1 FOR UPDATE", id);
     const session = await tx.gymSession.findUnique({ where: { id }, include: { coaches: true } });
     if (!session) throw new ApiError(404, "session_not_found", "Session not found.");
+    const expectedStart = optionalString(body, "expectedStartsAt", 40);
+    const expectedEnd = optionalString(body, "expectedEndsAt", 40);
+    if (
+      (expectedStart && Date.parse(expectedStart) !== session.startsAt.getTime()) ||
+      (expectedEnd && Date.parse(expectedEnd) !== session.endsAt.getTime())
+    ) {
+      throw new ApiError(
+        409,
+        "session_time_changed",
+        "This session's time changed. Refresh the schedule and try again.",
+      );
+    }
+    if (startsAt && Date.parse(startsAt) !== session.startsAt.getTime()) {
+      const now = deps.now().getTime();
+      if (session.status === "CANCELLED" || session.startsAt.getTime() <= now) {
+        throw new ApiError(
+          409,
+          "session_move_locked",
+          "Started or cancelled sessions cannot be rescheduled.",
+        );
+      }
+      if (Date.parse(startsAt) <= now) {
+        throw new ApiError(409, "session_move_in_past", "Choose a future start time.");
+      }
+    }
     assertSessionWindow(
       startsAt ?? session.startsAt.toISOString(),
       endsAt ?? session.endsAt.toISOString(),
@@ -962,37 +1117,6 @@ export async function postCancelSession(
     session: { id: updated.id, status: updated.status },
     newReservationsBlocked: true,
     affectedBookings: affected,
-  });
-}
-
-function parseSpecialties(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  if (value.length > FIELD_CONSTRAINTS.coach.specialties.maxItems) {
-    throwFields(
-      fieldError(
-        "specialties",
-        "too_long",
-        `At most ${FIELD_CONSTRAINTS.coach.specialties.maxItems} specialties.`,
-      ),
-    );
-  }
-  return value.map((item, index) => {
-    if (typeof item !== "string" || !item.trim()) {
-      throwFields(
-        fieldError(`specialties.${index}`, "invalid_type", "Each specialty must be text."),
-      );
-    }
-    const trimmed = item.trim();
-    if (trimmed.length > FIELD_CONSTRAINTS.coach.specialties.itemMax) {
-      throwFields(
-        fieldError(
-          `specialties.${index}`,
-          "too_long",
-          `Specialty must be at most ${FIELD_CONSTRAINTS.coach.specialties.itemMax} characters.`,
-        ),
-      );
-    }
-    return trimmed;
   });
 }
 

@@ -120,6 +120,20 @@ for (const route of API_CONTRACT_ROUTES) {
                     },
                     startsAt: { type: "string", format: "date-time" },
                     endsAt: { type: "string", format: "date-time" },
+                    ...(route.method === "patch"
+                      ? {
+                          expectedStartsAt: {
+                            type: "string",
+                            format: "date-time",
+                            description: "Reject the move if the current start time has changed.",
+                          },
+                          expectedEndsAt: {
+                            type: "string",
+                            format: "date-time",
+                            description: "Reject the move if the current end time has changed.",
+                          },
+                        }
+                      : {}),
                     capacity: { type: "integer", minimum: 1, maximum: 200 },
                     customerPrice: { type: "string", pattern: "^[0-9]+$" },
                     status: { type: "string", enum: ["DRAFT", "PUBLISHED"] },

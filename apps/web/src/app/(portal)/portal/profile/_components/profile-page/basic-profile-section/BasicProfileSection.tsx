@@ -6,23 +6,16 @@ import { CircleAlert, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AvatarUploader } from "@/components/balanse/avatar-uploader/AvatarUploader";
 import { useDeleteMyAvatar, usePatchMe, useSaveMyAvatar } from "@/lib/query/mutations/customers";
-import type { CustomerProfileActions } from "../../../_lib/customer-self-service.types";
 import { BasicProfileForm } from "./basic-profile-form/BasicProfileForm";
 import { RosterVisibilitySetting } from "./roster-visibility-setting/RosterVisibilitySetting";
 
 export type BasicProfileSectionProps = {
   profile: CustomerProfile;
   onSaved: (next: CustomerProfile) => void;
-  actions: CustomerProfileActions;
   forcedStatus?: "saving" | "failed";
 };
 
-export function BasicProfileSection({
-  profile,
-  onSaved,
-  actions,
-  forcedStatus,
-}: BasicProfileSectionProps) {
+export function BasicProfileSection({ profile, onSaved, forcedStatus }: BasicProfileSectionProps) {
   const router = useRouter();
   const patchProfile = usePatchMe(profile.id);
   const saveAvatar = useSaveMyAvatar(profile.id);

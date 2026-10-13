@@ -6,8 +6,8 @@ import {
   addCalendarDays,
   computeSessionInventory,
   isCoachAuthorizationRole,
-  manilaYmd,
   sessionDisplayName,
+  sessionOverlapsManilaDay,
 } from "@balanse/domain";
 import {
   Button,
@@ -163,11 +163,10 @@ function ScheduleListPageInner({
 
   const daySessions = openDay
     ? scopedSessions
-        .filter((session) => manilaYmd(session.startsAt) === openDay)
+        .filter((session) => sessionOverlapsManilaDay(session, openDay))
         .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
     : [];
-  const selected =
-    daySessions.find((session) => session.id === selectedId) ?? daySessions[0] ?? null;
+  const selected = daySessions.find((session) => session.id === selectedId) ?? null;
   const repeatable = Boolean(
     selected && selected.status !== "CANCELLED" && !selected.recurrenceRuleId,
   );
@@ -221,6 +220,8 @@ function ScheduleListPageInner({
 
   const panel = openDay ? (
     <SelectedSessionPanel
+      key={openDay}
+      allSessions={scopedSessions}
       ymd={openDay}
       daySessions={daySessions}
       selectedSessionId={selected?.id ?? null}
@@ -314,7 +315,7 @@ function ScheduleListPageInner({
         onNavigate={setAnchorDay}
         onToday={() => setAnchorDay(adminTodayYmd())}
         onOpenDay={(ymd) => openDayPanel(ymd)}
-        onOpenSession={(session) => openDayPanel(manilaYmd(session.startsAt), session.id)}
+        onOpenSession={(session, ymd) => openDayPanel(ymd, session.id)}
         venueLabel={(session) => {
           const venue = venues.find((row) => row.id === session.venueId);
           if (!venue) return null;

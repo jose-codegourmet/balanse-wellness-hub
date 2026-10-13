@@ -12,10 +12,10 @@ import { ArrowLeft, CalendarDays, CircleX, Clock3, Hourglass, Ticket, Wallet } f
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { PaymentMethodForm } from "@/components/balanse/payment/payment-method-form/PaymentMethodForm";
 import { useSetPaymentMethod } from "@/lib/query/mutations/payments";
 import { notify } from "@/modules/notifications/notify";
 import { useHoldCountdown } from "../../_hooks/use-hold-countdown";
-import { PaymentMethodForm } from "./payment-method-form/PaymentMethodForm";
 
 export function PaymentMethodPage({
   booking,

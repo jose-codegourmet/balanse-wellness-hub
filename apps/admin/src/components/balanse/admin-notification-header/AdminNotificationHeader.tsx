@@ -24,6 +24,7 @@ import {
   ChevronRight,
   CircleAlert,
   CreditCard,
+  Package,
   Ticket,
   UserRoundCog,
 } from "lucide-react";
@@ -70,6 +71,14 @@ export function AdminNotificationHeader({
           count: data.attention.payments,
           href: "/payments",
           icon: CreditCard,
+        },
+        {
+          id: "package-payments",
+          label: "Package payments",
+          detail: `${data.attention.packagePayments} package payment${data.attention.packagePayments === 1 ? "" : "s"} need review`,
+          count: data.attention.packagePayments,
+          href: "/payments?tab=packages",
+          icon: Package,
         },
         {
           id: "cancellations",

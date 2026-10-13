@@ -75,8 +75,11 @@
 .booking-event-timed .booking-event-coach { font-size: .58rem; }
 .booking-period-empty { padding: .75rem 1rem; font-size: .8rem; color: var(--muted-foreground); background: var(--background); }
 .booking-owned-session { display: flex; align-items: center; gap: .5rem; margin-top: .15rem; padding: .75rem 1rem; border-radius: .45rem; background: var(--secondary); color: var(--foreground); font-size: .8125rem; }
-.booking-session-dialog { padding: 1.5rem; border-radius: .85rem; box-shadow: inset 0 2px 0 var(--balanse-gold); }
-.booking-session { display: flex; flex-direction: column; }
+.booking-session-dialog { display: flex; flex-direction: column; max-height: calc(100dvh - 2rem); overflow-y: auto; padding: 1.5rem; border-radius: .85rem; box-shadow: inset 0 2px 0 var(--balanse-gold); }
+.booking-session { display: flex; flex-direction: column; min-height: 0; }
+.booking-session-summary { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.booking-session-summary:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
+.booking-session-footer { flex-shrink: 0; border-top: 1px solid var(--border); }
 .booking-session-head { display: flex; align-items: center; min-height: 1.5rem; padding-right: 2.25rem; }
 .booking-session-status { --event-accent: var(--balanse-gold); display: inline-flex; align-items: center; padding: .2rem .55rem; border: 1px solid color-mix(in oklab, var(--event-accent) 55%, var(--border)); border-radius: 999px; font-size: .62rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted-foreground); }
 .booking-session-status[data-status="open"] { --event-accent: var(--balanse-gold); }
@@ -91,12 +94,17 @@
 .booking-session-meta [data-slot="dialog-description"] { margin: 0; font-size: .8125rem; font-variant-numeric: tabular-nums; }
 .booking-session-icon { width: 1rem; height: 1rem; flex-shrink: 0; stroke-width: 1.75; }
 .booking-session-blurb { max-width: 36ch; margin-top: .45rem; color: var(--muted-foreground); font-size: .8125rem; line-height: 1.5; }
-.booking-session-coach { display: flex; align-items: center; gap: .75rem; margin-top: 1.15rem; padding: 1rem 0; border-block: 1px solid var(--border); }
-.booking-session-avatar[data-slot="avatar"] { width: 2.5rem; height: 2.5rem; box-shadow: 0 0 0 1px var(--card), 0 0 0 2px color-mix(in oklab, var(--balanse-gold) 55%, transparent); }
+.booking-session-team { margin-top: 1.15rem; padding: 1rem 0; border-block: 1px solid var(--border); }
+.booking-session-team-heading { display: flex; align-items: center; gap: .5rem; margin-bottom: .75rem; }
+.booking-session-team-heading h3 { font-size: .75rem; font-weight: 600; color: var(--muted-foreground); }
+.booking-session-team-heading > span { font-size: .6875rem; font-variant-numeric: tabular-nums; color: var(--muted-foreground); }
+.booking-session-coaches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem 1rem; margin: 0; padding: 0; list-style: none; }
+.booking-session-coach { display: flex; align-items: center; gap: .6rem; min-width: 0; }
+.booking-session-coach:only-child { grid-column: 1 / -1; }
+.booking-session-avatar[data-slot="avatar"] { width: 2rem; height: 2rem; flex-shrink: 0; box-shadow: 0 0 0 1px var(--card), 0 0 0 2px color-mix(in oklab, var(--balanse-gold) 55%, transparent); }
 .booking-session-avatar::after { display: none; }
-.booking-session-coach-name { font-size: .9375rem; font-weight: 500; }
-.booking-session-coach-role { margin-top: .12rem; color: var(--muted-foreground); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; }
-.booking-session-stats { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem 1rem; padding: 1rem 0; border-bottom: 1px solid var(--border); }
+.booking-session-coach-name { min-width: 0; font-size: .8125rem; font-weight: 500; line-height: 1.4; overflow-wrap: anywhere; }
+.booking-session-stats { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem 1rem; padding: 1rem 0; }
 .booking-session-stats > div { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
 .booking-session-stats dt { display: flex; align-items: center; gap: .4rem; color: var(--muted-foreground); font-size: .62rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
 .booking-session-stats dd { font-size: 1.05rem; font-variant-numeric: tabular-nums; }
@@ -138,6 +146,6 @@
   .booking-session-title { font-size: 1.5rem; }
   .booking-session-stats { gap: .7rem .75rem; }
   .booking-session-stats dd { font-size: 1rem; }
-  .booking-session-coach { gap: .65rem; padding: .85rem 0; }
+  .booking-session-coaches { gap: .75rem; }
 }
 @media (prefers-reduced-motion: reduce) { .booking-event { transition: none; transform: none; } }

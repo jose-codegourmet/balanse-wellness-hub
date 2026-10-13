@@ -363,7 +363,7 @@ export async function postAdminEvent(deps: ApiDeps, req: Request): Promise<Respo
 
   const session = await deps.prisma.gymSession.findUnique({
     where: { id: sessionId },
-    select: { id: true, status: true },
+    select: { id: true, status: true, startsAt: true },
   });
   if (!session) throw new ApiError(404, "session_not_found", "Session not found.");
   if (session.status === "CANCELLED") {
@@ -372,6 +372,14 @@ export async function postAdminEvent(deps: ApiDeps, req: Request): Promise<Respo
       "event_on_cancelled_session",
       EVENT_CONFLICT_MESSAGES.event_on_cancelled_session,
       { details: { sessionStatus: session.status } },
+    );
+  }
+  if (session.startsAt.getTime() <= deps.now().getTime()) {
+    throw new ApiError(
+      409,
+      "event_on_started_session",
+      EVENT_CONFLICT_MESSAGES.event_on_started_session,
+      { details: { startsAt: session.startsAt.toISOString() } },
     );
   }
   const existing = await deps.prisma.sessionEvent.findUnique({

@@ -40,6 +40,8 @@ export const adminKeys = {
     acquisitions: (scope: AdminAuthScope) =>
       [...adminKeys.bundles.all(scope), "acquisitions"] as const,
     metrics: (scope: AdminAuthScope) => [...adminKeys.bundles.all(scope), "metrics"] as const,
+    proofUrl: (scope: AdminAuthScope, acquisitionId: string) =>
+      [...adminKeys.bundles.all(scope), "proof-url", acquisitionId] as const,
   },
   coaches: { all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "coaches"] as const },
   sessions: { all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "sessions"] as const },

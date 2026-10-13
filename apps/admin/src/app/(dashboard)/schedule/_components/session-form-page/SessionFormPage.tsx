@@ -77,6 +77,7 @@ import {
   sessionFormValuesFromSession,
 } from "@/modules/admin/forms/session/session-form.defaults";
 import {
+  addMinutesToSessionIso,
   fromSessionIso,
   makeSessionFormSchema,
   type SessionFormValues,
@@ -321,18 +322,12 @@ function defaultsForCreate(ymd: string, classes: AdminClass[], venueId: string):
     coachIds: [],
     capacity: 12,
     startsAt: toSessionIso(ymd, start),
-    endsAt: toSessionIso(
-      ymd,
-      addMinutesHhmm(start, klass?.defaultDurationMinutes ?? DEFAULT_DURATION),
+    endsAt: addMinutesToSessionIso(
+      toSessionIso(ymd, start),
+      klass?.defaultDurationMinutes ?? DEFAULT_DURATION,
     ),
     pricePhp: klass?.defaultPricePhp ?? sessionFormDefaultValues.pricePhp,
   };
-}
-
-function addMinutesHhmm(hhmm: string, minutes: number): string {
-  const [hour, minute] = hhmm.split(":").map(Number);
-  const total = (((hour * 60 + minute + minutes) % (24 * 60)) + 24 * 60) % (24 * 60);
-  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
 }
 
 function durationMinutes(startsAt: string, endsAt: string): number | null {
@@ -446,13 +441,10 @@ function SessionComposer({
       form.setValue("pricePhp", next.defaultPricePhp, { shouldDirty: true });
     }
     if (isNew && next.defaultDurationMinutes != null && values.startsAt) {
-      const { ymd, hhmm } = fromSessionIso(values.startsAt);
       form.setValue(
         "endsAt",
-        toSessionIso(ymd, addMinutesHhmm(hhmm, next.defaultDurationMinutes)),
-        {
-          shouldDirty: true,
-        },
+        addMinutesToSessionIso(values.startsAt, next.defaultDurationMinutes),
+        { shouldDirty: true },
       );
     }
   }
@@ -721,13 +713,14 @@ function SessionTimeFields({ defaultDuration }: { defaultDuration: number }) {
       form.setValue("startsAt", "", options);
       return;
     }
-    form.setValue("startsAt", toSessionIso(ymd, hhmm), options);
-    form.setValue("endsAt", toSessionIso(ymd, addMinutesHhmm(hhmm, minutes)), options);
+    const nextStart = toSessionIso(ymd, hhmm);
+    form.setValue("startsAt", nextStart, options);
+    form.setValue("endsAt", addMinutesToSessionIso(nextStart, minutes), options);
   }
 
   function setDuration(next: number) {
-    if (!start.ymd || !start.hhmm || next <= 0) return;
-    form.setValue("endsAt", toSessionIso(start.ymd, addMinutesHhmm(start.hhmm, next)), options);
+    if (!startsAt || next <= 0) return;
+    form.setValue("endsAt", addMinutesToSessionIso(startsAt, next), options);
   }
 
   const custom = !(SESSION_SLOTS_MANILA as readonly string[]).includes(start.hhmm);
@@ -792,7 +785,12 @@ function SessionTimeFields({ defaultDuration }: { defaultDuration: number }) {
               onChange={(event) => setDuration(Number(event.target.value))}
             />
             <span className="text-sm text-muted-foreground">
-              min{endsAt ? ` · ends ${formatSessionTime(endsAt)}` : ""}
+              min
+              {endsAt
+                ? ` · ends ${formatSessionTime(endsAt)}${
+                    start.ymd && fromSessionIso(endsAt).ymd !== start.ymd ? " the next day" : ""
+                  }`
+                : ""}
             </span>
           </div>
         )}

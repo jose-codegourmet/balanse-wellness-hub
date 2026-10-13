@@ -26,6 +26,16 @@ export type TimedCalendarEntry = {
   columns: number;
 };
 
+/** A session is visible on every Manila day containing part of its time window. */
+export function sessionOverlapsManilaDay(
+  session: { startsAt: string; endsAt: string },
+  day: string,
+): boolean {
+  const startOfDay = new Date(`${day}T00:00:00+08:00`).getTime();
+  const startOfNextDay = new Date(`${addManilaDays(day, 1)}T00:00:00+08:00`).getTime();
+  return Date.parse(session.startsAt) < startOfNextDay && Date.parse(session.endsAt) > startOfDay;
+}
+
 /** Split overnight events at Manila midnight and give simultaneous classes separate lanes. */
 export function layoutTimedSessions(
   sessions: readonly { id: string; startsAt: string; endsAt: string }[],

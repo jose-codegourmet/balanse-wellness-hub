@@ -60,7 +60,9 @@ export function formatSessionTime(iso: string | Date): string {
 export function formatSessionTimeRange(startsAt: string | Date, endsAt: string | Date): string {
   const start = partsInManila(startsAt);
   const end = partsInManila(endsAt);
-  return `${start.hour}:${start.minute} ${start.dayPeriod} – ${end.hour}:${end.minute} ${end.dayPeriod}`;
+  // Overnight sessions: the day row shows the start date, so flag the rollover.
+  const nextDay = start.year !== end.year || start.month !== end.month || start.day !== end.day;
+  return `${start.hour}:${start.minute} ${start.dayPeriod} – ${end.hour}:${end.minute} ${end.dayPeriod}${nextDay ? " (+1 day)" : ""}`;
 }
 
 export function formatSessionRange(startsAt: string | Date, endsAt: string | Date): string {

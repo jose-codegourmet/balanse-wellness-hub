@@ -26,5 +26,22 @@ export const mockClassFetcher: ApiFetcher = async (path, init) => {
     const input = init?.body as Parameters<typeof adapter.upsertAdminClass>[0];
     return { class: await adapter.upsertAdminClass({ ...input, id: patchMatch[1] }) } as never;
   }
+  if (patchMatch && method === "DELETE") {
+    return { deleted: true, id: patchMatch[1] } as never;
+  }
+  if (path === "/api/admin/class-images" && method === "POST") {
+    const body = (init?.body ?? {}) as { contentType?: string; objectKey?: string };
+    if (!body.objectKey) {
+      const objectKey = `marketing-assets/classes/mock-${Date.now()}.jpg`;
+      return {
+        upload: { signedUrl: `mock:${objectKey}`, token: "mock", path: objectKey, expiresIn: 900 },
+        objectKey,
+        bucket: "marketing-assets",
+        maxBytes: 5 * 1024 * 1024,
+        contentTypes: ["image/jpeg", "image/png", "image/webp"],
+      } as never;
+    }
+    return { objectKey: body.objectKey, url: `https://storage.local/${body.objectKey}` } as never;
+  }
   throw new Error(`mockClassFetcher: unhandled ${method} ${path}`);
 };

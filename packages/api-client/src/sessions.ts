@@ -95,7 +95,7 @@ export async function createSession(
 export async function patchSession(
   fetcher: ApiFetcher,
   id: string,
-  input: Partial<SessionInput>,
+  input: Partial<SessionInput> & { expectedStartsAt?: string; expectedEndsAt?: string },
 ): Promise<{ session: AdminSession }> {
   return fetcher(`/api/admin/sessions/${id}`, { method: "PATCH", body: sessionBody(input) });
 }

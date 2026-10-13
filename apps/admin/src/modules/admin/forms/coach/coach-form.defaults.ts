@@ -1,4 +1,8 @@
-import type { CoachFormValues, CoachPublicFormValues } from "./coach-form.schema";
+import type {
+  CoachFormValues,
+  CoachPublicFormValues,
+  CoachStaffSourceValues,
+} from "./coach-form.schema";
 
 /**
  * `defaultRatePhp` is 0 on create.
@@ -20,4 +24,13 @@ export const coachPublicFormDefaultValues: CoachPublicFormValues = {
   shortBio: "",
   photoKey: null,
   active: true,
+};
+
+/** `inviteRoleId` is filled with the built-in Coach role once roles load. */
+export const coachStaffSourceDefaultValues: CoachStaffSourceValues = {
+  staffSource: "existing",
+  staffId: null,
+  inviteName: "",
+  inviteEmail: "",
+  inviteRoleId: "",
 };

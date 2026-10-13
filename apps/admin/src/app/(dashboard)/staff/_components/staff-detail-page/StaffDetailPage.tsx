@@ -16,9 +16,14 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ConfirmAction } from "@/components/balanse/confirm-action/ConfirmAction";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
+import { StaffInviteDialog } from "@/components/balanse/staff-invite-dialog/StaffInviteDialog";
 import { StaffPhotoCard } from "@/components/balanse/staff-photo-card/StaffPhotoCard";
 import { useStaffActor } from "@/lib/auth/use-staff-permissions";
-import { useDisableAdminStaff, useUpsertAdminStaff } from "@/lib/query/mutations";
+import {
+  NEW_COACH_PROFILE,
+  useDisableAdminStaff,
+  useUpsertAdminStaff,
+} from "@/lib/query/mutations";
 import { adminCoachesQuery, adminStaffQuery, adminStaffRolesQuery } from "@/lib/query/queries";
 import {
   AdminForm,
@@ -36,7 +41,6 @@ import {
 import { useCanAdminAction } from "@/modules/authorization/useAdminAccess";
 import { notify } from "@/modules/notifications/notify";
 import { StaffAccountActions } from "../staff-account-actions/StaffAccountActions";
-import { StaffInviteDialog } from "../staff-invite-dialog/StaffInviteDialog";
 import { StaffRoleSummary } from "../staff-role-summary/StaffRoleSummary";
 import {
   StaffRoleWarnings,
@@ -348,25 +352,33 @@ function StaffFormFields({
           label="This staff member is a coach"
           orientation="horizontal"
           disabled={!canManage}
-          description="Teaching capability, not a role. Link an existing coach profile. Clearing the flag unlinks the profile; sessions stay assigned."
+          description="Teaching capability, not a role. Create their coach profile or link an existing unlinked one. Clearing the flag unlinks the profile; sessions stay assigned."
         >
           {(field) => <BooleanBinding {...field} as="switch" />}
         </FormField>
         {isCoach ? (
           <FormField
             name="coachId"
-            label="Linked coach profile"
+            label="Coach profile"
             required
             disabled={!canManage}
-            description="Choose the teaching profile for this staff member. Teaching capability is separate from their authorization role."
+            description="Create a new coach profile (named after this staff member, editable later in Coaches), or link an existing coach who has no staff account yet."
           >
             {(field) => (
               <ChoiceBinding
                 {...field}
                 as="native-select"
-                options={coaches
-                  .filter((coach) => coach.staffId === null || coach.id === coachId)
-                  .map((coach) => ({ value: coach.id, label: coach.name }))}
+                options={[
+                  ...(coachId
+                    ? []
+                    : [{ value: NEW_COACH_PROFILE, label: "Create a new coach profile" }]),
+                  ...coaches
+                    .filter((coach) => coach.staffId === null || coach.id === coachId)
+                    .map((coach) => ({
+                      value: coach.id,
+                      label: coach.id === coachId ? coach.name : `Link existing: ${coach.name}`,
+                    })),
+                ]}
               />
             )}
           </FormField>

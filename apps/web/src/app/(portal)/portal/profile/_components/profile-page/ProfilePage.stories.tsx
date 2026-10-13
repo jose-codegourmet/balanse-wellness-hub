@@ -1,6 +1,5 @@
 import { customers, policyAcceptances, publicClasses } from "@balanse/mock";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { mockCustomerSelfServiceActions } from "../../_lib/mock-customer-self-service.stories-data";
 import { ProfilePage } from "./ProfilePage";
 
 /**
@@ -16,7 +15,6 @@ const meta = {
   args: {
     initialProfile: customers[0],
     initialAcceptances: policyAcceptances["cust-ana"],
-    actions: mockCustomerSelfServiceActions(customers[0].id),
   },
 } satisfies Meta<typeof ProfilePage>;
 
@@ -26,7 +24,6 @@ type Story = StoryObj<typeof meta>;
 const emailPrincipal = {
   initialProfile: customers[1],
   initialAcceptances: policyAcceptances["cust-ben"] ?? [],
-  actions: mockCustomerSelfServiceActions(customers[1].id),
 };
 
 export const BasicProfileGooglePrincipal: Story = { args: { section: "basic" } };

@@ -67,6 +67,18 @@ export function coachSlugFromPhotoKey(photoKey: string | null): string | null {
   return slug.length > 0 ? slug : null;
 }
 
+/**
+ * Public URL for an admin-uploaded coach photo, or null for seeded/local keys.
+ * Keys keep their `coach-photos/` prefix inside the `coach-photos` bucket.
+ * `NEXT_PUBLIC_SUPABASE_URL` is inlined by Next; it is absent in Storybook, where the crest shows.
+ */
+export function adminCoachPhotoUrl(photoKey: string | null): string | null {
+  if (!isAdminUploadPhotoKey(photoKey)) return null;
+  const base =
+    typeof process !== "undefined" ? process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "") : "";
+  return base ? `${base}/storage/v1/object/public/coach-photos/${photoKey}` : null;
+}
+
 function publicHeadshot(slug: string, file: string): string {
   return `/assets/headshots/${slug}/${file}`;
 }
@@ -87,6 +99,11 @@ export function resolveCoachPhotoSources(
 ): CoachPhotoSources {
   const placeholder =
     role === "avatar" ? LOCAL_PLACEHOLDER_PATHS.coach1x1 : LOCAL_PLACEHOLDER_PATHS.coach4x5;
+  const uploaded = adminCoachPhotoUrl(photoKey);
+  if (uploaded) {
+    // Admin uploads (BE-052) live in the public `coach-photos` bucket; one size serves every role.
+    return { slug: null, role, webp: uploaded, jpeg: uploaded, isPlaceholder: false };
+  }
   const slug = coachSlugFromPhotoKey(photoKey);
   const hasDelivery = Boolean(slug && (COACHES_WITH_HEADSHOTS as readonly string[]).includes(slug));
 

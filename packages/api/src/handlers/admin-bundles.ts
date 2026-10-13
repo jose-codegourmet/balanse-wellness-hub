@@ -1,4 +1,9 @@
-import { type BundleApplicabilityMode, bundleSlug, FIELD_CONSTRAINTS } from "@balanse/domain";
+import {
+  type AdminBundleAcquisition,
+  type BundleApplicabilityMode,
+  bundleSlug,
+  FIELD_CONSTRAINTS,
+} from "@balanse/domain";
 import { requireAdmin, resolveActor, writeAudit } from "../auth";
 import {
   entitlementWithLedger,
@@ -381,11 +386,57 @@ export async function getAdminAcquisitions(deps: ApiDeps, req: Request): Promise
   const status = searchParams(req).get("status");
   const rows = await deps.prisma.bundleAcquisition.findMany({
     where: status ? { status: status as never } : undefined,
-    include: { payment: true, entitlement: true },
+    include: {
+      payment: true,
+      entitlement: true,
+      profile: { select: { firstName: true, lastName: true, fullName: true, email: true } },
+      bundle: { select: { name: true } },
+    },
     orderBy: { createdAt: "desc" },
     take: 100,
   });
-  return ok({ items: rows.map(presentAcquisition) });
+  return ok({
+    items: rows.map(
+      (row): AdminBundleAcquisition => ({
+        ...presentAcquisition(row),
+        customerName:
+          `${row.profile.firstName} ${row.profile.lastName}`.trim() ||
+          row.profile.fullName ||
+          row.profile.email,
+        customerEmail: row.profile.email,
+        bundleName: row.bundle.name,
+      }),
+    ),
+  });
+}
+
+/** Short-lived signed URL for a package payment receipt (private bucket, audited per view). */
+export async function getAcquisitionProofSignedUrl(
+  deps: ApiDeps,
+  req: Request,
+  id: string,
+): Promise<Response> {
+  const actor = requireAdmin(await resolveActor(deps, req));
+  const payment = await deps.prisma.bundleAcquisitionPayment.findUnique({
+    where: { acquisitionId: id },
+  });
+  if (!payment?.proofObjectKey) {
+    throw new ApiError(404, "proof_not_found", "No payment proof is stored for this package.");
+  }
+  const expiresIn = 120;
+  const signedUrl = await deps.storage.createSignedUrl(
+    "payment-proofs",
+    payment.proofObjectKey,
+    expiresIn,
+  );
+  await writeAudit(deps, {
+    entityType: "bundle_acquisition",
+    entityId: id,
+    action: "bundle.payment.proof.signed_url",
+    actor,
+    metadata: { expiresIn, proofObjectKey: payment.proofObjectKey, paymentId: payment.id },
+  });
+  return ok({ signedUrl, expiresIn });
 }
 
 export async function postApproveAcquisition(

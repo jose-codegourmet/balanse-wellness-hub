@@ -15,3 +15,8 @@ export const Default: StoryObj<typeof meta> = {
     return <ClassImagesInput {...args} value={value} onChange={setValue} />;
   },
 };
+
+export const Cover: StoryObj<typeof meta> = {
+  args: { multiple: false, value: ["/assets/marketing/classes/yoga-hero.webp"] },
+  render: Default.render,
+};

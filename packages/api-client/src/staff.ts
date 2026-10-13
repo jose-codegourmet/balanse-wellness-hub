@@ -70,6 +70,18 @@ export type StaffInput = {
   email: string;
   roleId: string;
   coachId?: string | null;
+  /** Creates this person's coach profile in the same request (needs `coaches.manage`). */
+  newCoach?: NewCoachProfileInput | null;
+};
+
+/** Coach profile fields for a coach created with its staff member. Name defaults to the staff name. */
+export type NewCoachProfileInput = {
+  name?: string;
+  specialties?: string[];
+  shortBio?: string;
+  active?: boolean;
+  defaultRatePhp?: number;
+  rateType?: "PER_SESSION" | "PER_HOUR";
 };
 
 export type StaffPatchInput = Pick<StaffInput, "name" | "email">;

@@ -15,7 +15,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { UserRound } from "lucide-react";
 import { useState } from "react";
 import { myProfileQuery } from "@/lib/query/customers";
-import type { CustomerProfileActions } from "../../_lib/customer-self-service.types";
 import { AboutYouSection } from "./about-you-section/AboutYouSection";
 import { AccountSettingsSection } from "./account-settings-section/AccountSettingsSection";
 import { BasicProfileSection } from "./basic-profile-section/BasicProfileSection";
@@ -36,7 +35,6 @@ export function ProfilePage({
   forcedStatus,
   forcedPasswordStatus,
   about,
-  actions,
 }: {
   initialProfile: CustomerProfile;
   initialAcceptances: PolicyAcceptance[];
@@ -49,8 +47,6 @@ export function ProfilePage({
     classes: PublicClass[];
     referralChannel: ReferralChannel | null;
   };
-  /** Profile/avatar server actions from the route; stories pass mock ones. */
-  actions: CustomerProfileActions;
 }) {
   const profileQuery = useSuspenseQuery(myProfileQuery(initialProfile.id, apiFetchBrowser));
   const [savedProfile, setSavedProfile] = useState<CustomerProfile>(
@@ -88,7 +84,6 @@ export function ProfilePage({
             <BasicProfileSection
               profile={savedProfile}
               onSaved={setSavedProfile}
-              actions={actions}
               forcedStatus={forcedStatus}
             />
           ) : null}

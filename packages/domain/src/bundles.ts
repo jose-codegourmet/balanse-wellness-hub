@@ -254,6 +254,13 @@ export type HttpBundleAcquisition = {
   entitlementId: string | null;
 };
 
+/** Admin review view of a package request: adds who asked and for which package. */
+export type AdminBundleAcquisition = HttpBundleAcquisition & {
+  customerName: string;
+  customerEmail: string;
+  bundleName: string;
+};
+
 export type HttpCustomerEntitlement = {
   id: string;
   bundleId: string;

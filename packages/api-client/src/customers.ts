@@ -6,7 +6,6 @@ import type {
   PolicyAcceptance,
 } from "@balanse/domain";
 import type { ApiFetcher } from "./classes";
-import type { ApiFetchInit } from "./request";
 
 export type CustomerProfileResponse = CustomerProfile & {
   referralChannel: "CUSTOMER_LINK" | "CUSTOMER_QR" | "STUDIO_LINK" | "STUDIO_QR" | null;

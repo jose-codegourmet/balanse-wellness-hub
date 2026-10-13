@@ -31,6 +31,18 @@ is returned with `GET /api/me`.
 
 `POST /api/admin/sessions/duplicate` copies non-cancelled sessions from an inclusive source range of at most 63 days to a new start date. `POST /api/admin/sessions/{id}/recurrence` stores a bounded weekly rule (one or more weekdays, at most one year) and eagerly creates ordinary session rows. Both endpoints are admin-only, default generated sessions to `DRAFT`, skip exact class/start-time matches, reject inactive class/coach/venue references, copy the source session's venue, capture current coach rates, and never copy bookings.
 
+## Classes
+
+| Method | Path | Permission (any of) |
+| --- | --- | --- |
+| `GET` | `/api/admin/classes` | `classes.read`, `classes.manage` |
+| `POST` | `/api/admin/classes` | `classes.manage` |
+| `PATCH` | `/api/admin/classes/{id}` | `classes.manage` |
+| `DELETE` | `/api/admin/classes/{id}` | `classes.manage` + Super Admin role |
+| `POST` | `/api/admin/class-images` | `classes.manage` |
+
+`DELETE` is a hard delete for Super Admins only (other roles get `403`). A class with any session or bundle applicability returns `409 class_in_use` (`details.sessions` / `details.bundles`); deactivate it instead. Marketing coach links and customer class interests cascade. Writes one `class.delete` audit row. Class image uploads: see [uploads.md](./uploads.md).
+
 ## Venues
 
 | Method | Path | Permission (any of) |
@@ -69,7 +81,7 @@ Dispatch maps every route in `ADMIN_API_ACCESS` before the handler runs. Each ha
 
 `GET /api/admin/events` filters with `status`, `sessionId` (alias `session`), title/summary `search`, and an optional session-start window `from` / `to` (`dateFrom` / `dateTo` accepted; `to` is exclusive). Ordering is upcoming-first: sessions that have not started yet, soonest first, then past sessions, most recent first.
 
-Create always inserts `DRAFT`. A second event for the same session returns `409 event_session_taken`. A `CANCELLED` session returns `409 event_on_cancelled_session`. Publish returns `409 event_publish_requires_published_session` unless the session status is `PUBLISHED` (this blocks a `DRAFT` session). A repeated publish, cancel, or archive of the current status does not write again and does not add an audit row.
+Create always inserts `DRAFT`. A second event for the same session returns `409 event_session_taken`. A `CANCELLED` session returns `409 event_on_cancelled_session`. A session that has already started (`startsAt <= now`) returns `409 event_on_started_session`; existing events on past sessions stay editable. Publish returns `409 event_publish_requires_published_session` unless the session status is `PUBLISHED` (this blocks a `DRAFT` session). A repeated publish, cancel, or archive of the current status does not write again and does not add an audit row.
 
 `PATCH` changes event copy only. `startsAt`, `endsAt`, `capacity`, `customerPrice`, coach fields, venue fields (`venueId`, `venue`, `venueName`, `venueAddress`), and `sessionId` are `422 read_only`; the same keys are rejected on create. Status changes go through the action routes. Content edits do not write `audit_events`.
 

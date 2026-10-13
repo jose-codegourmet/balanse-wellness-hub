@@ -6,6 +6,8 @@ import type { CustomerBooking } from "@balanse/domain";
  * Uses brand-only champagne, cream, and muted-brown surfaces with serif status type.
  * Confirmed has a double-ring seal; closed has a square seal; pending has a dashed seal.
  * Labels are canonical domain copy; color, icon, and explanation reinforce the label.
+ * A held booking with `entitlementId` uses PACKAGE_HELD_STATUS_LABEL ("Reserved — Package
+ * Applied") and a no-payment message instead of "Payment Needed".
  * This displays state only and must not infer confirmation from payment or requests.
  */
 export type BookingStatusBannerProps = {

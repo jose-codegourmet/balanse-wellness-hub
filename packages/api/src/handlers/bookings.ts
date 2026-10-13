@@ -34,6 +34,10 @@ const bookingInclude = {
   payments: { orderBy: { createdAt: "desc" as const } },
   refunds: { orderBy: { createdAt: "desc" as const } },
   waitlistEntries: true,
+  bundleRedemptions: {
+    orderBy: { createdAt: "desc" as const },
+    include: { entitlement: { select: { snapshotName: true } } },
+  },
 };
 
 async function loadOwnBooking(deps: ApiDeps, bookingId: string, userId: string) {
@@ -51,6 +55,13 @@ async function loadOwnBooking(deps: ApiDeps, bookingId: string, userId: string) 
 function presentBooking(booking: Awaited<ReturnType<typeof loadOwnBooking>>) {
   const refund = booking.refunds[0];
   const payment = booking.payments[0];
+  // A HELD or CONSUMED credit means a package covers this booking; RESTORED gave it back.
+  const redemption =
+    booking.bundleRedemptions.find((row) => row.status !== "RESTORED") ??
+    booking.bundleRedemptions[0] ??
+    null;
+  const covered = redemption && redemption.status !== "RESTORED" ? redemption : null;
+  const intent = booking.waitlistEntries.find((entry) => entry.intendedEntitlementId) ?? null;
   return {
     id: booking.id,
     sessionId: booking.sessionId,
@@ -68,6 +79,13 @@ function presentBooking(booking: Awaited<ReturnType<typeof loadOwnBooking>>) {
       : null,
     refund: refund ? { id: refund.id, status: refund.status, amount: money(refund.amount) } : null,
     listTab: bookingListTab(booking.status),
+    entitlementId: covered?.entitlementId ?? null,
+    packageName: covered?.entitlement.snapshotName ?? null,
+    intendedEntitlementId: intent?.intendedEntitlementId ?? null,
+    packagePromotionBlocked: Boolean(intent?.promotionBlockedAt),
+    redemption: redemption
+      ? { id: redemption.id, status: redemption.status, entitlementId: redemption.entitlementId }
+      : null,
     session: {
       id: booking.session.id,
       classId: booking.session.classId,

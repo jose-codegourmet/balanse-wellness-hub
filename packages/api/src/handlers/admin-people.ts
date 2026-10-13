@@ -20,6 +20,7 @@ import {
   presentAcquisition,
   presentEntitlement,
 } from "../bundle-presenters";
+import { parseNewCoachProfile } from "../coach-profile";
 import type { AdminApiActor, ApiDeps } from "../deps";
 import { ApiError, isLastSuperAdminProtectedError, mapUnknownError } from "../errors";
 import { asString, ok, pagination, readJson, searchParams } from "../http";
@@ -118,11 +119,27 @@ export async function postStaff(deps: ApiDeps, req: Request): Promise<Response> 
     });
   }
   const requestedCoachId = asString(body.coachId)?.trim() || null;
+  // `newCoach` creates this person's coach profile in the same transaction (a coach is one staff member).
+  const newCoachBody =
+    body.newCoach && typeof body.newCoach === "object" && !Array.isArray(body.newCoach)
+      ? (body.newCoach as Record<string, unknown>)
+      : null;
+  if (newCoachBody && requestedCoachId) {
+    throwFields(
+      fieldError(
+        "coachId",
+        "invalid_format",
+        "Link an existing coach or create a new one, not both.",
+      ),
+    );
+  }
+  if (newCoachBody) requirePermission(actor, "coaches.manage");
+  const newCoach = newCoachBody ? parseNewCoachProfile(actor, newCoachBody, name ?? "") : null;
   assertRoleAssignable({
     roleKey: role.key,
     roleActive: role.status === "ACTIVE",
     roleArchived: role.status === "ARCHIVED",
-    coachId: requestedCoachId,
+    coachId: requestedCoachId ?? (newCoach ? "new-coach-profile" : null),
   });
   if (requestedCoachId) {
     const coach = await deps.prisma.coach.findUnique({ where: { id: requestedCoachId } });
@@ -178,6 +195,13 @@ export async function postStaff(deps: ApiDeps, req: Request): Promise<Response> 
       },
       include: staffCoachInclude,
     });
+    if (newCoach) {
+      await tx.coach.create({ data: { ...newCoach, staffMemberId: upserted.id } });
+      return tx.staffMember.findUniqueOrThrow({
+        where: { id: upserted.id },
+        include: staffCoachInclude,
+      });
+    }
     if (requestedCoachId && !upserted.coach) {
       const coach = await tx.coach.findUnique({ where: { id: requestedCoachId } });
       if (!coach) throw new ApiError(404, "coach_not_found", "Coach not found.");
@@ -740,9 +764,6 @@ export async function getCustomers(deps: ApiDeps, req: Request): Promise<Respons
     total,
     items: await Promise.all(
       rows.map(async (row) => {
-        const upcoming = row.bookings.filter(
-          (item) => bookingListTab(item.status) === "upcoming",
-        )[0];
         const lastVisit = row.bookings.find(
           (item) => item.status === "CHECKED_IN" || item.status === "NO_SHOW",
         );

@@ -10,7 +10,7 @@ import {
   formatSessionsRemaining,
 } from "@balanse/domain";
 import { Badge, FeedbackState } from "@balanse/ui";
-import { ArrowUpRight, CircleAlert, Clock3, Sparkles, Ticket } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CircleAlert, Clock3, Sparkles, Ticket } from "lucide-react";
 import Link from "next/link";
 
 export function MyPackagesPage({
@@ -102,8 +102,22 @@ export function MyPackagesPage({
                   </Badge>
                 </div>
                 <p className="mt-1 text-muted-foreground">
-                  {formatPeso(row.payment?.amountPhp ?? 0)}. Credits activate after studio approval.
+                  {formatPeso(
+                    row.payment?.amountPhp ??
+                      catalogue.find((bundle) => bundle.id === row.bundleId)?.pricePhp ??
+                      0,
+                  )}
+                  . Credits activate after studio approval.
                 </p>
+                {row.kind === "CUSTOMER_PAID" ? (
+                  <Link
+                    href={`/portal/packages/acquisitions/${row.id}/payment${row.status === "PENDING_REVIEW" ? "/gcash" : ""}`}
+                    className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary underline-offset-4 hover:underline"
+                  >
+                    {row.status === "PENDING_REVIEW" ? "View payment status" : "Continue payment"}
+                    <ArrowRight aria-hidden className="size-3.5" />
+                  </Link>
+                ) : null}
               </li>
             ))}
           </ul>

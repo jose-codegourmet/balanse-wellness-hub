@@ -272,7 +272,15 @@ function EventFormAuthorized({
     );
   }
 
-  if (bound && !existing && live?.status === "CANCELLED") {
+  const liveBlock =
+    bound && !existing && live
+      ? live.status === "CANCELLED"
+        ? EVENT_CONFLICT_MESSAGES.event_on_cancelled_session
+        : Date.parse(live.startsAt) <= Date.now()
+          ? EVENT_CONFLICT_MESSAGES.event_on_started_session
+          : null
+      : null;
+  if (live && liveBlock) {
     return (
       <AdminPageShell
         title="Session event"
@@ -283,7 +291,7 @@ function EventFormAuthorized({
         ]}
       >
         <p role="status" className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm">
-          {EVENT_CONFLICT_MESSAGES.event_on_cancelled_session}
+          {liveBlock}
         </p>
       </AdminPageShell>
     );
@@ -1604,7 +1612,14 @@ function choiceFromLive(
   venues: readonly AdminVenue[],
 ): SessionChoice {
   const venue = venues.find((row) => row.id === session.venueId);
-  const blocked = session.status === "CANCELLED" ? "cancelled" : event ? "taken" : null;
+  const blocked =
+    session.status === "CANCELLED"
+      ? "cancelled"
+      : event
+        ? "taken"
+        : Date.parse(session.startsAt) <= Date.now()
+          ? "started"
+          : null;
   return {
     id: session.id,
     className: sessionDisplayName(session),

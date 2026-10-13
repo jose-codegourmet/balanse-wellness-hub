@@ -6,7 +6,8 @@
  * Initial navigation uses the real Asia/Manila day. Today reads the clock again
  * when clicked, including after a tab was left open overnight. Storybook alone
  * substitutes the frozen mock clock. selectedDay/view props are preview controls;
- * navigation does not automatically open or change the detail panel.
+ * navigation does not automatically open or change the detail panel. A day click
+ * opens its timeline; a session click opens only that session’s details.
  */
 export const scheduleListPageMeta = {
   purpose: "Staff schedule navigation and session management.",

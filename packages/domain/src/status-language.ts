@@ -16,6 +16,12 @@ type ExhaustiveStatusLabels = { [K in CustomerStatusKey]: string };
  * Type-level exhaustiveness: adding a key to `CUSTOMER_STATUS_KEYS` (or a
  * booking status enum value) fails compilation until a label is added here.
  */
+/**
+ * A held booking covered by a package credit: still awaiting front-desk
+ * confirmation, but nothing to pay. Replaces "Payment Needed" for that case only.
+ */
+export const PACKAGE_HELD_STATUS_LABEL = "Reserved — Package Applied";
+
 export const CUSTOMER_STATUS_LABELS = {
   WAITLISTED: "Waitlisted",
   HELD_AWAITING_PAYMENT: "Reserved — Payment Needed",

@@ -2,6 +2,7 @@ import { API_CONTRACT_ROUTES, type HttpMethod } from "@balanse/db/contracts/rout
 import type { ApiDeps } from "./deps";
 import { getAdminBookings, postAdminConfirm, postAdminReject } from "./handlers/admin-bookings";
 import {
+  getAcquisitionProofSignedUrl,
   getAdminAcquisitions,
   getAdminBundle,
   getAdminBundles,
@@ -18,6 +19,8 @@ import {
   postUnpublishBundle,
 } from "./handlers/admin-bundles";
 import {
+  deleteAdminClass,
+  deleteAdminCoach,
   deleteCoachPhoto,
   getAdminClasses,
   getAdminCoaches,
@@ -26,6 +29,7 @@ import {
   patchAdminCoach,
   patchAdminSession,
   postAdminClass,
+  postAdminClassImage,
   postAdminCoach,
   postAdminSession,
   postAdminSessionRecurrence,
@@ -250,6 +254,8 @@ const handlers: Record<string, RouteHandler> = {
   "POST /api/admin/packages/{id}/revoke": (deps, req, params) =>
     postRevokePackage(deps, req, params.id),
   "GET /api/admin/package-acquisitions": (deps, req) => getAdminAcquisitions(deps, req),
+  "GET /api/admin/package-acquisitions/{id}/proof-signed-url": (deps, req, params) =>
+    getAcquisitionProofSignedUrl(deps, req, params.id),
   "POST /api/admin/package-acquisitions/{id}/approve": (deps, req, params) =>
     postApproveAcquisition(deps, req, params.id),
   "POST /api/admin/package-acquisitions/{id}/reject": (deps, req, params) =>
@@ -298,12 +304,15 @@ const handlers: Record<string, RouteHandler> = {
   "GET /api/admin/classes": (deps, req) => getAdminClasses(deps, req),
   "POST /api/admin/classes": (deps, req) => postAdminClass(deps, req),
   "PATCH /api/admin/classes/{id}": (deps, req, params) => patchAdminClass(deps, req, params.id),
+  "DELETE /api/admin/classes/{id}": (deps, req, params) => deleteAdminClass(deps, req, params.id),
+  "POST /api/admin/class-images": (deps, req) => postAdminClassImage(deps, req),
   "GET /api/admin/venues": (deps, req) => getAdminVenues(deps, req),
   "POST /api/admin/venues": (deps, req) => postAdminVenue(deps, req),
   "PATCH /api/admin/venues/{id}": (deps, req, params) => patchAdminVenue(deps, req, params.id),
   "GET /api/admin/coaches": (deps, req) => getAdminCoaches(deps, req),
   "POST /api/admin/coaches": (deps, req) => postAdminCoach(deps, req),
   "PATCH /api/admin/coaches/{id}": (deps, req, params) => patchAdminCoach(deps, req, params.id),
+  "DELETE /api/admin/coaches/{id}": (deps, req, params) => deleteAdminCoach(deps, req, params.id),
   "POST /api/admin/coaches/{id}/photo": (deps, req, params) => postCoachPhoto(deps, req, params.id),
   "DELETE /api/admin/coaches/{id}/photo": (deps, req, params) =>
     deleteCoachPhoto(deps, req, params.id),

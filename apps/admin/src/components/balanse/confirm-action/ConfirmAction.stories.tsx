@@ -52,7 +52,7 @@ export const WithDetails: Story = {
     details: [
       { label: "Amount", value: "₱550.00" },
       { label: "Customer", value: "Jose Adrian Buctuanon" },
-      { label: "Reference", value: "BAL-10234" },
+      { label: "Reference", value: "BWH-C9EA8530C5CCC467F91FD5BE70270B9B0" },
     ],
     note: "This payment action is logged under Admin at 3:54 PM, Tue, Oct 13, 2026.",
   },

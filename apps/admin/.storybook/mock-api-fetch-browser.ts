@@ -41,7 +41,11 @@ export const apiFetchBrowser: ApiFetcher = (path, init) => {
   if (path.startsWith("/api/admin/venues")) {
     return mockVenueFetcher(path, init);
   }
-  if (path.startsWith("/api/admin/classes") || path === "/api/public/classes") {
+  if (
+    path.startsWith("/api/admin/classes") ||
+    path === "/api/admin/class-images" ||
+    path === "/api/public/classes"
+  ) {
     return mockClassFetcher(path, init);
   }
   return mockEntityFetcher(path, init);

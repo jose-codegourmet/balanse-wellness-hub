@@ -188,6 +188,10 @@ export function scopeDashboardSnapshot(
         ? snapshot.attention.cancellations
         : 0,
       reschedules: hasPermission(actor, "reschedules.read") ? snapshot.attention.reschedules : 0,
+      packagePayments:
+        hasPermission(actor, "bundles.read") || hasPermission(actor, "bundles.manage")
+          ? snapshot.attention.packagePayments
+          : 0,
     },
   };
   return hasPermission(actor, "dashboard.financial.read")

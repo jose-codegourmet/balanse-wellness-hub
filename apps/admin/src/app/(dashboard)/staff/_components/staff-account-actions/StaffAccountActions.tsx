@@ -5,6 +5,7 @@ import { apiFetchBrowser } from "@balanse/api-client/browser";
 import { Button } from "@balanse/ui";
 import { ChevronDown, Copy, RotateCcw } from "lucide-react";
 import { useRef, useState } from "react";
+import { StaffInviteDialog } from "@/components/balanse/staff-invite-dialog/StaffInviteDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +13,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/jabkit/dropdown-menu/DropdownMenu";
 import { notify } from "@/modules/notifications/notify";
-import { StaffInviteDialog } from "../staff-invite-dialog/StaffInviteDialog";
 import type { StaffAccountActionsProps } from "./StaffAccountActions.meta";
 
 export function StaffAccountActions({ staffId, staffName, disabled }: StaffAccountActionsProps) {

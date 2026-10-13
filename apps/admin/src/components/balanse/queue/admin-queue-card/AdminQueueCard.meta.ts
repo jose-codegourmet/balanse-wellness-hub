@@ -5,7 +5,10 @@ export type AdminQueueCardProps = {
   who: string;
   what: string;
   when: string;
-  status: CustomerStatusKey;
+  /** Booking status shown as the header badge. */
+  status?: CustomerStatusKey;
+  /** Replaces the status badge for non-booking queues (for example package payments). */
+  badge?: React.ReactNode;
   /** Customer-facing booking reference, shown for staff lookup. */
   reference?: string;
   body?: React.ReactNode;

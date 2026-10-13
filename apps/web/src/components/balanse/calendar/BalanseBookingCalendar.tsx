@@ -333,7 +333,7 @@ export function BalanseBookingCalendar({
     <section
       className="balanse-booking-calendar"
       aria-label={
-        audience === "customer" ? "Your booked class schedule" : "Class schedule calendar"
+        audience === "customer" ? "Class schedule with your bookings" : "Class schedule calendar"
       }
     >
       <div data-calendar-controls className="booking-calendar-toolbar">
@@ -346,7 +346,7 @@ export function BalanseBookingCalendar({
             <h3 aria-live="polite">{title}</h3>
             <p>
               {audience === "customer"
-                ? "Your booked classes, shown in Philippine time."
+                ? "Choose a class to book. Classes you've booked are marked. Philippine time."
                 : "Choose a class to view details & book."}
             </p>
           </div>
@@ -420,9 +420,7 @@ export function BalanseBookingCalendar({
         <div>
           {periodEmpty && !noResults ? (
             <p className="booking-period-empty" role="status">
-              {audience === "customer"
-                ? "No booked classes during this month. Try another date."
-                : "No classes scheduled this month. Try another date."}
+              No classes scheduled this month. Try another date.
             </p>
           ) : null}
           <div data-calendar-grid="month" className="booking-month">
@@ -480,9 +478,7 @@ export function BalanseBookingCalendar({
           </div>
           {periodEmpty && !noResults ? (
             <p className="booking-period-empty" role="status">
-              {audience === "customer"
-                ? `No booked classes this ${resolvedView}. Try another date.`
-                : `No classes scheduled this ${resolvedView}. Try another date.`}
+              {`No classes scheduled this ${resolvedView}. Try another date.`}
             </p>
           ) : null}
           <section
@@ -557,107 +553,117 @@ export function BalanseBookingCalendar({
               data-section="session-panel"
               data-availability={selected.availability}
             >
-              <div className="booking-session-head">
-                <span
-                  className="booking-session-status"
-                  data-status={selectedIsViewerBooking ? "yours" : selected.availability}
-                >
-                  {sessionStatusLabel(selected, {
-                    mine: selectedIsViewerBooking,
-                    becameFull: selectedIsFull,
-                  })}
-                </span>
-              </div>
-              <DialogTitle className="booking-session-title pr-8 font-display text-2xl font-normal">
-                {sessionDisplayName(selected)}
-              </DialogTitle>
-              <div className="booking-session-meta">
-                <CalendarDays className="booking-session-icon" aria-hidden="true" />
-                <DialogDescription>
-                  {formatSessionDate(selected.startsAt)} · {sessionClockRange(selected)}
-                </DialogDescription>
-              </div>
-              {selectedDescription ? (
-                <p className="booking-session-blurb">{selectedDescription}</p>
-              ) : null}
-              {selected.coaches.map((coach) => (
-                <div key={coach.id} className="booking-session-coach">
-                  <CoachAvatar
-                    photoKey={coachPhotoById.get(coach.id) ?? coach.photoKey}
-                    name={coach.name}
-                    size="lg"
-                    className="booking-session-avatar"
-                  />
-                  <div>
-                    <p className="booking-session-coach-name">{coach.name}</p>
-                    <p className="booking-session-coach-role">Coach</p>
-                  </div>
-                </div>
-              ))}
-              <dl className="booking-session-stats">
-                <div>
-                  <dt>
-                    <Timer className="booking-session-icon" aria-hidden="true" />
-                    Duration
-                  </dt>
-                  <dd>{sessionDuration(selected)}</dd>
-                </div>
-                <div>
-                  <dt>
-                    <Tag className="booking-session-icon" aria-hidden="true" />
-                    Price
-                  </dt>
-                  <dd>{formatPeso(selected.pricePhp)}</dd>
-                </div>
-              </dl>
-              <div className="booking-session-capacity" data-availability={selected.availability}>
-                <p className="booking-session-capacity-label">
-                  <Users className="booking-session-icon" aria-hidden="true" />
-                  {capacityCopy(selected, selectedIsFull)}
-                </p>
-                {selectedShowMeter ? (
-                  <span className="booking-session-meter" aria-hidden="true">
-                    <span style={{ width: `${filledPercent(selected)}%` }} />
-                  </span>
-                ) : null}
-              </div>
-              {selectedIsViewerBooking && audience === "customer" ? (
-                <p className="booking-owned-session" role="status">
-                  <BadgeCheck className="booking-session-icon" aria-hidden="true" />
-                  This class is on your schedule.
-                </p>
-              ) : selectedIsFull ? (
-                <FeedbackState
-                  id="calendar.session-became-full"
-                  onAction={() => onReserve?.(selected)}
-                />
-              ) : (
-                <div className="booking-session-actions">
-                  <Button
-                    variant="accent"
-                    className="w-full"
-                    disabled={
-                      !selected.reservable && selected.availability !== "full_with_waitlist"
-                    }
-                    onClick={() => onReserve?.(selected)}
+              <section className="booking-session-summary" aria-label="Session details">
+                <div className="booking-session-head">
+                  <span
+                    className="booking-session-status"
+                    data-status={selectedIsViewerBooking ? "yours" : selected.availability}
                   >
-                    {selected.reservable
-                      ? "Reserve"
-                      : selected.availability === "full_with_waitlist"
-                        ? "Join Waitlist"
-                        : AVAILABILITY[selected.availability]}
-                  </Button>
-                  <p className="booking-session-footnote">
-                    <Globe className="booking-session-icon" aria-hidden="true" />
-                    Philippine time · GMT+8
-                  </p>
+                    {sessionStatusLabel(selected, {
+                      mine: selectedIsViewerBooking,
+                      becameFull: selectedIsFull,
+                    })}
+                  </span>
                 </div>
-              )}
-              <SessionShareRow
-                session={selected}
-                classSlug={classes.find((item) => item.id === selected.classId)?.slug}
-                shareParams={shareParams}
-              />
+                <DialogTitle className="booking-session-title pr-8 font-display text-2xl font-normal">
+                  {sessionDisplayName(selected)}
+                </DialogTitle>
+                <div className="booking-session-meta">
+                  <CalendarDays className="booking-session-icon" aria-hidden="true" />
+                  <DialogDescription>
+                    {formatSessionDate(selected.startsAt)} · {sessionClockRange(selected)}
+                  </DialogDescription>
+                </div>
+                {selectedDescription ? (
+                  <p className="booking-session-blurb">{selectedDescription}</p>
+                ) : null}
+                {selected.coaches.length > 0 ? (
+                  <section className="booking-session-team" aria-label="Session coaches">
+                    <div className="booking-session-team-heading">
+                      <h3>{selected.coaches.length === 1 ? "Your coach" : "Your coaches"}</h3>
+                      {selected.coaches.length > 1 ? <span>{selected.coaches.length}</span> : null}
+                    </div>
+                    <ul className="booking-session-coaches">
+                      {selected.coaches.map((coach) => (
+                        <li key={coach.id} className="booking-session-coach">
+                          <CoachAvatar
+                            photoKey={coachPhotoById.get(coach.id) ?? coach.photoKey}
+                            name={coach.name}
+                            className="booking-session-avatar"
+                          />
+                          <span className="booking-session-coach-name">{coach.name}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ) : null}
+                <dl className="booking-session-stats">
+                  <div>
+                    <dt>
+                      <Timer className="booking-session-icon" aria-hidden="true" />
+                      Duration
+                    </dt>
+                    <dd>{sessionDuration(selected)}</dd>
+                  </div>
+                  <div>
+                    <dt>
+                      <Tag className="booking-session-icon" aria-hidden="true" />
+                      Price
+                    </dt>
+                    <dd>{formatPeso(selected.pricePhp)}</dd>
+                  </div>
+                </dl>
+              </section>
+              <div className="booking-session-footer">
+                <div className="booking-session-capacity" data-availability={selected.availability}>
+                  <p className="booking-session-capacity-label">
+                    <Users className="booking-session-icon" aria-hidden="true" />
+                    {capacityCopy(selected, selectedIsFull)}
+                  </p>
+                  {selectedShowMeter ? (
+                    <span className="booking-session-meter" aria-hidden="true">
+                      <span style={{ width: `${filledPercent(selected)}%` }} />
+                    </span>
+                  ) : null}
+                </div>
+                {selectedIsViewerBooking && audience === "customer" ? (
+                  <p className="booking-owned-session" role="status">
+                    <BadgeCheck className="booking-session-icon" aria-hidden="true" />
+                    This class is on your schedule.
+                  </p>
+                ) : selectedIsFull ? (
+                  <FeedbackState
+                    id="calendar.session-became-full"
+                    onAction={() => onReserve?.(selected)}
+                  />
+                ) : (
+                  <div className="booking-session-actions">
+                    <Button
+                      variant="accent"
+                      className="w-full"
+                      disabled={
+                        !selected.reservable && selected.availability !== "full_with_waitlist"
+                      }
+                      onClick={() => onReserve?.(selected)}
+                    >
+                      {selected.reservable
+                        ? "Reserve"
+                        : selected.availability === "full_with_waitlist"
+                          ? "Join Waitlist"
+                          : AVAILABILITY[selected.availability]}
+                    </Button>
+                    <p className="booking-session-footnote">
+                      <Globe className="booking-session-icon" aria-hidden="true" />
+                      Philippine time · GMT+8
+                    </p>
+                  </div>
+                )}
+                <SessionShareRow
+                  session={selected}
+                  classSlug={classes.find((item) => item.id === selected.classId)?.slug}
+                  shareParams={shareParams}
+                />
+              </div>
             </div>
           ) : detailDay ? (
             <>

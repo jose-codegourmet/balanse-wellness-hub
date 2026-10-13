@@ -2,7 +2,7 @@ import type { AdminSession, computeSessionInventory } from "@balanse/domain";
 
 export const selectedSessionPanelMeta = {
   purpose:
-    "The /schedule day sidebar: the open day's sessions as a list, and full details and actions (roster, edit, repeat, event, cancel) for the selected session.",
+    "The /schedule day sidebar: the open day's hourly timeline, including overnight continuations, with an overlay for full details and actions (roster, edit, repeat, event, cancel) for the selected session.",
   whenToUse:
     "Opened from AdminScheduleCalendar when a day box or a session is clicked. Inline beside the calendar on desktop, inside a Sheet on smaller screens.",
   whenNotToUse:
@@ -16,8 +16,9 @@ export type SelectedSessionPanelProps = {
   ymd: string;
   /** Sessions on that day, sorted by start time. */
   daySessions: AdminSession[];
+  allSessions: AdminSession[];
   selectedSessionId: string | null;
-  onSelectSession: (sessionId: string) => void;
+  onSelectSession: (sessionId: string | null) => void;
   onClose: () => void;
   /** Live inventory for the selected session, or null while it loads. */
   inventory: SessionInventory | null;

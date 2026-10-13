@@ -226,6 +226,7 @@ export const SIGNED_UPLOAD = {
   maxBytes: 5 * 1024 * 1024,
   coachPhotoTypes: ["image/jpeg", "image/png", "image/webp"] as const,
   eventImageTypes: ["image/jpeg", "image/png", "image/webp"] as const,
+  classImageTypes: ["image/jpeg", "image/png", "image/webp"] as const,
   gcashQrTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"] as const,
   orphanReapAfterHours: 24,
 } as const;
@@ -317,6 +318,7 @@ export function isPolicyVersion(value: string): boolean {
 export const EVENT_CONFLICT_CODES = [
   "event_session_taken",
   "event_on_cancelled_session",
+  "event_on_started_session",
   "event_publish_requires_published_session",
 ] as const;
 
@@ -325,6 +327,7 @@ export type EventConflictCode = (typeof EVENT_CONFLICT_CODES)[number];
 export const EVENT_CONFLICT_MESSAGES: Record<EventConflictCode, string> = {
   event_session_taken: "This session already has an event.",
   event_on_cancelled_session: "An event cannot be created for a cancelled session.",
+  event_on_started_session: "An event cannot be created for a session that has already started.",
   event_publish_requires_published_session: "Publish the session before publishing this event.",
 };
 

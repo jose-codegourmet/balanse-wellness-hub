@@ -15,7 +15,7 @@ export async function mintSignedUpload(
   actor: Extract<ApiActor, { kind: "admin" }>,
   input: {
     bucket: "coach-photos" | "marketing-assets";
-    purpose: "coach_photo" | "gcash_qr" | "event_image";
+    purpose: "coach_photo" | "gcash_qr" | "event_image" | "class_image";
     entityId: string | null;
     contentType: string;
     allowed: ReadonlySet<string>;
@@ -75,6 +75,13 @@ export async function retireAdminObject(
 export function assertOwnedCoachPhotoKey(coachId: string, objectKey: string): void {
   if (!objectKey.startsWith(`coach-photos/${coachId}/`)) {
     throw new ApiError(400, "invalid_object_key", "objectKey is not an upload for this coach.");
+  }
+}
+
+/** Class covers and gallery images are minted before a new class has an id. */
+export function assertClassImageKey(objectKey: string): void {
+  if (!/^marketing-assets\/classes\/[0-9a-f-]+\.(jpg|png|webp)$/.test(objectKey)) {
+    throw new ApiError(400, "invalid_object_key", "objectKey is not a class image upload.");
   }
 }
 

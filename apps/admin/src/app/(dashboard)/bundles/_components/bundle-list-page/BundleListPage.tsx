@@ -7,7 +7,6 @@ import {
   bundleStatusLabel,
   EMPTY_BUNDLE_CREDIT_METRICS,
   formatPeso,
-  type HttpBundleAcquisition,
 } from "@balanse/domain";
 import { Badge, Button, FeedbackState, TablePageSkeleton } from "@balanse/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -16,11 +15,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table/AdminDataTable";
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
-import {
-  useApproveBundleAcquisition,
-  useRejectBundleAcquisition,
-  useSetAdminBundleStatus,
-} from "@/lib/query/mutations";
+import { useSetAdminBundleStatus } from "@/lib/query/mutations";
 import {
   adminBundleAcquisitionsQuery,
   adminBundleMetricsQuery,
@@ -57,8 +52,6 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
   const metricsQuery = useSuspenseQuery(adminBundleMetricsQuery(actor, apiFetchBrowser));
   const metrics = metricsQuery.data;
   const setStatus = useSetAdminBundleStatus();
-  const approve = useApproveBundleAcquisition();
-  const reject = useRejectBundleAcquisition();
 
   const rows = useMemo(() => (empty ? [] : bundlesQuery.data), [bundlesQuery.data, empty]);
   const reviews = useMemo(
@@ -197,68 +190,25 @@ export function BundleListPage({ empty, loading, error }: BundleListPageProps) {
         />
       )}
 
-      <section className="mt-10 overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm">
-        <div className="border-b border-border/70 bg-muted/25 px-5 py-4">
+      <section className="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/80 bg-card px-5 py-4 shadow-sm">
+        <div>
           <p className="text-xs font-semibold tracking-[0.16em] text-primary uppercase">
             Review queue
           </p>
-          <div className="mt-1 flex items-end justify-between gap-4">
-            <h2 className="font-display text-2xl">Paid package reviews</h2>
-            <span className="rounded-sm bg-muted px-2.5 py-1 text-xs font-medium tabular-nums">
-              {reviews.length} pending
-            </span>
-          </div>
+          <h2 className="mt-1 font-display text-2xl">Paid package reviews</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {reviews.length === 0
+              ? "No package payments are waiting. Receipts and counter payments are reviewed in Payments."
+              : `${reviews.length} package payment${reviews.length === 1 ? "" : "s"} waiting. Receipts and counter payments are reviewed in Payments.`}
+          </p>
         </div>
-        {reviews.length === 0 ? (
-          <FeedbackState id="admin.no-package-reviews" className="m-5" />
-        ) : (
-          <ul className="divide-y divide-border/70">
-            {reviews.map((row: HttpBundleAcquisition) => (
-              <li key={row.id} className="p-5 transition-colors hover:bg-muted/20">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="font-medium">
-                      {bundlesQuery.data.find((bundle) => bundle.id === row.bundleId)?.name ??
-                        "Package"}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {row.profileId} · {formatPeso(row.payment?.amountPhp ?? 0)} · manual review
-                    </p>
-                  </div>
-                  <AdminCan action="bundles-manage">
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => {
-                          void approve
-                            .mutateAsync(row.id)
-                            .then(() => notify.admin("bundle.acquisition-reviewed"))
-                            .catch(() => notify.admin("bundle.review-failed"));
-                        }}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          void reject
-                            .mutateAsync({ id: row.id, reason: "Manual review rejected" })
-                            .then(() => notify.admin("bundle.acquisition-reviewed"))
-                            .catch(() => notify.admin("bundle.review-failed"));
-                        }}
-                      >
-                        Reject
-                      </Button>
-                    </div>
-                  </AdminCan>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+        <Button
+          variant="outline"
+          nativeButton={false}
+          render={<Link href="/payments?tab=packages" />}
+        >
+          Open package payments
+        </Button>
       </section>
     </AdminPageShell>
   );

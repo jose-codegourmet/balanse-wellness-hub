@@ -83,6 +83,7 @@ async function operationalSnapshot(deps: ApiDeps, actor: AdminApiActor) {
       cancellations: number;
       reschedules: number;
       waitlisted: number;
+      package_payments: number;
       todays_sales: number;
       pending_refunds: number;
       todays_occupancy: number;
@@ -116,6 +117,8 @@ async function operationalSnapshot(deps: ApiDeps, actor: AdminApiActor) {
       (SELECT COUNT(*) FROM cancellation_requests WHERE resolution = 'OPEN') AS cancellations,
       (SELECT COUNT(*) FROM reschedule_requests WHERE resolution = 'OPEN') AS reschedules,
       (SELECT COUNT(*) FROM bookings WHERE status = 'WAITLISTED') AS waitlisted,
+      (SELECT COUNT(*) FROM bundle_acquisitions
+        WHERE status = 'PENDING_REVIEW') AS package_payments,
       (SELECT COALESCE(SUM(p.amount), 0) FROM payments p
         JOIN bookings b ON b.id = p."bookingId"
         JOIN scoped_sessions s ON s.id = b."sessionId"
@@ -159,6 +162,7 @@ async function operationalSnapshot(deps: ApiDeps, actor: AdminApiActor) {
       payments: Number(row?.pending_payments ?? 0),
       cancellations: Number(row?.cancellations ?? 0),
       reschedules: Number(row?.reschedules ?? 0),
+      packagePayments: Number(row?.package_payments ?? 0),
     },
     todaysSalesPhp: Number(row?.todays_sales ?? 0),
     pendingRefundsPhp: Number(row?.pending_refunds ?? 0),

@@ -5,6 +5,7 @@ import {
   type CoachInput,
   confirmCoachPhoto,
   createCoach,
+  deleteCoach,
   mintCoachPhoto,
   patchCoach,
   putSignedUpload,
@@ -26,6 +27,28 @@ export function useUpsertAdminCoach(fetcher: ApiFetcher = apiFetchBrowser) {
       id
         ? patchCoach(fetcher, id, input).then((res) => res.coach)
         : createCoach(fetcher, input).then((res) => res.coach),
+    onSuccess: () =>
+      invalidateForRole(queryClient, [adminKeys.coaches.all(role), adminKeys.staff.all(role)]),
+  });
+}
+
+/** Activate / deactivate only; leaves every other field (including rates) untouched. */
+export function useSetCoachActive(fetcher: ApiFetcher = apiFetchBrowser) {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, active }: { id: string; active: boolean }) =>
+      patchCoach(fetcher, id, { active }).then((res) => res.coach),
+    onSuccess: () => invalidateForRole(queryClient, [adminKeys.coaches.all(role)]),
+  });
+}
+
+/** Hard delete. The API answers 409 `coach_in_use` when the coach must be deactivated instead. */
+export function useDeleteAdminCoach(fetcher: ApiFetcher = apiFetchBrowser) {
+  const role = useAdminAuthScope();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteCoach(fetcher, id),
     onSuccess: () =>
       invalidateForRole(queryClient, [adminKeys.coaches.all(role), adminKeys.staff.all(role)]),
   });

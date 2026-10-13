@@ -94,14 +94,12 @@ function MonthGrid({
       </h4>
       <div className="grid grid-cols-7 gap-1 text-center text-[0.6875rem]">
         {WEEK_HEADER.map((day, index) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday header
           <span key={index} aria-hidden className="text-muted-foreground">
             {day}
           </span>
         ))}
         {cells.map((day, index) => {
           if (day === null) {
-            // biome-ignore lint/suspicious/noArrayIndexKey: leading blanks
             return <span key={`blank-${index}`} aria-hidden />;
           }
           const ymd = `${month}-${String(day).padStart(2, "0")}`;

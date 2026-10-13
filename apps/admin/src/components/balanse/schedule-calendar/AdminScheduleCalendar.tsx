@@ -8,6 +8,7 @@ import {
   formatSessionTime,
   manilaYmd,
   sessionDisplayName,
+  sessionOverlapsManilaDay,
   startOfManilaMonth,
   startOfManilaWeekMonday,
 } from "@balanse/domain";
@@ -41,7 +42,7 @@ export function detectAdminCalendarView(width: number): AdminCalendarView {
 
 function sessionsOnDay(sessions: readonly AdminSession[], ymd: string): AdminSession[] {
   return sessions
-    .filter((session) => manilaYmd(session.startsAt) === ymd)
+    .filter((session) => sessionOverlapsManilaDay(session, ymd))
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 }
 
@@ -182,7 +183,7 @@ type ViewProps = {
   selectedDay: string | null;
   selectedSessionId: string | null;
   onOpenDay: (ymd: string) => void;
-  onOpenSession: (session: AdminSession) => void;
+  onOpenSession: (session: AdminSession, ymd: string) => void;
 };
 
 function MonthView({ anchorDay, ...props }: ViewProps & { anchorDay: string }) {
@@ -278,8 +279,9 @@ function MonthCell({
           <li key={session.id}>
             <MonthSessionChip
               session={session}
-              selected={session.id === selectedSessionId}
-              onOpen={() => onOpenSession(session)}
+              ymd={ymd}
+              selected={ymd === selectedDay && session.id === selectedSessionId}
+              onOpen={() => onOpenSession(session, ymd)}
             />
           </li>
         ))}
@@ -299,21 +301,24 @@ function MonthCell({
 
 function MonthSessionChip({
   session,
+  ymd,
   selected,
   onOpen,
 }: {
   session: AdminSession;
+  ymd: string;
   selected: boolean;
   onOpen: () => void;
 }) {
   const venue = useContext(VenueLabelContext)?.(session) ?? null;
   const cancelled = session.status === "CANCELLED";
   const draft = session.status === "DRAFT";
+  const continuing = manilaYmd(session.startsAt) < ymd;
   return (
     <button
       type="button"
       onClick={onOpen}
-      title={`${sessionDisplayName(session)} · ${formatSessionTime(session.startsAt)}${venue ? ` · ${venue}` : ""}`}
+      title={`${sessionDisplayName(session)} · ${continuing ? "Continues from previous day" : formatSessionTime(session.startsAt)}${venue ? ` · ${venue}` : ""}`}
       className={cn(
         "pointer-events-auto flex w-full min-w-0 items-center gap-1.5 rounded-sm border-l-2 px-1.5 py-1 text-left text-[0.6875rem] leading-tight transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         selected
@@ -324,9 +329,12 @@ function MonthSessionChip({
       )}
     >
       <span className="shrink-0 tabular-nums opacity-80">
-        {formatSessionTime(session.startsAt)}
+        {continuing ? "12:00 AM" : formatSessionTime(session.startsAt)}
       </span>
-      <span className="min-w-0 truncate font-semibold">{sessionDisplayName(session)}</span>
+      <span className="min-w-0 truncate font-semibold">
+        {continuing ? "Continues · " : ""}
+        {sessionDisplayName(session)}
+      </span>
       {venue ? <MapPinIcon aria-label={venue} className="ml-auto size-3 shrink-0" /> : null}
     </button>
   );
@@ -373,8 +381,9 @@ function WeekView({ anchorDay, ...props }: ViewProps & { anchorDay: string }) {
                 <li key={session.id}>
                   <SessionCard
                     session={session}
-                    selected={session.id === props.selectedSessionId}
-                    onOpen={() => props.onOpenSession(session)}
+                    ymd={ymd}
+                    selected={ymd === props.selectedDay && session.id === props.selectedSessionId}
+                    onOpen={() => props.onOpenSession(session, ymd)}
                   />
                 </li>
               ))}
@@ -415,9 +424,10 @@ function DayView({ ymd, ...props }: ViewProps & { ymd: string }) {
             <li key={session.id}>
               <SessionCard
                 session={session}
-                selected={session.id === props.selectedSessionId}
+                ymd={ymd}
+                selected={ymd === props.selectedDay && session.id === props.selectedSessionId}
                 roomy
-                onOpen={() => props.onOpenSession(session)}
+                onOpen={() => props.onOpenSession(session, ymd)}
               />
             </li>
           ))}
@@ -429,11 +439,13 @@ function DayView({ ymd, ...props }: ViewProps & { ymd: string }) {
 
 function SessionCard({
   session,
+  ymd,
   selected,
   roomy = false,
   onOpen,
 }: {
   session: AdminSession;
+  ymd: string;
   selected: boolean;
   roomy?: boolean;
   onOpen: () => void;
@@ -441,6 +453,7 @@ function SessionCard({
   const venue = useContext(VenueLabelContext)?.(session) ?? null;
   const booked = session.capacity - session.remainingSlots;
   const fill = session.capacity > 0 ? Math.min(100, (booked / session.capacity) * 100) : 0;
+  const continuing = manilaYmd(session.startsAt) < ymd;
   return (
     <button
       type="button"
@@ -464,10 +477,11 @@ function SessionCard({
             session.status === "CANCELLED" && "line-through",
           )}
         >
+          {continuing ? "Continues · " : ""}
           {sessionDisplayName(session)}
         </span>
         <span className="shrink-0 text-[0.6875rem] text-muted-foreground tabular-nums">
-          {formatSessionTime(session.startsAt)}
+          {continuing ? "12:00 AM" : formatSessionTime(session.startsAt)}
         </span>
       </span>
       <span className="truncate text-[0.6875rem] text-muted-foreground">{session.coachName}</span>

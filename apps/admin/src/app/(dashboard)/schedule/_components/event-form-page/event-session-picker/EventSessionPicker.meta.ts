@@ -19,7 +19,7 @@ export type SessionChoice = {
   statusLabel: string;
   status: AdminSession["status"];
   /** Why this session cannot take a new event, or null when it can. */
-  blocked: "cancelled" | "taken" | null;
+  blocked: "cancelled" | "started" | "taken" | null;
   eventId?: string;
   eventTitle?: string;
   pricePlaceholder: boolean;

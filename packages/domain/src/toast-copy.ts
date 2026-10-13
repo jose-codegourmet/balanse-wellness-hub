@@ -40,6 +40,8 @@ export const PORTAL_TOAST_IDS = [
   "package.requested",
   "package.action-failed",
   "package.limit-reached",
+  "package.counter-selected",
+  "package.proof-submitted",
 ] as const;
 
 export type PortalToastId = (typeof PORTAL_TOAST_IDS)[number];
@@ -195,6 +197,20 @@ export const PORTAL_TOAST_COPY = {
     description:
       "This package already belongs to your account. Ask the studio if you need another.",
   },
+  "package.counter-selected": {
+    id: "package.counter-selected",
+    tone: "info",
+    title: "Pay at Counter selected",
+    description:
+      "Pay at the front desk. The studio activates your sessions once it records payment.",
+  },
+  "package.proof-submitted": {
+    id: "package.proof-submitted",
+    tone: "info",
+    title: "Receipt sent",
+    description:
+      "The studio has your screenshot. Your sessions activate after it approves payment.",
+  },
 } as const satisfies ExhaustivePortalToastCopy;
 
 export function portalToastCopy(id: PortalToastId): PortalToastCopy {
@@ -220,10 +236,17 @@ export function bookingCreatedToastId(status: BookingStatus): PortalToastId {
 export const ADMIN_TOAST_IDS = [
   "class.saved",
   "class.save-failed",
+  "class.deleted",
+  "class.delete-blocked",
+  "class.delete-failed",
   "venue.saved",
   "venue.save-failed",
   "coach.saved",
   "coach.save-failed",
+  "coach.status-updated",
+  "coach.deleted",
+  "coach.delete-blocked",
+  "coach.delete-failed",
   "staff.saved",
   "staff.save-failed",
   "staff.disabled",
@@ -314,6 +337,25 @@ export const ADMIN_TOAST_COPY = {
     title: "Class not saved",
     description: "Those changes could not be saved. Try again.",
   },
+  "class.deleted": {
+    id: "class.deleted",
+    tone: "success",
+    title: "Class deleted",
+    description: "The class was removed from the catalogue.",
+  },
+  "class.delete-blocked": {
+    id: "class.delete-blocked",
+    tone: "warning",
+    title: "Class can't be deleted",
+    description:
+      "This class has sessions or is part of a bundle. Deactivate it instead so history stays intact.",
+  },
+  "class.delete-failed": {
+    id: "class.delete-failed",
+    tone: "error",
+    title: "Class not deleted",
+    description: "The class could not be deleted. Try again.",
+  },
   "venue.saved": {
     id: "venue.saved",
     tone: "success",
@@ -337,6 +379,32 @@ export const ADMIN_TOAST_COPY = {
     tone: "error",
     title: "Coach not saved",
     description: "Those changes could not be saved. Try again.",
+  },
+  "coach.status-updated": {
+    id: "coach.status-updated",
+    tone: "success",
+    title: "Coach availability updated",
+    description:
+      "Inactive coaches can't be assigned to new sessions. Existing sessions stay as they are.",
+  },
+  "coach.deleted": {
+    id: "coach.deleted",
+    tone: "success",
+    title: "Coach deleted",
+    description: "The coach was removed from the directory.",
+  },
+  "coach.delete-blocked": {
+    id: "coach.delete-blocked",
+    tone: "warning",
+    title: "Coach can't be deleted",
+    description:
+      "This coach is on the schedule or linked to a staff account. Deactivate them instead so past sessions keep their coach.",
+  },
+  "coach.delete-failed": {
+    id: "coach.delete-failed",
+    tone: "error",
+    title: "Coach not deleted",
+    description: "The coach could not be deleted. Try again.",
   },
   "staff.saved": {
     id: "staff.saved",

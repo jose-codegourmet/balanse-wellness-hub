@@ -164,6 +164,14 @@ export function DashboardPage({
       clearLabel: "No pending payments",
     },
     {
+      id: "package-payments",
+      href: "/payments?tab=packages",
+      title: "Package payment → Review",
+      count: data.attention.packagePayments,
+      waitingLabel: `${data.attention.packagePayments} package payment${data.attention.packagePayments === 1 ? "" : "s"} waiting`,
+      clearLabel: "No package payments",
+    },
+    {
       id: "cancellations",
       href: "/cancellations",
       title: "Cancellation → Review",

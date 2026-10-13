@@ -2,7 +2,11 @@ import { adminSessions } from "@balanse/mock";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { ClassChangeSessionActions } from "./ClassChangeSessionActions";
 
-const session = (id: string) => adminSessions.find((row) => row.id === id)!;
+function session(id: string) {
+  const row = adminSessions.find((item) => item.id === id);
+  if (!row) throw new Error(`adminSessions fixture "${id}" is missing`);
+  return row;
+}
 
 const meta = {
   title: "Admin/Components/ClassChangeSessionActions",

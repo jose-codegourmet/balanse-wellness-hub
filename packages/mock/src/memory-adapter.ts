@@ -517,7 +517,7 @@ export function createMemoryAdapter(): MockDataAdapter {
 
   function substituteCoach(session: AdminSession, fromCoachId: string, toCoachId: string): void {
     const coach = coaches.find((row) => row.id === toCoachId);
-    if (!coach || !coach.active) throw new Error("The substitute coach is no longer active.");
+    if (!coach?.active) throw new Error("The substitute coach is no longer active.");
     if (!session.coaches.some((row) => row.id === fromCoachId))
       throw new Error("The requesting coach is no longer on this class.");
     if (session.coaches.some((row) => row.id === toCoachId))
@@ -1843,7 +1843,7 @@ export function createMemoryAdapter(): MockDataAdapter {
             cancellations: 0,
             reschedules: 0,
             waitlisted: 0,
-            attention: { payments: 0, cancellations: 0, reschedules: 0 },
+            attention: { payments: 0, cancellations: 0, reschedules: 0, packagePayments: 0 },
             todaysSchedule: [],
             series,
           };

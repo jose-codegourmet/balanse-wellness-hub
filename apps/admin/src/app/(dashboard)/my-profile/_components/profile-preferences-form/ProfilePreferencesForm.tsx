@@ -10,10 +10,7 @@ import { BooleanBinding } from "@/modules/admin/forms/bindings";
 import { notify } from "@/modules/notifications/notify";
 import { profilePreferencesFormDefaultValues } from "./ProfilePreferencesForm.defaults";
 import type { ProfilePreferencesFormProps } from "./ProfilePreferencesForm.meta";
-import {
-  type ProfilePreferencesFormValues,
-  profilePreferencesFormSchema,
-} from "./ProfilePreferencesForm.schema";
+import { profilePreferencesFormSchema } from "./ProfilePreferencesForm.schema";
 
 export function ProfilePreferencesForm({
   defaultValues = profilePreferencesFormDefaultValues,

@@ -9,6 +9,8 @@ export type AdminCoachResponse = Omit<AdminCoach, "defaultRatePhp" | "rateType">
   Partial<Pick<AdminCoach, "defaultRatePhp" | "rateType">>;
 
 export type CoachInput = {
+  /** Required on create: a coach is always one staff member. Ignored on update. */
+  staffId?: string;
   name: string;
   specialties: string[];
   shortBio: string;
@@ -41,6 +43,13 @@ export async function patchCoach(
   input: Partial<CoachInput>,
 ): Promise<{ coach: AdminCoachResponse }> {
   return fetcher(`/api/admin/coaches/${id}`, { method: "PATCH", body: input });
+}
+
+export async function deleteCoach(
+  fetcher: ApiFetcher,
+  id: string,
+): Promise<{ deleted: true; id: string }> {
+  return fetcher(`/api/admin/coaches/${id}`, { method: "DELETE" });
 }
 
 /** Mint step of the BE-052 lifecycle: signed URL to PUT bytes to, then confirm with its `objectKey`. */
