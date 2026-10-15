@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: "Meet the Balansé coaching roster.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   const { items: coaches } = await listPublicCoaches(serverFetcher(null));
   return <CoachesPage coaches={coaches} />;

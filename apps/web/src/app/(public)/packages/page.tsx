@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: "Session packages at Balansé Wellness Hub.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   const packages = await listPublicPackages(serverFetcher(await getCustomerAccessToken()));
   return <PackagesPage bundles={packages.items} />;

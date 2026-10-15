@@ -5,6 +5,8 @@ export const metadata: Metadata = {
   title: "Classes",
   description: "Explore yoga, Pilates, strength, dance and movement classes at Balansé.",
 };
+
+export const dynamic = "force-dynamic";
 export default async function Page() {
   return <ClassesPage classes={(await getClassCatalogue()).classes} />;
 }
