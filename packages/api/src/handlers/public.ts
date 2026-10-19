@@ -10,7 +10,7 @@ import { ApiError } from "../errors";
 import { ok, searchParams } from "../http";
 import { assertPublicPayload, sessionAvailability } from "../presenters";
 import { readSettings } from "../settings";
-import { sessionPastCutoff, sessionsConsumedCapacity } from "../sql";
+import { sessionPastCutoff, sessionsAvailabilityFacts } from "../sql";
 
 const PUBLIC_CACHE = { "cache-control": "public, max-age=30, stale-while-revalidate=60" };
 const POLICY_FORMS = new Set([
@@ -71,11 +71,11 @@ async function publicSessionDto(
     coaches: { coach: { id: string; name: string; photoKey: string | null } }[];
   },
   consumed: number,
+  pastCutoff: boolean,
 ) {
   const remainingSlots = Math.max(0, session.capacity - consumed);
   const now = deps.now();
   const pastStart = now >= session.startsAt;
-  const pastCutoff = await sessionPastCutoff(deps, session.id);
   const availability = sessionAvailability({
     status: session.status,
     remainingSlots,
@@ -123,13 +123,16 @@ export async function getPublicSessions(deps: ApiDeps, req: Request): Promise<Re
       coaches: { select: { coach: { select: { id: true, name: true, photoKey: true } } } },
     },
   });
-  const consumed = await sessionsConsumedCapacity(
+  const facts = await sessionsAvailabilityFacts(
     deps,
     sessions.map((item) => item.id),
   );
   const items = [];
   for (const session of sessions) {
-    items.push(await publicSessionDto(deps, session, consumed.get(session.id) ?? 0));
+    const fact = facts.get(session.id);
+    items.push(
+      await publicSessionDto(deps, session, fact?.consumed ?? 0, fact?.pastCutoff ?? false),
+    );
   }
   const body = { items };
   assertPublicPayload(body);

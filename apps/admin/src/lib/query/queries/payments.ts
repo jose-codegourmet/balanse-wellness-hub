@@ -32,12 +32,12 @@ export const adminPaymentsQueueInfiniteQuery = (
   actor: StaffAuthorizationActor | null,
   tab: AdminPaymentTab,
   search = "",
+  fetcher: ApiFetcher = apiFetchBrowser,
 ) => {
   const scope = adminAuthScope(actor);
   return infiniteQueryOptions({
     queryKey: adminKeys.queues.payments(scope, tab, search),
-    queryFn: ({ pageParam }) =>
-      listAdminPayments(apiFetchBrowser, { tab, search, cursor: pageParam }),
+    queryFn: ({ pageParam }) => listAdminPayments(fetcher, { tab, search, cursor: pageParam }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
   });

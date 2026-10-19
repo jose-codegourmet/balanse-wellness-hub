@@ -19,7 +19,7 @@ export default async function Page() {
       ? [
           adminSessionsQuery(actor, serverFetcher(token)),
           adminVenuesQuery(actor, serverFetcher(token)),
-          adminBookingsQuery(actor),
+          adminBookingsQuery(actor, undefined, serverFetcher(token)),
         ]
       : [adminSessionsQuery(actor, serverFetcher(token))],
     <AdminQuerySuspense>

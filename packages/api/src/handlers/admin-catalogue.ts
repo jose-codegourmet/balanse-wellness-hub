@@ -38,7 +38,7 @@ import {
   maybeStripRates,
   sessionOwnedByActor,
 } from "../sensitive";
-import { sessionConsumedCapacity, sessionPastCutoff, sessionsConsumedCapacity } from "../sql";
+import { sessionConsumedCapacity, sessionPastCutoff, sessionsAvailabilityFacts } from "../sql";
 import {
   assertClassImageKey,
   assertOwnedCoachPhotoKey,
@@ -153,16 +153,18 @@ export async function presentAdminSession(
   deps: ApiDeps,
   session: AdminSessionRow,
   consumed: number,
+  /** Pass from `sessionsAvailabilityFacts` on list paths; single-row callers may omit it. */
+  pastCutoff?: boolean,
 ) {
   const remainingSlots = Math.max(0, session.capacity - consumed);
   const now = deps.now();
   const pastStart = now >= session.startsAt;
-  const pastCutoff = await sessionPastCutoff(deps, session.id);
+  const resolvedPastCutoff = pastCutoff ?? (await sessionPastCutoff(deps, session.id));
   const availability = sessionAvailability({
     status: session.status,
     remainingSlots,
     pastStart,
-    pastCutoff,
+    pastCutoff: resolvedPastCutoff,
   });
   const coaches = session.coaches.map((assignment) => presentCoach(assignment.coach));
   const coachAssignments = session.coaches.map((assignment) => ({
@@ -588,12 +590,15 @@ export async function getAdminSessions(deps: ApiDeps, req: Request): Promise<Res
     }),
   ]);
   const scoped = items.filter((item) => !ownOnly || sessionOwnedByActor(actor, item));
-  const consumed = await sessionsConsumedCapacity(
+  const facts = await sessionsAvailabilityFacts(
     deps,
     scoped.map((item) => item.id),
   );
   const presented = await Promise.all(
-    scoped.map((item) => presentAdminSession(deps, item, consumed.get(item.id) ?? 0)),
+    scoped.map((item) => {
+      const fact = facts.get(item.id);
+      return presentAdminSession(deps, item, fact?.consumed ?? 0, fact?.pastCutoff ?? false);
+    }),
   );
   return ok({
     page,

@@ -37,6 +37,35 @@ export async function sessionsConsumedCapacity(
   return map;
 }
 
+export type SessionAvailabilityFacts = { consumed: number; pastCutoff: boolean };
+
+/**
+ * One round trip for every per-session availability input the list presenters
+ * need. Replaces the per-row `sessionConsumedCapacity` + `sessionPastCutoff`
+ * pair, which fanned out N parallel queries and exhausted the serverless
+ * Prisma pool on 100-row pages.
+ */
+export async function sessionsAvailabilityFacts(
+  deps: ApiDeps,
+  sessionIds: string[],
+): Promise<Map<string, SessionAvailabilityFacts>> {
+  const map = new Map<string, SessionAvailabilityFacts>();
+  if (sessionIds.length === 0) return map;
+  const rows = await deps.prisma.$queryRawUnsafe<
+    Array<{ id: string; consumed: number; past_cutoff: boolean }>
+  >(
+    `SELECT s.id,
+            public.session_consumed_capacity(s.id) AS consumed,
+            app_private.session_is_past_cutoff(s.id) AS past_cutoff
+     FROM sessions s WHERE s.id = ANY($1::text[])`,
+    sessionIds,
+  );
+  for (const row of rows) {
+    map.set(row.id, { consumed: Number(row.consumed), pastCutoff: Boolean(row.past_cutoff) });
+  }
+  return map;
+}
+
 export async function createReservation(
   deps: ApiDeps,
   profileId: string,
