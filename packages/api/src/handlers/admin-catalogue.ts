@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type { Prisma } from "@balanse/db";
 import type { PublicClass } from "@balanse/domain";
 import {
@@ -320,7 +321,7 @@ export async function postAdminClassImage(deps: ApiDeps, req: Request): Promise<
     if (!contentType) {
       throwFields(fieldError("contentType", "required", "contentType is required."));
     }
-    const key = `marketing-assets/classes/${crypto.randomUUID()}.${extensionFor(contentType)}`;
+    const key = `marketing-assets/classes/${randomUUID()}.${extensionFor(contentType)}`;
     return ok(
       await mintSignedUpload(deps, actor, {
         bucket: "marketing-assets",
@@ -479,7 +480,7 @@ export async function postCoachPhoto(deps: ApiDeps, req: Request, id: string): P
     if (!contentType) {
       throwFields(fieldError("contentType", "required", "contentType is required."));
     }
-    const path = `coach-photos/${id}/${crypto.randomUUID()}.${extensionFor(contentType)}`;
+    const path = `coach-photos/${id}/${randomUUID()}.${extensionFor(contentType)}`;
     const minted = await mintSignedUpload(deps, actor, {
       bucket: "coach-photos",
       purpose: "coach_photo",

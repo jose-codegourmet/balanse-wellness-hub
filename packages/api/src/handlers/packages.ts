@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import {
   claimIdempotencyKey,
   FIELD_CONSTRAINTS,
@@ -346,7 +347,7 @@ export async function postAcquisitionPaymentProof(
           : contentType === "image/heic"
             ? "heic"
             : "jpg";
-    const path = `package-acquisitions/${acquisition.id}/${crypto.randomUUID()}.${ext}`;
+    const path = `package-acquisitions/${acquisition.id}/${randomUUID()}.${ext}`;
     const upload = await deps.storage.createSignedUpload("payment-proofs", path, { contentType });
     return ok({
       upload,

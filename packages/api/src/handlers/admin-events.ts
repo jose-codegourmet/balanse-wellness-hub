@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type { Prisma } from "@balanse/db";
 import {
   type AdminEvent,
@@ -436,7 +437,7 @@ export async function postAdminEventImage(
   if (!objectKey) {
     if (!contentType)
       throwFields(fieldError("contentType", "required", "contentType is required."));
-    const key = `marketing-assets/events/${id}/${crypto.randomUUID()}.${extensionFor(contentType)}`;
+    const key = `marketing-assets/events/${id}/${randomUUID()}.${extensionFor(contentType)}`;
     return ok(
       await mintSignedUpload(deps, actor, {
         bucket: "marketing-assets",

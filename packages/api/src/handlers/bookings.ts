@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { bookingListTab } from "@balanse/domain";
 import { requireCustomer, resolveActor, writeAudit } from "../auth";
 import type { ApiDeps } from "../deps";
@@ -302,7 +303,7 @@ export async function postPaymentProof(deps: ApiDeps, req: Request, id: string):
           : contentType === "image/heic"
             ? "heic"
             : "jpg";
-    const path = `payment-proofs/${booking.id}/${crypto.randomUUID()}.${ext}`;
+    const path = `payment-proofs/${booking.id}/${randomUUID()}.${ext}`;
     const upload = await deps.storage.createSignedUpload("payment-proofs", path, { contentType });
     return ok({
       upload,

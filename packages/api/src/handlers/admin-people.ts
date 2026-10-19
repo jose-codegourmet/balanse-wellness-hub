@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type { BookingStatus, Prisma } from "@balanse/db";
 import {
   bookingListTab,
@@ -294,7 +295,7 @@ async function saveStaffPhoto(
     const contentType = asString(body.contentType) ?? "";
     if (!STAFF_PHOTO_TYPES.has(contentType))
       throw new ApiError(400, "invalid_photo_type", "Choose a JPG, PNG, or WEBP image.");
-    const key = `avatars/${staff.userId}/${crypto.randomUUID()}.${extensionFor(contentType)}`;
+    const key = `avatars/${staff.userId}/${randomUUID()}.${extensionFor(contentType)}`;
     const upload = await deps.storage.createSignedUpload("avatars", key, {
       contentType,
       upsert: false,

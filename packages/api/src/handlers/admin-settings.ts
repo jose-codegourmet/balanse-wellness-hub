@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import {
   FIELD_CONSTRAINTS,
   type SettingsSection,
@@ -311,7 +312,7 @@ export async function postSettingsQr(deps: ApiDeps, req: Request): Promise<Respo
   if (!objectKey) {
     if (!contentType)
       throwFields(fieldError("contentType", "required", "contentType is required."));
-    const path = `marketing-assets/settings/gcash-qr/${crypto.randomUUID()}.${extensionFor(contentType)}`;
+    const path = `marketing-assets/settings/gcash-qr/${randomUUID()}.${extensionFor(contentType)}`;
     return ok(
       await mintSignedUpload(deps, actor, {
         bucket: "marketing-assets",
@@ -380,7 +381,7 @@ export async function postPaymentQrImage(deps: ApiDeps, req: Request): Promise<R
   if (!objectKey) {
     if (!contentType)
       throwFields(fieldError("contentType", "required", "contentType is required."));
-    const path = `marketing-assets/settings/payment-qrs/${crypto.randomUUID()}.${extensionFor(contentType)}`;
+    const path = `marketing-assets/settings/payment-qrs/${randomUUID()}.${extensionFor(contentType)}`;
     return ok(
       await mintSignedUpload(deps, actor, {
         bucket: "marketing-assets",

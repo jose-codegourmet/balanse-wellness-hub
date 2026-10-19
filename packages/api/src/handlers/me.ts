@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { requireCustomer, resolveActor } from "../auth";
 import type { ApiDeps } from "../deps";
 import { ApiError } from "../errors";
@@ -135,7 +136,7 @@ export async function postMyAvatar(deps: ApiDeps, req: Request): Promise<Respons
         fields: { contentType: "Choose a JPG, PNG, or WEBP image." },
       });
     }
-    const key = `avatars/${actor.userId}/${crypto.randomUUID()}.webp`;
+    const key = `avatars/${actor.userId}/${randomUUID()}.webp`;
     const upload = await deps.storage.createSignedUpload("avatars", key, { contentType });
     await deps.prisma.pendingUpload.create({
       data: {
