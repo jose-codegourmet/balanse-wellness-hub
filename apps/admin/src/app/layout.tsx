@@ -1,3 +1,4 @@
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Fraunces, Manrope } from "next/font/google";
 import { Providers } from "@/modules/providers/Providers";
@@ -27,6 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <body className="min-h-dvh">
         <Providers session={session}>{children}</Providers>
+        <SpeedInsights />
       </body>
     </html>
   );
