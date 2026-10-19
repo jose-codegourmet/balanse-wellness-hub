@@ -596,13 +596,23 @@ function PosterCard({
           {content.title}
         </div>
 
-        <div style={{ display: "flex", flexGrow: 1, marginTop: 36, alignItems: "flex-end" }}>
+        <div
+          style={{
+            position: "relative",
+            display: "flex",
+            flexGrow: 1,
+            minHeight: 280,
+            marginTop: 36,
+            alignItems: "flex-end",
+          }}
+        >
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              flexGrow: 1,
-              paddingRight: 40,
+              width: "100%",
+              minWidth: 0,
+              paddingRight: 325,
               gap: 6,
               alignSelf: "stretch",
             }}
@@ -617,7 +627,10 @@ function PosterCard({
               </div>
             ) : null}
           </div>
-          <QrBlock url={qrUrl} size={260} />
+          {/* Long coach/venue lines must never push the QR or its quiet zone off-canvas. */}
+          <div style={{ position: "absolute", right: 0, bottom: 0, display: "flex" }}>
+            <QrBlock url={qrUrl} size={300} />
+          </div>
         </div>
       </div>
 

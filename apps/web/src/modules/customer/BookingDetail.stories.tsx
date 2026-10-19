@@ -18,6 +18,25 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Confirmed: Story = {};
+export const PackageConfirmed: Story = {
+  args: {
+    booking: {
+      ...confirmed,
+      id: "ca29126d125a945a8964290a95c1f8836",
+      entitlementId: "summer-package-session",
+      packageName: "Summer Package",
+      paymentMethod: null,
+      paymentStatus: "NONE",
+    },
+    invite: {
+      url: "https://balanse.example/classes/caliyoga",
+      fileSlug: "caliyoga-invite",
+      title: "Caliyoga",
+      subtitle: "Join me at Balansé Wellness Hub",
+      dateLabel: "Wed, Sep 16, 2026",
+    },
+  },
+};
 export const Cancelled: Story = { args: { booking: byStatus("CANCELLED") ?? confirmed } };
 export const CancellationRequested: Story = {
   args: { booking: byStatus("CANCELLATION_REQUESTED") ?? confirmed },

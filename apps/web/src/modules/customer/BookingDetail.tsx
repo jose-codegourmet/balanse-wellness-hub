@@ -2,13 +2,14 @@
 
 import type { CustomerBooking, CustomerProfile } from "@balanse/domain";
 import {
+  bookingReference,
   customerBookingActions,
   paymentMethodLabel,
   paymentStatusLabel,
   sessionDisplayName,
 } from "@balanse/domain";
 import { Alert, AlertDescription, AlertTitle, Button } from "@balanse/ui";
-import { Hourglass, Info, Wallet } from "lucide-react";
+import { ArrowLeft, Check, Copy, Hourglass, Info, Ticket, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -71,14 +72,6 @@ function advisoriesFor(booking: CustomerBooking): Advisory[] {
           : "No payment is due while you wait.",
     });
   }
-  if (booking.entitlementId || booking.packageName) {
-    advisories.push({
-      kind: "informational",
-      icon: Info,
-      title: booking.packageName ?? "Package",
-      body: "This booking uses a package session rather than a cash payment.",
-    });
-  }
   if (booking.status === "CANCELLATION_REQUESTED" || booking.status === "RESCHEDULE_REQUESTED") {
     advisories.push({
       kind: "held",
@@ -104,7 +97,10 @@ export function BookingDetail({
   const advisories = advisoriesFor(booking);
   const mood = bookingMood(booking);
   const { session } = booking;
+  const usesPackage = Boolean(booking.entitlementId);
+  const hasActions = Boolean(actions.reschedule || actions.cancel);
   const router = useRouter();
+  const [referenceCopied, setReferenceCopied] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const expiresAt = booking.holdExpiresAt ? new Date(booking.holdExpiresAt).getTime() : null;
   useEffect(() => {
@@ -137,7 +133,10 @@ export function BookingDetail({
   return (
     <div className="portal-page portal-booking-detail">
       <header className="portal-page-head">
-        <p className="portal-eyebrow">My bookings</p>
+        <Link className="booking-detail-back" href="/portal/bookings">
+          <ArrowLeft aria-hidden="true" size={16} />
+          All bookings
+        </Link>
         <h1 className="font-display">
           {booking.status === "CONFIRMED" || booking.status === "CHECKED_IN"
             ? "Booking confirmation"
@@ -153,108 +152,160 @@ export function BookingDetail({
 
       <section data-section="booking-status" className="booking-ticket" data-mood={mood}>
         <BookingStatusBanner booking={booking} />
-        <div className="booking-ticket-stub">
-          <BookingReference bookingId={booking.id} size="primary" />
-          <p className="booking-ticket-stub-note">
-            Show this reference at the front desk. Studio time is Asia/Manila.
-          </p>
-        </div>
         <div className="booking-ticket-body">
+          <p className="booking-ticket-eyebrow">Your session</p>
           <h2 className="booking-summary-title font-display">{sessionDisplayName(session)}</h2>
           <BookingFacts booking={booking} />
-          {profile ? (
-            <dl className="booking-identity">
-              <div>
-                <dt>Booked by</dt>
-                <dd>{profile.fullName}</dd>
+        </div>
+        <aside className="booking-ticket-stub" aria-label="Booking reference">
+          <BookingReference bookingId={booking.id} size="primary" />
+          <p className="booking-ticket-stub-note">Show this reference at the front desk.</p>
+          <button
+            className="booking-reference-copy"
+            type="button"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(bookingReference(booking.id));
+                setReferenceCopied(true);
+              } catch {
+                setReferenceCopied(false);
+              }
+            }}
+          >
+            {referenceCopied ? (
+              <Check aria-hidden="true" size={14} />
+            ) : (
+              <Copy aria-hidden="true" size={14} />
+            )}
+            {referenceCopied ? "Copied" : "Copy reference"}
+          </button>
+        </aside>
+        {profile ? (
+          <dl className="booking-identity">
+            <div>
+              <dt>Booked by</dt>
+              <dd>{profile.fullName}</dd>
+            </div>
+            <div>
+              <dt>Email</dt>
+              <dd>{profile.email}</dd>
+            </div>
+            <div>
+              <dt>Contact number</dt>
+              <dd>{profile.contactNumber}</dd>
+            </div>
+          </dl>
+        ) : null}
+      </section>
+
+      <div className="booking-detail-lower">
+        <section data-section="payment" className="portal-section booking-payment-panel">
+          {usesPackage ? (
+            <>
+              <div className="booking-package-heading">
+                <span className="booking-package-icon" aria-hidden="true">
+                  <Ticket size={21} strokeWidth={1.5} />
+                </span>
+                <div>
+                  <p className="booking-ticket-eyebrow">Session covered</p>
+                  <h2 className="font-display">{booking.packageName ?? "Your package"}</h2>
+                </div>
               </div>
-              <div>
-                <dt>Email</dt>
-                <dd>{profile.email}</dd>
+              <p className="booking-package-copy">
+                This booking was made with one package session. No separate payment is due.
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="portal-section-title">
+                <h2>Payment</h2>
+                <p>
+                  {booking.status === "WAITLISTED"
+                    ? "No payment is due while you wait for a place."
+                    : "Pay by GCash or at the front desk. The front desk confirms your spot."}
+                </p>
               </div>
-              <div>
-                <dt>Contact number</dt>
-                <dd>{profile.contactNumber}</dd>
-              </div>
-            </dl>
+              <dl className="booking-facts">
+                <div>
+                  <dt>Method</dt>
+                  <dd>{paymentMethodLabel(booking.paymentMethod)}</dd>
+                </div>
+                <div>
+                  <dt>Payment status</dt>
+                  <dd>{paymentStatusLabel(booking.paymentStatus)}</dd>
+                </div>
+              </dl>
+            </>
+          )}
+          {booking.status === "HELD_AWAITING_PAYMENT" && remainingMinutes !== null ? (
+            <p className="booking-hold-note" role="status">
+              {remainingMinutes > 0
+                ? `Your reservation hold expires in ${remainingMinutes} minute${remainingMinutes === 1 ? "" : "s"}.`
+                : "Your reservation hold has expired. This page is refreshing to show the latest status."}
+            </p>
           ) : null}
-        </div>
-      </section>
-
-      {invite ? <InviteFriendsCard invite={invite} /> : null}
-
-      <section data-section="payment" className="portal-section">
-        <div className="portal-section-title">
-          <h2>Payment</h2>
-          <p>Pay by GCash or at the front desk. The front desk confirms your spot.</p>
-        </div>
-        <dl className="booking-facts">
-          <div>
-            <dt>Method</dt>
-            <dd>{paymentMethodLabel(booking.paymentMethod)}</dd>
-          </div>
-          <div>
-            <dt>Payment status</dt>
-            <dd>{paymentStatusLabel(booking.paymentStatus)}</dd>
-          </div>
-        </dl>
-        {booking.status === "HELD_AWAITING_PAYMENT" && remainingMinutes !== null ? (
-          <p className="mt-4 text-sm font-medium" role="status">
-            {remainingMinutes > 0
-              ? `Your reservation hold expires in ${remainingMinutes} minute${remainingMinutes === 1 ? "" : "s"}.`
-              : "Your reservation hold has expired. This page is refreshing to show the latest status."}
-          </p>
-        ) : null}
-        {advisories.length > 0 ? (
-          <div className="booking-advisories">
-            {advisories.map((advisory) => {
-              const Icon = advisory.icon;
-              return (
-                <Alert
-                  key={advisory.title}
-                  className="booking-advisory"
-                  data-advisory={advisory.kind}
-                >
-                  <Icon aria-hidden="true" />
-                  <AlertTitle>{advisory.title}</AlertTitle>
-                  <AlertDescription>{advisory.body}</AlertDescription>
-                </Alert>
-              );
-            })}
-          </div>
-        ) : null}
-      </section>
+          {advisories.length > 0 ? (
+            <div className="booking-advisories">
+              {advisories.map((advisory) => {
+                const Icon = advisory.icon;
+                return (
+                  <Alert
+                    key={advisory.title}
+                    className="booking-advisory"
+                    data-advisory={advisory.kind}
+                  >
+                    <Icon aria-hidden="true" />
+                    <AlertTitle>{advisory.title}</AlertTitle>
+                    <AlertDescription>{advisory.body}</AlertDescription>
+                  </Alert>
+                );
+              })}
+            </div>
+          ) : null}
+        </section>
+        {invite ? <InviteFriendsCard invite={invite} /> : null}
+      </div>
 
       <section data-section="actions" className="booking-actions">
-        {payNowHref ? (
-          <Button nativeButton={false} render={<Link href={payNowHref} />}>
-            {booking.paymentStatus === "REJECTED" ? "Pay Again" : "Pay Now"}
-          </Button>
-        ) : null}
-        {actions.reschedule ? (
-          <Button
-            variant={payNowHref ? "secondary" : "default"}
-            nativeButton={false}
-            render={<Link href={`/portal/bookings/${booking.id}/reschedule`} />}
-          >
-            Request Reschedule
-          </Button>
-        ) : null}
-        {actions.cancel ? (
-          <Button
-            variant="destructive"
-            nativeButton={false}
-            render={<Link href={`/portal/bookings/${booking.id}/cancel`} />}
-          >
-            Request Cancellation
-          </Button>
-        ) : null}
-        {!payNowHref && !actions.reschedule && !actions.cancel ? (
-          <p className="booking-actions-note">
-            No customer requests are available for this booking. The studio handles any further
-            changes or pending requests.
+        <div className="booking-actions-intro">
+          <h2 className="font-display">Manage booking</h2>
+          <p>
+            {payNowHref || hasActions
+              ? "Need to make a change? Send a request to the studio."
+              : "This booking has no available customer actions."}
           </p>
-        ) : null}
+        </div>
+        <div className="booking-action-buttons">
+          {payNowHref ? (
+            <Button nativeButton={false} render={<Link href={payNowHref} />}>
+              {booking.paymentStatus === "REJECTED" ? "Pay Again" : "Pay Now"}
+            </Button>
+          ) : null}
+          {actions.reschedule ? (
+            <Button
+              variant={payNowHref ? "secondary" : "default"}
+              nativeButton={false}
+              render={<Link href={`/portal/bookings/${booking.id}/reschedule`} />}
+            >
+              Request Reschedule
+            </Button>
+          ) : null}
+          {actions.cancel ? (
+            <Button
+              variant="destructive"
+              nativeButton={false}
+              render={<Link href={`/portal/bookings/${booking.id}/cancel`} />}
+            >
+              Request Cancellation
+            </Button>
+          ) : null}
+          {!payNowHref && !actions.reschedule && !actions.cancel ? (
+            <p className="booking-actions-note">
+              No customer requests are available for this booking. The studio handles any further
+              changes or pending requests.
+            </p>
+          ) : null}
+        </div>
       </section>
     </div>
   );
