@@ -157,6 +157,19 @@ for (const route of API_CONTRACT_ROUTES) {
                     capacity: { type: "integer", minimum: 1, maximum: 200 },
                     customerPrice: { type: "string", pattern: "^[0-9]+$" },
                     status: { type: "string", enum: ["DRAFT", "PUBLISHED"] },
+                    bookable: { type: "boolean", default: true },
+                    cancellable: {
+                      type: "boolean",
+                      default: true,
+                      description:
+                        "Customers may open a cancellation request for bookings on this session. Turn off for one-off events; staff actions are unaffected.",
+                    },
+                    reschedulable: {
+                      type: "boolean",
+                      default: true,
+                      description:
+                        "Customers may open a reschedule request from bookings on this session. Does not block being chosen as a reschedule target.",
+                    },
                   },
                   additionalProperties: false,
                 },
@@ -362,6 +375,8 @@ const spec = {
             type: "string",
             enum: [
               "booking_cutoff_reached",
+              "booking_not_cancellable",
+              "booking_not_reschedulable",
               "duplicate_active_reservation",
               "missing_required_policy_acceptance",
               "session_not_reservable",

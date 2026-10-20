@@ -24,6 +24,8 @@ const session: PublicSessionPageData = {
   reservable: true,
   availability: "nearly_full",
   status: "PUBLISHED",
+  cancellable: true,
+  reschedulable: true,
   venue: { name: "Balansé Studio", address: "Unit 2A, Cebu City" },
   event: null,
 };

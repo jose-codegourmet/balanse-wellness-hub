@@ -12,6 +12,8 @@ export const sessionFormDefaultValues: SessionFormValues = {
   pricePhp: 0,
   capacity: 1,
   bookable: true,
+  cancellable: true,
+  reschedulable: true,
   status: "DRAFT",
   repeat: "none",
   repeatWeekdays: [],
@@ -34,6 +36,8 @@ export function sessionFormValuesFromSession(
     pricePhp: session.pricePhp,
     capacity: session.capacity,
     bookable: session.bookable,
+    cancellable: session.cancellable,
+    reschedulable: session.reschedulable,
     status: session.status,
     repeat: "none",
     repeatWeekdays: [],
@@ -48,5 +52,7 @@ export function sessionFormValuesForDate(ymd: string): SessionFormValues {
     endsAt: toSessionIso(ymd, DEFAULT_END),
     status: "PUBLISHED",
     bookable: true,
+    cancellable: true,
+    reschedulable: true,
   };
 }

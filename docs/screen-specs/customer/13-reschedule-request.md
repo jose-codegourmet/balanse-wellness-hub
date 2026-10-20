@@ -21,6 +21,7 @@ Current session → preferred new session
 - The empty state keeps the current slot held and offers Back to booking.
 - A target that fills or passes cutoff between load and submit still returns the server error on the field ("That session just filled…"), so the race is handled without listing unavailable rows.
 - No same-class or price-difference filtering (canonical rules 51 and 64; OQ-2 stays open).
+- When the booking's own session has `reschedulable = false` (#380) the route renders a notice with Back to booking instead of the picker; the API answers `409 booking_not_reschedulable`. A target session's rule does not stop it from being picked.
 
 Submitting records a preference; it does not change the current booking until the studio resolves
 the request. Open business rules: same-class restriction, price differences, cutoff, max

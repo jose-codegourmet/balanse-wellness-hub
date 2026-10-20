@@ -31,6 +31,12 @@ is returned with `GET /api/me`.
 
 `POST /api/admin/sessions/duplicate` copies non-cancelled sessions from an inclusive source range of at most 63 days to a new start date. `POST /api/admin/sessions/{id}/recurrence` stores a bounded weekly rule (one or more weekdays, at most one year) and eagerly creates ordinary session rows. Both endpoints are admin-only, default generated sessions to `DRAFT`, skip exact class/start-time matches, reject inactive class/coach/venue references, copy the source session's venue, capture current coach rates, and never copy bookings.
 
+## Per-session change rules (#380)
+
+`GymSession.cancellable` and `GymSession.reschedulable` (both default `true`) decide whether customers may open a cancellation or reschedule request for bookings on that session. Session `POST` / `PATCH` accept both booleans; `PATCH` leaves an omitted flag unchanged. Duplicate and recurrence copy them from the template so a series keeps its terms. Admin and public session payloads (`AdminSession`, `PublicSession`, `PublicSessionPage`, the customer booking's `session`, and `AdminEventSessionSnapshot`) expose both fields; the public detail and event routes read them beside their `app_public` RPCs rather than widening the RPC row.
+
+`POST /api/bookings/{id}/cancellation-request` returns `409 booking_not_cancellable` when the booking's session has `cancellable = false`; `POST /api/bookings/{id}/reschedule-request` returns `409 booking_not_reschedulable` when the **origin** session has `reschedulable = false`. A target session's rule never blocks it from being chosen. Staff actions are unchanged: sessions and bookings can still be cancelled by staff, and refunds stay manual (canonical rule 47). These are capabilities, not deadlines or price rules (canonical rules 42–51, 63–64).
+
 ## Classes
 
 | Method | Path | Permission (any of) |

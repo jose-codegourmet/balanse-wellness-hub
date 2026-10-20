@@ -54,6 +54,7 @@ The exact method/path list is generated from `packages/db/contracts/routes.ts`; 
 
 | Change | Status (2026-10-13) | Capabilities touched |
 | --- | --- | --- |
+| [session-change-rules](changes/session-change-rules/proposal.md) | implemented 2026-10-20 (#380) | catalogue and scheduling, booking lifecycle, events, FE customer/admin screens, platform and data |
 | [reschedule-picker-reservable-only](changes/reschedule-picker-reservable-only/proposal.md) | implemented 2026-10-20 (#379) | FE customer screens |
 | [transactions-ledger-read-model](changes/transactions-ledger-read-model/proposal.md) | implemented 2026-10-20 (#378) | reporting and operations, FE admin screens, platform and data |
 | [wire-e03-no-more-mocks](changes/wire-e03-no-more-mocks/proposal.md) | implemented, uncommitted | base spec rewording, new capability specs, admin hydration |

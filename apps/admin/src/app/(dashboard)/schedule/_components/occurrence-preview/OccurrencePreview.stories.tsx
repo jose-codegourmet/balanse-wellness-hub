@@ -21,6 +21,8 @@ const busy = {
   reservable: true,
   availability: "open",
   status: "PUBLISHED",
+  cancellable: true,
+  reschedulable: true,
   bookable: true,
 } satisfies AdminSession;
 

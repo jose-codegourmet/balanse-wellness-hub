@@ -18,6 +18,10 @@ ACTIONS
 
 Confirmed booking can be shown to staff but is not necessarily an official receipt.
 
+## Change rules (#380)
+
+`customerBookingActions(status, session)` hides Request Reschedule or Request Cancellation when the session refuses that request, and an informational advisory (“No cancellations · No reschedules” / “Bookings on this session cannot be … by request. If something comes up, contact the studio.”) explains the missing action. Deep links to `/cancel` and `/reschedule` render the same notice with Back to booking instead of the form.
+
 ## Invite friends (#343, #350)
 
 - Shown for upcoming bookings in `CONFIRMED`, `HELD_AWAITING_PAYMENT` or `PAYMENT_SUBMITTED`. Hidden for cancelled, rejected, expired and past bookings.

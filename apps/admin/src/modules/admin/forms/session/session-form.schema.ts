@@ -78,6 +78,9 @@ const sessionFields = {
     .min(FIELD_CONSTRAINTS.session.capacity.min)
     .max(FIELD_CONSTRAINTS.session.capacity.max),
   bookable: z.boolean(),
+  /** #380 — customer change rules; off for one-off events. */
+  cancellable: z.boolean(),
+  reschedulable: z.boolean(),
   status: z.enum(SESSION_STATUSES),
   /** Create only. "weekly" turns the new session into the first of a weekly series. */
   repeat: z.enum(["none", "weekly"]),

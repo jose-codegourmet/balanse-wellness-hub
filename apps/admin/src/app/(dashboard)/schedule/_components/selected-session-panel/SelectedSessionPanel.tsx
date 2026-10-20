@@ -9,6 +9,7 @@ import {
   formatSessionDate,
   formatSessionTimeRange,
   manilaYmd,
+  sessionChangeRuleLabels,
   sessionDisplayName,
   sessionStatusLabel,
   venueKindLabel,
@@ -286,6 +287,11 @@ function SessionDetail({
               Weekly series
             </Badge>
           ) : null}
+          {sessionChangeRuleLabels(session).map((label) => (
+            <Badge key={label} variant="neutral">
+              {label}
+            </Badge>
+          ))}
         </div>
         <h3 className={cn("font-display text-2xl leading-tight", cancelled && "line-through")}>
           {sessionDisplayName(session)}

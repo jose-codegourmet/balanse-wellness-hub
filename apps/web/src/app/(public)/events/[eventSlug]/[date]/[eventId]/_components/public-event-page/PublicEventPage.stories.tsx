@@ -45,6 +45,8 @@ const event: PublicEventPageData = {
     reservable: true,
     availability: "open",
     status: "PUBLISHED",
+    cancellable: true,
+    reschedulable: true,
     venue: { name: "Mandani Bay — Garden Area", address: "Mandaue City, Cebu" },
     event: { id: "event-pilates-cause", title: "Pilates for a Cause", status: "PUBLISHED" },
   },

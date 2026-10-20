@@ -12,7 +12,7 @@ Class | date/time | coaches | capacity
 [Make Recurring]
 ```
 
-Create/Edit fields: class, date, start/end, coaches (multi-select; at least one required), price, capacity, publish/bookable state.
+Create/Edit fields: class, date, start/end, coaches (multi-select; at least one required), price, capacity, publish/bookable state, and two customer-change switches (#380) in the Visibility section: “Customers can request cancellation” and “Customers can request a reschedule”, helper “Turn off for one-off events. Staff can still cancel or move the session, and refunds stay manual.” Both default on; the summary panel shows “No cancellations · No reschedules” when either is off, and the selected-session panel and event detail show the same badge. Turning a rule off on a session that already has held or confirmed bookings is allowed and shows an inline warning with the count. Duplicate and Make Recurring copy the switches.
 `Duplicate Range` copies non-cancelled sessions from an inclusive source range to a new start date. `Make Recurring` uses the selected session as a weekly template with weekday, date-range, and draft/publish controls. Both surfaces preview the generated count and explain that exact matches are skipped. Coaches do not edit schedules.
 
 ## Schedule scope

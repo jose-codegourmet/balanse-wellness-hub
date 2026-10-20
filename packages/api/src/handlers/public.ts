@@ -67,6 +67,8 @@ async function publicSessionDto(
     capacity: number;
     status: SessionStatus;
     customerPrice: unknown;
+    cancellable: boolean;
+    reschedulable: boolean;
     gymClass: { id: string; name: string };
     coaches: { coach: { id: string; name: string; photoKey: string | null } }[];
   },
@@ -103,6 +105,8 @@ async function publicSessionDto(
       remainingSlots > 0,
     availability,
     status: session.status,
+    cancellable: session.cancellable,
+    reschedulable: session.reschedulable,
   };
 }
 
@@ -119,6 +123,8 @@ export async function getPublicSessions(deps: ApiDeps, req: Request): Promise<Re
       capacity: true,
       status: true,
       customerPrice: true,
+      cancellable: true,
+      reschedulable: true,
       gymClass: { select: { id: true, name: true } },
       coaches: { select: { coach: { select: { id: true, name: true, photoKey: true } } } },
     },
@@ -177,10 +183,17 @@ export async function getPublicSession(
   );
   const row = rows[0];
   if (!row) throw new ApiError(404, "session_not_found", "Session not found.");
-  const gymClass = await deps.prisma.gymClass.findUnique({
-    where: { id: row.class_id },
-    select: { shortDescription: true, heroImage: true },
-  });
+  const [gymClass, changeRules] = await Promise.all([
+    deps.prisma.gymClass.findUnique({
+      where: { id: row.class_id },
+      select: { shortDescription: true, heroImage: true },
+    }),
+    // #380 — plain columns read beside the RPC rather than widening its row type.
+    deps.prisma.gymSession.findUnique({
+      where: { id },
+      select: { cancellable: true, reschedulable: true },
+    }),
+  ]);
   const now = deps.now();
   const pastStart = now >= row.starts_at;
   const pastCutoff = await sessionPastCutoff(deps, id);
@@ -215,6 +228,8 @@ export async function getPublicSession(
       row.remaining_slots > 0,
     availability,
     status: row.status,
+    cancellable: changeRules?.cancellable ?? true,
+    reschedulable: changeRules?.reschedulable ?? true,
     classSlug: row.class_slug,
     classShortDescription: gymClass?.shortDescription ?? "",
     heroImage: gymClass?.heroImage ?? null,
@@ -274,10 +289,17 @@ export async function getPublicEvent(deps: ApiDeps, _req: Request, id: string): 
   );
   const row = rows[0];
   if (!row) throw new ApiError(404, "event_not_found", "Event not found.");
-  const gymClass = await deps.prisma.gymClass.findUnique({
-    where: { id: row.class_id },
-    select: { shortDescription: true, heroImage: true },
-  });
+  const [gymClass, changeRules] = await Promise.all([
+    deps.prisma.gymClass.findUnique({
+      where: { id: row.class_id },
+      select: { shortDescription: true, heroImage: true },
+    }),
+    // #380 — same side read as the session page; the event RPC row stays unchanged.
+    deps.prisma.gymSession.findUnique({
+      where: { id: row.session_id },
+      select: { cancellable: true, reschedulable: true },
+    }),
+  ]);
   const now = deps.now();
   const availability = sessionAvailability({
     status: row.session_status,
@@ -310,6 +332,8 @@ export async function getPublicEvent(deps: ApiDeps, _req: Request, id: string): 
       row.remaining_slots > 0,
     availability,
     status: row.session_status,
+    cancellable: changeRules?.cancellable ?? true,
+    reschedulable: changeRules?.reschedulable ?? true,
     classSlug: row.class_slug,
     classShortDescription: gymClass?.shortDescription ?? "",
     heroImage: gymClass?.heroImage ?? null,

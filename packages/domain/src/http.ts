@@ -46,6 +46,9 @@ export type HttpBooking = {
     coachName: string;
     coaches: HttpSessionCoachSummary[];
     customerPrice: string;
+    /** #380 — per-session change rules; the detail page hides the blocked request. */
+    cancellable: boolean;
+    reschedulable: boolean;
   };
   status: BookingStatus;
   statusLabel: string;

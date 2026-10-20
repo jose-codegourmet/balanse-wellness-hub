@@ -119,6 +119,8 @@ function snapshotFromLive(
     customerPrice: session.pricePhp.toFixed(2),
     status: session.status,
     statusLabel: sessionStatusLabel(session.status),
+    cancellable: session.cancellable,
+    reschedulable: session.reschedulable,
     venue: venueSnapshot(session.venueId, venues),
   };
 }
@@ -136,6 +138,8 @@ function snapshotFromFixture(
     customerPrice: session.customerPrice,
     status: session.status,
     statusLabel: sessionStatusLabel(session.status),
+    cancellable: true,
+    reschedulable: true,
     venue: venueSnapshot(session.venueId, venues),
   };
 }

@@ -29,6 +29,8 @@ const meta = {
     pricePhp: 550,
     status: "PUBLISHED",
     bookable: true,
+    cancellable: true,
+    reschedulable: true,
     occurrences: planOccurrences({ startsAt, endsAt, repeat: null }, context),
     editing: false,
   },

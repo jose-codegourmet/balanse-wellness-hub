@@ -22,6 +22,8 @@ const session: PublicSessionPage = {
   reservable: true,
   availability: "open",
   status: "PUBLISHED",
+  cancellable: true,
+  reschedulable: true,
   venue: null,
   event: null,
 };

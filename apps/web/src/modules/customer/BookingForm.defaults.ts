@@ -1,3 +1,6 @@
 import type { BookingFormValues } from "./BookingForm.schema";
 
-export const bookingFormDefaults: BookingFormValues = { entitlementId: "" };
+export const bookingFormDefaults: BookingFormValues = {
+  entitlementId: "",
+  acknowledgeChangeRules: false,
+};

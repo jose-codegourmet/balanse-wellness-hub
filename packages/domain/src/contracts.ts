@@ -145,6 +145,9 @@ export const FIELD_CONSTRAINTS = {
     customerPrice: { required: true, min: 1, unit: MONEY_UNIT, lockedOncePaid: true },
     capacity: { required: true, min: 1, max: 200, notBelowConsumed: true },
     bookable: { required: false, type: "boolean" },
+    /** #380 — default true. Off for one-off events; gates customer requests only. */
+    cancellable: { required: false, type: "boolean" },
+    reschedulable: { required: false, type: "boolean" },
     status: { required: false, enum: ["DRAFT", "PUBLISHED", "CANCELLED"] },
     coachAssignments: { adminOnly: true, readOnly: true, snapshot: true },
   },
@@ -344,6 +347,9 @@ export type AdminEventSessionSnapshot = {
   customerPrice: string;
   status: SessionStatus;
   statusLabel: string;
+  /** #380 — per-session change rules, shown on the event detail. */
+  cancellable: boolean;
+  reschedulable: boolean;
   /** The session's venue. Events do not store their own. */
   venue: AdminEventVenue | null;
 };

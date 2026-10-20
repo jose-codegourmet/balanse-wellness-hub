@@ -77,6 +77,9 @@ export type SessionInput = {
   pricePhp: number;
   capacity: number;
   bookable: boolean;
+  /** #380 — omitted means unchanged on PATCH and `true` on POST. */
+  cancellable?: boolean;
+  reschedulable?: boolean;
   status: SessionStatus;
 };
 

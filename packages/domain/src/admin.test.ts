@@ -29,6 +29,8 @@ const session = (id: string, extras: Partial<AdminSession> = {}): AdminSession =
   reservable: true,
   availability: "open",
   status: "PUBLISHED",
+  cancellable: true,
+  reschedulable: true,
   bookable: true,
   coachRatePhp: 650,
   ...extras,

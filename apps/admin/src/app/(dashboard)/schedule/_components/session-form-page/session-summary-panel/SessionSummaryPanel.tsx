@@ -4,10 +4,18 @@ import {
   formatPeso,
   formatSessionDate,
   formatSessionTimeRange,
+  sessionChangeRulesLabel,
   venueKindLabel,
 } from "@balanse/domain";
 import { Badge } from "@balanse/ui";
-import { CalendarIcon, CoinsIcon, DumbbellIcon, MapPinIcon, UsersIcon } from "lucide-react";
+import {
+  BanIcon,
+  CalendarIcon,
+  CoinsIcon,
+  DumbbellIcon,
+  MapPinIcon,
+  UsersIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { occurrenceWillBeSkipped } from "../../../_lib/session-occurrences";
 import { conflictLabel, OccurrencePreview } from "../../occurrence-preview/OccurrencePreview";
@@ -25,10 +33,13 @@ export function SessionSummaryPanel({
   pricePhp,
   status,
   bookable,
+  cancellable,
+  reschedulable,
   occurrences,
   rateLines,
   editing,
 }: SessionSummaryPanelProps) {
+  const changeRules = sessionChangeRulesLabel({ cancellable, reschedulable });
   const timed = Number.isFinite(Date.parse(startsAt)) && Number.isFinite(Date.parse(endsAt));
   const repeating = occurrences.length > 1;
   const creating = occurrences.filter((row) => !occurrenceWillBeSkipped(row)).length;
@@ -109,6 +120,7 @@ export function SessionSummaryPanel({
             <Fact icon={CoinsIcon}>
               {formatPeso(pricePhp)} · {capacity} {capacity === 1 ? "spot" : "spots"}
             </Fact>
+            {changeRules ? <Fact icon={BanIcon}>{changeRules}</Fact> : null}
           </ul>
           {!repeating && firstConflicts.length > 0 ? (
             <ul className="grid gap-1.5 border-t border-border pt-3">

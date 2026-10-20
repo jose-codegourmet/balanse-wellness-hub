@@ -99,6 +99,8 @@ function presentBooking(booking: Awaited<ReturnType<typeof loadOwnBooking>>) {
       capacity: booking.session.capacity,
       remainingSlots: 0,
       status: booking.session.status,
+      cancellable: booking.session.cancellable,
+      reschedulable: booking.session.reschedulable,
     },
     ...bookingStatusPayload(booking.status, refund?.status),
   };
@@ -424,6 +426,15 @@ export async function postCancellationRequest(
 ): Promise<Response> {
   const actor = requireCustomer(await resolveActor(deps, req));
   const booking = await loadOwnBooking(deps, id, actor.userId);
+  // #380 — a session can refuse customer cancellation requests (one-off events).
+  // Staff can still cancel the booking or the session; refunds stay manual.
+  if (!booking.session.cancellable) {
+    throw new ApiError(
+      409,
+      "booking_not_cancellable",
+      "This session does not accept cancellation requests. Contact the studio if you need help.",
+    );
+  }
   const open = await deps.prisma.cancellationRequest.findFirst({
     where: { bookingId: booking.id, resolution: "OPEN" },
   });
@@ -455,6 +466,15 @@ export async function postRescheduleRequest(
 ): Promise<Response> {
   const actor = requireCustomer(await resolveActor(deps, req));
   const booking = await loadOwnBooking(deps, id, actor.userId);
+  // #380 — the origin session decides; a target session's rule never blocks
+  // being chosen as the preferred alternative.
+  if (!booking.session.reschedulable) {
+    throw new ApiError(
+      409,
+      "booking_not_reschedulable",
+      "This session does not accept reschedule requests. Contact the studio if you need help.",
+    );
+  }
   const open = await deps.prisma.rescheduleRequest.findFirst({
     where: { bookingId: booking.id, resolution: "OPEN" },
   });

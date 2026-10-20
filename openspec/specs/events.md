@@ -2,7 +2,7 @@
 
 ## Requirements
 
-1. An event is a `1:0..1` `SessionEvent` wrapper on one `GymSession`. The session is the bookable unit. Capacity, booking cutoff, manual payment, cancellation, reschedule, roster, and reporting rules apply unchanged. The event does not copy price, capacity, date, time, or coach assignments.
+1. An event is a `1:0..1` `SessionEvent` wrapper on one `GymSession`. The session is the bookable unit. Capacity, booking cutoff, manual payment, cancellation, reschedule (including the session's customer-change switches, #380), roster, and reporting rules apply unchanged. The event does not copy price, capacity, date, time, or coach assignments.
 2. Admin lists and opens events at `/events` and `/events/[eventId]`. Authoring is nested at `/schedule/[sessionId]/event`, the same way recurrence nests under a session. `/events/new` is the session picker for create. A session that already has an event cannot take a second one.
 3. Event status is `DRAFT` | `PUBLISHED` | `CANCELLED` | `ARCHIVED`, separate from session status. An event cannot be published while its session is `DRAFT` (or otherwise unpublished). Cancelling the session surfaces a still-live event as cancelled. Archiving an event never touches the session or its bookings. Cancelling an event does not cancel the session or its bookings.
 4. Event content is title, summary, description, poster, gallery, beneficiary, what to bring, internal notes, and an optional registration window. That window does not replace the canonical booking cutoff. Session date, time, venue, capacity, and price are edited on the session form. The event has no venue of its own; it shows its session's venue (`AdminEvent.session.venue`, see `venues.md`).

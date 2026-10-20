@@ -27,6 +27,7 @@ export * from "./public-pages";
 export * from "./public-share";
 export * from "./recurrence";
 export * from "./roles";
+export * from "./session-change-rules";
 export * from "./status-language";
 export * from "./toast-copy";
 export * from "./transactions";

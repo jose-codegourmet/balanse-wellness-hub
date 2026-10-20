@@ -35,6 +35,8 @@ const eventInclude = {
       capacity: true,
       customerPrice: true,
       status: true,
+      cancellable: true,
+      reschedulable: true,
       venue: { select: { id: true, name: true, address: true, kind: true } },
     },
   },
@@ -114,6 +116,8 @@ export function presentAdminEvent(row: EventRow): AdminEvent {
       customerPrice: php(row.session.customerPrice),
       status: row.session.status,
       statusLabel: sessionStatusLabel(row.session.status),
+      cancellable: row.session.cancellable,
+      reschedulable: row.session.reschedulable,
       // Venue is required on sessions; `null` in the contract covers not-yet-migrated data.
       venue: {
         id: row.session.venue.id,

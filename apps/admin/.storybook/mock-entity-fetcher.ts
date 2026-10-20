@@ -107,6 +107,8 @@ export const mockEntityFetcher: ApiFetcher = async (path, init) => {
       pricePhp: Number(body.customerPrice ?? current.pricePhp),
       capacity: (body.capacity as number | undefined) ?? current.capacity,
       bookable: (body.bookable as boolean | undefined) ?? current.bookable,
+      cancellable: (body.cancellable as boolean | undefined) ?? current.cancellable,
+      reschedulable: (body.reschedulable as boolean | undefined) ?? current.reschedulable,
       status: (body.status as typeof current.status | undefined) ?? current.status,
     });
     return { session: updated } as never;

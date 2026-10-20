@@ -4,6 +4,7 @@ import { apiFetchBrowser } from "@balanse/api-client/browser";
 import {
   EVENT_CONFLICT_MESSAGES,
   formatSessionRange,
+  sessionChangeRulesLabel,
   sessionStatusLabel,
   venueKindLabel,
 } from "@balanse/domain";
@@ -243,6 +244,11 @@ export function EventDetailPage({ eventId, loading, error, preview }: EventDetai
             <Stat label="Price" value={eventPriceLabel(event)} />
             <Stat label="Session" value={sessionStatusLabel(event.session.status)} />
           </dl>
+          {sessionChangeRulesLabel(event.session) ? (
+            <p className="mt-3 text-xs text-muted-foreground">
+              {sessionChangeRulesLabel(event.session)} · customers cannot request these changes.
+            </p>
+          ) : null}
           {event.isPlaceholder ? (
             <p className="mt-3 text-xs text-muted-foreground">
               This session price is a non-authoritative placeholder (OQ-PRICE).

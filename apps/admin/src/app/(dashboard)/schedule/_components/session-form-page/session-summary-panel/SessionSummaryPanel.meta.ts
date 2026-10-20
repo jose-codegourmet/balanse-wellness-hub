@@ -21,6 +21,9 @@ export type SessionSummaryPanelProps = {
   pricePhp: number;
   status: SessionStatus;
   bookable: boolean;
+  /** #380 — customer change rules; a "No cancellations · No reschedules" fact when either is off. */
+  cancellable: boolean;
+  reschedulable: boolean;
   occurrences: readonly PlannedOccurrence[];
   /** Admin-only rate snapshot lines. Omit when the viewer lacks coach_rates.read. */
   rateLines?: { coachName: string; label: string; note: string }[];

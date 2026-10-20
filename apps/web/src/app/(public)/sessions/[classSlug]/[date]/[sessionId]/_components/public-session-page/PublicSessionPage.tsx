@@ -2,6 +2,7 @@ import {
   formatSessionDate,
   formatSessionTimeRange,
   sessionAvailabilityLabel,
+  sessionChangeRuleLabels,
   sessionDisplayName,
 } from "@balanse/domain";
 import { Badge } from "@balanse/ui";
@@ -65,6 +66,11 @@ export function PublicSessionPage({
               <Badge variant={cancelled ? "danger" : "accent"} appearance="soft">
                 {sessionAvailabilityLabel(session.availability)}
               </Badge>
+              {sessionChangeRuleLabels(session).map((label) => (
+                <Badge key={label} variant="neutral" appearance="soft">
+                  {label}
+                </Badge>
+              ))}
             </div>
             <h1 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">{title}</h1>
             <p className="mt-4 text-base opacity-90 sm:text-lg">{subtitle}</p>

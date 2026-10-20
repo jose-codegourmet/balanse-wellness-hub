@@ -3,9 +3,10 @@ import {
   formatSessionDate,
   formatSessionTimeRange,
   sessionAvailabilityLabel,
+  sessionChangeRulesLabel,
 } from "@balanse/domain";
 import { CoachPhoto } from "@balanse/ui";
-import { CalendarDays, Clock3, MapPin, Ticket, Users } from "lucide-react";
+import { Ban, CalendarDays, Clock3, MapPin, Ticket, Users } from "lucide-react";
 import Link from "next/link";
 import type { PublicSessionDetailsProps } from "./PublicSessionDetails.meta";
 
@@ -28,6 +29,7 @@ export function PublicSessionDetails({
       : session.remainingSlots > 0
         ? `${session.remainingSlots} of ${session.capacity} spots left`
         : `Full · ${session.capacity} spots`;
+  const changeRules = sessionChangeRulesLabel(session);
   const facts = [
     {
       icon: CalendarDays,
@@ -57,6 +59,14 @@ export function PublicSessionDetails({
           label: "Spots",
           value: spots,
           detail: sessionAvailabilityLabel(session.availability),
+        }
+      : null,
+    changeRules
+      ? {
+          icon: Ban,
+          label: "Changes",
+          value: changeRules,
+          detail: "Requests are not accepted for this session.",
         }
       : null,
   ].filter((fact): fact is NonNullable<typeof fact> => fact !== null);

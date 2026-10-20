@@ -33,6 +33,9 @@ export type BookingWire = {
     remainingSlots?: number;
     reservable?: boolean;
     status?: PublicSession["status"];
+    /** #380 — absent on admin queue rows, which never show customer actions. */
+    cancellable?: boolean;
+    reschedulable?: boolean;
   };
   targetSession?: BookingWire["session"] | null;
   cancellationReason?: string | null;
@@ -64,6 +67,8 @@ function presentSession(row: BookingWire["session"]): PublicSession {
     reservable: row.reservable ?? (status === "PUBLISHED" && remainingSlots > 0),
     availability: remainingSlots > 0 ? "open" : "full_with_waitlist",
     status,
+    cancellable: row.cancellable ?? true,
+    reschedulable: row.reschedulable ?? true,
   };
 }
 

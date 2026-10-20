@@ -234,6 +234,8 @@ export function SessionFormPage({
             pricePhp: values.pricePhp,
             capacity: values.capacity,
             bookable: values.bookable,
+            cancellable: values.cancellable,
+            reschedulable: values.reschedulable,
             status: values.status,
           });
         } catch (error) {
@@ -266,6 +268,7 @@ export function SessionFormPage({
         canSeeRates={canSeeRates}
         priceLocked={priceLocked}
         paidCount={paidCount}
+        consumed={consumed}
         canCancel={!isNew && existing?.status !== "CANCELLED" && canCancelSession}
         surface={surface}
         onLeaveList={leaveList}
@@ -356,6 +359,7 @@ function SessionComposer({
   canSeeRates,
   priceLocked,
   paidCount,
+  consumed,
   canCancel,
   surface,
   onLeaveList,
@@ -372,6 +376,8 @@ function SessionComposer({
   /** Someone already paid at the saved price, so `pricePhp` is read-only (API: `price_locked`). */
   priceLocked: boolean;
   paidCount: number;
+  /** Held + confirmed bookings on the saved session; drives the change-rule warning (#380). */
+  consumed: number;
   canCancel: boolean;
   surface: "overlay" | "page";
   onLeaveList: () => void;
@@ -639,7 +645,7 @@ function SessionComposer({
           </ComposerSection>
 
           <ComposerSection icon={EyeIcon} title="Visibility">
-            <VisibilityFields />
+            <VisibilityFields consumed={consumed} existing={existing} />
           </ComposerSection>
         </div>
 
@@ -656,6 +662,8 @@ function SessionComposer({
             pricePhp={Number(values.pricePhp) || 0}
             status={values.status}
             bookable={values.bookable}
+            cancellable={values.cancellable}
+            reschedulable={values.reschedulable}
             occurrences={occurrences}
             rateLines={rateLines}
             editing={!isNew}
@@ -922,10 +930,18 @@ function CapacityStepper({ value, onChange }: { value: number; onChange: (next: 
   );
 }
 
-function VisibilityFields() {
+function VisibilityFields({ consumed, existing }: { consumed: number; existing?: AdminSession }) {
   const form = useAdminFormContext<SessionFormValues>();
   const status = form.watch("status");
+  const cancellable = form.watch("cancellable");
+  const reschedulable = form.watch("reschedulable");
   const name = useId();
+  // Tightening a rule after customers booked changes their terms: allowed, but say so (#380).
+  const termsChanging =
+    Boolean(existing) &&
+    consumed > 0 &&
+    ((existing?.cancellable === true && !cancellable) ||
+      (existing?.reschedulable === true && !reschedulable));
 
   if (status === "CANCELLED") {
     return (
@@ -979,6 +995,35 @@ function VisibilityFields() {
           {(field) => <BooleanBinding {...field} as="switch" />}
         </FormField>
       ) : null}
+      <div className="grid gap-3 border-t border-border pt-4">
+        <div className="grid gap-0.5">
+          <p className="text-sm font-medium">Customer changes</p>
+          <p className="text-sm text-muted-foreground">
+            Turn off for one-off events. Staff can still cancel or move the session, and refunds
+            stay manual.
+          </p>
+        </div>
+        <FormField
+          name="cancellable"
+          label="Customers can request cancellation"
+          orientation="horizontal"
+        >
+          {(field) => <BooleanBinding {...field} as="switch" />}
+        </FormField>
+        <FormField
+          name="reschedulable"
+          label="Customers can request a reschedule"
+          orientation="horizontal"
+        >
+          {(field) => <BooleanBinding {...field} as="switch" />}
+        </FormField>
+        {termsChanging ? (
+          <p role="status" className="rounded-lg bg-muted/50 px-3 py-2 text-xs">
+            Turning this off changes the terms for {consumed} existing{" "}
+            {consumed === 1 ? "booking" : "bookings"}. Tell those customers before you save.
+          </p>
+        ) : null}
+      </div>
     </div>
   );
 }

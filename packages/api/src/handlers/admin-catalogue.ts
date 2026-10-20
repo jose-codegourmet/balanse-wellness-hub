@@ -146,6 +146,8 @@ export type AdminSessionRow = {
   capacity: number;
   status: "DRAFT" | "PUBLISHED" | "CANCELLED";
   bookable: boolean;
+  cancellable: boolean;
+  reschedulable: boolean;
   customerPrice: Prisma.Decimal;
   recurrenceRuleId: string | null;
   gymClass: { name: string };
@@ -204,6 +206,8 @@ export async function presentAdminSession(
       remainingSlots > 0,
     availability,
     status: session.status,
+    cancellable: session.cancellable,
+    reschedulable: session.reschedulable,
     venueId: session.venueId,
     bookable: session.bookable,
     coachRatePhp: coachAssignments.reduce(
@@ -636,6 +640,9 @@ export async function postAdminSession(deps: ApiDeps, req: Request): Promise<Res
   const coachIds = parseCoachIds(body.coachIds);
   const name = optionalNullableString(body, "name", FIELD_CONSTRAINTS.session.name.max) ?? null;
   const bookable = typeof body.bookable === "boolean" ? body.bookable : true;
+  // #380 — change rules default on; only one-off events turn them off.
+  const cancellable = typeof body.cancellable === "boolean" ? body.cancellable : true;
+  const reschedulable = typeof body.reschedulable === "boolean" ? body.reschedulable : true;
   assertSessionWindow(startsAt, endsAt);
   const created = await deps.prisma.$transaction(async (tx) => {
     await assertActiveClass(tx, classId);
@@ -647,6 +654,8 @@ export async function postAdminSession(deps: ApiDeps, req: Request): Promise<Res
         venueId,
         name,
         bookable,
+        cancellable,
+        reschedulable,
         startsAt: new Date(startsAt),
         endsAt: new Date(endsAt),
         capacity,
@@ -867,6 +876,8 @@ function generatedSessionData(
     capacity: number;
     customerPrice: Prisma.Decimal;
     bookable: boolean;
+    cancellable: boolean;
+    reschedulable: boolean;
   },
   coaches: Awaited<ReturnType<typeof resolveSessionCoaches>>,
   startsAt: Date,
@@ -877,8 +888,11 @@ function generatedSessionData(
     classId: template.classId,
     venueId: template.venueId,
     // Each generated occurrence is a new instance; a one-off title does not
-    // carry forward, but bookability (e.g. a staff-only series) does.
+    // carry forward, but bookability (e.g. a staff-only series) and the
+    // customer change rules (#380) do, so a series keeps its terms.
     bookable: template.bookable,
+    cancellable: template.cancellable,
+    reschedulable: template.reschedulable,
     startsAt,
     endsAt,
     capacity: template.capacity,
@@ -938,6 +952,8 @@ export async function patchAdminSession(
   );
   const name = optionalNullableString(body, "name", FIELD_CONSTRAINTS.session.name.max);
   const bookable = typeof body.bookable === "boolean" ? body.bookable : undefined;
+  const cancellable = typeof body.cancellable === "boolean" ? body.cancellable : undefined;
+  const reschedulable = typeof body.reschedulable === "boolean" ? body.reschedulable : undefined;
   const updated = await deps.prisma.$transaction(async (tx) => {
     // Serialize assignment replacement and capacity changes on the same session.
     await tx.$queryRawUnsafe("SELECT id FROM public.sessions WHERE id = $1 FOR UPDATE", id);
@@ -1020,6 +1036,8 @@ export async function patchAdminSession(
         ...(customerPrice != null ? { customerPrice } : {}),
         ...(name !== undefined ? { name } : {}),
         ...(bookable !== undefined ? { bookable } : {}),
+        ...(cancellable !== undefined ? { cancellable } : {}),
+        ...(reschedulable !== undefined ? { reschedulable } : {}),
         ...(asString(body.status) === "DRAFT" || asString(body.status) === "PUBLISHED"
           ? { status: asString(body.status) as "DRAFT" | "PUBLISHED" }
           : {}),

@@ -6,6 +6,8 @@ import {
   customerBookingActions,
   paymentMethodLabel,
   paymentStatusLabel,
+  sessionChangeRulesLabel,
+  sessionChangeRulesNotice,
   sessionDisplayName,
 } from "@balanse/domain";
 import { Alert, AlertDescription, AlertTitle, Button } from "@balanse/ui";
@@ -80,6 +82,17 @@ function advisoriesFor(booking: CustomerBooking): Advisory[] {
       body: "Your slot stays held until the studio finishes this request.",
     });
   }
+  // #380 — explain a hidden request action rather than leaving a gap.
+  const byStatus = customerBookingActions(booking.status);
+  const changeRules = sessionChangeRulesNotice(booking.session);
+  if (changeRules && (byStatus.cancel || byStatus.reschedule)) {
+    advisories.push({
+      kind: "informational",
+      icon: Info,
+      title: sessionChangeRulesLabel(booking.session) ?? "Change rules",
+      body: changeRules,
+    });
+  }
   return advisories;
 }
 
@@ -93,7 +106,7 @@ export function BookingDetail({
   /** #350 — built by the route for upcoming active bookings; null hides the card. */
   invite?: InviteFriendsCardProps["invite"] | null;
 }) {
-  const actions = customerBookingActions(booking.status);
+  const actions = customerBookingActions(booking.status, booking.session);
   const advisories = advisoriesFor(booking);
   const mood = bookingMood(booking);
   const { session } = booking;

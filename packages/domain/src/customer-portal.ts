@@ -107,21 +107,34 @@ export function needsAttentionKind(status: BookingStatus): NeedsAttentionKind | 
   return null;
 }
 
-export function customerBookingActions(status: BookingStatus): {
+/**
+ * Which customer requests a booking offers. The status decides first; the
+ * session's change rules (#380) then remove what that session refuses.
+ */
+export function customerBookingActions(
+  status: BookingStatus,
+  session?: { cancellable?: boolean; reschedulable?: boolean },
+): {
   reschedule: boolean;
   cancel: boolean;
 } {
-  switch (status) {
-    case "CONFIRMED":
-    case "HELD_AWAITING_PAYMENT":
-    case "PAYMENT_SUBMITTED":
-      return { reschedule: true, cancel: true };
-    case "WAITLISTED":
-    case "RESCHEDULE_REQUESTED":
-      return { reschedule: false, cancel: true };
-    default:
-      return { reschedule: false, cancel: false };
-  }
+  const byStatus = (() => {
+    switch (status) {
+      case "CONFIRMED":
+      case "HELD_AWAITING_PAYMENT":
+      case "PAYMENT_SUBMITTED":
+        return { reschedule: true, cancel: true };
+      case "WAITLISTED":
+      case "RESCHEDULE_REQUESTED":
+        return { reschedule: false, cancel: true };
+      default:
+        return { reschedule: false, cancel: false };
+    }
+  })();
+  return {
+    reschedule: byStatus.reschedule && session?.reschedulable !== false,
+    cancel: byStatus.cancel && session?.cancellable !== false,
+  };
 }
 
 export function upcomingConfirmed(bookings: CustomerBooking[]): CustomerBooking | null {

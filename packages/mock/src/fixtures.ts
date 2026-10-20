@@ -240,10 +240,16 @@ export function toPublicCoach(coach: AdminCoach): PublicCoach {
 export const publicCoaches: PublicCoach[] = coachRows.map(toPublicCoach);
 
 function session(
-  partial: Omit<PublicSession, "className" | "coachName" | "coaches"> & {
+  partial: Omit<
+    PublicSession,
+    "className" | "coachName" | "coaches" | "cancellable" | "reschedulable"
+  > & {
     className?: string;
     coachName?: string;
     coachIds: string[];
+    /** #380 — default on; stories override per case. */
+    cancellable?: boolean;
+    reschedulable?: boolean;
   },
 ): PublicSession {
   const cls = publicClasses.find((c) => c.id === partial.classId);
@@ -255,6 +261,8 @@ function session(
   const { coachIds: _ids, ...fields } = partial;
   return {
     ...fields,
+    cancellable: partial.cancellable ?? true,
+    reschedulable: partial.reschedulable ?? true,
     coaches: assigned.map(({ id, name, photoKey }) => ({ id, name, photoKey })),
     className: partial.className ?? cls?.name ?? "Class",
     coachName: partial.coachName ?? assigned.map((coach) => coach.name).join(", "),

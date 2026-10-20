@@ -13,11 +13,14 @@ import {
   formatSessionDate,
   formatSessionRange,
   formatSessionsRemaining,
+  sessionChangeAcknowledgement,
+  sessionChangeRulesLabel,
+  sessionChangeRulesNotice,
   sessionDisplayName,
 } from "@balanse/domain";
 import { Button, LocalizedSkeleton } from "@balanse/ui";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarDays, Check, Clock3, ShieldCheck, Ticket, UserRound } from "lucide-react";
+import { Ban, CalendarDays, Check, Clock3, ShieldCheck, Ticket, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -29,7 +32,7 @@ import {
 import { useCreateBooking } from "@/lib/query/mutations/bookings";
 import { notify } from "@/modules/notifications/notify";
 import { bookingFormDefaults } from "./BookingForm.defaults";
-import { type BookingFormValues, bookingFormSchema } from "./BookingForm.schema";
+import { type BookingFormValues, makeBookingFormSchema } from "./BookingForm.schema";
 
 export function BookingForm({
   session,
@@ -53,14 +56,20 @@ export function BookingForm({
   const router = useRouter();
   const policyAcceptance = usePolicyAcceptance(policies);
   const booking = useCreateBooking(profile.id);
+  // #380 — a session may refuse cancellation or reschedule requests; the
+  // customer acknowledges that before reserving (or joining the waitlist).
+  const changeAcknowledgement = sessionChangeAcknowledgement(session);
   const form = useForm<BookingFormValues>({
-    resolver: zodResolver(bookingFormSchema),
+    resolver: zodResolver(
+      makeBookingFormSchema({ requireChangeAcknowledgement: Boolean(changeAcknowledgement) }),
+    ),
     defaultValues: {
       ...bookingFormDefaults,
       entitlementId: entitlements.length === 1 ? (entitlements[0]?.id ?? "") : "",
     },
   });
   const entitlementId = form.watch("entitlementId");
+  const acknowledged = form.watch("acknowledgeChangeRules");
   const [status, setStatus] = useState<"idle" | "submitting">(
     forcedStatus === "submitting" ? "submitting" : "idle",
   );
@@ -109,6 +118,14 @@ export function BookingForm({
               </dt>
               <dd className="mt-2 font-medium">{formatPeso(session.pricePhp)}</dd>
             </div>
+            {changeAcknowledgement ? (
+              <div>
+                <dt className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-primary-foreground/62">
+                  <Ban aria-hidden className="size-3.5" /> Changes
+                </dt>
+                <dd className="mt-2 font-medium">{sessionChangeRulesLabel(session)}</dd>
+              </div>
+            ) : null}
           </dl>
         </div>
       </section>
@@ -232,6 +249,38 @@ export function BookingForm({
             </section>
           ) : null}
 
+          {changeAcknowledgement ? (
+            <section
+              aria-labelledby="booking-change-rules-heading"
+              className="rounded-[1.5rem] border border-border bg-card p-6 sm:p-8"
+            >
+              <p className="text-sm font-semibold text-muted-foreground">Before you reserve</p>
+              <h2
+                id="booking-change-rules-heading"
+                className="font-display mt-2 text-3xl tracking-[-0.04em]"
+              >
+                {sessionChangeRulesLabel(session)}
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+                {sessionChangeRulesNotice(session)}
+              </p>
+              <label className="mt-6 flex items-start gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 size-4 shrink-0"
+                  aria-invalid={form.formState.errors.acknowledgeChangeRules ? true : undefined}
+                  {...form.register("acknowledgeChangeRules")}
+                />
+                <span>{changeAcknowledgement}</span>
+              </label>
+              {form.formState.errors.acknowledgeChangeRules ? (
+                <p role="alert" className="mt-2 text-sm text-destructive">
+                  {form.formState.errors.acknowledgeChangeRules.message}
+                </p>
+              ) : null}
+            </section>
+          ) : null}
+
           {policies.length > 0 ? (
             <section aria-labelledby="booking-policies-heading">
               <p className="text-sm font-semibold text-muted-foreground">Before you reserve</p>
@@ -253,6 +302,7 @@ export function BookingForm({
             type="button"
             variant="accent"
             className="w-full sm:w-auto"
+            disabled={Boolean(changeAcknowledgement) && !acknowledged}
             onClick={() =>
               form.handleSubmit((values) => {
                 if (!policyAcceptance.check()) return;

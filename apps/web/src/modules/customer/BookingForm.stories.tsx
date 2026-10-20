@@ -22,6 +22,10 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Prefill: Story = {};
+/** #380 — a one-off session that refuses cancellation and reschedule requests. */
+export const FinalSession: Story = {
+  args: { session: { ...meta.args.session, cancellable: false, reschedulable: false } },
+};
 export const Waitlist: Story = {
   args: {
     session:

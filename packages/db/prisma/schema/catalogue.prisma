@@ -92,6 +92,10 @@ model GymSession {
   status           SessionStatus @default(DRAFT)
   /// Whether this occurrence can still take new reservations, independent of capacity/status.
   bookable         Boolean       @default(true)
+  /// #380 — customers may open a cancellation request for a booking here. Off for one-off events; staff actions are unaffected.
+  cancellable      Boolean       @default(true)
+  /// #380 — customers may open a reschedule request from a booking here. Does not block being a reschedule target.
+  reschedulable    Boolean       @default(true)
   customerPrice    Decimal       @db.Decimal(12, 2)
   isPlaceholder    Boolean       @default(false)
   createdAt        DateTime      @default(now())

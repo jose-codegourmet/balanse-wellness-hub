@@ -38,6 +38,8 @@ const cancelledSession: AdminEvent = {
     customerPrice: "1000.00",
     status: "CANCELLED",
     statusLabel: "Cancelled",
+    cancellable: true,
+    reschedulable: true,
     venue: {
       id: "venue-mandani-bay",
       name: "Mandani Bay — Garden Area",

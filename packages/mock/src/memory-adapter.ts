@@ -584,6 +584,8 @@ export function createMemoryAdapter(): MockDataAdapter {
       availability: "open",
       status: publish ? "PUBLISHED" : "DRAFT",
       bookable: publish,
+      cancellable: template.cancellable,
+      reschedulable: template.reschedulable,
       recurrenceRuleId,
     };
     return generated;
@@ -875,6 +877,12 @@ export function createMemoryAdapter(): MockDataAdapter {
       applyMockEffects(() => {
         const booking = findBooking(bookingId);
         if (!booking) throw new Error("Booking not found");
+        // #380 — mirrors the API's 409 for a session that refuses cancellation requests.
+        if (!booking.session.cancellable) {
+          throw Object.assign(new Error("This session does not accept cancellation requests."), {
+            code: "booking_not_cancellable",
+          });
+        }
         booking.status = "CANCELLATION_REQUESTED";
         booking.cancellationReason = reason ?? booking.cancellationReason ?? null;
         booking.requestCreatedAt = MOCK_NOW_ISO;
@@ -884,6 +892,12 @@ export function createMemoryAdapter(): MockDataAdapter {
       applyMockEffects(() => {
         const booking = findBooking(bookingId);
         if (!booking) throw new Error("Booking not found");
+        // #380 — the origin session decides; the target's rule never blocks it.
+        if (!booking.session.reschedulable) {
+          throw Object.assign(new Error("This session does not accept reschedule requests."), {
+            code: "booking_not_reschedulable",
+          });
+        }
         const target = sessions.find((s) => s.id === targetSessionId);
         booking.status = "RESCHEDULE_REQUESTED";
         booking.targetSessionId = targetSessionId;
@@ -1145,6 +1159,8 @@ export function createMemoryAdapter(): MockDataAdapter {
             pricePhp: input.pricePhp,
             capacity: input.capacity,
             bookable: input.bookable,
+            cancellable: input.cancellable ?? existing.cancellable,
+            reschedulable: input.reschedulable ?? existing.reschedulable,
             reservable: input.bookable && input.status === "PUBLISHED",
             status: input.status,
           });
@@ -1168,6 +1184,8 @@ export function createMemoryAdapter(): MockDataAdapter {
           availability: "open",
           status: input.status,
           bookable: input.bookable,
+          cancellable: input.cancellable ?? true,
+          reschedulable: input.reschedulable ?? true,
         };
         sessions = [created, ...sessions];
         return clone(created);

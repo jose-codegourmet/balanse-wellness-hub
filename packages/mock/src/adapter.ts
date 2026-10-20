@@ -221,6 +221,9 @@ export type MockDataAdapter = {
     pricePhp: number;
     capacity: number;
     bookable: boolean;
+    /** #380 — default on; omitted on update keeps the saved rule. */
+    cancellable?: boolean;
+    reschedulable?: boolean;
     status: SessionStatus;
   }) => Promise<AdminSession>;
   duplicateAdminSchedule: (input: DuplicateScheduleInput) => Promise<ScheduleGenerationResult>;

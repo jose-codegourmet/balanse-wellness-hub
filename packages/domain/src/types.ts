@@ -67,6 +67,10 @@ export type PublicSession = {
     | "cancelled"
     | "past_cutoff";
   status: SessionStatus;
+  /** #380 — customers may open a cancellation request for a booking on this session. */
+  cancellable: boolean;
+  /** #380 — customers may open a reschedule request from a booking on this session. */
+  reschedulable: boolean;
 };
 
 export type PublicContent = {

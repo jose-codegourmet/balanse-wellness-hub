@@ -15,6 +15,7 @@ import {
   type ScheduleGridView,
   type ShareParams,
   scheduleGridDays,
+  sessionChangeRulesLabel,
   sessionDisplayName,
   withShareParams,
 } from "@balanse/domain";
@@ -28,6 +29,7 @@ import {
 } from "@balanse/ui";
 import {
   BadgeCheck,
+  Ban,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
@@ -612,6 +614,15 @@ export function BalanseBookingCalendar({
                     </dt>
                     <dd>{formatPeso(selected.pricePhp)}</dd>
                   </div>
+                  {sessionChangeRulesLabel(selected) ? (
+                    <div>
+                      <dt>
+                        <Ban className="booking-session-icon" aria-hidden="true" />
+                        Changes
+                      </dt>
+                      <dd>{sessionChangeRulesLabel(selected)}</dd>
+                    </div>
+                  ) : null}
                 </dl>
               </section>
               <div className="booking-session-footer">
