@@ -46,7 +46,7 @@ The exact method/path list is generated from `packages/db/contracts/routes.ts`; 
 | `/api/admin/bundles`, `/packages`, `/package-acquisitions` | [Session bundles](specs/session-bundles.md) |
 | `/api/admin/staff`, `/roles`, `/permissions`, `/customers`, `/coach/students`, `/me` | [Staff roles and permissions](specs/staff-roles-and-permissions.md), [identity and onboarding](specs/identity-and-onboarding.md) |
 | `/api/admin/settings` and its FAQ, policy and QR subroutes | [Policies and content](specs/policies-and-content.md), [payments and refunds](specs/payments-and-refunds.md) |
-| `/api/admin/dashboard`, `/reports`, `/marketing-insights` | [Reporting and operations](specs/reporting-and-operations.md) |
+| `/api/admin/dashboard`, `/reports`, `/transactions`, `/marketing-insights` | [Reporting and operations](specs/reporting-and-operations.md) |
 
 ## Change boundaries
 
@@ -54,6 +54,7 @@ The exact method/path list is generated from `packages/db/contracts/routes.ts`; 
 
 | Change | Status (2026-10-13) | Capabilities touched |
 | --- | --- | --- |
+| [transactions-ledger-read-model](changes/transactions-ledger-read-model/proposal.md) | implemented 2026-10-20 (#378), uncommitted | reporting and operations, FE admin screens, platform and data |
 | [wire-e03-no-more-mocks](changes/wire-e03-no-more-mocks/proposal.md) | implemented, uncommitted | base spec rewording, new capability specs, admin hydration |
 | [package-payment-review](changes/package-payment-review/proposal.md) | implemented, uncommitted | session bundles, payments and refunds, FE admin/customer screens |
 | [coach-staff-provisioning](changes/coach-staff-provisioning/proposal.md) | implemented, uncommitted | staff roles and permissions, catalogue, FE admin screens |

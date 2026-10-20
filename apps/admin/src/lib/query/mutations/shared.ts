@@ -22,6 +22,7 @@ export function bookingPaymentDashboardKeys(role: AdminAuthScope): QueryKey[] {
   return [
     adminKeys.bookings.all(role),
     adminKeys.payments.all(role),
+    adminKeys.transactions.all(role),
     adminKeys.dashboard(role),
     adminKeys.queues.all(role),
     adminKeys.bundles.metrics(role),

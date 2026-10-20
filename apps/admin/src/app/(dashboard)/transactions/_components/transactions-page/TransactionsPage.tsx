@@ -1,9 +1,16 @@
 "use client";
 
-import { apiFetchBrowser } from "@balanse/api-client/browser";
-import { formatPeso, formatSessionDate, formatSessionTime } from "@balanse/domain";
+import {
+  EMPTY_TRANSACTION_TOTALS,
+  formatPeso,
+  formatSessionDate,
+  formatSessionTime,
+  isTransactionsTab,
+  type TransactionRecord,
+  type TransactionsTab,
+} from "@balanse/domain";
 import { Badge, Button } from "@balanse/ui";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -11,20 +18,11 @@ import { AdminDataTable } from "@/components/balanse/data-table/admin-data-table
 import { AdminPageShell } from "@/components/balanse/page/admin-page-shell/AdminPageShell";
 import { AdminPageTabs } from "@/components/balanse/page/admin-page-tabs/AdminPageTabs";
 import { useTabParam } from "@/components/balanse/page/useTabParam";
-import {
-  adminBookingsQuery,
-  adminBundleAcquisitionsQuery,
-  adminCustomersQuery,
-} from "@/lib/query/queries";
+import { adminTransactionsInfiniteQuery } from "@/lib/query/queries";
 import { useStaffActor } from "@/modules/authorization/useAdminAccess";
-import {
-  type TransactionRecord,
-  transactionRecords,
-  transactionTotals,
-} from "../../_lib/transaction-records";
 import type { TransactionsPageProps } from "./TransactionsPage.meta";
 
-const tabs = [
+const tabs: { id: TransactionsTab; label: string }[] = [
   { id: "all", label: "All transactions" },
   { id: "payments", label: "Payments" },
   { id: "refunds", label: "Refunds" },
@@ -106,33 +104,22 @@ const columns: ColumnDef<TransactionRecord, unknown>[] = [
   { accessorKey: "reference", header: "Reference", meta: { mobile: { role: "meta" } } },
 ];
 
-export function TransactionsPage({ empty = false }: TransactionsPageProps) {
+export function TransactionsPage(_props: TransactionsPageProps) {
   const actor = useStaffActor();
   const [tab, setTab] = useTabParam("tab", tabs, "all");
-  const { data: bookings } = useSuspenseQuery(adminBookingsQuery(actor));
-  const { data: acquisitions } = useSuspenseQuery(
-    adminBundleAcquisitionsQuery(actor, apiFetchBrowser),
-  );
-  const { data: customers } = useSuspenseQuery(adminCustomersQuery(actor, apiFetchBrowser));
-  const records = useMemo(
-    () => (empty ? [] : transactionRecords(bookings, acquisitions, customers)),
-    [bookings, acquisitions, customers, empty],
-  );
-  const totals = transactionTotals(records);
-  const filtered = records.filter((row) =>
-    tab === "payments"
-      ? row.type !== "Refund"
-      : tab === "refunds"
-        ? row.type === "Refund"
-        : tab === "pending"
-          ? row.status === "Pending"
-          : true,
-  );
+  const query = useInfiniteQuery({
+    ...adminTransactionsInfiniteQuery(actor, { tab }),
+    placeholderData: keepPreviousData,
+  });
+  const pages = query.data?.pages;
+  const records = useMemo(() => pages?.flatMap((page) => page.items) ?? [], [pages]);
+  const totals = pages?.[0]?.totals ?? EMPTY_TRANSACTION_TOTALS;
+  const totalCount = pages?.[0]?.totalCount ?? 0;
   const stats = [
-    { label: "Total received", value: formatPeso(totals.received) },
-    { label: "Refunded", value: formatPeso(totals.refunded) },
-    { label: "Net received", value: formatPeso(totals.net) },
-    { label: "Pending records", value: String(totals.pending) },
+    { label: "Total received", value: formatPeso(totals.receivedPhp) },
+    { label: "Refunded", value: formatPeso(totals.refundedPhp) },
+    { label: "Net received", value: formatPeso(totals.netPhp) },
+    { label: "Pending records", value: String(totals.pendingCount) },
   ];
 
   return (
@@ -162,21 +149,52 @@ export function TransactionsPage({ empty = false }: TransactionsPageProps) {
         </div>
       }
     >
-      <AdminPageTabs tabs={tabs} value={tab} onValueChange={setTab} label="Transaction types">
+      <AdminPageTabs
+        tabs={tabs}
+        value={tab}
+        onValueChange={(next) => {
+          if (isTransactionsTab(next)) setTab(next);
+        }}
+        label="Transaction types"
+      >
         <AdminDataTable
           tableId="transactions"
           title={tabs.find((item) => item.id === tab)?.label}
-          data={filtered}
+          data={records}
           columns={columns}
           getRowId={(row) => row.id}
+          loading={query.isPending}
+          error={
+            query.isError ? (
+              <p className="p-6 text-sm text-muted-foreground">
+                Transactions could not be loaded. Refresh to try again.
+              </p>
+            ) : undefined
+          }
           searchPlaceholder="Search customers, items, or references"
           empty={
             <p className="p-6 text-sm text-muted-foreground">
               No transactions in this view. Choose another tab or clear your filters.
             </p>
           }
-          footnote="Dates show when the source booking or purchase was created, not when money moved. Package credit redemptions and free grants are excluded."
+          footnote="Dates show when the source booking or purchase was created, not when money moved. Package credit redemptions and free grants are excluded. Search and filters apply to the records loaded so far."
         />
+        {query.hasNextPage ? (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+            <span>
+              Showing {records.length} of {totalCount} records in this view.
+            </span>
+            <Button
+              variant="outline"
+              onClick={() => {
+                void query.fetchNextPage();
+              }}
+              disabled={query.isFetchingNextPage}
+            >
+              {query.isFetchingNextPage ? "Loading…" : "Load more"}
+            </Button>
+          </div>
+        ) : null}
       </AdminPageTabs>
     </AdminPageShell>
   );

@@ -1,4 +1,4 @@
-import type { AdminPaymentTab, AdminReportFilters } from "@balanse/domain";
+import type { AdminPaymentTab, AdminReportFilters, TransactionsTab } from "@balanse/domain";
 import type { AdminAuthScope } from "./auth-scope";
 
 export type AdminBookingListFilters = {
@@ -11,6 +11,10 @@ export type AdminBookingListFilters = {
 export type AdminCustomerListFilters = {
   query?: string;
   hasUpcoming?: boolean;
+};
+
+export type AdminTransactionsListFilters = {
+  tab?: TransactionsTab;
 };
 
 export const adminKeys = {
@@ -27,6 +31,12 @@ export const adminKeys = {
   },
 
   payments: { all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "payments"] as const },
+  /** Ledger read model (#378); invalidated with payment, booking, and package writes. */
+  transactions: {
+    all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "transactions"] as const,
+    list: (scope: AdminAuthScope, filters?: AdminTransactionsListFilters) =>
+      [...adminKeys.transactions.all(scope), "list", filters ?? null] as const,
+  },
   cancellations: {
     all: (scope: AdminAuthScope) => [...adminKeys.all(scope), "cancellations"] as const,
   },

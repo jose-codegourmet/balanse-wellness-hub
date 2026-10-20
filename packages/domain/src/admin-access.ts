@@ -482,6 +482,10 @@ export const ADMIN_API_ACCESS: readonly AdminAccessRequirement[] = [
     id: "api:GET:/api/admin/payments?tab=refunds",
     whenQuery: { key: "tab", values: ["refunds"] },
   }),
+  // Ledger of every booking payment, refund, and paid package purchase (#378).
+  // The `/transactions` route itself stays Super Admin only; refund rows and
+  // refund totals are shaped out of the response without `refunds.read`.
+  api("GET", "/api/admin/transactions", "Transactions ledger", ["payments.read"]),
   api("GET", "/api/admin/payment-proofs/:id/signed-url", "Payment proof", ["payments.review"]),
   api("POST", "/api/admin/payments/:id/record-cash", "Record cash", ["payments.record_cash"]),
   api("POST", "/api/admin/payments/:id/reject-proof", "Reject payment proof", ["payments.review"]),

@@ -14,7 +14,7 @@ Defined in `@balanse/domain` (`CursorPage`). Offset pagination stays on reports 
 | --- | --- | --- | --- |
 | `limit` | 20 (bookings: 8) | 50 | Rejected if not a positive integer. |
 | `cursor` | omitted | — | Opaque. Unknown or malformed → **400** `invalid_cursor`. Never silently restarts at the beginning. |
-| `tab` | list-specific | — | Server-side filter. Payments: `gcash` \| `counter` \| `refunds` (aliases `gcash_pending`, `pay_at_counter` accepted). |
+| `tab` | list-specific | — | Server-side filter. Payments: `gcash` \| `counter` \| `refunds` (aliases `gcash_pending`, `pay_at_counter` accepted). Transactions: `all` \| `payments` \| `refunds` \| `pending`. |
 
 ## Cursor encoding
 
@@ -28,6 +28,7 @@ Unsigned base64url JSON `{ v: 1, s: "<sort_id>", k: "<sort_key>", i: "<id>" }`. 
 | Payments `gcash` / `counter` | `booking.holdExpiresAt ASC, payment.id ASC` | Most urgent hold first. |
 | Payments `refunds` | `createdAt DESC, id DESC` | Newest refund work first. |
 | Bookings | `reservedAt DESC, id DESC` | Same envelope as queues; table still pages with `limit`. |
+| Transactions (#378) | `sourceCreatedAt DESC, id DESC` | Newest booking or package request first across payments, refunds, and purchases. Sliced in memory from a one-pass ledger (`sliceCursorPage`), not a DB keyset query; `totals` ride on every page and ignore `tab` and the cursor. |
 
 Payment tab predicates are the same as `@balanse/domain` `paymentQueueKind` / `filterPaymentQueue` — the FE must not fetch-all-and-filter.
 

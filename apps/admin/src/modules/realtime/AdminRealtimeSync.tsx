@@ -36,13 +36,19 @@ function keysFor(table: WatchedTable, scope: AdminAuthScope): QueryKey[] {
         ...shared,
         adminKeys.bookings.all(scope),
         adminKeys.payments.all(scope),
+        adminKeys.transactions.all(scope),
         adminKeys.cancellations.all(scope),
         adminKeys.reschedules.all(scope),
         adminKeys.sessions.all(scope),
         adminKeys.rosterAll(scope),
       ];
     case "payments":
-      return [...shared, adminKeys.payments.all(scope), adminKeys.bookings.all(scope)];
+      return [
+        ...shared,
+        adminKeys.payments.all(scope),
+        adminKeys.transactions.all(scope),
+        adminKeys.bookings.all(scope),
+      ];
     case "cancellation_requests":
       return [...shared, adminKeys.cancellations.all(scope), adminKeys.bookings.all(scope)];
     case "reschedule_requests":
@@ -58,7 +64,12 @@ function keysFor(table: WatchedTable, scope: AdminAuthScope): QueryKey[] {
     case "bundle_acquisitions":
     case "bundle_acquisition_payments":
       // Package payment review on /bundles and /transactions, plus the customer's packages.
-      return [...shared, adminKeys.bundles.all(scope), adminKeys.customers.all(scope)];
+      return [
+        ...shared,
+        adminKeys.bundles.all(scope),
+        adminKeys.transactions.all(scope),
+        adminKeys.customers.all(scope),
+      ];
   }
 }
 

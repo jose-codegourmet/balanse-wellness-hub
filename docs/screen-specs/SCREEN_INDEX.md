@@ -46,6 +46,7 @@
 31a. Bundle / package management
 31b. Event management
 31c. Marketing insights (`admin/22-marketing-insights.md`)
+31d. Transactions (`admin/23-transactions.md`)
 
 ## Added because the business flows require them
 Admin Dashboard, Coach Management, Booking Management, Payment Review, Cancellation Requests, Reschedule Requests, Session Roster/Check-In, Settings, and the customer booking/payment/request detail screens.

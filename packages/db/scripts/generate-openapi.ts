@@ -36,6 +36,7 @@ const exampleBooking = {
 const QUEUE_PATHS = new Set([
   "/api/admin/bookings",
   "/api/admin/payments",
+  "/api/admin/transactions",
   "/api/admin/cancellation-requests",
   "/api/admin/reschedule-requests",
 ]);
@@ -74,6 +75,25 @@ for (const route of API_CONTRACT_ROUTES) {
                     name: "tab",
                     in: "query",
                     schema: { type: "string", enum: ["gcash", "counter", "refunds"] },
+                  },
+                ]
+              : []),
+            ...(route.path === "/api/admin/transactions"
+              ? [
+                  {
+                    name: "tab",
+                    in: "query",
+                    schema: {
+                      type: "string",
+                      enum: ["all", "payments", "refunds", "pending"],
+                      default: "all",
+                    },
+                  },
+                  {
+                    name: "q",
+                    in: "query",
+                    description: "Customer name, booking reference, or description.",
+                    schema: { type: "string" },
                   },
                 ]
               : []),

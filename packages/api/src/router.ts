@@ -132,6 +132,7 @@ import {
   putPolicyForms,
   reorderFaqs,
 } from "./handlers/admin-settings";
+import { getAdminTransactions } from "./handlers/admin-transactions";
 import { getAdminVenues, patchAdminVenue, postAdminVenue } from "./handlers/admin-venues";
 import {
   getBooking,
@@ -293,6 +294,7 @@ const handlers: Record<string, RouteHandler> = {
   "GET /api/admin/payments": (deps, req) => getAdminPayments(deps, req),
   "GET /api/admin/payment-proofs/{id}/signed-url": (deps, req, params) =>
     getPaymentProofSignedUrl(deps, req, params.id),
+  "GET /api/admin/transactions": (deps, req) => getAdminTransactions(deps, req),
   "POST /api/admin/payments/{id}/record-cash": (deps, req, params) =>
     postRecordCash(deps, req, params.id),
   "POST /api/admin/payments/{id}/reject-proof": (deps, req, params) =>

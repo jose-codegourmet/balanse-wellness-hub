@@ -19,7 +19,12 @@ import { invalidateForRole, useAdminAuthScope } from "./shared";
 
 function bundleKeys(role: AdminAuthScope): QueryKey[] {
   // Dashboard carries the inbox's package-payment count.
-  return [adminKeys.bundles.all(role), adminKeys.customers.all(role), adminKeys.dashboard(role)];
+  return [
+    adminKeys.bundles.all(role),
+    adminKeys.customers.all(role),
+    adminKeys.transactions.all(role),
+    adminKeys.dashboard(role),
+  ];
 }
 
 type UpsertBundleInput = PackageInput & { id?: string; status?: BundleStatus };

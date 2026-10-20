@@ -29,6 +29,7 @@ export * from "./requests";
 export * from "./sessions";
 export * from "./settings";
 export * from "./staff";
+export * from "./transactions";
 export * from "./uploads";
 export * from "./validation";
 export * from "./venues";

@@ -22,4 +22,5 @@ export * from "./queries/roster";
 export * from "./queries/sessions";
 export * from "./queries/settings";
 export * from "./queries/staff";
+export * from "./queries/transactions";
 export * from "./queries/venues";
