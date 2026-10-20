@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { serverFetcher } from "@/lib/query/fetcher";
 import { prefetchWeb } from "@/lib/query/prefetch";
 import { publicSessionsQuery } from "@/lib/query/sessions";
-import { SHOWCASE_SCHEDULE_RANGE } from "@/modules/schedule/showcase-range";
+import { rescheduleRange } from "@/modules/schedule/reschedule-range";
 import { getCurrentCustomer, getCustomerAccessToken } from "@/modules/session/current-customer";
 import { RescheduleForm } from "./_components/reschedule-form/RescheduleForm";
 
@@ -41,8 +41,11 @@ export default async function Page({ params }: { params: Promise<{ bookingId: st
       </section>
     );
   }
+  // One instant for the request: the prefetch and the client query derive the
+  // same rolling window from it (#379).
+  const nowIso = new Date().toISOString();
   return prefetchWeb(
-    [publicSessionsQuery(SHOWCASE_SCHEDULE_RANGE, fetcher)],
-    <RescheduleForm booking={booking} policies={policies} />,
+    [publicSessionsQuery(rescheduleRange(nowIso), fetcher)],
+    <RescheduleForm booking={booking} policies={policies} nowIso={nowIso} />,
   );
 }

@@ -29,7 +29,7 @@ import { useCreateRescheduleRequest } from "@/lib/query/mutations/requests";
 import { useAcceptPolicies } from "@/lib/query/policies";
 import { publicSessionsQuery } from "@/lib/query/sessions";
 import { notify } from "@/modules/notifications/notify";
-import { SHOWCASE_SCHEDULE_RANGE } from "@/modules/schedule/showcase-range";
+import { rescheduleRange } from "@/modules/schedule/reschedule-range";
 import { rescheduleFormDefaultValues } from "./RescheduleForm.defaults";
 import { type RescheduleFormValues, rescheduleFormSchema } from "./RescheduleForm.schema";
 
@@ -54,28 +54,20 @@ function remainingLabel(session: PublicSession): string {
   return `${session.remainingSlots} of ${session.capacity} spots left`;
 }
 
-function unavailableReason(session: PublicSession): string {
-  switch (session.availability) {
-    case "full_with_waitlist":
-      return "Full — cannot request";
-    case "past_cutoff":
-      return "Booking cutoff has passed — cannot request";
-    case "past":
-      return "This session has ended — cannot request";
-    case "cancelled":
-      return "Cancelled — cannot request";
-    default:
-      return "Unavailable — cannot request";
-  }
-}
-
 export function RescheduleForm({
   booking,
   policies = [],
+  nowIso,
 }: {
   booking: CustomerBooking;
   /** Current versions of the policies admin attached to the reschedule form. */
   policies?: PolicyDocumentVersion[];
+  /**
+   * Instant the page was rendered. Fixes the rolling window and the
+   * "starts after now" filter so the server prefetch and the client query
+   * share one key; stories pin it to the fixture clock.
+   */
+  nowIso: string;
 }) {
   const router = useRouter();
   const captionId = useId();
@@ -86,15 +78,25 @@ export function RescheduleForm({
   const request = useCreateRescheduleRequest(booking.customerId, booking.id);
   const acceptPolicies = useAcceptPolicies(booking.customerId);
   const policyAcceptance = usePolicyAcceptance(policies);
-  const sessionsQuery = useQuery(publicSessionsQuery(SHOWCASE_SCHEDULE_RANGE, apiFetchBrowser));
+  const range = useMemo(() => rescheduleRange(nowIso), [nowIso]);
+  const sessionsQuery = useQuery(publicSessionsQuery(range, apiFetchBrowser));
   const sessions = sessionsQuery.data ?? [];
-  const alternatives = useMemo(
-    () =>
-      sessions
-        .filter((session) => session.id !== booking.sessionId && session.status === "PUBLISHED")
-        .sort((left, right) => left.startsAt.localeCompare(right.startsAt)),
-    [booking.sessionId, sessions],
-  );
+  // Only sessions the customer can request right now (#379): the API's
+  // `reservable` already excludes ended, full, cancelled, and past-cutoff
+  // sessions; the start-time check guards against a stale page. Same-class
+  // and price rules stay with the studio (OQ-2).
+  const alternatives = useMemo(() => {
+    const now = Date.parse(nowIso);
+    return sessions
+      .filter(
+        (session) =>
+          session.id !== booking.sessionId &&
+          session.status === "PUBLISHED" &&
+          session.reservable &&
+          Date.parse(session.startsAt) > now,
+      )
+      .sort((left, right) => left.startsAt.localeCompare(right.startsAt));
+  }, [booking.sessionId, nowIso, sessions]);
   const days = useMemo(() => groupByDay(alternatives), [alternatives]);
   const selected =
     alternatives.find((session) => session.id === form.watch("targetSessionId")) ?? null;
@@ -184,7 +186,7 @@ export function RescheduleForm({
             <legend className="reschedule-legend">
               <span className="portal-eyebrow">Step 1 — Choose one</span>
               <strong className="font-display">Choose an available session</strong>
-              <small>Sessions marked unavailable cannot be requested.</small>
+              <small>Ended, full, and past-cutoff sessions are not listed.</small>
             </legend>
 
             {sessionsQuery.isLoading ? (
@@ -199,7 +201,7 @@ export function RescheduleForm({
               <FeedbackState
                 id="calendar.no-sessions"
                 title="No alternative sessions"
-                description="There are no other published sessions to prefer right now. Your current slot stays held."
+                description="There are no other sessions you can request in the next eight weeks. Your current slot stays held."
               />
             ) : (
               <>
@@ -209,19 +211,16 @@ export function RescheduleForm({
                       <p className="reschedule-day-label">{day.label}</p>
                       <ul className="reschedule-day-options">
                         {day.sessions.map((session) => {
-                          const selectable = session.reservable;
                           const noteId = `${captionId}-${session.id}`;
                           return (
                             <li key={session.id}>
                               <label
                                 className="reschedule-option"
                                 data-availability={session.availability}
-                                data-selectable={selectable ? "true" : "false"}
                               >
                                 <input
                                   type="radio"
                                   value={session.id}
-                                  disabled={!selectable}
                                   aria-describedby={noteId}
                                   {...form.register("targetSessionId")}
                                 />
@@ -229,11 +228,6 @@ export function RescheduleForm({
                                   <span className="reschedule-option-title">
                                     {sessionDisplayName(session)}
                                   </span>
-                                  {!selectable ? (
-                                    <span className="reschedule-option-unavailable">
-                                      {unavailableReason(session)}
-                                    </span>
-                                  ) : null}
                                   <span className="reschedule-option-meta">
                                     {formatSessionTimeRange(session.startsAt, session.endsAt)} ·{" "}
                                     {session.coachName} · {formatPeso(session.pricePhp)}
