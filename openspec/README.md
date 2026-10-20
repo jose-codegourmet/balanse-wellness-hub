@@ -61,6 +61,7 @@ The exact method/path list is generated from `packages/db/contracts/routes.ts`; 
 | [schedule-day-timeline](changes/schedule-day-timeline/proposal.md) | implemented, uncommitted | catalogue and scheduling, FE admin screens |
 | [event-started-session-guard](changes/event-started-session-guard/proposal.md) | implemented, uncommitted | events |
 | [customer-schedule-timetable](changes/customer-schedule-timetable/proposal.md) | implemented, uncommitted | FE public/customer screens |
+| [session-price-floor-and-lock](changes/session-price-floor-and-lock/proposal.md) | implemented, uncommitted | catalogue and scheduling, FE admin screens |
 | [session-early-end](changes/session-early-end/proposal.md) | proposal only | booking lifecycle, FE admin screens |
 | [public-share-and-profile](changes/public-share-and-profile/proposal.md) | in flight (#343) | public sharing, identity, FE screens |
 | `recurring-schedules`, `session-bundles`, `staff-roles-and-permissions*`, `be-058-session-bundles`, `fe-*` | historical waves, wired | see each proposal |

@@ -64,8 +64,14 @@ const sessionFields = {
     .refine((ids) => new Set(ids).size === ids.length, "Choose each coach only once."),
   startsAt: z.string().min(1, "Set a start time."),
   endsAt: z.string().min(1, "Set an end time."),
-  /** Mock field name. Integer pesos — not `customerPrice` / `php_decimal`. */
-  pricePhp: z.coerce.number().int().min(FIELD_CONSTRAINTS.session.customerPrice.min),
+  /** Mock field name. Integer pesos — not `customerPrice` / `php_decimal`. Never ₱0. */
+  pricePhp: z.coerce
+    .number()
+    .int()
+    .min(
+      FIELD_CONSTRAINTS.session.customerPrice.min,
+      `Price must be at least ₱${FIELD_CONSTRAINTS.session.customerPrice.min}.`,
+    ),
   capacity: z.coerce
     .number()
     .int()

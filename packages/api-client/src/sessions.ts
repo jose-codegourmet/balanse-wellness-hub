@@ -11,6 +11,7 @@ import type {
   SessionStatus,
 } from "@balanse/domain";
 import type { ApiFetcher } from "./classes";
+import { ApiError } from "./errors";
 import { numberToPhp } from "./money";
 
 export async function listPublicSessions(
@@ -85,11 +86,40 @@ function sessionBody(input: Partial<SessionInput>): Record<string, unknown> {
   return { ...rest, ...(pricePhp !== undefined ? { customerPrice: numberToPhp(pricePhp) } : {}) };
 }
 
+/**
+ * The inverse of `sessionBody` for validation errors: `out_of_range` and
+ * `price_locked` arrive on `customerPrice`, but the form field is `pricePhp`.
+ */
+async function withSessionFieldPaths<T>(request: Promise<T>): Promise<T> {
+  try {
+    return await request;
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      error.fieldErrors?.some((field) => field.path === "customerPrice")
+    ) {
+      throw new ApiError(error.status, {
+        code: error.code,
+        message: error.message,
+        fields: error.fields,
+        fieldErrors: error.fieldErrors.map((field) =>
+          field.path === "customerPrice" ? { ...field, path: "pricePhp" } : field,
+        ),
+        formErrors: error.formErrors,
+        details: error.details,
+      });
+    }
+    throw error;
+  }
+}
+
 export async function createSession(
   fetcher: ApiFetcher,
   input: SessionInput,
 ): Promise<{ session: AdminSession }> {
-  return fetcher("/api/admin/sessions", { method: "POST", body: sessionBody(input) });
+  return withSessionFieldPaths(
+    fetcher("/api/admin/sessions", { method: "POST", body: sessionBody(input) }),
+  );
 }
 
 export async function patchSession(
@@ -97,7 +127,9 @@ export async function patchSession(
   id: string,
   input: Partial<SessionInput> & { expectedStartsAt?: string; expectedEndsAt?: string },
 ): Promise<{ session: AdminSession }> {
-  return fetcher(`/api/admin/sessions/${id}`, { method: "PATCH", body: sessionBody(input) });
+  return withSessionFieldPaths(
+    fetcher(`/api/admin/sessions/${id}`, { method: "PATCH", body: sessionBody(input) }),
+  );
 }
 
 export async function cancelSession(

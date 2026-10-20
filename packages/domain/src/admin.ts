@@ -6,7 +6,13 @@ import {
   type MetricSeries,
 } from "./contracts";
 import { bookingReference, HOLD_DURATION_HOURS } from "./customer-portal";
-import type { CoachRateType, PaymentStatus, SessionStatus, VenueKind } from "./enums";
+import type {
+  BookingStatus,
+  CoachRateType,
+  PaymentStatus,
+  SessionStatus,
+  VenueKind,
+} from "./enums";
 import { BOOKING_STATUSES } from "./enums";
 import { formatSessionDate, formatSessionTime, manilaYmd } from "./format";
 import type { CustomerOnboardingAnswers } from "./onboarding";
@@ -736,6 +742,35 @@ export function validateSessionCapacity(
   }
   return { ok: true };
 }
+
+/**
+ * Booking statuses that mean the customer has already paid (or submitted
+ * payment) at the session's current price. Payment review, receipts and
+ * reports all rely on that price, so once any such booking exists the
+ * session's `pricePhp` is locked. Status alone decides: the roster hides
+ * payment status from staff without `payments.read`.
+ */
+export const PAID_BOOKING_STATUSES = [
+  "PAYMENT_SUBMITTED",
+  "CONFIRMED",
+  "CANCELLATION_REQUESTED",
+  "RESCHEDULE_REQUESTED",
+  "CHECKED_IN",
+  "COMPLETED",
+  "NO_SHOW",
+] as const satisfies readonly BookingStatus[];
+
+export function bookingHasPaid(booking: Pick<CustomerBooking, "status">): boolean {
+  return (PAID_BOOKING_STATUSES as readonly BookingStatus[]).includes(booking.status);
+}
+
+/** True when at least one customer has paid for the session, so its price must not change. */
+export function sessionPriceLocked(bookings: readonly Pick<CustomerBooking, "status">[]): boolean {
+  return bookings.some(bookingHasPaid);
+}
+
+export const SESSION_PRICE_LOCKED_MESSAGE =
+  "The price is locked because customers have already paid for this session.";
 
 export function canApproveReschedule(
   target: PublicSession,

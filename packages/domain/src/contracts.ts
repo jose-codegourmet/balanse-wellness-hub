@@ -55,6 +55,7 @@ export const VALIDATION_ERROR_CODES = [
   "invalid_type",
   "ends_before_start",
   "below_confirmed_count",
+  "price_locked",
   "duration_too_long",
   "inactive_reference",
   "read_only",
@@ -89,7 +90,8 @@ export const FIELD_CONSTRAINTS = {
     name: { required: true, max: 80, unique: true },
     shortDescription: { required: true, max: 500, format: "markdown" },
     defaultDurationMinutes: { required: false, min: 1, max: 240 },
-    defaultCustomerPrice: { required: false, min: 0, unit: MONEY_UNIT },
+    /** Optional, but never ₱0: the floor matches `session.customerPrice`. */
+    defaultCustomerPrice: { required: false, min: 1, unit: MONEY_UNIT },
     active: { required: false, type: "boolean" },
   },
   coach: {
@@ -139,7 +141,8 @@ export const FIELD_CONSTRAINTS = {
     startsAt: { required: true },
     endsAt: { required: true, after: "startsAt" },
     maxDurationHours: 8,
-    customerPrice: { required: true, min: 0, unit: MONEY_UNIT },
+    /** Whole pesos, at least ₱1. Locked once any customer has paid (`price_locked`). */
+    customerPrice: { required: true, min: 1, unit: MONEY_UNIT, lockedOncePaid: true },
     capacity: { required: true, min: 1, max: 200, notBelowConsumed: true },
     bookable: { required: false, type: "boolean" },
     status: { required: false, enum: ["DRAFT", "PUBLISHED", "CANCELLED"] },

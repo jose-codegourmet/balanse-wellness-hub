@@ -31,7 +31,7 @@ Shape:
 
 `path` is the FE field path (dotted / indexed). `code` is from `VALIDATION_ERROR_CODES`.
 
-BE-055 / BE-056 additions: `already_linked`, `cannot_remove_active`, `qr_limit`. Staff-disabled link uses existing `inactive_reference`.
+BE-055 / BE-056 additions: `already_linked`, `cannot_remove_active`, `qr_limit`. Staff-disabled link uses existing `inactive_reference`. Session price lock (2026-10-20): `price_locked`.
 
 ## Invariants
 
@@ -40,6 +40,7 @@ BE-055 / BE-056 additions: `already_linked`, `cannot_remove_active`, `qr_limit`.
 - Coach `defaultRate` / `rateType` updates **cannot** rewrite `session_coaches.coachRate` / `coachRateType`. Those columns are a write-time snapshot; there is no UPDATE trigger or cascade from `coaches`. Sending snapshot fields on session POST/PATCH is 422 `read_only`.
 - Session POST requires `coachIds`: a non-empty array of distinct coach IDs. PATCH can omit it to preserve assignments, but cannot send an empty array. New assignments require active coaches; retained inactive coaches remain valid. Singular `coachId` is rejected. See [session-coach-assignments.md](./session-coach-assignments.md).
 - Session create copies the current coach default into the snapshot once. Inactive class/coach references are rejected.
+- Session `customerPrice` and class `defaultPricePhp` are whole pesos **≥ ₱1** (`out_of_range` below that; ₱0 is never valid). Once any booking on the session is `PAYMENT_SUBMITTED`, `CONFIRMED`, `CANCELLATION_REQUESTED`, `RESCHEDULE_REQUESTED`, `CHECKED_IN`, `COMPLETED` or `NO_SHOW` (`PAID_BOOKING_STATUSES`), a session PATCH with a *different* `customerPrice` is 422 `price_locked`; resending the saved price is fine. The admin form disables the field with the paid count and hides "Reset to class default".
 - Specialties are **free-text tags** (max 12 × 40), not a closed vocabulary — the FE tag input is correct.
 - Class `name` is unique per studio (`classes.name` `@unique`).
 - PH GCash number: `09XXXXXXXXX` or `+639XXXXXXXXX`.

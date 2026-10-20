@@ -46,7 +46,9 @@ import {
   manilaYmd,
   roleAssignmentDeniedReason,
   roleHoldsSuperAdminAccess,
+  SESSION_PRICE_LOCKED_MESSAGE,
   sessionCoachCost,
+  sessionPriceLocked,
   shiftSessionIsoToDate,
   sliceCursorPage,
   toPublicSession,
@@ -1126,6 +1128,12 @@ export function createMemoryAdapter(): MockDataAdapter {
             consumed.confirmed + consumed.held,
           );
           if (!capacityCheck.ok) throw new Error(capacityCheck.error);
+          if (
+            input.pricePhp !== existing.pricePhp &&
+            sessionPriceLocked(bookings.filter((b) => b.sessionId === existing.id))
+          ) {
+            throw new Error(SESSION_PRICE_LOCKED_MESSAGE);
+          }
           Object.assign(existing, {
             classId: input.classId,
             venueId: venue.id,

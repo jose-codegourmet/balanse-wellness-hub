@@ -84,6 +84,8 @@ export function moneyValue(
   body: Record<string, unknown>,
   path: string,
   required: boolean,
+  /** Whole-peso floor; session and class prices pass `FIELD_CONSTRAINTS.*.min`. */
+  min = 0,
 ): string | null | undefined {
   if (!hasPath(body, path)) {
     if (required) throwFields(fieldError(path, "required", `${path} is required.`));
@@ -92,8 +94,10 @@ export function moneyValue(
   const value = readPath(body, path);
   if (value === null) return null;
   const n = typeof value === "number" ? value : Number(value);
-  if (!Number.isFinite(n) || n < 0) {
-    throwFields(fieldError(path, "out_of_range", `${path} must be a number ≥ 0 (whole pesos).`));
+  if (!Number.isFinite(n) || n < min) {
+    throwFields(
+      fieldError(path, "out_of_range", `${path} must be a number ≥ ${min} (whole pesos).`),
+    );
   }
   return n.toFixed(2);
 }

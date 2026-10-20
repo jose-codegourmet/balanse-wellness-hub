@@ -5,7 +5,7 @@
 1. A class is a reusable catalogue item. A scheduled `GymSession` is the bookable occurrence and owns its date, time, capacity, customer price, venue, publication status, and coach assignments. Publishing a class does not create a session.
 2. Public class and coach reads expose active marketing information only. The class detail may show its public teaching roster and upcoming sessions. `ClassMarketingCoach` never substitutes for `SessionCoach`: every session has at least one active assigned coach, and a session may have multiple coaches.
 3. Admin can create, edit, publish or retire catalogue entries from `/classes/**` and `/coaches/**`. Class copy, cover, gallery and teaching roster are managed separately from the scheduled session. A coach's internal default rate and rate type are available only on authorized admin surfaces.
-4. Creating a session captures its customer price and each assigned coach's compensation as historical snapshots. Later changes to a class price or coach default rate do not rewrite existing bookings, session cost or reports. A duration-based coach cost uses the scheduled duration.
+4. Creating a session captures its customer price and each assigned coach's compensation as historical snapshots. Later changes to a class price or coach default rate do not rewrite existing bookings, session cost or reports. A duration-based coach cost uses the scheduled duration. A session's customer price (and a class default price) is at least ₱1; once any customer has paid or submitted payment for the session, its price is locked and the editor shows why.
 5. Admin can create, update, publish and cancel individual sessions from `/schedule/**`. Only published future sessions are offered for customer booking; capacity and cutoff remain governed by [booking lifecycle](booking-lifecycle.md). A cancelled session retains its booking and refund history.
 6. The schedule uses `Asia/Manila` for calendar days, including sessions crossing midnight. A session can span two date views; the second day exposes only the after-midnight continuation and opens the same occurrence.
 7. Staff with a linked coach profile can scope the schedule to their assigned sessions. The built-in Coach role is restricted to that scope. Other staff see only the schedule scope their permissions allow.
@@ -16,6 +16,8 @@
 ## Scenarios
 
 - **Historical cost:** Given a published session with a coach-rate snapshot, when the coach's default rate changes, the old session and its reports keep the captured rate.
+- **Locked price:** Given a session with a confirmed or payment-submitted booking, when admin edits the session, the price field is read-only and the API rejects a different price (`price_locked`); other fields still save.
+- **Zero price:** Given a new or unpaid session, when admin enters ₱0, the form and the API reject it (minimum ₱1).
 - **Stale move:** Given a move review for a future session, when another actor changes the original time before save, the move is rejected instead of shifting the new time onto the changed occurrence.
 - **Coach request:** Given an assigned coach without `schedule.cancel`, when they request cancellation, the session stays scheduled until an authorized reviewer approves.
 

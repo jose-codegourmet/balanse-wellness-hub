@@ -7,6 +7,7 @@ import {
   type AdminSession,
   type AdminVenue,
   auditConfirmationCopy,
+  bookingHasPaid,
   formatPeso,
   formatSessionTime,
   isManilaYmd,
@@ -132,6 +133,13 @@ export function SessionFormPage({
   const consumed = isNew
     ? 0
     : (rosterQuery.data?.confirmedCount ?? 0) + (rosterQuery.data?.heldCount ?? 0);
+  // Status-only: the roster hides payment status from staff without `payments.read`.
+  const paidCount = isNew
+    ? 0
+    : [...(rosterQuery.data?.confirmed ?? []), ...(rosterQuery.data?.held ?? [])].filter(
+        bookingHasPaid,
+      ).length;
+  const priceLocked = paidCount > 0;
 
   function leaveList() {
     if (onClose) {
@@ -197,7 +205,7 @@ export function SessionFormPage({
   ) : (
     <AdminForm
       id={SESSION_FORM_ID}
-      key={`${existing?.id ?? (isNew ? `new-${ymd}` : `pending-${sessionId}`)}:${consumed}:${canSeeRates ? "admin" : "staff"}`}
+      key={`${existing?.id ?? (isNew ? `new-${ymd}` : `pending-${sessionId}`)}:${consumed}:${paidCount}:${canSeeRates ? "admin" : "staff"}`}
       className={cn(
         surface === "overlay" &&
           "flex min-h-0 flex-1 flex-col [&>fieldset>[data-slot=field-group]]:min-h-0 [&>fieldset>[data-slot=field-group]]:flex-1 [&>fieldset>[data-slot=field-group]]:gap-0",
@@ -256,6 +264,8 @@ export function SessionFormPage({
         sessions={sessions}
         assignments={existing?.coachAssignments ?? []}
         canSeeRates={canSeeRates}
+        priceLocked={priceLocked}
+        paidCount={paidCount}
         canCancel={!isNew && existing?.status !== "CANCELLED" && canCancelSession}
         surface={surface}
         onLeaveList={leaveList}
@@ -344,6 +354,8 @@ function SessionComposer({
   sessions,
   assignments,
   canSeeRates,
+  priceLocked,
+  paidCount,
   canCancel,
   surface,
   onLeaveList,
@@ -357,6 +369,9 @@ function SessionComposer({
   sessions: AdminSession[];
   assignments: AdminSession["coachAssignments"];
   canSeeRates: boolean;
+  /** Someone already paid at the saved price, so `pricePhp` is read-only (API: `price_locked`). */
+  priceLocked: boolean;
+  paidCount: number;
   canCancel: boolean;
   surface: "overlay" | "page";
   onLeaveList: () => void;
@@ -437,7 +452,7 @@ function SessionComposer({
   function applyClassDefaults(classId: string) {
     const next = classes.find((row) => row.id === classId);
     if (!next) return;
-    if (next.defaultPricePhp != null) {
+    if (!priceLocked && next.defaultPricePhp != null) {
       form.setValue("pricePhp", next.defaultPricePhp, { shouldDirty: true });
     }
     if (isNew && next.defaultDurationMinutes != null && values.startsAt) {
@@ -585,15 +600,27 @@ function SessionComposer({
                 <FormField
                   name="pricePhp"
                   label="Price per person"
+                  disabled={priceLocked}
                   description={
-                    klass?.defaultPricePhp != null
-                      ? `Class default ${formatPeso(klass.defaultPricePhp)}`
-                      : undefined
+                    priceLocked
+                      ? `Locked: ${paidCount} ${paidCount === 1 ? "customer has" : "customers have"} already paid at this price.`
+                      : klass?.defaultPricePhp != null
+                        ? `Class default ${formatPeso(klass.defaultPricePhp)}`
+                        : undefined
                   }
                 >
-                  {(field) => <TextBinding {...field} type="number" inputMode="numeric" />}
+                  {(field) => (
+                    <TextBinding
+                      {...field}
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      disabled={priceLocked}
+                    />
+                  )}
                 </FormField>
-                {klass?.defaultPricePhp != null &&
+                {!priceLocked &&
+                klass?.defaultPricePhp != null &&
                 klass.defaultPricePhp !== Number(values.pricePhp) ? (
                   <Button
                     type="button"

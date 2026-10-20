@@ -9,6 +9,8 @@ import {
   isManilaYmd,
   isSuperAdminRoleKey,
   manilaYmd,
+  PAID_BOOKING_STATUSES,
+  SESSION_PRICE_LOCKED_MESSAGE,
   SIGNED_UPLOAD,
   sessionCoachCost,
   type Weekday,
@@ -95,7 +97,14 @@ function parseClassInput(body: Record<string, unknown>): Omit<PublicClass, "id">
     heroImage: optionalNullableString(body, "heroImage") ?? null,
     galleryImages: parseGalleryImages(body.galleryImages),
     defaultDurationMinutes: intValue(body, "defaultDurationMinutes", 1, 240, false) ?? null,
-    defaultPricePhp: intValue(body, "defaultPricePhp", 0, 1_000_000, false) ?? null,
+    defaultPricePhp:
+      intValue(
+        body,
+        "defaultPricePhp",
+        FIELD_CONSTRAINTS.class.defaultCustomerPrice.min,
+        1_000_000,
+        false,
+      ) ?? null,
     active: body.active !== false,
   };
 }
@@ -618,7 +627,12 @@ export async function postAdminSession(deps: ApiDeps, req: Request): Promise<Res
   const startsAt = requireString(body, "startsAt", 40);
   const endsAt = requireString(body, "endsAt", 40);
   const capacity = intValue(body, "capacity", 1, 200, true) as number;
-  const customerPrice = moneyValue(body, "customerPrice", true) as string;
+  const customerPrice = moneyValue(
+    body,
+    "customerPrice",
+    true,
+    FIELD_CONSTRAINTS.session.customerPrice.min,
+  ) as string;
   const coachIds = parseCoachIds(body.coachIds);
   const name = optionalNullableString(body, "name", FIELD_CONSTRAINTS.session.name.max) ?? null;
   const bookable = typeof body.bookable === "boolean" ? body.bookable : true;
@@ -916,7 +930,12 @@ export async function patchAdminSession(
   const classId = "classId" in body ? requireString(body, "classId", 64) : undefined;
   const venueId = "venueId" in body ? requireString(body, "venueId", 64) : undefined;
   const capacity = intValue(body, "capacity", 1, 200, false);
-  const customerPrice = moneyValue(body, "customerPrice", false);
+  const customerPrice = moneyValue(
+    body,
+    "customerPrice",
+    false,
+    FIELD_CONSTRAINTS.session.customerPrice.min,
+  );
   const name = optionalNullableString(body, "name", FIELD_CONSTRAINTS.session.name.max);
   const bookable = typeof body.bookable === "boolean" ? body.bookable : undefined;
   const updated = await deps.prisma.$transaction(async (tx) => {
@@ -924,6 +943,15 @@ export async function patchAdminSession(
     await tx.$queryRawUnsafe("SELECT id FROM public.sessions WHERE id = $1 FOR UPDATE", id);
     const session = await tx.gymSession.findUnique({ where: { id }, include: { coaches: true } });
     if (!session) throw new ApiError(404, "session_not_found", "Session not found.");
+    // Paid customers keep the price they paid: lock it once anyone has paid.
+    if (customerPrice != null && Number(customerPrice) !== Number(session.customerPrice)) {
+      const paid = await tx.booking.count({
+        where: { sessionId: id, status: { in: [...PAID_BOOKING_STATUSES] } },
+      });
+      if (paid > 0) {
+        throwFields(fieldError("customerPrice", "price_locked", SESSION_PRICE_LOCKED_MESSAGE));
+      }
+    }
     const expectedStart = optionalString(body, "expectedStartsAt", 40);
     const expectedEnd = optionalString(body, "expectedEndsAt", 40);
     if (

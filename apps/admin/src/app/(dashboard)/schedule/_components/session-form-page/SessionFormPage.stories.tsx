@@ -35,6 +35,16 @@ export const CapacityValidation: Story = {
   args: { sessionId: "session-wed-open" },
 };
 
+/** `session-wed-open` has confirmed and payment-submitted bookings, so the price is read-only. */
+export const PriceLockedAfterPayment: Story = {
+  args: { sessionId: "session-wed-open" },
+};
+
+/** `session-sat-groundworks` has no bookings, so the price (≥ ₱1) stays editable. */
+export const PriceEditableNoPayments: Story = {
+  args: { sessionId: "session-sat-groundworks" },
+};
+
 export const Submitting: Story = {
   args: { sessionId: "session-wed-open" },
   parameters: { mockRuntime: { latencyMs: 10_000 } },
