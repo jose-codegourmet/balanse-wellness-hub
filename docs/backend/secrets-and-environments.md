@@ -9,7 +9,7 @@
 | `NEXT_PUBLIC_SUPABASE_URL` | `.env*` | optional | required (public) | required | Infra | Project moved |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `.env*` | optional | required (public) | required | Infra | Key leaked or Dashboard rotate |
 | `DATABASE_URL` (pooler) | `packages/db/.env` | secret, only DB jobs | server-only secret | server-only | Project owner | Password reset / staff offboarding |
-| `DIRECT_URL` | `packages/db/.env` | secret, migrate jobs only | **omit** | migrate job / owner laptop | Project owner | Same as DB password |
+| `DIRECT_URL` | `packages/db/.env` | secret, migrate jobs and the Deploy Production drift check (read-only; secret name `DIRECT_URL`) | **omit** | migrate job / owner laptop | Project owner | Same as DB password |
 | `SUPABASE_SERVICE_ROLE_KEY` | optional local, **never** `NEXT_PUBLIC_*` | secret, never logs | server-only secret where upload or invite APIs run | server-only | Project owner | Any suspicion of leak; offboarding |
 | Google OAuth client secret | not in repo | n/a | n/a | Supabase Auth provider settings | Project owner | GCP rotate / leaked |
 | Vercel / GitHub tokens | n/a | `GITHUB_TOKEN` (built-in) | n/a | Vercel team | Team admin | Token compromise |

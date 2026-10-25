@@ -10,7 +10,7 @@
 | `NEXT_PUBLIC_WEB_SITE_URL` | `apps/admin` (`src/lib/web-origin.ts`) | Yes | Public `apps/web` origin admin uses to build share links and QR codes for public session/event pages (#347). Defaults to `http://localhost:9000`; trailing slash trimmed. `apps/web` keeps using `NEXT_PUBLIC_SITE_URL`. |
 | `JABKIT_REGISTRY` | `apps/web`, `apps/admin` | Yes | Jabkit component registry URL. |
 | `DATABASE_URL` | `packages/db` (Prisma Client, smoke script) | **No** | Pooled Postgres. Port **6543**, user `postgres.<ref>`, query `?pgbouncer=true`. |
-| `DIRECT_URL` | `packages/db` (Prisma migrate, `db:ensure-buckets`) | **No** | Direct / session Postgres. Port **5432**. Required for migrations. |
+| `DIRECT_URL` | `packages/db` (Prisma migrate, `db:ensure-buckets`, Deploy Production migration check) | **No** | Direct / session Postgres. Port **5432**. Required for migrations. Also a GitHub Actions secret named `DIRECT_URL` for the read-only production drift check. The deploy workflow does not apply SQL. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server API storage and staff invitation generation; admin invite acceptance proof | **No** | Configure in the app server environment, not only `packages/db/.env`. Never `NEXT_PUBLIC_*`. Staff invitations generate links without sending email. |
 | `STAFF_INVITE_ORIGIN` | Shared API staff invitations | **No** | Admin portal origin, e.g. `http://localhost:9001`. Required HTTPS origin in production; never inferred from request headers. Set on each app server that handles staff provisioning. |
 
