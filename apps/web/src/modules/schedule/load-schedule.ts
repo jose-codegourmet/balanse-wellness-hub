@@ -24,7 +24,8 @@ export async function loadPublicSchedule(): Promise<{
       listPublicCoaches(fetcher).then((res) => res.items),
     ]);
     return { sessions, classes, coaches, loadError: false };
-  } catch {
+  } catch (error) {
+    console.error("[schedule] loadPublicSchedule failed", error);
     return { sessions: [], classes: [], coaches: [], loadError: true };
   }
 }

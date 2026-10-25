@@ -18,6 +18,7 @@
     "db:deploy": "tsx scripts/assert-supabase-auth.ts && prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:status": "prisma migrate status",
+    "db:check-production-drift": "tsx scripts/check-production-migration-drift.ts",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:smoke": "tsx scripts/smoke-connection.ts",

@@ -8,6 +8,11 @@
 # `vercel build --prod` can succeed while `vercel deploy --prebuilt` hangs on
 # Vercel "Building…".
 #
+# Before either app deploys, a read-only check compares this git ref's
+# prisma/migrations folders with production `_prisma_migrations` and
+# `supabase_migrations.schema_migrations`. Drift fails the workflow. Nothing
+# in this file applies, resolves, or repairs migrations.
+#
 # Required GitHub Actions secrets (Settings → Secrets and variables → Actions):
 #
 #   VERCEL_TOKEN
@@ -24,6 +29,11 @@
 #   VERCEL_PROJECT_ID_ADMIN
 #     Vercel project id for `balanse-admin` (root directory `apps/admin`).
 #     Also listed in docs/backend/preview-and-staging.md.
+#
+#   DIRECT_URL
+#     Direct Postgres URL (port 5432) for the hosted database. Used only by the
+#     read-only migration-history check. The workflow never applies SQL.
+#     See docs/backend/production-schema-drift.md.
 #
 # How to fill the IDs locally (do not commit `.vercel/`):
 #   From the repo root (not apps/web): npx vercel@59.23.2 link --yes --project balanse-web
@@ -86,6 +96,8 @@ on:
         required: false
       VERCEL_PROJECT_ID_ADMIN:
         required: false
+      DIRECT_URL:
+        required: true
 
 concurrency:
   # One Production ship at a time so web-only and both cannot race on balanse-web.
@@ -113,6 +125,7 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID_WEB: ${{ secrets.VERCEL_PROJECT_ID_WEB }}
           VERCEL_PROJECT_ID_ADMIN: ${{ secrets.VERCEL_PROJECT_ID_ADMIN }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
           APP: ${{ inputs.app }}
         run: |
           set -euo pipefail
@@ -124,6 +137,9 @@ jobs:
           fi
           if [ -z "${VERCEL_ORG_ID}" ]; then
             missing+=("VERCEL_ORG_ID")
+          fi
+          if [ -z "${DIRECT_URL}" ]; then
+            missing+=("DIRECT_URL")
           fi
 
           case "${app}" in
@@ -195,9 +211,39 @@ jobs:
           echo "mode=${mode}" >> "${GITHUB_OUTPUT}"
           echo "Plan: apps=${apps} ref=${checkout_ref} mode=${mode}"
 
+  schema-guard:
+    name: Check production migration drift
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.checkout_ref }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.0.8
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install database package
+        run: pnpm install --frozen-lockfile --filter @balanse/db...
+
+      - name: Fail if this ref's migrations are not on production
+        env:
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: pnpm --filter @balanse/db db:check-production-drift
+
   deploy:
     name: Deploy ${{ matrix.app }}
-    needs: prepare
+    needs: [prepare, schema-guard]
     runs-on: ubuntu-latest
     timeout-minutes: 90
     environment: production

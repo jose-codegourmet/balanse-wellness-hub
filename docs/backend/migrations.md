@@ -92,9 +92,7 @@ copy; the Prisma copy only adds `BEGIN`/`COMMIT`. Its checksum
 histories). The publication now lists `bookings`, `payments`,
 `cancellation_requests`, `reschedule_requests`, and `class_change_requests`.
 
-Still not applied to the shared project: `20261005090000_wire1701_payment_account_fields`
-and `20261005100000_wire1801_report_row_ids`. `20261008114619_wire_e16_policy_forms`
-is applied but missing from `_prisma_migrations`.
+The 2026-10-13 sentence that listed `wire1701_payment_account_fields` as unapplied is out of date. Current hosted drift, the outage SQL, and the deploy guard are in [production-schema-drift.md](./production-schema-drift.md). `20261008114619_wire_e16_policy_forms` remains applied in Supabase history and missing from `_prisma_migrations`.
 
 ## Realtime admin queues (2026-10-13)
 
@@ -184,3 +182,7 @@ Validation was done on a disposable local Postgres 15 (`prepare-plain-postgres.s
 ## WIRE-E03 hosted closeout check (2026-10-13)
 
 Read-only inspection found that Supabase lists `wire_e16_policy_forms` as applied on 2026-10-09, while Prisma's `_prisma_migrations` does not list its local `20261008114619_wire_e16_policy_forms` counterpart. The two local SQL copies previously differed in idempotency guards and index names; the Prisma copy now matches the Supabase copy byte for byte. Hosted inspection confirmed the Supabase index names, RLS, both policies, and a form-aware acceptance function. Mark the Prisma counterpart applied before any `prisma migrate deploy`, or the policy-form DDL may be replayed. The local `20261005090000_wire1701_payment_account_fields`, `20261005100000_wire1801_report_row_ids`, and `20261013022042_wire_e20_class_changes` migrations are absent from both hosted ledgers; `class_change_requests` does not exist on hosted. The payment-account migration now drops and recreates its public projection because hosted has the old three-column view and PostgreSQL cannot reorder those columns with `CREATE OR REPLACE VIEW`; hosted dependency inspection found no dependent objects. The report migration now drops four functions before changing their `RETURNS TABLE` rows and restores server-only execute grants; hosted dependency inspection found no dependent database objects. Application public API reads work, but this is not the completed hosted schema required for the WIRE-E03 walkthrough. Review the SQL and deploy only after the migration histories are reconciled.
+
+## Production drift (#382, 2026-10-25)
+
+`20261020120000_session_change_rules` is not on `xydundrayuusqizssgby`. That is why `GET /api/public/sessions` returns 500. `20261005100000_wire1801_report_row_ids` is also unapplied and must not be run as written: its session report functions drop the #293 sales and coach-cost redaction. Three later migrations are already live in Supabase history and still absent from `_prisma_migrations`. Do not `prisma migrate deploy` until those rows are resolved. Apply steps, verification queries, and the read-only Deploy Production guard: [production-schema-drift.md](./production-schema-drift.md).

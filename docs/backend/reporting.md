@@ -22,4 +22,6 @@ Definitions:
 
 Dashboard tiles (BE-054) are a separate narrow read — see [dashboard-metrics.md](./dashboard-metrics.md). Gross-sales series uses payment `VERIFIED` / `CASH_RECEIVED` to match `countsTowardGrossSales()`.
 
+`20261005100000_wire1801_report_row_ids` is not applied on the hosted project. Do not apply that file as written: the session report functions in it drop the #293 column redaction. See [production-schema-drift.md](./production-schema-drift.md).
+
 #298: these functions stay revoked from `anon` / `authenticated`. A JWT caller must hold `reports.sales.read`, `reports.capacity.read` (`report_class_performance_v2`), `reports.coach_costs.read`, or `reports.session.read`. Service-role / Prisma (`auth.uid()` null) is not a Data API grant — #292 still authorizes before invoke. #293 zeros sales/cost columns on class/session RPCs for JWT callers who lack `reports.sales.read` / `reports.coach_costs.read`.

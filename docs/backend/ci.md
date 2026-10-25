@@ -27,13 +27,15 @@ Do not add the service-role key to CI for the default verify job.
 
 Does **not** run on push. Vercel Git deploys may no-op while ignore-build is `exit 0`; this Action uses the Vercel CLI so that setting does not apply.
 
-1. Add repository secrets: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID_WEB`, `VERCEL_PROJECT_ID_ADMIN` (see comments in the workflow file and project ids in `docs/backend/preview-and-staging.md`).
+1. Add repository secrets: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID_WEB`, `VERCEL_PROJECT_ID_ADMIN`, and `DIRECT_URL` (direct Postgres URL, port 5432). See comments in the workflow file and project ids in `docs/backend/preview-and-staging.md`. `DIRECT_URL` is read-only input to the migration-history check. The workflow does not apply SQL.
 2. Actions → **Deploy Production** → Run workflow.
 3. Choose `web`, `admin`, or `both` (default). Leave `ref` empty to deploy `main`. Use `remote` (default) or `prebuilt`.
 
+The migration check checks out that ref and runs `pnpm --filter @balanse/db db:check-production-drift` before either Vercel deploy. It fails when a repo migration folder is in neither `_prisma_migrations` nor `supabase_migrations.schema_migrations`, when a Prisma checksum does not match the file, or when `DIRECT_URL` is missing. Details: [production-schema-drift.md](./production-schema-drift.md).
+
 CLI commands run from the **repository root** so workspace packages are included; each Vercel project’s Root Directory (`apps/web` / `apps/admin`) comes from project settings. Both modes start with `vercel pull --yes --environment=production`. `remote` is then `vercel deploy --prod --yes` (Vercel builds the upload). `prebuilt` is `vercel build --prod` on the runner, then `vercel deploy --prebuilt --prod`. Prefer **`remote`** if `prebuilt` hangs on Vercel “Building…” after upload (runner-side build can still succeed). Deploy jobs have a **90 minute** timeout.
 
-Reusable callers must pass the four secrets or use `secrets: inherit`. Deploy jobs use the GitHub `production` environment (add required reviewers there if you want an approval gate).
+Reusable callers must pass `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `DIRECT_URL`, and the project id secrets they deploy, or use `secrets: inherit`. Deploy jobs use the GitHub `production` environment (add required reviewers there if you want an approval gate). The migration check does not use that environment; it reads the repository secret `DIRECT_URL`.
 
 ## Local equivalent
 
