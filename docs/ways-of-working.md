@@ -1,5 +1,17 @@
 # Ways of working
 
+## Production schema checks
+
+Both app build commands run `@balanse/db`'s `db:check-schema --production-only`
+before Next.js. Deploy Production requires this gate in the selected ref.
+Operational database checks live in `packages/db/scripts/`. The check regenerates
+Prisma from the selected checkout and, on Vercel production, resolves model columns and report row IDs
+with read-only, zero-row queries. Keep SQL-only contracts in the check when adding
+new report projections. Review and reconcile migrations separately; the deployment
+workflow must not replay hosted DDL automatically. Remote builds use Vercel's
+sensitive credentials in place because `vercel pull` redacts them. Local and
+preview builds still generate Prisma but skip the live check. See `docs/backend/migrations.md`.
+
 This file is the source of truth for the project's folder structure, naming conventions, and architectural decisions. Keep it up to date in the same change whenever a convention is introduced, changed, or deliberately departed from.
 
 Authoring details for the colocated file set live in [`docs/component-guide.md`](./component-guide.md). Placement — where a folder goes — is decided here. Every public component is wrapped in its own kebab-case folder; never dump sibling `SomeExample.tsx` / `SomeExample.meta.ts` files as loose files in a shared directory.

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "rm -rf .next/dev && next dev -p 9001",
-    "build": "pnpm --filter @balanse/db db:generate && next build",
+    "build": "pnpm --filter @balanse/db db:check-schema --production-only && next build",
     "start": "next start -p 9001",
     "lint": "eslint",
     "storybook": "storybook dev -p 6007",

@@ -1,5 +1,10 @@
 import "server-only";
-import { listPublicClasses, listPublicCoaches, listPublicSessions } from "@balanse/api-client";
+import {
+  ApiError,
+  listPublicClasses,
+  listPublicCoaches,
+  listPublicSessions,
+} from "@balanse/api-client";
 import type { PublicClass, PublicCoach, PublicSession } from "@balanse/domain";
 import { serverFetcher } from "@/lib/query/fetcher";
 import { SHOWCASE_SCHEDULE_RANGE } from "./showcase-range";
@@ -24,7 +29,12 @@ export async function loadPublicSchedule(): Promise<{
       listPublicCoaches(fetcher).then((res) => res.items),
     ]);
     return { sessions, classes, coaches, loadError: false };
-  } catch {
+  } catch (error) {
+    console.error("[balanse/schedule] Public schedule load failed", {
+      name: error instanceof Error ? error.name : typeof error,
+      status: error instanceof ApiError ? error.status : undefined,
+      code: error instanceof ApiError ? error.code : undefined,
+    });
     return { sessions: [], classes: [], coaches: [], loadError: true };
   }
 }

@@ -11,12 +11,14 @@
 7. Brand/status/formatting helpers are shared rather than copied into screens. Money displays PHP and dates use `Asia/Manila`. Responsive page loading uses local skeletons and recoverable errors; raw internal enums are not customer-facing copy.
 8. Component folders, colocated metadata/stories and form schema/default rules follow `docs/ways-of-working.md`. Jabkit source stays pristine, and app composition belongs in Balansé wrappers. The validation gates are lint, typecheck, build, Storybook build, brand guard and secret scan. These gates verify the checkout; they do not prove hosted migrations or owner content have been deployed.
 9. Portal and admin realtime subscribers invalidate the relevant React Query scope when authorized rows change, and refresh server-rendered data when needed. Subscriptions are filtered by customer ownership or staff scope; a reconnect or returning tab catches up through the typed API rather than treating realtime payloads as a separate source of truth.
+10. Production builds of either app must pass a read-only schema compatibility check against that Vercel project's production database before Next.js builds and before promotion to production. Missing Prisma model tables/columns or required report row IDs block both remote and prebuilt deploys. Remote builds use Vercel's sensitive credentials in place; local and preview builds generate Prisma but skip the live check. Migration application remains an explicit operation after SQL review and history reconciliation.
 
 ## Scenarios
 
 - **Owned read:** Given customer A's booking id, when customer B requests it directly, the API and database deny the cross-customer read even if no UI link exposes it.
 - **Role change:** Given an active staff actor whose role loses a permission, when they make a fresh admin request, the server denies the operation regardless of cached navigation state.
 - **Storybook:** Given no backend session, when a screen story renders, injected mock fixtures supply its data without calling the live API or Supabase.
+- **Missing production column:** Given deployed code requires `sessions.cancellable` but the target database lacks it, when Deploy Production runs for either app, the schema gate fails before Next.js builds or the deployment is promoted and directs the operator to reconcile the migrations.
 
 ## Sources
 
