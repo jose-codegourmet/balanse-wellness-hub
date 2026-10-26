@@ -33,6 +33,24 @@ Server-side API handlers need protected database and storage credentials. Config
 4. Optional **Staging**: a `staging` branch aliased on both projects with its own protected API configuration.
 5. Confirm the GitHub check “Vercel Preview” comments include both URLs.
 
+## Production deployment gate
+
+`.github/workflows/deploy-production.yml` requires the schema gate in the selected
+ref. Both app build commands run `pnpm --filter @balanse/db db:check-schema --production-only`
+before Next.js, regenerating Prisma for every build and checking the database
+when `VERCEL_ENV=production`. Remote mode checks inside Vercel, where the sensitive
+`DATABASE_URL` is available; `vercel pull` only returns `[SENSITIVE]` placeholders.
+No extra GitHub database secret is required. Prebuilt mode fails closed if its
+runner only has a redacted credential; use remote mode for this configuration.
+Local and preview builds skip the live check. For a manual read-only probe, use
+`pnpm --filter @balanse/db db:check-schema --deployment-env <absolute-env-file>`.
+The check only resolves model columns and report ID projections with zero-row reads.
+On failure, review/apply the pending
+SQL and reconcile hosted history using `docs/backend/migrations.md`, then rerun.
+Do not bypass the gate or run a blanket migration replay to unblock a deploy.
+Use a full 40-character commit SHA when supplying a SHA in the workflow's `ref`
+input; `actions/checkout` treats abbreviated SHAs as branch/tag patterns.
+
 ## Admin not publicly indexable
 
 - `apps/admin/src/app/robots.ts` disallows all crawlers.

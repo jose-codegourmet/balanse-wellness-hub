@@ -225,7 +225,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
-          # This job never runs `pnpm install`; caching the store fails the post step.
+          # Remote mode builds (and checks the schema) inside Vercel.
           package-manager-cache: false
 
       - name: Install Vercel CLI
@@ -241,6 +241,20 @@ jobs:
           # Run from the repo root so monorepo workspace packages are in the upload
           # and project rootDirectory (apps/web | apps/admin) comes from Vercel settings.
           vercel pull --yes --environment=production
+
+      - name: Require the production schema gate in the selected ref
+        env:
+          APP: ${{ matrix.app }}
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync } from 'node:fs';
+          const pkg = JSON.parse(readFileSync(`apps/${process.env.APP}/package.json`, 'utf8'));
+          if (!pkg.scripts.build.includes('db:check-schema --production-only')) {
+            throw new Error('This ref predates the production schema gate. Deploy a ref containing the guard.');
+          }
+          JS
+          # The app build runs the read-only gate inside Vercel, where sensitive
+          # DATABASE_URL is available. `vercel pull` redacts it as [SENSITIVE].
 
       - name: Build on the runner (prebuilt)
         if: needs.prepare.outputs.mode == 'prebuilt'

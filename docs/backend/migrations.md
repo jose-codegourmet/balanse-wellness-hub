@@ -52,6 +52,7 @@ Use UTC. One concern per migration.
 | Create + apply locally | `pnpm --filter @balanse/db db:migrate` | Prefer a local Postgres / `supabase start` if you must iterate; the hosted project is shared |
 | Generate client | `pnpm --filter @balanse/db db:generate` | Always after schema changes |
 | Inspect status | `pnpm --filter @balanse/db db:status` | Compares `_prisma_migrations` |
+| Check deployment compatibility | `pnpm --filter @balanse/db db:check-schema --deployment-env <absolute-env-file>` | Read-only; regenerate Prisma and check the selected project's `DATABASE_URL` |
 | Roll forward (shared project) | `pnpm --filter @balanse/db db:deploy` | After PR review. Uses `DATABASE_URL`/`DIRECT_URL` for `xydundrayuusqizssgby` |
 | Studio | `pnpm --filter @balanse/db db:studio` | Local |
 
@@ -76,6 +77,48 @@ Expired / rejected / cancelled / refunded / no-show rows stay in the database [R
 3. If the SQL is not committed (`BEGIN` failed): fix the migration file if it has **not** been applied anywhere else; otherwise add a new forward migration.
 4. If the SQL committed partially (rare with a single transaction): write a follow-up migration that completes or repairs the schema. Never rewrite an already-applied file on the shared project.
 5. Record the incident in the PR.
+
+## Production schedule repair (#382, 2026-10-26)
+
+Hosted Postgres logs confirmed `column sessions.cancellable does not exist`.
+The production sessions API returned 500 while classes and coaches still loaded.
+Applied the existing migrations in order through Supabase to `xydundrayuusqizssgby`:
+
+| Local migration | SHA-256 |
+| --- | --- |
+| `20261005100000_wire1801_report_row_ids` | `f674ce9f9bf27961544dfb38b77bb908f4507033c068dd46a4265b2621b5f8e5` |
+| `20261020120000_session_change_rules` | `17257288c92d4079a48edcf6cabb5611548d381d6fe5e136889e2377d58b4157` |
+
+Each apply also recorded its exact local checksum in `_prisma_migrations` in the
+same transaction. The report migration's outer BEGIN/COMMIT was omitted because
+the connector owns the transaction. Existing migration files are unchanged.
+Verified both session switches are boolean, NOT NULL, DEFAULT true; report return
+types include their IDs and retain postgres/service_role-only execute grants.
+The original year-wide production sessions request then returned 200 with 57 rows.
+
+Verification also exposed SQLSTATE 42804 in `report_session_drilldown`: the
+new `name text` output received `sessions.name` (`varchar(120)`). Forward migration
+`20261026112027_report_session_name_text` casts that expression to text without
+changing the function signature, permission check or execute grants. It is applied
+and recorded in both histories (SHA-256
+`e16a9b3f1fe675b753c95cd386254c2b1da01989ec459b2bfeaa9405e7e8f44f`).
+All four report functions now execute successfully and return non-null row IDs.
+
+Both app build commands now run `db:check-schema --production-only` before
+Next.js. Deploy Production requires that gate in the selected ref. Remote builds
+check inside Vercel because `vercel pull` redacts sensitive database credentials.
+Prebuilt builds fail closed if only redacted credentials are available; use remote
+mode. Local and preview builds generate Prisma but skip the live check.
+The check fails closed on missing credentials, connection failure, missing
+Prisma tables/columns, or missing report ID projections. It uses READ ONLY and
+LIMIT 0, so it neither reads customer rows nor executes the report functions.
+It does not prove constraint, trigger, policy, or full type equivalence.
+
+This gate deliberately does not run `prisma migrate deploy`: older hosted ledger
+differences remain (including policy forms, bundle Realtime and the staff/coach
+constraint migration). Reconcile those against actual hosted definitions before
+enabling automatic migration application. The historical status notes below are
+point-in-time records; the two migrations listed above are now applied.
 
 ## Class-change requests and their Realtime feed (2026-10-13)
 

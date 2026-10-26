@@ -60,6 +60,7 @@ Both apps consume `@balanse/db` at runtime. No other workspace *package* (`packa
 |---|---|
 | Type check | `pnpm --filter @balanse/db typecheck` |
 | Generate client | `pnpm --filter @balanse/db db:generate` |
+| Deployment schema gate | `pnpm --filter @balanse/db db:check-schema --deployment-env <absolute-env-file>` |
 | Migrate | `pnpm --filter @balanse/db db:migrate` |
 | Seed | `pnpm --filter @balanse/db db:seed` |
 | Studio | `pnpm --filter @balanse/db db:studio` |
